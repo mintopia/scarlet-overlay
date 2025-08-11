@@ -213,7 +213,7 @@ body {
 
 #offline {
     position: absolute;
-    background-color: rgba(0, 0, 0, 0.6);
+    background-color: rgba(0, 0, 0, 0.9);
     top: 20px;
     width: 400px;
     left: 600px;
@@ -229,7 +229,7 @@ body {
 
 #subtitle {
     font-size: 12pt;
-    color: #bbbbbb;
+    color: #dddddd;
     font-weight: normal;
 }
 
