@@ -27,7 +27,7 @@ body {
 #video {
     width: 1600px;
     height: 900px;
-    background-color: #a3a3e5;
+    background-color: transparent;
     position: absolute;
     top: 0;
     left: 0;
@@ -210,3 +210,27 @@ body {
     text-align: center;
     width: 200px;
 }
+
+#offline {
+    position: absolute;
+    background-color: rgba(0, 0, 0, 0.6);
+    top: 20px;
+    width: 400px;
+    left: 600px;
+    height: 90px;
+    font-size: 20pt;
+    font-weight: bold;
+    text-align: center;
+    z-index: 10;
+    line-height: 1em;
+    padding-top: 20px;
+    border-radius: 8px;
+}
+
+#subtitle {
+    font-size: 12pt;
+    color: #bbbbbb;
+    font-weight: normal;
+}
+
+

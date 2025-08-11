@@ -23,6 +23,13 @@
 <body>
 <!-- HTML goes here, update it to be what you need! -->
 <div id="container">
+    <div id="offline">
+        Video Offline
+        <br />
+        <span id="subtitle">
+            Showing last known position
+        </span>
+    </div>
     <div id="video"></div>
     <div id="border1"></div>
     <div id="sidebar">
