@@ -35,7 +35,6 @@ const Overlay = {
     },
 
     updateWeatherDOM: (payload) => {
-        console.log(payload);
         Overlay.getElement('weather-summary').innerHTML = '<i class="wi wi-' + payload.summary + '"></i>';
         Overlay.getElement('air-temperature').innerHTML = payload.temp + '&deg;C';
         Overlay.getElement('wind-direction').innerHTML = '<i class="wi wi-wind from-' + payload.wind.direction + '-deg"></i>';
@@ -54,8 +53,8 @@ const Overlay = {
         Overlay.getElement('lat').innerHTML = payload.latitude.toFixed(6);
     },
     updateClock: () => {
-        Overlay.getElement('time').innerHTML = moment().format('HH:mm');
-        Overlay.getElement('date').innerHTML = moment().format('D MMMM YYYY');
+        Overlay.getElement('time').innerHTML = moment().utcOffset(window.scarletConfig.utcOffset).format('HH:mm');
+        Overlay.getElement('date').innerHTML = moment().utcOffset(window.scarletConfig.utcOffset).format('D MMMM YYYY');
     },
     init: () => {
         Overlay.clockTimer = setInterval(() => {

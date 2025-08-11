@@ -14,6 +14,11 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/weather-icons/2.0.12/css/weather-icons-wind.min.css" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/tabler-icons/3.34.1/tabler-icons.min.css" />
     @vite('resources/css/app.css')
+    <script>
+        window.scarletConfig = {
+            utcOffset: {{ config('scarlet.time.offset') }},
+        };
+    </script>
 </head>
 <body>
 <!-- HTML goes here, update it to be what you need! -->
@@ -37,11 +42,12 @@
     <div id="pointer"></div>
     <div id="footer">
         <div id="time"></div>
+        <div id="timezone">{{ config('scarlet.time.label') }}</div>
         <div id="date"></div>
         <div id="text">
-            <div id="title">Scarlet</div>
-            <div id="journey">La Rochelle towards Hendaye</div>
-            <div id="mmsi">MMSI: 235073472</div>
+            <div id="title">{{ config('scarlet.name') }}</div>
+            <div id="journey">{{ config('scarlet.passage') }}</div>
+            <div id="mmsi">MMSI: {{ config('scarlet.mmsi') }}</div>
         </div>
         <div id="weather">
             <span class="label">Weather</span>
