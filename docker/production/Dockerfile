@@ -34,8 +34,7 @@ COPY --from=npm /app /app
 COPY docker/production/entrypoint.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh && \
     mv "$PHP_INI_DIR/php.ini-production" "$PHP_INI_DIR/php.ini" && \
-    echo 'memory_limit = 512M' > /usr/local/etc/php/conf.d/memory_limit.ini && \
-    install-php-extensions gd
+    echo 'memory_limit = 512M' > /usr/local/etc/php/conf.d/memory_limit.ini
 
 COPY docker/Caddyfile /
 
