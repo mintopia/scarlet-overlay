@@ -1,5 +1,5 @@
 # Use the FrankenPHP image for building/running composer
-FROM ghcr.io/mintopia/php-frankenphp-base:8.4.10 AS composer
+FROM ghcr.io/mintopia/php-frankenphp-base:latest AS composer
 
 WORKDIR /app/
 ENV HOME=/tmp
@@ -27,7 +27,7 @@ RUN npm install --production=false && \
     npm run build
 
 # Now our final image
-FROM ghcr.io/mintopia/php-frankenphp-base:8.4.10
+FROM ghcr.io/mintopia/php-frankenphp-base:latest
 LABEL org.opencontainers.image.authors="jess@mintopia.net"
 
 COPY --from=npm /app /app
