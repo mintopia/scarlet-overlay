@@ -22,4 +22,10 @@ class ApiController extends Controller
         $weather = $weatherService->getWeather();
         return new WeatherResource($weather);
     }
+
+    public function weather_home(WeatherService $weatherService): WeatherResource
+    {
+        $weather = $weatherService->getWeatherForHome();
+        return new WeatherResource($weather);
+    }
 }

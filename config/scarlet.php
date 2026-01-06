@@ -19,4 +19,9 @@ return [
     'name' => env('SCARLET_NAME', 'Scarlet'),
     'passage' => env('SCARLET_PASSAGE', ''),
     'mmsi' => env('SCARLET_MMSI', ''),
+    'home' => [
+        'name' => env('SCARLET_HOME_NAME', 'UK'),
+        'longitude' => env('SCARLET_HOME_LONGITUDE', -0.13853150944904064),
+        'latitude' => env('SCARLET_HOME_LATITUDE', 51.53433094575387)
+    ]
 ];

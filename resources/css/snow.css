@@ -1,0 +1,141 @@
+@import 'tailwindcss';
+
+@source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
+@source '../../storage/framework/views/*.php';
+@source '../**/*.blade.php';
+@source '../**/*.js';
+
+@theme {
+    --font-sans: 'Instrument Sans', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
+        'Segoe UI Symbol', 'Noto Color Emoji';
+}
+
+/* Update the CSS here to be what you need */
+body, html {
+    margin: 0;
+    width: 1920px;
+    height: 1080px;
+    background-color: transparent;
+}
+
+body {
+    color: #ffffff;
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 22pt;
+}
+
+#video {
+    width: 1920px;
+    height: 1000px;
+    background-color: transparent;
+    position: absolute;
+    top: 0;
+    left: 0;
+}
+
+#container {
+    width: 1920px;
+    height: 1080px;
+    overflow: hidden;
+    position: relative;
+}
+
+#footer {
+    width: 390px;
+    height: 80px;
+    position: absolute;
+    left: 0;
+    bottom: 0;
+    background-color: #202020;
+    overflow: hidden;
+    border-top: 3px solid #00ada1;
+    border-right: 3px solid #00ada1;
+}
+
+#time {
+    font-size: 24pt;
+    font-weight: bold;
+    text-align: center;
+    width: 160px;
+    margin-top: 5px;
+    margin-bottom: 0;
+}
+
+#date {
+    font-size: 10pt;
+    text-align: center;
+    width: 160px;
+    color: #bbbbbb;
+    margin-top: -5px;
+}
+
+#text {
+    width: 500px;
+    height: 180px;
+    position: absolute;
+    left: 200px;
+    top: 0;
+    text-align: left;
+    padding-left: 40px;
+    border-left: 2px solid #333333;
+
+}
+
+.label {
+    color: #bbbbbb;
+    text-transform: uppercase;
+    font-size: 14pt;
+    margin-bottom: 10px;
+    margin-top: 30px;
+}
+
+#title {
+    font-weight: bold;
+    font-size: 36pt;
+    margin-bottom: 15px;
+    margin-top: 10px;
+}
+
+
+
+#weather {
+    position: absolute;
+    left: 160px;
+    width: 250px;
+    height: 80px;
+    top: 0;
+    text-align: center;
+    border-left: 2px solid #333333;
+    padding-top: 2px;
+}
+
+#weather-summary {
+    font-size: 32pt;
+    position: absolute;
+    top: 5px;
+    left: 20px;
+}
+
+#air-temperature {
+    font-size: 18pt;
+    position: absolute;
+    left: 90px;
+    top: 10px;
+}
+
+#subtitle {
+    font-size: 12pt;
+    color: #dddddd;
+    font-weight: normal;
+}
+
+#location {
+    font-size: 10pt;
+    text-align: left;
+    width: 160px;
+    color: #bbbbbb;
+    position: absolute;
+
+    left: 90px;
+    top: 40px;
+}

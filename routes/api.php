@@ -7,5 +7,6 @@ use Illuminate\Support\Facades\Route;
 Route::prefix('v1')->group(function () {
     Route::get('gps', [ApiController::class, 'gps']);
     Route::get('weather', [ApiController::class, 'weather']);
+    Route::get('weather/home', [ApiController::class, 'weather_home']);
     Route::get('ping', [PingController::class, 'ping']);
 });
