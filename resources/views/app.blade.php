@@ -18,6 +18,7 @@
             },
         };
     </script>
+    @routes
     @inertiaHead
 </head>
 <body>

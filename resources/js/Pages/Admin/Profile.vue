@@ -3,7 +3,7 @@
         <h1 class="text-[22px] font-bold mb-6">Profile</h1>
 
         <!-- Your Details -->
-        <form @submit.prevent="profileForm.put('/admin/profile')" class="bg-surface border border-border rounded-[10px] p-6 mb-6">
+        <form @submit.prevent="profileForm.put(route('admin.profile.update'))" class="bg-surface border border-border rounded-[10px] p-6 mb-6">
             <h2 class="text-[15px] font-semibold mb-4">Your Details</h2>
             <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
                 <div>
@@ -40,7 +40,7 @@
         </form>
 
         <!-- Change Password -->
-        <form @submit.prevent="passwordForm.put('/admin/profile/password')" class="bg-surface border border-border rounded-[10px] p-6 mb-6">
+        <form @submit.prevent="passwordForm.put(route('admin.profile.password'))" class="bg-surface border border-border rounded-[10px] p-6 mb-6">
             <h2 class="text-[15px] font-semibold mb-4">Change Password</h2>
             <div class="grid grid-cols-1 gap-4">
                 <div>

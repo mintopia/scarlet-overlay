@@ -20,6 +20,7 @@
         "@inertiajs/vue3": "^3.1.1",
         "@vitejs/plugin-vue": "^6.0.7",
         "leaflet": "^1.9.4",
+        "qs-esm": "^8.0.1",
         "vue": "^3.5.34"
     }
 }
