@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Admin\BoatMetricsController;
 use App\Http\Controllers\Admin\SettingsController;
 use App\Http\Controllers\Admin\TrackerController;
 use App\Http\Controllers\Auth\LoginController;
@@ -22,7 +23,7 @@ Route::middleware('auth')->prefix('admin')->group(function () {
     Route::put('/settings/passage', [SettingsController::class, 'updatePassage'])->name('admin.settings.passage');
     Route::put('/settings/port', [SettingsController::class, 'updatePort'])->name('admin.settings.port');
     Route::get('/tracker', [TrackerController::class, 'index'])->name('admin.tracker');
-    Route::get('/metrics', fn () => Inertia::render('Admin/BoatMetrics'))->name('admin.metrics');
+    Route::get('/metrics', [BoatMetricsController::class, 'index'])->name('admin.metrics');
     Route::get('/profile', fn () => Inertia::render('Admin/Profile'))->name('admin.profile');
     Route::get('/team', fn () => Inertia::render('Admin/Team'))->name('admin.team');
 });
