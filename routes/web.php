@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Admin\SettingsController;
+use App\Http\Controllers\Admin\TrackerController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\MapTileController;
@@ -20,7 +21,7 @@ Route::middleware('auth')->prefix('admin')->group(function () {
     Route::put('/settings/identity', [SettingsController::class, 'updateIdentity'])->name('admin.settings.identity');
     Route::put('/settings/passage', [SettingsController::class, 'updatePassage'])->name('admin.settings.passage');
     Route::put('/settings/port', [SettingsController::class, 'updatePort'])->name('admin.settings.port');
-    Route::get('/tracker', fn () => Inertia::render('Admin/Tracker'))->name('admin.tracker');
+    Route::get('/tracker', [TrackerController::class, 'index'])->name('admin.tracker');
     Route::get('/metrics', fn () => Inertia::render('Admin/BoatMetrics'))->name('admin.metrics');
     Route::get('/profile', fn () => Inertia::render('Admin/Profile'))->name('admin.profile');
     Route::get('/team', fn () => Inertia::render('Admin/Team'))->name('admin.team');
