@@ -1,0 +1,62 @@
+services:
+  app:
+    build:
+      context: .
+      dockerfile: docker/production/Dockerfile
+    ports:
+      - "80:80"
+    depends_on:
+      - redis
+    networks:
+      - scarlet
+
+  reverb:
+    build:
+      context: .
+      dockerfile: docker/production/Dockerfile
+    command: php artisan reverb:start --host=0.0.0.0 --port=8080
+    ports:
+      - "8080:8080"
+    depends_on:
+      - redis
+    networks:
+      - scarlet
+
+  metrics:
+    build:
+      context: .
+      dockerfile: docker/production/Dockerfile
+    command: php artisan metrics:push
+    depends_on:
+      - redis
+      - prometheus
+      - reverb
+    networks:
+      - scarlet
+
+  redis:
+    image: redis:alpine
+    networks:
+      - scarlet
+
+  otel-collector:
+    image: otel/opentelemetry-collector-contrib:latest
+    ports:
+      - "4317:4317"
+      - "4318:4318"
+    volumes:
+      - ./docker/otel-collector/config.yaml:/etc/otelcol-contrib/config.yaml
+    networks:
+      - scarlet
+
+  prometheus:
+    image: prom/prometheus:latest
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./docker/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
+    networks:
+      - scarlet
+
+networks:
+  scarlet:
