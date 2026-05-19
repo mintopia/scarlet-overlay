@@ -10,10 +10,11 @@ use App\Http\Controllers\Auth\PasskeyController;
 use App\Http\Controllers\Auth\RegisterController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\MapTileController;
+use App\Http\Controllers\OverlayController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
-Route::get('/overlay', [HomeController::class, 'index'])->name('overlay');
+Route::get('/overlay', [OverlayController::class, 'index'])->name('overlay');
 Route::get('/snow', [HomeController::class, 'snow'])->name('snow');
 Route::get('/openseamap/{z}/{x}/{y}', [MapTileController::class, 'seamap'])->name('openseamap');
 
