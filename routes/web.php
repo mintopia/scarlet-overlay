@@ -3,9 +3,11 @@
 use App\Http\Controllers\Admin\BoatMetricsController;
 use App\Http\Controllers\Admin\ProfileController;
 use App\Http\Controllers\Admin\SettingsController;
+use App\Http\Controllers\Admin\TeamController;
 use App\Http\Controllers\Admin\TrackerController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\PasskeyController;
+use App\Http\Controllers\Auth\RegisterController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\MapTileController;
 use Illuminate\Support\Facades\Route;
@@ -18,6 +20,9 @@ Route::get('/openseamap/{z}/{x}/{y}', [MapTileController::class, 'seamap'])->nam
 Route::get('/login', [LoginController::class, 'show'])->name('login')->middleware('guest');
 Route::post('/login', [LoginController::class, 'store'])->middleware('guest');
 Route::post('/logout', [LoginController::class, 'destroy'])->name('logout')->middleware('auth');
+
+Route::get('/register', [RegisterController::class, 'show'])->middleware('guest');
+Route::post('/register', [RegisterController::class, 'store'])->middleware('guest');
 
 // Passkey login routes (guest)
 Route::post('/passkey/login/options', [PasskeyController::class, 'loginOptions'])->middleware('guest');
@@ -41,5 +46,9 @@ Route::middleware('auth')->prefix('admin')->group(function () {
     Route::get('/profile', [ProfileController::class, 'index'])->name('admin.profile');
     Route::put('/profile', [ProfileController::class, 'update'])->name('admin.profile.update');
     Route::put('/profile/password', [ProfileController::class, 'updatePassword'])->name('admin.profile.password');
-    Route::get('/team', fn () => Inertia::render('Admin/Team'))->name('admin.team');
+    Route::get('/team', [TeamController::class, 'index'])->name('admin.team');
+    Route::post('/team/invite', [TeamController::class, 'invite'])->name('admin.team.invite');
+    Route::post('/team/invite/{invite}/resend', [TeamController::class, 'resend'])->name('admin.team.resend');
+    Route::delete('/team/{user}', [TeamController::class, 'destroy'])->name('admin.team.destroy');
+    Route::delete('/team/invite/{invite}', [TeamController::class, 'destroyInvite'])->name('admin.team.destroy-invite');
 });
