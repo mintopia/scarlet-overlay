@@ -94,12 +94,15 @@
                 <h2 class="text-[15px] font-semibold">Passkeys</h2>
                 <button
                     type="button"
-                    disabled
-                    class="px-4 h-9 bg-scarlet text-white text-[13px] font-semibold rounded-[7px] disabled:opacity-50 cursor-not-allowed"
+                    @click="registerPasskey"
+                    :disabled="passkeyRegistering"
+                    class="px-4 h-9 bg-scarlet text-white text-[13px] font-semibold rounded-[7px] hover:bg-scarlet-hover disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                    Register new
+                    {{ passkeyRegistering ? 'Registering…' : 'Register new' }}
                 </button>
             </div>
+            <p v-if="passkeyError" class="mb-3 text-[13px] text-red-500">{{ passkeyError }}</p>
+            <p v-if="passkeySuccess" class="mb-3 text-[13px] text-green-600">{{ passkeySuccess }}</p>
             <table class="w-full text-sm">
                 <thead>
                     <tr class="border-b border-border">
@@ -110,8 +113,22 @@
                     </tr>
                 </thead>
                 <tbody>
-                    <tr>
+                    <tr v-if="passkeys.length === 0">
                         <td colspan="4" class="py-6 text-center text-[13px] text-text-secondary">No passkeys registered.</td>
+                    </tr>
+                    <tr v-for="pk in passkeys" :key="pk.id" class="border-b border-border last:border-0">
+                        <td class="py-3 text-[13px]">{{ pk.alias ?? 'Passkey' }}</td>
+                        <td class="py-3 text-[13px] text-text-secondary">{{ formatDate(pk.created_at) }}</td>
+                        <td class="py-3 text-[13px] text-text-secondary">{{ pk.updated_at ? formatDate(pk.updated_at) : '—' }}</td>
+                        <td class="py-3">
+                            <button
+                                type="button"
+                                @click="removePasskey(pk.id)"
+                                class="text-[13px] text-red-500 hover:text-red-700 font-medium"
+                            >
+                                Remove
+                            </button>
+                        </td>
                     </tr>
                 </tbody>
             </table>
@@ -120,6 +137,7 @@
 </template>
 
 <script setup>
+import { ref, onMounted } from 'vue';
 import { useForm } from '@inertiajs/vue3';
 import AdminLayout from '@/Layouts/AdminLayout.vue';
 
@@ -134,5 +152,166 @@ const passwordForm = useForm({
     current_password: '',
     password: '',
     password_confirmation: '',
+});
+
+// --- Passkey management ---
+const passkeys = ref([]);
+const passkeyRegistering = ref(false);
+const passkeyError = ref('');
+const passkeySuccess = ref('');
+
+function getCsrfToken() {
+    return document.querySelector('meta[name="csrf-token"]')?.content ?? '';
+}
+
+function formatDate(dateStr) {
+    if (!dateStr) return '—';
+    return new Date(dateStr).toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' });
+}
+
+function arrayBufferToBase64(buffer) {
+    return btoa(String.fromCharCode(...new Uint8Array(buffer)));
+}
+
+function base64UrlDecode(input) {
+    input = input.replace(/-/g, '+').replace(/_/g, '/');
+    const pad = input.length % 4;
+    if (pad) input += '='.repeat(4 - pad);
+    const binary = atob(input);
+    return Uint8Array.from(binary, c => c.charCodeAt(0));
+}
+
+function parsePublicKeyOptions(options) {
+    options.challenge = base64UrlDecode(options.challenge);
+    if (options.user?.id) {
+        options.user.id = base64UrlDecode(options.user.id);
+    }
+    if (options.excludeCredentials) {
+        options.excludeCredentials = options.excludeCredentials.map(c => ({
+            ...c,
+            id: base64UrlDecode(c.id),
+        }));
+    }
+    return options;
+}
+
+function serializeCredential(credential) {
+    const response = {};
+    const keys = ['clientDataJSON', 'attestationObject', 'authenticatorData', 'signature', 'userHandle'];
+    keys.forEach(key => {
+        if (credential.response[key]) {
+            response[key] = arrayBufferToBase64(credential.response[key]);
+        }
+    });
+    return {
+        id: credential.id,
+        type: credential.type,
+        rawId: arrayBufferToBase64(credential.rawId),
+        authenticatorAttachment: credential.authenticatorAttachment,
+        clientExtensionResults: credential.getClientExtensionResults(),
+        response,
+    };
+}
+
+async function fetchPasskeys() {
+    try {
+        const res = await fetch('/passkey/list', {
+            headers: { 'Accept': 'application/json' },
+        });
+        if (res.ok) {
+            passkeys.value = await res.json();
+        }
+    } catch (e) {
+        // silently fail
+    }
+}
+
+async function registerPasskey() {
+    if (!window.PublicKeyCredential) {
+        passkeyError.value = 'This browser does not support passkeys.';
+        return;
+    }
+
+    passkeyRegistering.value = true;
+    passkeyError.value = '';
+    passkeySuccess.value = '';
+
+    const headers = {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+        'X-CSRF-TOKEN': getCsrfToken(),
+    };
+
+    try {
+        const optionsResponse = await fetch('/passkey/register/options', {
+            method: 'POST',
+            headers,
+            body: JSON.stringify({}),
+        });
+
+        if (!optionsResponse.ok) {
+            throw new Error('Failed to get registration options.');
+        }
+
+        const optionsJson = await optionsResponse.json();
+        const publicKey = parsePublicKeyOptions(optionsJson);
+
+        const credential = await navigator.credentials.create({ publicKey });
+
+        if (!credential) {
+            throw new Error('No credential returned from device.');
+        }
+
+        const serialized = serializeCredential(credential);
+
+        const registerResponse = await fetch('/passkey/register', {
+            method: 'POST',
+            headers,
+            body: JSON.stringify(serialized),
+        });
+
+        if (!registerResponse.ok) {
+            throw new Error('Failed to save passkey on server.');
+        }
+
+        passkeySuccess.value = 'Passkey registered successfully.';
+        await fetchPasskeys();
+    } catch (e) {
+        if (e.name === 'NotAllowedError') {
+            passkeyError.value = 'Passkey registration was cancelled or timed out.';
+        } else {
+            passkeyError.value = e.message ?? 'Passkey registration failed.';
+        }
+    } finally {
+        passkeyRegistering.value = false;
+    }
+}
+
+async function removePasskey(id) {
+    passkeyError.value = '';
+    passkeySuccess.value = '';
+
+    try {
+        const res = await fetch(`/passkey/${id}`, {
+            method: 'DELETE',
+            headers: {
+                'Accept': 'application/json',
+                'X-CSRF-TOKEN': getCsrfToken(),
+            },
+        });
+
+        if (res.ok) {
+            passkeySuccess.value = 'Passkey removed.';
+            passkeys.value = passkeys.value.filter(pk => pk.id !== id);
+        } else {
+            throw new Error('Failed to remove passkey.');
+        }
+    } catch (e) {
+        passkeyError.value = e.message ?? 'Could not remove passkey.';
+    }
+}
+
+onMounted(() => {
+    fetchPasskeys();
 });
 </script>

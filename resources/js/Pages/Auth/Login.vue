@@ -46,18 +46,20 @@
 
             <div class="divider"><span>or</span></div>
 
-            <button class="btn btn-passkey" type="button">
+            <button class="btn btn-passkey" type="button" @click="loginWithPasskey" :disabled="passkeyLoading">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <path d="M2 18v3c0 .6.4 1 1 1h4v-3h3v-3h2l1.4-1.4a6.5 6.5 0 1 0-4-4Z"/>
                     <circle cx="16.5" cy="7.5" r=".5" fill="currentColor"/>
                 </svg>
-                Sign in with passkey
+                {{ passkeyLoading ? 'Waiting…' : 'Sign in with passkey' }}
             </button>
+            <div v-if="passkeyError" class="form-error" style="margin-top: 8px; text-align: center;">{{ passkeyError }}</div>
         </div>
     </div>
 </template>
 
 <script setup>
+import { ref } from 'vue';
 import { useForm } from '@inertiajs/vue3';
 
 const form = useForm({
@@ -71,6 +73,123 @@ const submit = () => {
         onFinish: () => form.reset('password'),
     });
 };
+
+const passkeyLoading = ref(false);
+const passkeyError = ref('');
+
+function getCsrfToken() {
+    return document.querySelector('meta[name="csrf-token"]')?.content ?? '';
+}
+
+function arrayBufferToBase64(buffer) {
+    return btoa(String.fromCharCode(...new Uint8Array(buffer)));
+}
+
+function base64UrlDecode(input) {
+    input = input.replace(/-/g, '+').replace(/_/g, '/');
+    const pad = input.length % 4;
+    if (pad) input += '='.repeat(4 - pad);
+    const binary = atob(input);
+    return Uint8Array.from(binary, c => c.charCodeAt(0));
+}
+
+function parsePublicKeyOptions(options) {
+    options.challenge = base64UrlDecode(options.challenge);
+    if (options.user?.id) {
+        options.user.id = base64UrlDecode(options.user.id);
+    }
+    if (options.allowCredentials) {
+        options.allowCredentials = options.allowCredentials.map(c => ({
+            ...c,
+            id: base64UrlDecode(c.id),
+        }));
+    }
+    if (options.excludeCredentials) {
+        options.excludeCredentials = options.excludeCredentials.map(c => ({
+            ...c,
+            id: base64UrlDecode(c.id),
+        }));
+    }
+    return options;
+}
+
+function serializeCredential(credential) {
+    const response = {};
+    const keys = ['clientDataJSON', 'attestationObject', 'authenticatorData', 'signature', 'userHandle'];
+    keys.forEach(key => {
+        if (credential.response[key]) {
+            response[key] = arrayBufferToBase64(credential.response[key]);
+        }
+    });
+    return {
+        id: credential.id,
+        type: credential.type,
+        rawId: arrayBufferToBase64(credential.rawId),
+        authenticatorAttachment: credential.authenticatorAttachment,
+        clientExtensionResults: credential.getClientExtensionResults(),
+        response,
+    };
+}
+
+async function loginWithPasskey() {
+    if (!window.PublicKeyCredential) {
+        passkeyError.value = 'This browser does not support passkeys.';
+        return;
+    }
+
+    passkeyLoading.value = true;
+    passkeyError.value = '';
+
+    try {
+        const headers = {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+            'X-CSRF-TOKEN': getCsrfToken(),
+        };
+
+        const optionsResponse = await fetch('/passkey/login/options', {
+            method: 'POST',
+            headers,
+            body: JSON.stringify({}),
+        });
+
+        if (!optionsResponse.ok) {
+            throw new Error('Failed to get passkey options.');
+        }
+
+        const optionsJson = await optionsResponse.json();
+        const publicKey = parsePublicKeyOptions(optionsJson);
+
+        const credential = await navigator.credentials.get({ publicKey });
+
+        if (!credential) {
+            throw new Error('No credential returned.');
+        }
+
+        const serialized = serializeCredential(credential);
+
+        const loginResponse = await fetch('/passkey/login', {
+            method: 'POST',
+            headers,
+            body: JSON.stringify(serialized),
+        });
+
+        if (loginResponse.ok) {
+            const data = await loginResponse.json();
+            window.location.href = data.redirect ?? '/admin/settings';
+        } else {
+            throw new Error('Passkey authentication failed.');
+        }
+    } catch (e) {
+        if (e.name === 'NotAllowedError') {
+            passkeyError.value = 'Passkey prompt was cancelled or timed out.';
+        } else {
+            passkeyError.value = e.message ?? 'Passkey login failed.';
+        }
+    } finally {
+        passkeyLoading.value = false;
+    }
+}
 </script>
 
 <style scoped>
