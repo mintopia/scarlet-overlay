@@ -4,9 +4,11 @@ services:
       context: .
       dockerfile: docker/production/Dockerfile
     ports:
-      - "80:80"
+      - "${APP_PORT:-80}:80"
+    env_file: .env
     depends_on:
       - redis
+      - reverb
     networks:
       - scarlet
 
@@ -15,8 +17,7 @@ services:
       context: .
       dockerfile: docker/production/Dockerfile
     command: php artisan reverb:start --host=0.0.0.0 --port=8080
-    ports:
-      - "8080:8080"
+    env_file: .env
     depends_on:
       - redis
     networks:
@@ -27,6 +28,7 @@ services:
       context: .
       dockerfile: docker/production/Dockerfile
     command: php artisan metrics:push
+    env_file: .env
     depends_on:
       - redis
       - prometheus
@@ -36,27 +38,36 @@ services:
 
   redis:
     image: redis:alpine
+    volumes:
+      - redis-data:/data
     networks:
       - scarlet
 
   otel-collector:
     image: otel/opentelemetry-collector-contrib:latest
     ports:
-      - "4317:4317"
-      - "4318:4318"
+      - "${OTEL_GRPC_PORT:-4317}:4317"
+      - "${OTEL_HTTP_PORT:-4318}:4318"
     volumes:
-      - ./docker/otel-collector/config.yaml:/etc/otelcol-contrib/config.yaml
+      - ./docker/otel-collector/config.yaml:/etc/otelcol-contrib/config.yaml:ro
     networks:
       - scarlet
 
   prometheus:
     image: prom/prometheus:latest
     ports:
-      - "9090:9090"
+      - "${PROMETHEUS_PORT:-9090}:9090"
     volumes:
-      - ./docker/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
+      - ./docker/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus-data:/prometheus
+    depends_on:
+      - otel-collector
     networks:
       - scarlet
+
+volumes:
+  redis-data:
+  prometheus-data:
 
 networks:
   scarlet:
