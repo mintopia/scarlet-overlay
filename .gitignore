@@ -23,6 +23,7 @@ Homestead.json
 Homestead.yaml
 Thumbs.db
 
+.superpowers/
 **/caddy
 frankenphp
 frankenphp-worker.php
