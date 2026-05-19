@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Admin\SettingsController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\MapTileController;
@@ -15,7 +16,10 @@ Route::post('/login', [LoginController::class, 'store'])->middleware('guest');
 Route::post('/logout', [LoginController::class, 'destroy'])->name('logout')->middleware('auth');
 
 Route::middleware('auth')->prefix('admin')->group(function () {
-    Route::get('/settings', fn () => Inertia::render('Admin/Settings'))->name('admin.settings');
+    Route::get('/settings', [SettingsController::class, 'index'])->name('admin.settings');
+    Route::put('/settings/identity', [SettingsController::class, 'updateIdentity'])->name('admin.settings.identity');
+    Route::put('/settings/passage', [SettingsController::class, 'updatePassage'])->name('admin.settings.passage');
+    Route::put('/settings/port', [SettingsController::class, 'updatePort'])->name('admin.settings.port');
     Route::get('/tracker', fn () => Inertia::render('Admin/Tracker'))->name('admin.tracker');
     Route::get('/metrics', fn () => Inertia::render('Admin/BoatMetrics'))->name('admin.metrics');
     Route::get('/profile', fn () => Inertia::render('Admin/Profile'))->name('admin.profile');
