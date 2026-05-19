@@ -17,6 +17,12 @@
     <script>
         window.scarletConfig = {
             utcOffset: {{ config('scarlet.time.offset') }},
+            reverb: {
+                key: @json(config('broadcasting.connections.reverb.key')),
+                host: @json(config('scarlet.reverb.host')),
+                port: {{ config('scarlet.reverb.port') }},
+                scheme: @json(config('scarlet.reverb.scheme')),
+            },
         };
     </script>
 </head>

@@ -45,13 +45,27 @@ const Overlay = {
     },
 
     updateGpsDOM: (payload) => {
-        // Modify this to update any HTML as required
         Overlay.getElement('heading').innerHTML = payload.course.toFixed(1) + '&deg;';
         Overlay.getElement('compass-bg').style.transform = 'rotate(-' + payload.course + 'deg)';
         Overlay.getElement('speed').innerHTML = payload.speed.toFixed(1) + 'kt';
         Overlay.getElement('long').innerHTML = payload.longitude.toFixed(6);
         Overlay.getElement('lat').innerHTML = payload.latitude.toFixed(6);
     },
+
+    initMetrics: () => {
+        if (!window.Echo) {
+            return;
+        }
+        window.Echo.channel('metrics')
+            .listen('.metrics.updated', (data) => {
+                Overlay.onMetricsReceived(data.metrics);
+            });
+    },
+
+    onMetricsReceived: (metrics) => {
+        // Metrics received via WebSocket - rendering not yet implemented
+    },
+
     updateClock: () => {
         Overlay.getElement('time').innerHTML = moment().utcOffset(window.scarletConfig.utcOffset).format('HH:mm');
         Overlay.getElement('date').innerHTML = moment().utcOffset(window.scarletConfig.utcOffset).format('D MMMM YYYY');
@@ -69,6 +83,7 @@ const Overlay = {
         Overlay.updateClock();
         Overlay.updateGps();
         Overlay.updateWeather();
+        Overlay.initMetrics();
     },
 }
 
