@@ -10,7 +10,12 @@ class MetricsUpdated implements ShouldBroadcast
 {
     use Dispatchable;
 
-    public function __construct(public array $metrics) {}
+    public function __construct(
+        public array $boat,
+        public array $tracker,
+        public array $gps,
+        public string $timestamp,
+    ) {}
 
     public function broadcastOn(): Channel
     {

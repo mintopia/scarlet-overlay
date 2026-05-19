@@ -10,7 +10,6 @@ use Illuminate\Support\Facades\Log;
 class MetricsPushCommand extends Command
 {
     protected $signature = 'metrics:push';
-
     protected $description = 'Query Prometheus and broadcast metrics via Reverb every 15 seconds';
 
     public function handle(MetricsService $metricsService): int
@@ -20,11 +19,14 @@ class MetricsPushCommand extends Command
 
         while (true) {
             try {
-                $metrics = $metricsService->getMetrics();
-                if (!empty($metrics)) {
-                    MetricsUpdated::dispatch($metrics);
-                    $this->line('Pushed ' . count($metrics) . ' metrics');
-                }
+                $all = $metricsService->getAllMetrics();
+                MetricsUpdated::dispatch(
+                    $all['boat'],
+                    $all['tracker'],
+                    $all['gps'],
+                    $all['timestamp'],
+                );
+                $this->line('Pushed metrics at ' . $all['timestamp']);
             } catch (\Throwable $e) {
                 Log::error("Metrics push failed: {$e->getMessage()}");
                 $this->error("Error: {$e->getMessage()}");
