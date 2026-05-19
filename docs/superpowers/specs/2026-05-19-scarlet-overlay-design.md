@@ -107,6 +107,7 @@ Fixed sidebar (220px) + scrollable main content (max-width 820px).
 - Brand header: "Scarlet" in scarlet, "Admin" subtitle.
 - Grouped navigation:
   - **Boat:** Settings, Tracker, Boat Metrics
+  - **Links:** Broadcast Overlay (external, new tab), Public Dashboard (external, new tab)
   - **Account:** Profile, Team
 - Footer: user avatar (initials), name, role, sign out link.
 
