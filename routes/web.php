@@ -8,11 +8,15 @@ use App\Http\Controllers\Admin\TrackerController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\PasskeyController;
 use App\Http\Controllers\Auth\RegisterController;
+use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\MapTileController;
 use App\Http\Controllers\OverlayController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
+
+Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+Route::get('/', fn () => redirect('/dashboard'));
 
 Route::get('/overlay', [OverlayController::class, 'index'])->name('overlay');
 Route::get('/snow', [HomeController::class, 'snow'])->name('snow');
