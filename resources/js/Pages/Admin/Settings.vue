@@ -3,7 +3,7 @@
         <h1 class="text-[22px] font-bold mb-6">Settings</h1>
 
         <!-- Boat Identity -->
-        <form @submit.prevent="identityForm.put(route('admin.settings.identity'))" class="bg-surface border border-border rounded-[10px] p-6 mb-6">
+        <form @submit.prevent="identityForm.put('/admin/settings/identity')" class="bg-surface border border-border rounded-[10px] p-6 mb-6">
             <h2 class="text-[15px] font-semibold mb-4">Boat Identity</h2>
             <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
                 <div>
@@ -41,7 +41,7 @@
         </form>
 
         <!-- Current Passage -->
-        <form @submit.prevent="passageForm.put(route('admin.settings.passage'))" class="bg-surface border border-border rounded-[10px] p-6 mb-6">
+        <form @submit.prevent="passageForm.put('/admin/settings/passage')" class="bg-surface border border-border rounded-[10px] p-6 mb-6">
             <h2 class="text-[15px] font-semibold mb-4">Current Passage</h2>
             <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
                 <div>
@@ -78,7 +78,7 @@
         </form>
 
         <!-- Port Settings -->
-        <form @submit.prevent="portForm.put(route('admin.settings.port'))" class="bg-surface border border-border rounded-[10px] p-6 mb-6">
+        <form @submit.prevent="portForm.put('/admin/settings/port')" class="bg-surface border border-border rounded-[10px] p-6 mb-6">
             <h2 class="text-[15px] font-semibold mb-4">Port Settings</h2>
             <div>
                 <label class="block text-[13px] font-medium text-text-secondary mb-1.5">Port Name</label>

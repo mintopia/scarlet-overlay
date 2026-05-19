@@ -180,7 +180,7 @@ const removingMember = ref(null);
 const inviteForm = useForm({ email: '' });
 
 function sendInvite() {
-    inviteForm.post(route('admin.team.invite'), {
+    inviteForm.post('/admin/team/invite', {
         onSuccess: () => {
             showInviteModal.value = false;
             inviteForm.reset();
@@ -189,11 +189,11 @@ function sendInvite() {
 }
 
 function resendInvite(invite) {
-    router.post(route('admin.team.resend', invite.id));
+    router.post(`/admin/team/invite/${invite.id}/resend`);
 }
 
 function cancelInvite(invite) {
-    router.delete(route('admin.team.destroy-invite', invite.id));
+    router.delete(`/admin/team/invite/${invite.id}`);
 }
 
 function confirmRemove(member) {
@@ -201,7 +201,7 @@ function confirmRemove(member) {
 }
 
 function removeMember() {
-    router.delete(route('admin.team.destroy', removingMember.value.id), {
+    router.delete(`/admin/team/${removingMember.value.id}`, {
         onSuccess: () => { removingMember.value = null; },
     });
 }

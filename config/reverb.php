@@ -11,6 +11,7 @@ return [
             'options' => [
                 'tls' => [],
             ],
+            'pulse_ingest_interval' => env('REVERB_PULSE_INGEST_INTERVAL', 15),
             'scaling' => [
                 'enabled' => env('REVERB_SCALING_ENABLED', false),
                 'channel' => env('REVERB_SCALING_CHANNEL', 'reverb'),
