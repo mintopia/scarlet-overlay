@@ -41,7 +41,7 @@ class SrtMetricsController extends Controller
 
             $lines[] = '# HELP scarlet_srt_publisher_bitrate_bps Publisher bitrate in bits per second';
             $lines[] = '# TYPE scarlet_srt_publisher_bitrate_bps gauge';
-            $lines[] = "scarlet_srt_publisher_bitrate_bps{$labels} " . ($pub['bitrate'] ?? 0);
+            $lines[] = "scarlet_srt_publisher_bitrate_bps{$labels} " . (($pub['bitrate'] ?? 0) * 1000);
 
             $lines[] = '# HELP scarlet_srt_publisher_rtt_ms Publisher round-trip time in milliseconds';
             $lines[] = '# TYPE scarlet_srt_publisher_rtt_ms gauge';
@@ -67,7 +67,7 @@ class SrtMetricsController extends Controller
 
             $lines[] = '# HELP scarlet_srt_consumer_bitrate_bps Consumer bitrate in bits per second';
             $lines[] = '# TYPE scarlet_srt_consumer_bitrate_bps gauge';
-            $lines[] = "scarlet_srt_consumer_bitrate_bps{$labels} " . ($con['bitrate'] ?? 0);
+            $lines[] = "scarlet_srt_consumer_bitrate_bps{$labels} " . (($con['bitrate'] ?? 0) * 1000);
 
             $lines[] = '# HELP scarlet_srt_consumer_rtt_ms Consumer round-trip time in milliseconds';
             $lines[] = '# TYPE scarlet_srt_consumer_rtt_ms gauge';
