@@ -28,6 +28,7 @@ return [
     ],
     'metrics' => [
         'prometheus_url' => env('PROMETHEUS_URL', 'http://prometheus:9090'),
+        'token' => env('METRICS_TOKEN'),
         'push_interval' => (int) env('METRICS_PUSH_INTERVAL', 15),
         'queries' => [
             'network_latency' => [
