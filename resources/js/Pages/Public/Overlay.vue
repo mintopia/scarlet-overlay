@@ -49,18 +49,17 @@ const overlayState = computed(() => {
 });
 
 const liveBadgeText = computed(() => {
-    if (overlayState.value === 'offline') return 'OFFLINE';
+    if (isOffline.value) return 'OFFLINE';
     return 'LIVE';
 });
 
 const liveBadgeExt = computed(() => {
-    if (overlayState.value === 'offline') return 'Telemetry Unavailable';
-    if (overlayState.value === 'no-video') return 'Video Offline';
-    if (overlayState.value === 'port') return lastUpdateText.value ? `Updated ${lastUpdateText.value}` : '';
+    if (isOffline.value) return 'Telemetry Unavailable';
+    if (videoChecked.value && !videoActive.value) return 'Video Offline';
     return '';
 });
 
-const showBadgeExt = computed(() => overlayState.value !== 'video-live' && overlayState.value !== 'loading');
+const showBadgeExt = computed(() => !!liveBadgeExt.value);
 
 const weatherProps = computed(() => ({
     wxIcon: wxIcon.value,
