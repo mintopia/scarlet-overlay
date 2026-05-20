@@ -4,6 +4,26 @@ logDestinations: [stdout]
 api: yes
 apiAddress: :9997
 
+authMethod: internal
+authInternalUsers:
+  - user: any
+    pass:
+    ips: []
+    permissions:
+      - action: publish
+        path:
+      - action: read
+        path:
+      - action: playback
+        path:
+  - user: any
+    pass:
+    ips: []
+    permissions:
+      - action: api
+      - action: metrics
+      - action: pprof
+
 srt: yes
 srtAddress: :8890
 
