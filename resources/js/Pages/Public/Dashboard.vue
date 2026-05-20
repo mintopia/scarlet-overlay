@@ -1,9 +1,8 @@
 <script setup>
 import { ref, computed, onMounted, onUnmounted } from 'vue';
 import { Head } from '@inertiajs/vue3';
-import L from 'leaflet';
-import 'leaflet/dist/leaflet.css';
-import { speedToColor, makeBoatIcon, formatCoord, formatVal, getWeatherIcon, getWeatherLabel } from '../../scarlet';
+import { useScarletMetrics } from '../../composables/useScarletMetrics';
+import { formatVal } from '../../scarlet';
 
 const props = defineProps({
     initialMetrics: Object,
@@ -17,34 +16,18 @@ const props = defineProps({
 });
 
 const mapContainer = ref(null);
-const boat = ref(props.initialMetrics?.boat ?? {});
-const gps = ref(props.initialMetrics?.gps ?? {});
-const weather = ref(props.initialMetrics?.weather ?? null);
-const clock = ref('--:--');
-const clockDate = ref('');
-const lastUpdate = ref(props.initialMetrics ? new Date() : null);
-
+const autoCenter = ref(true);
 let map = null;
-let boatMarker = null;
-let trackSegments = [];
-let trackPoints = [];
-let clockInterval = null;
-let userPanned = false;
 
-const coordText = computed(() => formatCoord(gps.value?.latitude, gps.value?.longitude));
-
-const statusText = computed(() => {
-    const sog = boat.value?.speed_sog;
-    const rpm = boat.value?.engine_rpm;
-    if (sog != null && sog < 0.5 && props.portName) return 'In Port';
-    if (rpm != null && rpm > 0) return 'Under Power';
-    return 'Under Sail';
-});
-
-const statusClass = computed(() => {
-    if (statusText.value === 'In Port') return 'status-port';
-    if (statusText.value === 'Under Power') return 'status-power';
-    return 'status-sail';
+const {
+    boat, gps,
+    clock, clockDate,
+    coordText, statusText, statusClass, lastUpdateText,
+    wxTemp, wxCondition, wxIcon, wxSeaTemp, wxWindSpeed, wxWindDir, wxWaveHeight, wxWavePeriod,
+    initMap, addMapTarget,
+} = useScarletMetrics({
+    initialMetrics: props.initialMetrics,
+    portName: props.portName,
 });
 
 const windAngleSide = computed(() => {
@@ -59,101 +42,22 @@ const heelSide = computed(() => {
     return heel < 0 ? 'port' : 'starboard';
 });
 
-const lastUpdateText = computed(() => {
-    if (!lastUpdate.value) return '';
-    return lastUpdate.value.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
-});
-
-const wxTemp = computed(() => weather.value?.temp != null ? `${Number(weather.value.temp).toFixed(1)}°` : '--');
-const wxCondition = computed(() => getWeatherLabel(weather.value?.summary));
-const wxIcon = computed(() => getWeatherIcon(weather.value?.summary));
-const wxSeaTemp = computed(() => weather.value?.seaTemp != null ? `${Number(weather.value.seaTemp).toFixed(1)}°` : '--');
-const wxWindSpeed = computed(() => weather.value?.wind?.speed != null ? `${Math.round(weather.value.wind.speed)} kn` : '--');
-const wxWindDir = computed(() => weather.value?.wind?.direction ?? '');
-const wxWaveHeight = computed(() => weather.value?.waves?.height != null ? `${Number(weather.value.waves.height).toFixed(1)} m` : '--');
-const wxWavePeriod = computed(() => weather.value?.waves?.period != null ? `${Math.round(weather.value.waves.period)} s` : '');
-
 function zoomIn() { map?.zoomIn(); }
 function zoomOut() { map?.zoomOut(); }
 
 function recentre() {
     if (!gps.value?.latitude || !gps.value?.longitude) return;
     map?.setView([gps.value.latitude, gps.value.longitude]);
-    userPanned = false;
-}
-
-function updateClock() {
-    const now = new Date();
-    clock.value = now.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
-    clockDate.value = now.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' });
-}
-
-function updateMap(newGps, newBoat) {
-    if (!newGps?.latitude || !newGps?.longitude || !map) return;
-    const pos = [newGps.latitude, newGps.longitude];
-    const heading = newBoat?.heading ?? newBoat?.cog ?? 0;
-    const speed = newBoat?.speed_sog ?? 0;
-
-    trackPoints.push({ pos, speed });
-
-    const icon = makeBoatIcon(heading);
-
-    if (boatMarker) {
-        boatMarker.setLatLng(pos);
-        boatMarker.setIcon(icon);
-    } else {
-        boatMarker = L.marker(pos, { icon }).addTo(map);
-    }
-
-    if (trackPoints.length > 1) {
-        const prev = trackPoints[trackPoints.length - 2];
-        const seg = L.polyline([prev.pos, pos], {
-            color: speedToColor(speed),
-            weight: 3,
-            opacity: 0.85,
-        }).addTo(map);
-        trackSegments.push(seg);
-    }
-
-    if (!userPanned) {
-        map.setView(pos);
-    }
+    autoCenter.value = true;
 }
 
 onMounted(() => {
-    map = L.map(mapContainer.value, {
-        zoomControl: false,
-        attributionControl: false,
-    }).setView(
-        gps.value?.latitude ? [gps.value.latitude, gps.value.longitude] : [50.6931, -1.6433],
-        14
-    );
-
-    L.tileLayer(props.tileUrl, { maxZoom: 18 }).addTo(map);
-
-    map.on('dragstart', () => { userPanned = true; });
-
-    if (gps.value?.latitude) {
-        updateMap(gps.value, boat.value);
-    }
-
-    updateClock();
-    clockInterval = setInterval(updateClock, 1000);
-
-    if (window.Echo) {
-        window.Echo.channel('metrics').listen('.metrics.updated', (data) => {
-            boat.value = data.boat;
-            gps.value = data.gps;
-            if (data.weather) weather.value = data.weather;
-            lastUpdate.value = new Date();
-            updateMap(data.gps, data.boat);
-        });
-    }
+    map = initMap(mapContainer.value);
+    map.on('dragstart', () => { autoCenter.value = false; });
+    addMapTarget(map, { autoCenter });
 });
 
 onUnmounted(() => {
-    clearInterval(clockInterval);
-    if (window.Echo) window.Echo.leave('metrics');
     map?.remove();
 });
 </script>
