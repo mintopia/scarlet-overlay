@@ -21,7 +21,7 @@ const gps = ref(props.initialMetrics?.gps ?? {});
 const weather = ref(null);
 const clock = ref('--:--');
 const clockDate = ref('');
-const lastUpdate = ref(null);
+const lastUpdate = ref(props.initialMetrics ? new Date() : null);
 
 let map = null;
 let boatMarker = null;
