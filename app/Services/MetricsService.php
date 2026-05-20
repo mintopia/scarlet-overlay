@@ -13,7 +13,6 @@ class MetricsService
         return $this->prometheus->queryMultiple([
             'speed_sog' => 'scarlet_gps_speed_kn',
             'heading' => 'scarlet_gps_heading_deg',
-            'depth' => 'scarlet_gps_altitude_meters',
             'air_temp' => 'scarlet_environment_temperature_celsius',
         ]);
     }
