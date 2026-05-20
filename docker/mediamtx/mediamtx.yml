@@ -24,6 +24,3 @@ hlsAlwaysRemux: yes
 paths:
   live:
     source: publisher
-    sourceOnDemand: yes
-    sourceOnDemandStartTimeout: 10s
-    sourceOnDemandCloseAfter: 10s
