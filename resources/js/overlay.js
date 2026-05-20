@@ -1,4 +1,5 @@
 import './bootstrap';
+import { speedToColor, makeBoatIcon, formatCoord, getWeatherIcon, getWeatherLabel } from './scarlet';
 
 /* ════════════════════════════════════════════════════════════════════════
    Scarlet Overlay — State Machine, WebSocket, Leaflet Map
@@ -66,7 +67,7 @@ const Overlay = {
         const speed = data.boat?.speed_sog;
         const portName = window.scarletConfig?.portName;
 
-        if ((speed === null || speed === undefined || speed === 0) && portName) {
+        if ((speed == null || speed < 0.5) && portName) {
             return 'port';
         }
 
@@ -185,10 +186,7 @@ const Overlay = {
         // Coordinate badge
         const coordEl = this.el('coord-badge');
         if (coordEl && gps.latitude != null && gps.longitude != null) {
-            const lat = gps.latitude.toFixed(4);
-            const lon = Math.abs(gps.longitude).toFixed(4);
-            const lonDir = gps.longitude < 0 ? 'W' : 'E';
-            coordEl.innerHTML = `${lat}&deg;N &ensp; ${lon}&deg;${lonDir}`;
+            coordEl.textContent = formatCoord(gps.latitude, gps.longitude);
         }
 
         // Offline card last update timestamp
@@ -225,34 +223,6 @@ const Overlay = {
     },
 
     // ── Weather ─────────────────────────────────────────────────────────
-    weatherIcons: {
-        'day-sunny': '☀️',
-        'night-clear': '🌙',
-        'cloud': '⛅',
-        'cloudy': '☁️',
-        'fog': '🌫️',
-        'sprinkle': '🌦️',
-        'rain': '🌧️',
-        'snow': '❄️',
-        'showers': '🌦️',
-        'thunderstorm': '⛈️',
-        'na': '🌤️',
-    },
-
-    weatherLabels: {
-        'day-sunny': 'Clear',
-        'night-clear': 'Clear',
-        'cloud': 'Partly Cloudy',
-        'cloudy': 'Overcast',
-        'fog': 'Fog',
-        'sprinkle': 'Drizzle',
-        'rain': 'Rain',
-        'snow': 'Snow',
-        'showers': 'Showers',
-        'thunderstorm': 'Thunderstorm',
-        'na': 'Unknown',
-    },
-
     updateWeatherDOM(data) {
         const airEl   = this.el('wx-air-val');
         const seaEl   = this.el('wx-sea-val');
@@ -270,9 +240,8 @@ const Overlay = {
         if (wavesEl)  wavesEl.textContent = `${data.waves?.height ?? '--'} m`;
         if (wavesPer) wavesPer.textContent = data.waves?.period ? `${data.waves.period}s` : '';
 
-        const summary = data.summary ?? 'na';
-        if (iconEl) iconEl.textContent = this.weatherIcons[summary] ?? this.weatherIcons['na'];
-        if (condEl) condEl.textContent = this.weatherLabels[summary] ?? 'Unknown';
+        if (iconEl) iconEl.textContent = getWeatherIcon(data.summary);
+        if (condEl) condEl.textContent = getWeatherLabel(data.summary);
     },
 
     // ── Leaflet maps ────────────────────────────────────────────────────
@@ -307,23 +276,6 @@ const Overlay = {
         });
     },
 
-    // ── Boat icon helper ────────────────────────────────────────────────
-    makeBoatIcon(heading) {
-        const deg = heading ?? 0;
-        return L.divIcon({
-            className: 'boat-marker',
-            html: `<svg width="24" height="24" viewBox="0 0 24 24" style="transform:rotate(${deg}deg);overflow:visible">
-                <polygon points="12,2 20,20 12,16 4,20"
-                    fill="oklch(0.54 0.22 27)"
-                    stroke="oklch(0.96 0.005 70)"
-                    stroke-width="1.5"
-                    stroke-linejoin="round"/>
-            </svg>`,
-            iconSize: [24, 24],
-            iconAnchor: [12, 12],
-        });
-    },
-
     // ── Update map position + track ──────────────────────────────────────
     updateMap(gps, boat) {
         if (gps == null || gps.latitude == null || gps.longitude == null) return;
@@ -334,9 +286,7 @@ const Overlay = {
 
         this.trackPoints.push({ pos, speed });
 
-        const boatIcon = this.makeBoatIcon(
-            this.state === 'port' ? 0 : heading
-        );
+        const boatIcon = makeBoatIcon(this.state === 'port' ? 0 : heading);
 
         if (!this.boatMarkerPip) {
             // First fix — place markers
@@ -357,25 +307,6 @@ const Overlay = {
         this.updateTrack();
     },
 
-    // ── Speed → colour interpolation ────────────────────────────────────
-    speedToColor(speed) {
-        const ratio = Math.min(Math.max(speed, 0) / 10, 1);
-        if (ratio <= 0.5) {
-            const t = ratio * 2; // 0→1 for 0–5 kn
-            // blue (260°) → green (155°)
-            const l = 0.52 + t * 0.10;
-            const c = 0.10 + t * 0.04;
-            const h = 260 - t * 105;
-            return `oklch(${l} ${c} ${h})`;
-        }
-        const t = (ratio - 0.5) * 2; // 0→1 for 5–10 kn
-        // green (155°) → scarlet (27°)
-        const l = 0.62 - t * 0.06;
-        const c = 0.14 + t * 0.06;
-        const h = 155 - t * 128;
-        return `oklch(${l} ${c} ${h})`;
-    },
-
     // ── Redraw speed-coloured track ──────────────────────────────────────
     updateTrack() {
         // Remove old segments
@@ -385,7 +316,7 @@ const Overlay = {
         for (let i = 1; i < this.trackPoints.length; i++) {
             const prev = this.trackPoints[i - 1];
             const curr = this.trackPoints[i];
-            const color = this.speedToColor(curr.speed);
+            const color = speedToColor(curr.speed);
 
             const opts = { color, weight: 3, opacity: 0.85 };
             const segPip  = L.polyline([prev.pos, curr.pos], opts);

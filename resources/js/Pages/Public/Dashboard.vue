@@ -3,6 +3,7 @@ import { ref, computed, onMounted, onUnmounted } from 'vue';
 import { Head } from '@inertiajs/vue3';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
+import { speedToColor, makeBoatIcon, formatCoord, formatVal, getWeatherIcon, getWeatherLabel } from '../../scarlet';
 
 const props = defineProps({
     initialMetrics: Object,
@@ -30,16 +31,7 @@ let trackPoints = [];
 let clockInterval = null;
 let userPanned = false;
 
-const fmt = (val, decimals = 1) => val != null ? Number(val).toFixed(decimals) : '--';
-
-const coordText = computed(() => {
-    const lat = gps.value?.latitude;
-    const lon = gps.value?.longitude;
-    if (lat == null || lon == null) return '--';
-    const latDir = lat >= 0 ? 'N' : 'S';
-    const lonDir = lon >= 0 ? 'E' : 'W';
-    return `${Math.abs(lat).toFixed(4)}°${latDir}  ${Math.abs(lon).toFixed(4)}°${lonDir}`;
-});
+const coordText = computed(() => formatCoord(gps.value?.latitude, gps.value?.longitude));
 
 const statusText = computed(() => {
     const sog = boat.value?.speed_sog;
@@ -72,36 +64,14 @@ const lastUpdateText = computed(() => {
     return lastUpdate.value.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
 });
 
-const weatherIcons = {
-    'day-sunny': '☀️', 'night-clear': '🌙', 'cloud': '⛅', 'cloudy': '☁️',
-    'fog': '🌫️', 'sprinkle': '🌦️', 'rain': '🌧️', 'snow': '❄️',
-    'showers': '🌦️', 'thunderstorm': '⛈️', 'na': '🌤️',
-};
-const weatherLabels = {
-    'day-sunny': 'Clear', 'night-clear': 'Clear', 'cloud': 'Partly Cloudy',
-    'cloudy': 'Overcast', 'fog': 'Fog', 'sprinkle': 'Drizzle', 'rain': 'Rain',
-    'snow': 'Snow', 'showers': 'Showers', 'thunderstorm': 'Thunderstorm', 'na': 'Unknown',
-};
-
 const wxTemp = computed(() => weather.value?.temp != null ? `${Number(weather.value.temp).toFixed(1)}°` : '--');
-const wxCondition = computed(() => weatherLabels[weather.value?.summary] ?? 'Unknown');
-const wxIcon = computed(() => weatherIcons[weather.value?.summary] ?? '🌤');
+const wxCondition = computed(() => getWeatherLabel(weather.value?.summary));
+const wxIcon = computed(() => getWeatherIcon(weather.value?.summary));
 const wxSeaTemp = computed(() => weather.value?.seaTemp != null ? `${Number(weather.value.seaTemp).toFixed(1)}°` : '--');
 const wxWindSpeed = computed(() => weather.value?.wind?.speed != null ? `${Math.round(weather.value.wind.speed)} kn` : '--');
 const wxWindDir = computed(() => weather.value?.wind?.direction ?? '');
 const wxWaveHeight = computed(() => weather.value?.waves?.height != null ? `${Number(weather.value.waves.height).toFixed(1)} m` : '--');
 const wxWavePeriod = computed(() => weather.value?.waves?.period != null ? `${Math.round(weather.value.waves.period)} s` : '');
-
-function speedToColor(speed) {
-    const s = speed ?? 0;
-    const ratio = Math.min(s / 10, 1);
-    if (ratio <= 0.5) {
-        const t = ratio * 2;
-        return `oklch(${0.55 + t * 0.07} ${0.14 + t * 0.01} ${240 - t * 85})`;
-    }
-    const t = (ratio - 0.5) * 2;
-    return `oklch(${0.62 - t * 0.08} ${0.15 + t * 0.07} ${155 - t * 128})`;
-}
 
 function zoomIn() { map?.zoomIn(); }
 function zoomOut() { map?.zoomOut(); }
@@ -126,15 +96,7 @@ function updateMap(newGps, newBoat) {
 
     trackPoints.push({ pos, speed });
 
-    const iconHtml = `<svg width="24" height="24" viewBox="0 0 24 24" style="transform:rotate(${heading}deg);overflow:visible">
-        <polygon points="12,2 20,20 12,16 4,20" fill="oklch(0.54 0.22 27)" stroke="oklch(0.96 0.005 70)" stroke-width="1.5"/>
-    </svg>`;
-    const icon = L.divIcon({
-        className: 'boat-marker',
-        html: iconHtml,
-        iconSize: [24, 24],
-        iconAnchor: [12, 12],
-    });
+    const icon = makeBoatIcon(heading);
 
     if (boatMarker) {
         boatMarker.setLatLng(pos);
@@ -275,27 +237,27 @@ onUnmounted(() => {
             <div class="pill pill--compound">
                 <div class="pill-cell">
                     <div class="pill-lbl">APP. WIND</div>
-                    <div class="pill-val">{{ fmt(boat?.wind_speed_apparent) }} kn</div>
+                    <div class="pill-val">{{ formatVal(boat?.wind_speed_apparent) }} kn</div>
                 </div>
                 <div class="pill-cell">
                     <div class="pill-lbl">ANGLE</div>
-                    <div class="pill-val">{{ fmt(Math.abs(boat?.wind_angle_apparent ?? 0), 0) }}°</div>
+                    <div class="pill-val">{{ formatVal(Math.abs(boat?.wind_angle_apparent ?? 0), 0) }}°</div>
                     <div class="pill-sub">{{ windAngleSide }}</div>
                 </div>
             </div>
             <div class="pill">
                 <div class="pill-lbl">HEEL</div>
-                <div class="pill-val">{{ fmt(Math.abs(boat?.heel ?? 0), 0) }}°</div>
+                <div class="pill-val">{{ formatVal(Math.abs(boat?.heel ?? 0), 0) }}°</div>
                 <div class="pill-sub">{{ heelSide }}</div>
             </div>
             <div class="pill">
                 <div class="pill-lbl">PRESSURE</div>
-                <div class="pill-val">{{ fmt(boat?.pressure, 0) }}</div>
+                <div class="pill-val">{{ formatVal(boat?.pressure, 0) }}</div>
                 <div class="pill-sub">hPa</div>
             </div>
             <div class="pill">
                 <div class="pill-lbl">TRIP</div>
-                <div class="pill-val">{{ fmt(boat?.trip_log) }} nm</div>
+                <div class="pill-val">{{ formatVal(boat?.trip_log) }} nm</div>
             </div>
         </div>
 
@@ -307,17 +269,17 @@ onUnmounted(() => {
             <div class="lt-body">
                 <div class="lt-metric">
                     <div class="lt-label">SPEED</div>
-                    <div class="lt-val">{{ fmt(boat?.speed_sog) }} kn</div>
+                    <div class="lt-val">{{ formatVal(boat?.speed_sog) }} kn</div>
                 </div>
                 <div class="lt-sep"></div>
                 <div class="lt-metric">
                     <div class="lt-label">HEADING</div>
-                    <div class="lt-val">{{ fmt(boat?.heading ?? boat?.cog, 0) }}°</div>
+                    <div class="lt-val">{{ formatVal(boat?.heading ?? boat?.cog, 0) }}°</div>
                 </div>
                 <div class="lt-sep"></div>
                 <div class="lt-metric">
                     <div class="lt-label">DEPTH</div>
-                    <div class="lt-val">{{ fmt(boat?.depth) }} m</div>
+                    <div class="lt-val">{{ formatVal(boat?.depth) }} m</div>
                 </div>
                 <div class="lt-sep"></div>
                 <span class="lt-status" :class="statusClass">{{ statusText }}</span>
@@ -626,9 +588,9 @@ onUnmounted(() => {
     width: 52px;
     height: 3px;
     background: linear-gradient(to right,
-        oklch(0.55 0.14 240),
-        oklch(0.50 0.14 155),
-        oklch(0.54 0.22 27)
+        oklch(0.52 0.10 260),
+        oklch(0.62 0.14 155),
+        oklch(0.56 0.20 27)
     );
     border-radius: 2px;
 }
