@@ -1,4 +1,3 @@
-// resources/js/composables/useVideoFeed.js
 import { ref, onUnmounted } from 'vue';
 
 export function useVideoFeed(videoEl) {
@@ -6,6 +5,7 @@ export function useVideoFeed(videoEl) {
     const videoChecked = ref(false);
 
     let peerConnection = null;
+    let hlsInstance = null;
     let retryTimer = null;
     let watchdogTimer = null;
     let lastFramesDecoded = null;
@@ -63,14 +63,23 @@ export function useVideoFeed(videoEl) {
         }
     }
 
-    function startHls() {
+    async function startHls() {
         const video = getVideoElement();
-        if (!video) return Promise.reject(new Error('No video element'));
+        if (!video) throw new Error('No video element');
 
-        if (!video.canPlayType('application/vnd.apple.mpegurl')) {
-            return Promise.reject(new Error('HLS not supported'));
+        if (video.canPlayType('application/vnd.apple.mpegurl')) {
+            return startHlsNative(video);
         }
 
+        const { default: Hls } = await import('hls.js');
+        if (Hls.isSupported()) {
+            return startHlsJs(video, Hls);
+        }
+
+        throw new Error('HLS not supported');
+    }
+
+    function startHlsNative(video) {
         return new Promise((resolve, reject) => {
             const timeout = setTimeout(() => {
                 video.removeEventListener('playing', onPlaying);
@@ -96,12 +105,59 @@ export function useVideoFeed(videoEl) {
         });
     }
 
+    function startHlsJs(video, Hls) {
+        return new Promise((resolve, reject) => {
+            const hls = new Hls({
+                enableWorker: true,
+                lowLatencyMode: true,
+                backBufferLength: 10,
+            });
+
+            const timeout = setTimeout(() => {
+                hls.destroy();
+                reject(new Error('HLS timeout'));
+            }, 10000);
+
+            hls.on(Hls.Events.ERROR, (_event, data) => {
+                if (data.fatal) {
+                    clearTimeout(timeout);
+                    hls.destroy();
+                    hlsInstance = null;
+                    reject(new Error(`HLS fatal: ${data.type}`));
+                }
+            });
+
+            hls.on(Hls.Events.MANIFEST_PARSED, () => {
+                video.play().catch(() => {
+                    clearTimeout(timeout);
+                    hls.destroy();
+                    hlsInstance = null;
+                    reject(new Error('HLS play rejected'));
+                });
+            });
+
+            video.addEventListener('playing', () => {
+                clearTimeout(timeout);
+                hlsInstance = hls;
+                resolve();
+            }, { once: true });
+
+            hls.loadSource(HLS_URL);
+            hls.attachMedia(video);
+        });
+    }
+
     function teardownPlayer() {
         stopWatchdog();
 
         if (peerConnection) {
             try { peerConnection.close(); } catch {}
             peerConnection = null;
+        }
+
+        if (hlsInstance) {
+            hlsInstance.destroy();
+            hlsInstance = null;
         }
 
         const video = getVideoElement();
@@ -118,18 +174,37 @@ export function useVideoFeed(videoEl) {
         videoStallCount = 0;
 
         watchdogTimer = setInterval(async () => {
-            if (!videoActive.value || !peerConnection) return;
+            if (!videoActive.value) return;
 
-            try {
-                const stats = await peerConnection.getStats();
-                let currentFrames = 0;
-                stats.forEach(report => {
-                    if (report.type === 'inbound-rtp' && report.kind === 'video') {
-                        currentFrames = report.framesDecoded || 0;
+            if (peerConnection) {
+                try {
+                    const stats = await peerConnection.getStats();
+                    let currentFrames = 0;
+                    stats.forEach(report => {
+                        if (report.type === 'inbound-rtp' && report.kind === 'video') {
+                            currentFrames = report.framesDecoded || 0;
+                        }
+                    });
+
+                    if (lastFramesDecoded !== null && currentFrames <= lastFramesDecoded) {
+                        videoStallCount++;
+                        if (videoStallCount >= 3) {
+                            setActive(false);
+                            scheduleRetry();
+                        }
+                    } else {
+                        videoStallCount = 0;
                     }
-                });
+                    lastFramesDecoded = currentFrames;
+                } catch {
+                    // PC closed
+                }
+                return;
+            }
 
-                if (lastFramesDecoded !== null && currentFrames <= lastFramesDecoded) {
+            if (hlsInstance) {
+                const video = getVideoElement();
+                if (video && video.paused && !video.ended) {
                     videoStallCount++;
                     if (videoStallCount >= 3) {
                         setActive(false);
@@ -138,9 +213,6 @@ export function useVideoFeed(videoEl) {
                 } else {
                     videoStallCount = 0;
                 }
-                lastFramesDecoded = currentFrames;
-            } catch {
-                // PC closed
             }
         }, 1000);
     }
@@ -194,6 +266,7 @@ export function useVideoFeed(videoEl) {
         try {
             await startHls();
             setActive(true);
+            startWatchdog();
         } catch {
             setActive(false);
             scheduleRetry();
