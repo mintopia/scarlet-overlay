@@ -388,21 +388,17 @@ const Overlay = {
             });
             return;
         } catch (e) {
-            console.warn('[Overlay] WHEP failed, trying HLS:', e.message);
+            console.warn('[Overlay] WHEP failed:', e.message);
+            if (e.message.includes('404')) {
+                this.setVideoFeedActive(false);
+                this.scheduleRetry();
+                return;
+            }
         }
 
         try {
-            this.startHls();
+            await this.startHls();
             this.setVideoFeedActive(true);
-
-            const video = this.el('video-feed');
-            if (video) {
-                video.addEventListener('error', () => {
-                    console.warn('[Overlay] HLS stream error');
-                    this.setVideoFeedActive(false);
-                    this.scheduleRetry();
-                }, { once: true });
-            }
         } catch (e) {
             console.warn('[Overlay] HLS failed:', e.message);
             this.setVideoFeedActive(false);
@@ -456,15 +452,35 @@ const Overlay = {
 
     startHls() {
         const video = this.el('video-feed');
-        if (!video) throw new Error('No video element');
+        if (!video) return Promise.reject(new Error('No video element'));
 
-        if (video.canPlayType('application/vnd.apple.mpegurl')) {
-            video.src = this.hlsUrl;
-            video.play().catch(() => {});
-            return;
+        if (!video.canPlayType('application/vnd.apple.mpegurl')) {
+            return Promise.reject(new Error('HLS not supported'));
         }
 
-        throw new Error('HLS not supported natively and no hls.js loaded');
+        return new Promise((resolve, reject) => {
+            const timeout = setTimeout(() => {
+                video.removeEventListener('playing', onPlaying);
+                video.removeEventListener('error', onError);
+                reject(new Error('HLS timeout'));
+            }, 10000);
+
+            const onPlaying = () => {
+                clearTimeout(timeout);
+                video.removeEventListener('error', onError);
+                resolve();
+            };
+            const onError = () => {
+                clearTimeout(timeout);
+                video.removeEventListener('playing', onPlaying);
+                reject(new Error('HLS playback error'));
+            };
+
+            video.addEventListener('playing', onPlaying, { once: true });
+            video.addEventListener('error', onError, { once: true });
+            video.src = this.hlsUrl;
+            video.play().catch(() => reject(new Error('HLS play rejected')));
+        });
     },
 
     teardownPlayer() {
