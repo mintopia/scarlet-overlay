@@ -7,3 +7,9 @@ scrape_configs:
     scrape_interval: 15s
     static_configs:
       - targets: ['otel-collector:8889']
+
+  - job_name: scarlet-srt
+    scrape_interval: 15s
+    metrics_path: /metrics/srt
+    static_configs:
+      - targets: ['app:80']
