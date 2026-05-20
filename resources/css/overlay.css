@@ -1,6 +1,6 @@
 /* ════════════════════════════════════════════════════════════════════════
    Scarlet Overlay — broadcast overlay for OBS compositing
-   Fixed 1920×1080. Scoped CSS — no Tailwind.
+   Design canvas: 1920×1080, scaled to fit viewport via transform.
    ════════════════════════════════════════════════════════════════════════ */
 
 @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&display=swap');
@@ -40,8 +40,8 @@
     --speed-10: oklch(0.56 0.20 27);
 
     /* Radii */
-    --radius:    10px;
-    --radius-sm: 7px;
+    --radius:    14px;
+    --radius-sm: 10px;
 
     /* Typography */
     --font: 'Outfit', system-ui, sans-serif;
@@ -53,20 +53,23 @@
 /* ── Base ──────────────────────────────────────────────────────────────── */
 
 html, body {
-    width: 1920px;
-    height: 1080px;
+    width: 100vw;
+    height: 100vh;
     overflow: hidden;
-    background: transparent;
+    background: oklch(0.05 0.01 40);
     font-family: var(--font);
     font-variant-numeric: tabular-nums;
     color: var(--text-bright);
 }
 
 #overlay {
-    position: relative;
+    position: absolute;
+    top: 0;
+    left: 0;
     width: 1920px;
     height: 1080px;
     overflow: hidden;
+    transform-origin: top left;
 }
 
 /* ── Video feed ───────────────────────────────────────────────────────── */
@@ -89,10 +92,10 @@ html, body {
 /* PiP map: top-left corner, shown only when video is live */
 #map-pip {
     position: absolute;
-    top: 20px;
-    left: 20px;
-    width: 240px;
-    height: 175px;
+    top: 28px;
+    left: 28px;
+    width: 340px;
+    height: 240px;
     border-radius: var(--radius);
     overflow: hidden;
     border: 1.5px solid var(--chrome-border);
@@ -141,8 +144,8 @@ html, body {
 
 #live-badge {
     position: absolute;
-    top: 20px;
-    left: 20px;
+    top: 28px;
+    left: 28px;
     z-index: 20;
     display: flex;
     align-items: stretch;
@@ -153,20 +156,20 @@ html, body {
 
 /* In video-live state the PiP sits top-left, so shift badge right */
 [data-state="video-live"] #live-badge {
-    left: 272px;
+    left: 380px;
 }
 
 .live-scarlet {
     display: flex;
     align-items: center;
-    gap: 6px;
+    gap: 8px;
     background: var(--scarlet);
-    padding: 5px 11px 5px 8px;
+    padding: 8px 16px 8px 12px;
 }
 
 .live-dot {
-    width: 7px;
-    height: 7px;
+    width: 10px;
+    height: 10px;
     border-radius: 50%;
     background: var(--text-bright);
     animation: live-pulse 2s ease-in-out infinite;
@@ -179,7 +182,7 @@ html, body {
 }
 
 .live-text {
-    font-size: 10px;
+    font-size: 16px;
     font-weight: 700;
     letter-spacing: 0.08em;
     color: var(--text-bright);
@@ -192,8 +195,8 @@ html, body {
     background: var(--chrome-72);
     backdrop-filter: var(--blur);
     -webkit-backdrop-filter: var(--blur);
-    padding: 5px 10px;
-    font-size: 9px;
+    padding: 8px 14px;
+    font-size: 14px;
     font-weight: 600;
     color: var(--text-dim);
     letter-spacing: 0.03em;
@@ -240,10 +243,10 @@ html, body {
 
 #weather-strip {
     position: absolute;
-    top: 20px;
-    right: 20px;
+    top: 28px;
+    right: 28px;
     display: flex;
-    gap: 4px;
+    gap: 6px;
     z-index: 15;
 }
 
@@ -252,30 +255,30 @@ html, body {
     backdrop-filter: var(--blur);
     -webkit-backdrop-filter: var(--blur);
     border-radius: var(--radius-sm);
-    padding: 5px 10px;
+    padding: 8px 14px;
     text-align: center;
     border: 1px solid var(--chrome-border);
 }
 
 .wx-label {
-    font-size: 7px;
+    font-size: 11px;
     font-weight: 600;
     letter-spacing: 0.04em;
     color: var(--text-dim);
-    margin-bottom: 2px;
+    margin-bottom: 3px;
     text-transform: uppercase;
 }
 
 .wx-val {
-    font-size: 12px;
+    font-size: 18px;
     font-weight: 500;
     color: var(--text-bright);
 }
 
 .wx-sub {
-    font-size: 9px;
+    font-size: 13px;
     color: var(--text-dim);
-    margin-top: 1px;
+    margin-top: 2px;
 }
 
 /* Dim weather in offline state */
@@ -295,16 +298,16 @@ html, body {
 
 #coord-badge {
     position: absolute;
-    bottom: 76px; /* sits just above the lower third */
-    left: 20px;
+    bottom: 100px;
+    left: 28px;
     display: none;
-    font-size: 12px;
+    font-size: 18px;
     font-weight: 500;
     color: var(--text-bright);
     background: var(--chrome-72);
     backdrop-filter: var(--blur);
     -webkit-backdrop-filter: var(--blur);
-    padding: 5px 12px;
+    padding: 8px 16px;
     border-radius: var(--radius-sm);
     border: 1px solid var(--chrome-border);
     z-index: 15;
@@ -327,11 +330,11 @@ html, body {
 #speed-legend {
     display: none;
     position: absolute;
-    bottom: 76px;
-    right: 20px;
+    bottom: 100px;
+    right: 28px;
     z-index: 15;
     flex-direction: column;
-    gap: 3px;
+    gap: 4px;
     align-items: stretch;
 }
 
@@ -341,8 +344,8 @@ html, body {
 }
 
 .speed-legend-track {
-    width: 120px;
-    height: 3px;
+    width: 160px;
+    height: 4px;
     border-radius: 2px;
     background: linear-gradient(to right, var(--speed-0), var(--speed-5), var(--speed-10));
 }
@@ -350,7 +353,7 @@ html, body {
 .speed-legend-labels {
     display: flex;
     justify-content: space-between;
-    font-size: 8px;
+    font-size: 12px;
     font-weight: 500;
     color: var(--text-dim);
     letter-spacing: 0.02em;
@@ -377,19 +380,19 @@ html, body {
     -webkit-backdrop-filter: var(--blur);
     border: 1px solid var(--chrome-border);
     border-radius: var(--radius);
-    padding: 24px 32px;
+    padding: 32px 44px;
     text-align: center;
 }
 
 .offline-title {
-    font-size: 16px;
+    font-size: 24px;
     font-weight: 600;
     color: var(--text-bright);
-    margin-bottom: 6px;
+    margin-bottom: 8px;
 }
 
 .offline-time {
-    font-size: 13px;
+    font-size: 18px;
     font-weight: 500;
     color: var(--text-mid);
 }
@@ -398,9 +401,9 @@ html, body {
 
 #lower-third {
     position: absolute;
-    bottom: 20px;
-    left: 20px;
-    right: 20px;
+    bottom: 28px;
+    left: 28px;
+    right: 28px;
     display: flex;
     align-items: stretch;
     border-radius: var(--radius);
@@ -411,7 +414,7 @@ html, body {
 /* Brand tab (scarlet) with diagonal trailing edge */
 .lt-brand {
     background: var(--scarlet);
-    padding: 0 18px;
+    padding: 0 24px;
     display: flex;
     align-items: center;
     position: relative;
@@ -423,16 +426,16 @@ html, body {
 .lt-brand::after {
     content: '';
     position: absolute;
-    right: -14px;
+    right: -18px;
     top: 0;
-    width: 14px;
+    width: 18px;
     height: 100%;
     background: var(--scarlet);
     clip-path: polygon(0 0, 0 100%, 100% 100%);
 }
 
 .lt-name {
-    font-size: 16px;
+    font-size: 24px;
     font-weight: 700;
     letter-spacing: 0.03em;
     color: var(--text-bright);
@@ -447,9 +450,9 @@ html, body {
     background: var(--chrome-72);
     backdrop-filter: var(--blur);
     -webkit-backdrop-filter: var(--blur);
-    padding: 10px 16px 10px 26px;
-    margin-left: -10px;
-    gap: 6px;
+    padding: 14px 22px 14px 34px;
+    margin-left: -14px;
+    gap: 10px;
 }
 
 /* Metrics strip (speed / heading / depth) — hidden in port state */
@@ -464,19 +467,19 @@ html, body {
 .lt-metric {
     display: flex;
     align-items: baseline;
-    gap: 4px;
-    padding: 0 8px;
+    gap: 6px;
+    padding: 0 10px;
     flex-shrink: 0;
 }
 
 .lt-metric-label {
-    font-size: 9px;
+    font-size: 14px;
     font-weight: 500;
     color: var(--text-dim);
 }
 
 .lt-metric-value {
-    font-size: 14px;
+    font-size: 22px;
     font-weight: 600;
     color: var(--text-bright);
 }
@@ -493,18 +496,18 @@ html, body {
 /* Vertical separator */
 .lt-sep {
     width: 1px;
-    height: 20px;
+    height: 28px;
     background: var(--chrome-border);
     flex-shrink: 0;
 }
 
 /* Status pill */
 .lt-status {
-    font-size: 10px;
+    font-size: 15px;
     font-weight: 600;
     letter-spacing: 0.03em;
-    padding: 3px 9px;
-    border-radius: 4px;
+    padding: 5px 12px;
+    border-radius: 6px;
     white-space: nowrap;
     flex-shrink: 0;
 }
@@ -531,11 +534,11 @@ html, body {
 
 /* Passage text */
 #passage {
-    font-size: 13px;
+    font-size: 20px;
     font-weight: 500;
     color: var(--text-mid);
     white-space: nowrap;
-    padding: 0 6px;
+    padding: 0 8px;
     flex: 1;
     text-align: center;
 }
@@ -548,11 +551,11 @@ html, body {
 /* Port info — only shown in port state */
 #port-info {
     display: none;
-    font-size: 14px;
+    font-size: 20px;
     font-weight: 600;
     color: var(--text-bright);
     white-space: nowrap;
-    padding: 0 6px;
+    padding: 0 8px;
 }
 
 [data-state="port"] #port-info  { display: block; }
@@ -561,10 +564,10 @@ html, body {
 /* Hide passage in offline state too (show dashes) */
 
 .lt-port-label {
-    font-size: 9px;
+    font-size: 14px;
     font-weight: 500;
     color: var(--text-dim);
-    margin-right: 4px;
+    margin-right: 6px;
 }
 
 /* Spacer pushes clock to right edge */
@@ -575,21 +578,21 @@ html, body {
 /* Clock */
 .lt-clock {
     text-align: right;
-    padding: 0 4px;
+    padding: 0 6px;
     flex-shrink: 0;
 }
 
 .lt-time {
-    font-size: 14px;
+    font-size: 22px;
     font-weight: 600;
     line-height: 1;
     color: var(--text-bright);
 }
 
 .lt-date {
-    font-size: 9px;
+    font-size: 13px;
     color: var(--text-dim);
-    margin-top: 2px;
+    margin-top: 3px;
     letter-spacing: 0.01em;
 }
 

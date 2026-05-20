@@ -567,8 +567,21 @@ const Overlay = {
         this.updateLiveBadge(newState);
     },
 
+    // ── Viewport scaling ────────────────────────────────────────────────
+    scaleToViewport() {
+        const overlay = document.getElementById('overlay');
+        if (!overlay) return;
+        const scaleX = window.innerWidth / 1920;
+        const scaleY = window.innerHeight / 1080;
+        const scale = Math.min(scaleX, scaleY);
+        overlay.style.transform = `scale(${scale})`;
+    },
+
     // ── Init ─────────────────────────────────────────────────────────────
     init() {
+        this.scaleToViewport();
+        window.addEventListener('resize', () => this.scaleToViewport());
+
         this.clockTimer = setInterval(() => this.updateClock(), 1000);
         this.updateClock();
 
