@@ -52,20 +52,23 @@
         {{-- Weather pills: top-right --}}
         <div id="weather-strip">
             <div class="weather-pill weather-pill--hero" id="weather-air">
-                <div class="wx-label">Air</div>
-                <div class="wx-val" id="wx-air-val">--&deg;</div>
+                <span class="wx-icon" id="wx-icon">&#x1F324;</span>
+                <div>
+                    <div class="wx-val" id="wx-air-val">--&deg;</div>
+                    <div class="wx-sub" id="wx-condition">Unknown</div>
+                </div>
             </div>
             <div class="weather-pill" id="weather-sea">
-                <div class="wx-label">Sea</div>
+                <div class="wx-label">SEA</div>
                 <div class="wx-val" id="wx-sea-val">--&deg;</div>
             </div>
             <div class="weather-pill" id="weather-wind">
-                <div class="wx-label">Wind</div>
+                <div class="wx-label">WIND</div>
                 <div class="wx-val" id="wx-wind-val">-- kn</div>
                 <div class="wx-sub" id="wx-wind-dir"></div>
             </div>
             <div class="weather-pill" id="weather-waves">
-                <div class="wx-label">Waves</div>
+                <div class="wx-label">WAVES</div>
                 <div class="wx-val" id="wx-waves-val">-- m</div>
                 <div class="wx-sub" id="wx-waves-period"></div>
             </div>
@@ -98,16 +101,18 @@
                 {{-- Passage metrics strip (hidden in port state) --}}
                 <div id="metrics-strip">
                     <div class="lt-metric" id="metric-speed">
-                        <span class="lt-metric-label">Spd</span>
-                        <span class="lt-metric-value">--</span>
+                        <div class="lt-metric-label">SPEED</div>
+                        <div class="lt-metric-value">--</div>
                     </div>
+                    <div class="lt-sep"></div>
                     <div class="lt-metric" id="metric-heading">
-                        <span class="lt-metric-label">Hdg</span>
-                        <span class="lt-metric-value">--</span>
+                        <div class="lt-metric-label">HEADING</div>
+                        <div class="lt-metric-value">--</div>
                     </div>
+                    <div class="lt-sep"></div>
                     <div class="lt-metric" id="metric-depth">
-                        <span class="lt-metric-label">Dpt</span>
-                        <span class="lt-metric-value">--</span>
+                        <div class="lt-metric-label">DEPTH</div>
+                        <div class="lt-metric-value">--</div>
                     </div>
                     <div class="lt-sep"></div>
                 </div>

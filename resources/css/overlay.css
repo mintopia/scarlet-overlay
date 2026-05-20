@@ -40,8 +40,8 @@
     --speed-10: oklch(0.62 0.28 27);
 
     /* Radii */
-    --radius:    16px;
-    --radius-sm: 12px;
+    --radius:    10px;
+    --radius-sm: 7px;
 
     /* Typography */
     --font: 'Outfit', system-ui, sans-serif;
@@ -248,25 +248,45 @@ html, body {
     padding: 10px 18px;
     text-align: center;
     border: 1px solid var(--chrome-border);
+    min-width: 80px;
+}
+
+.weather-pill--hero {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+    text-align: left;
+    padding: 10px 20px;
+}
+
+.wx-icon {
+    font-size: 30px;
+    line-height: 1;
+    flex-shrink: 0;
+}
+
+.weather-pill--hero .wx-val {
+    font-size: 26px;
+    font-weight: 700;
 }
 
 .wx-label {
-    font-size: 13px;
+    font-size: 12px;
     font-weight: 600;
     letter-spacing: 0.04em;
     color: var(--text-dim);
-    margin-bottom: 4px;
-    text-transform: uppercase;
+    margin-bottom: 3px;
 }
 
 .wx-val {
-    font-size: 24px;
+    font-size: 22px;
     font-weight: 500;
     color: var(--text-bright);
+    line-height: 1.1;
 }
 
 .wx-sub {
-    font-size: 16px;
+    font-size: 14px;
     color: var(--text-dim);
     margin-top: 2px;
 }
@@ -456,16 +476,17 @@ html, body {
 }
 
 .lt-metric-label {
-    font-size: 12px;
+    font-size: 11px;
     font-weight: 600;
     letter-spacing: 0.06em;
     color: var(--text-dim);
     line-height: 1;
     white-space: nowrap;
+    margin-bottom: 2px;
 }
 
 .lt-metric-value {
-    font-size: 26px;
+    font-size: 24px;
     font-weight: 600;
     color: var(--text-bright);
     line-height: 1.2;
@@ -492,7 +513,7 @@ html, body {
     font-weight: 600;
     letter-spacing: 0.03em;
     padding: 6px 16px;
-    border-radius: 8px;
+    border-radius: 5px;
     white-space: nowrap;
     flex-shrink: 0;
 }

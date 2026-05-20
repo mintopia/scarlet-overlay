@@ -234,20 +234,54 @@ const Overlay = {
         }
     },
 
+    weatherIcons: {
+        'day-sunny': '☀️',
+        'night-clear': '🌙',
+        'cloud': '⛅',
+        'cloudy': '☁️',
+        'fog': '🌫️',
+        'sprinkle': '🌦️',
+        'rain': '🌧️',
+        'snow': '❄️',
+        'showers': '🌦️',
+        'thunderstorm': '⛈️',
+        'na': '🌤️',
+    },
+
+    weatherLabels: {
+        'day-sunny': 'Clear',
+        'night-clear': 'Clear',
+        'cloud': 'Partly Cloudy',
+        'cloudy': 'Overcast',
+        'fog': 'Fog',
+        'sprinkle': 'Drizzle',
+        'rain': 'Rain',
+        'snow': 'Snow',
+        'showers': 'Showers',
+        'thunderstorm': 'Thunderstorm',
+        'na': 'Unknown',
+    },
+
     updateWeatherDOM(data) {
-        const airEl  = this.el('wx-air-val');
-        const seaEl  = this.el('wx-sea-val');
-        const windEl = this.el('wx-wind-val');
+        const airEl   = this.el('wx-air-val');
+        const seaEl   = this.el('wx-sea-val');
+        const windEl  = this.el('wx-wind-val');
         const windDir = this.el('wx-wind-dir');
         const wavesEl = this.el('wx-waves-val');
         const wavesPer = this.el('wx-waves-period');
+        const iconEl  = this.el('wx-icon');
+        const condEl  = this.el('wx-condition');
 
-        if (airEl)   airEl.innerHTML  = `${data.temp}&deg;`;
-        if (seaEl)   seaEl.innerHTML  = `${data.seaTemp}&deg;`;
-        if (windEl)  windEl.textContent = `${data.wind?.speed ?? '--'} kn`;
-        if (windDir) windDir.textContent = data.wind?.direction ?? '';
-        if (wavesEl) wavesEl.textContent = `${data.waves?.height ?? '--'} m`;
+        if (airEl)    airEl.innerHTML  = `${data.temp}&deg;`;
+        if (seaEl)    seaEl.innerHTML  = `${data.seaTemp}&deg;`;
+        if (windEl)   windEl.textContent = `${data.wind?.speed ?? '--'} kn`;
+        if (windDir)  windDir.textContent = data.wind?.direction ?? '';
+        if (wavesEl)  wavesEl.textContent = `${data.waves?.height ?? '--'} m`;
         if (wavesPer) wavesPer.textContent = data.waves?.period ? `${data.waves.period}s` : '';
+
+        const summary = data.summary ?? 'na';
+        if (iconEl) iconEl.textContent = this.weatherIcons[summary] ?? this.weatherIcons['na'];
+        if (condEl) condEl.textContent = this.weatherLabels[summary] ?? 'Unknown';
     },
 
     // ── Leaflet maps ────────────────────────────────────────────────────
