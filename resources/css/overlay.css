@@ -35,9 +35,9 @@
     --status-offline: oklch(0.65 0.06 55);
 
     /* Speed gradient stops */
-    --speed-0:  oklch(0.52 0.10 260);
-    --speed-5:  oklch(0.62 0.14 155);
-    --speed-10: oklch(0.56 0.20 27);
+    --speed-0:  oklch(0.58 0.20 260);
+    --speed-5:  oklch(0.72 0.22 155);
+    --speed-10: oklch(0.62 0.28 27);
 
     /* Radii */
     --radius:    16px;
@@ -155,14 +155,14 @@ html, body {
 .live-scarlet {
     display: flex;
     align-items: center;
-    gap: 10px;
+    gap: 7px;
     background: var(--scarlet);
-    padding: 10px 20px 10px 14px;
+    padding: 7px 14px 7px 10px;
 }
 
 .live-dot {
-    width: 12px;
-    height: 12px;
+    width: 9px;
+    height: 9px;
     border-radius: 50%;
     background: var(--text-bright);
     animation: live-pulse 2s ease-in-out infinite;
@@ -175,7 +175,7 @@ html, body {
 }
 
 .live-text {
-    font-size: 20px;
+    font-size: 14px;
     font-weight: 700;
     letter-spacing: 0.08em;
     color: var(--text-bright);
@@ -187,8 +187,8 @@ html, body {
     background: var(--chrome-72);
     backdrop-filter: var(--blur);
     -webkit-backdrop-filter: var(--blur);
-    padding: 10px 18px;
-    font-size: 18px;
+    padding: 7px 12px;
+    font-size: 13px;
     font-weight: 600;
     color: var(--text-dim);
     letter-spacing: 0.03em;
@@ -287,7 +287,7 @@ html, body {
 
 #coord-badge {
     position: absolute;
-    bottom: 116px;
+    bottom: 148px;
     left: 32px;
     display: none;
     font-size: 22px;
@@ -318,7 +318,7 @@ html, body {
 #speed-legend {
     display: none;
     position: absolute;
-    bottom: 116px;
+    bottom: 148px;
     right: 32px;
     z-index: 15;
     flex-direction: column;
@@ -544,10 +544,6 @@ html, body {
     font-weight: 500;
     color: var(--text-dim);
     margin-right: 8px;
-}
-
-.lt-spacer {
-    flex: 1;
 }
 
 .lt-clock {

@@ -133,8 +133,6 @@
                     @endif
                 </div>
 
-                <div class="lt-spacer"></div>
-
                 <div id="clock" class="lt-clock">
                     <div class="lt-time" id="clock-time">--:--</div>
                     <div class="lt-date" id="clock-date"></div>
