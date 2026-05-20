@@ -4,28 +4,30 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\BoatSetting;
-use Illuminate\Support\Facades\Http;
+use App\Services\PrometheusService;
 use Inertia\Inertia;
 
 class StreamMonitorController extends Controller
 {
-    public function index()
+    public function index(PrometheusService $prometheus)
     {
-        return Inertia::render('Admin/StreamMonitor', [
-            'statsUrl' => BoatSetting::getValue('srt_stats_url', ''),
+        $statsUrl = BoatSetting::getValue('srt_stats_url', '');
+
+        $current = $prometheus->queryMultiple([
+            'connected' => 'scarlet_srt_publisher_connected',
+            'bitrate' => 'scarlet_srt_publisher_bitrate_bps',
+            'rtt' => 'scarlet_srt_publisher_rtt_ms',
+            'latency' => 'scarlet_srt_publisher_latency_ms',
+            'dropped_pkts' => 'scarlet_srt_publisher_dropped_packets_total',
+            'network' => 'scarlet_srt_publisher_network_bytes',
         ]);
-    }
 
-    public function stats()
-    {
-        $url = BoatSetting::getValue('srt_stats_url', '');
-
-        if (!$url) {
-            return response()->json(['error' => 'No stats URL configured'], 422);
-        }
-
-        $response = Http::timeout(5)->get($url);
-
-        return response()->json($response->json());
+        return Inertia::render('Admin/StreamMonitor', [
+            'statsUrl' => $statsUrl,
+            'publisher' => $current,
+            'bitrateHistory' => $prometheus->queryRange('scarlet_srt_publisher_bitrate_bps / 1000000', '1h', '15s'),
+            'rttHistory' => $prometheus->queryRange('scarlet_srt_publisher_rtt_ms', '1h', '15s'),
+            'droppedHistory' => $prometheus->queryRange('scarlet_srt_publisher_dropped_packets_total', '1h', '15s'),
+        ]);
     }
 }

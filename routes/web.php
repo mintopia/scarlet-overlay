@@ -13,6 +13,7 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\MapTileController;
 use App\Http\Controllers\OverlayController;
+use App\Http\Controllers\SrtMetricsController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
@@ -22,6 +23,7 @@ Route::get('/', fn () => redirect('/dashboard'));
 Route::get('/overlay', [OverlayController::class, 'index'])->name('overlay');
 Route::get('/snow', [HomeController::class, 'snow'])->name('snow');
 Route::get('/openseamap/{z}/{x}/{y}', [MapTileController::class, 'seamap'])->name('openseamap');
+Route::get('/metrics/srt', SrtMetricsController::class)->name('metrics.srt');
 
 Route::get('/login', [LoginController::class, 'show'])->name('login')->middleware('guest');
 Route::post('/login', [LoginController::class, 'store'])->middleware('guest');
@@ -49,7 +51,6 @@ Route::middleware('auth')->prefix('admin')->group(function () {
     Route::put('/settings/port', [SettingsController::class, 'updatePort'])->name('admin.settings.port');
     Route::put('/settings/stream', [SettingsController::class, 'updateStream'])->name('admin.settings.stream');
     Route::get('/stream', [StreamMonitorController::class, 'index'])->name('admin.stream');
-    Route::get('/stream/stats', [StreamMonitorController::class, 'stats'])->name('admin.stream.stats');
     Route::get('/tracker', [TrackerController::class, 'index'])->name('admin.tracker');
     Route::get('/metrics', [BoatMetricsController::class, 'index'])->name('admin.metrics');
     Route::get('/profile', [ProfileController::class, 'index'])->name('admin.profile');
