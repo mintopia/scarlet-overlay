@@ -666,6 +666,7 @@ onUnmounted(() => {
     align-items: stretch;
     overflow: hidden;
     min-height: 48px;
+    border-radius: var(--radius);
 }
 
 .lt-brand {
