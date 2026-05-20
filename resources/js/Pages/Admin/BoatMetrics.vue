@@ -60,13 +60,13 @@
                 </svg>
             </div>
 
-            <!-- House Battery -->
+            <!-- Battery Voltage -->
             <div class="bg-surface border border-border rounded-[10px] p-4">
-                <div class="text-[11px] font-semibold text-text-dim uppercase tracking-wide mb-2">House Battery</div>
+                <div class="text-[11px] font-semibold text-text-dim uppercase tracking-wide mb-2">Battery</div>
                 <div class="text-[24px] font-bold tabular-nums text-green leading-none mb-1">
-                    {{ live?.house_battery_soc != null ? live.house_battery_soc.toFixed(0) : '—' }}
+                    {{ live?.house_battery_voltage != null ? Number(live.house_battery_voltage).toFixed(1) : (props.boat?.house_battery_voltage != null ? Number(props.boat.house_battery_voltage).toFixed(1) : '—') }}
                 </div>
-                <div class="text-[11px] text-text-dim mb-2">% SOC</div>
+                <div class="text-[11px] text-text-dim mb-2">V</div>
                 <svg viewBox="0 0 80 24" class="w-full h-[24px]" preserveAspectRatio="none">
                     <polygon
                         v-if="batterySparkline.area"
@@ -100,51 +100,51 @@
             </div>
         </div>
 
-        <!-- 3 & 4. Barometric Pressure + Battery SOC charts -->
+        <!-- 3 & 4. Temperature + Battery Voltage charts -->
         <div class="grid grid-cols-2 gap-4 mb-4">
-            <!-- Barometric Pressure -->
+            <!-- Temperature -->
             <div class="bg-surface border border-border rounded-[10px] p-4">
-                <div class="text-[15px] font-semibold mb-0.5">Barometric Pressure</div>
+                <div class="text-[15px] font-semibold mb-0.5">Cabin Temperature</div>
                 <div class="text-[12px] text-text-dim mb-3 tabular-nums">
-                    <span style="color: oklch(0.55 0.15 240)" class="font-medium">
-                        {{ live?.pressure != null ? live.pressure.toFixed(1) + ' hPa' : (props.boat?.pressure != null ? props.boat.pressure.toFixed(1) + ' hPa' : '—') }}
+                    <span class="text-amber font-medium">
+                        {{ live?.air_temp != null ? live.air_temp.toFixed(1) + '°C' : (props.boat?.air_temp != null ? props.boat.air_temp.toFixed(1) + '°C' : '—') }}
                     </span>
                     &nbsp;current
                 </div>
                 <svg viewBox="0 0 400 120" class="w-full" preserveAspectRatio="none">
                     <defs>
-                        <linearGradient id="pressureGrad" x1="0" y1="0" x2="0" y2="1">
-                            <stop offset="0%" stop-color="oklch(0.55 0.15 240)" stop-opacity="0.20"/>
-                            <stop offset="100%" stop-color="oklch(0.55 0.15 240)" stop-opacity="0.02"/>
+                        <linearGradient id="tempGrad" x1="0" y1="0" x2="0" y2="1">
+                            <stop offset="0%" stop-color="oklch(0.70 0.14 70)" stop-opacity="0.20"/>
+                            <stop offset="100%" stop-color="oklch(0.70 0.14 70)" stop-opacity="0.02"/>
                         </linearGradient>
                     </defs>
                     <polygon
-                        v-if="props.pressureHistory?.length"
-                        :points="toAreaPolygon(props.pressureHistory, 400, 120, pressureMin, pressureMax)"
-                        fill="url(#pressureGrad)"
+                        v-if="props.tempHistory?.length"
+                        :points="toAreaPolygon(props.tempHistory, 400, 120, tempMin, tempMax)"
+                        fill="url(#tempGrad)"
                     />
                     <polyline
-                        v-if="props.pressureHistory?.length"
-                        :points="toPolyline(props.pressureHistory, 400, 120, pressureMin, pressureMax)"
+                        v-if="props.tempHistory?.length"
+                        :points="toPolyline(props.tempHistory, 400, 120, tempMin, tempMax)"
                         fill="none"
-                        stroke="oklch(0.55 0.15 240)"
+                        stroke="oklch(0.70 0.14 70)"
                         stroke-width="1.5"
                         stroke-linejoin="round"
                         stroke-linecap="round"
                     />
-                    <text v-if="!props.pressureHistory?.length" x="200" y="65" text-anchor="middle" font-size="12" fill="oklch(0.70 0.005 40)">No data</text>
+                    <text v-if="!props.tempHistory?.length" x="200" y="65" text-anchor="middle" font-size="12" fill="oklch(0.70 0.005 40)">No data</text>
                 </svg>
                 <div class="flex justify-between text-[10px] text-text-dim mt-1">
                     <span>24h ago</span><span>now</span>
                 </div>
             </div>
 
-            <!-- Battery SOC -->
+            <!-- Battery Voltage -->
             <div class="bg-surface border border-border rounded-[10px] p-4">
-                <div class="text-[15px] font-semibold mb-0.5">Battery State of Charge</div>
+                <div class="text-[15px] font-semibold mb-0.5">Battery Voltage</div>
                 <div class="text-[12px] text-text-dim mb-3 tabular-nums">
                     <span class="text-green font-medium">
-                        {{ live?.house_battery_soc != null ? live.house_battery_soc.toFixed(0) + '%' : (props.boat?.house_battery_soc != null ? props.boat.house_battery_soc.toFixed(0) + '%' : '—') }}
+                        {{ batteryVal }}
                     </span>
                     &nbsp;current
                 </div>
@@ -157,12 +157,12 @@
                     </defs>
                     <polygon
                         v-if="props.batteryHistory?.length"
-                        :points="toAreaPolygon(props.batteryHistory, 400, 120, 0, 100)"
+                        :points="toAreaPolygon(props.batteryHistory, 400, 120, batteryMin, batteryMax)"
                         fill="url(#batteryGrad)"
                     />
                     <polyline
                         v-if="props.batteryHistory?.length"
-                        :points="toPolyline(props.batteryHistory, 400, 120, 0, 100)"
+                        :points="toPolyline(props.batteryHistory, 400, 120, batteryMin, batteryMax)"
                         fill="none"
                         stroke="oklch(0.62 0.15 155)"
                         stroke-width="1.5"
@@ -382,66 +382,39 @@
             </div>
         </div>
 
-        <!-- 9 & 10. Water/Air temp chart + Engine panel -->
+        <!-- 9 & 10. Speed + Humidity charts + Engine panel -->
         <div class="grid grid-cols-2 gap-4 mb-6">
-            <!-- Water & Air Temperature chart -->
+            <!-- Speed chart -->
             <div class="bg-surface border border-border rounded-[10px] p-4">
-                <div class="text-[15px] font-semibold mb-0.5">Water & Air Temperature</div>
+                <div class="text-[15px] font-semibold mb-0.5">Speed</div>
                 <div class="text-[12px] text-text-dim mb-3 tabular-nums">
-                    Water
-                    <span style="color: oklch(0.55 0.15 240)" class="font-medium">
-                        {{ live?.water_temp != null ? live.water_temp.toFixed(1) + '°C' : (props.boat?.water_temp != null ? props.boat.water_temp.toFixed(1) + '°C' : '—') }}
+                    <span class="text-scarlet font-medium">
+                        {{ live?.speed_sog != null ? live.speed_sog.toFixed(1) + ' kn' : (props.boat?.speed_sog != null ? props.boat.speed_sog.toFixed(1) + ' kn' : '—') }}
                     </span>
-                    &nbsp;·&nbsp;Air
-                    <span class="text-amber font-medium">
-                        {{ live?.air_temp != null ? live.air_temp.toFixed(1) + '°C' : (props.boat?.air_temp != null ? props.boat.air_temp.toFixed(1) + '°C' : '—') }}
-                    </span>
+                    &nbsp;current
                 </div>
                 <svg viewBox="0 0 400 120" class="w-full" preserveAspectRatio="none">
                     <defs>
-                        <linearGradient id="waterTempGrad" x1="0" y1="0" x2="0" y2="1">
-                            <stop offset="0%" stop-color="oklch(0.55 0.15 240)" stop-opacity="0.15"/>
-                            <stop offset="100%" stop-color="oklch(0.55 0.15 240)" stop-opacity="0.02"/>
-                        </linearGradient>
-                        <linearGradient id="airTempGrad" x1="0" y1="0" x2="0" y2="1">
-                            <stop offset="0%" stop-color="oklch(0.70 0.14 70)" stop-opacity="0.12"/>
-                            <stop offset="100%" stop-color="oklch(0.70 0.14 70)" stop-opacity="0.02"/>
+                        <linearGradient id="speedGrad" x1="0" y1="0" x2="0" y2="1">
+                            <stop offset="0%" stop-color="oklch(0.54 0.22 27)" stop-opacity="0.20"/>
+                            <stop offset="100%" stop-color="oklch(0.54 0.22 27)" stop-opacity="0.02"/>
                         </linearGradient>
                     </defs>
-                    <!-- Water temp fill -->
                     <polygon
-                        v-if="props.waterTempHistory?.length"
-                        :points="toAreaPolygon(props.waterTempHistory, 400, 120, tempMin, tempMax)"
-                        fill="url(#waterTempGrad)"
+                        v-if="props.speedHistory?.length"
+                        :points="toAreaPolygon(props.speedHistory, 400, 120, 0, speedMax)"
+                        fill="url(#speedGrad)"
                     />
-                    <!-- Air temp fill -->
-                    <polygon
-                        v-if="props.airTempHistory?.length"
-                        :points="toAreaPolygon(props.airTempHistory, 400, 120, tempMin, tempMax)"
-                        fill="url(#airTempGrad)"
-                    />
-                    <!-- Water temp line -->
                     <polyline
-                        v-if="props.waterTempHistory?.length"
-                        :points="toPolyline(props.waterTempHistory, 400, 120, tempMin, tempMax)"
+                        v-if="props.speedHistory?.length"
+                        :points="toPolyline(props.speedHistory, 400, 120, 0, speedMax)"
                         fill="none"
-                        stroke="oklch(0.55 0.15 240)"
+                        stroke="oklch(0.54 0.22 27)"
                         stroke-width="1.5"
                         stroke-linejoin="round"
                         stroke-linecap="round"
                     />
-                    <!-- Air temp line (dashed) -->
-                    <polyline
-                        v-if="props.airTempHistory?.length"
-                        :points="toPolyline(props.airTempHistory, 400, 120, tempMin, tempMax)"
-                        fill="none"
-                        stroke="oklch(0.70 0.14 70)"
-                        stroke-width="1.5"
-                        stroke-dasharray="4 3"
-                        stroke-linejoin="round"
-                        stroke-linecap="round"
-                    />
-                    <text v-if="!props.waterTempHistory?.length && !props.airTempHistory?.length" x="200" y="65" text-anchor="middle" font-size="12" fill="oklch(0.70 0.005 40)">No data</text>
+                    <text v-if="!props.speedHistory?.length" x="200" y="65" text-anchor="middle" font-size="12" fill="oklch(0.70 0.005 40)">No data</text>
                 </svg>
                 <div class="flex justify-between text-[10px] text-text-dim mt-1">
                     <span>24h ago</span><span>now</span>
@@ -499,10 +472,10 @@ import { computed, ref, onMounted, onUnmounted } from 'vue';
 
 const props = defineProps({
     boat: Object,
-    pressureHistory: Array,
     batteryHistory: Array,
-    waterTempHistory: Array,
-    airTempHistory: Array,
+    tempHistory: Array,
+    humidityHistory: Array,
+    speedHistory: Array,
 });
 
 const { metrics, lastUpdate } = useMetrics();
@@ -549,41 +522,53 @@ function powerBarWidth(watts) {
     return Math.min(100, (Math.abs(watts) / 500) * 100);
 }
 
-// Temperature chart range (shared for water + air)
+// Temperature chart range
 const tempMin = computed(() => {
-    const water = (props.waterTempHistory ?? []).map(d => d.value);
-    const air = (props.airTempHistory ?? []).map(d => d.value);
-    const all = [...water, ...air];
-    return all.length ? Math.min(...all) - 2 : 0;
+    const vals = (props.tempHistory ?? []).map(d => d.value);
+    return vals.length ? Math.min(...vals) - 2 : 0;
 });
 const tempMax = computed(() => {
-    const water = (props.waterTempHistory ?? []).map(d => d.value);
-    const air = (props.airTempHistory ?? []).map(d => d.value);
-    const all = [...water, ...air];
-    return all.length ? Math.max(...all) + 2 : 40;
+    const vals = (props.tempHistory ?? []).map(d => d.value);
+    return vals.length ? Math.max(...vals) + 2 : 40;
 });
 
-// Pressure chart range
-const pressureMin = computed(() => {
-    const vals = (props.pressureHistory ?? []).map(d => d.value);
-    return vals.length ? Math.min(...vals) - 2 : 980;
+// Battery voltage chart range
+const batteryMin = computed(() => {
+    const vals = (props.batteryHistory ?? []).map(d => d.value);
+    return vals.length ? Math.min(...vals) - 0.2 : 10;
 });
-const pressureMax = computed(() => {
-    const vals = (props.pressureHistory ?? []).map(d => d.value);
-    return vals.length ? Math.max(...vals) + 2 : 1030;
+const batteryMax = computed(() => {
+    const vals = (props.batteryHistory ?? []).map(d => d.value);
+    return vals.length ? Math.max(...vals) + 0.2 : 15;
+});
+const batteryVal = computed(() => {
+    const v = live.value?.house_battery_voltage ?? props.boat?.house_battery_voltage;
+    return v != null ? Number(v).toFixed(2) + ' V' : '—';
+});
+
+// Speed chart range
+const speedMax = computed(() => {
+    const vals = (props.speedHistory ?? []).map(d => d.value);
+    return vals.length ? Math.max(...vals, 1) * 1.15 : 10;
 });
 
 // Battery sparkline (small, from 24h history)
 const batterySparkline = computed(() => {
     const data = props.batteryHistory;
     if (!data || data.length < 2) return { line: '', area: '' };
-    const line = toPolyline(data, 80, 24, 0, 100);
+    const bMin = batteryMin.value;
+    const bMax = batteryMax.value;
+    const line = toPolyline(data, 80, 24, bMin, bMax);
     const area = `0,24 ${line} 80,24`;
     return { line, area };
 });
 
-// Speed sparkline (placeholder — no history prop, just show flat or nothing)
-const speedSparkline = computed(() => '');
+// Speed sparkline from 24h history
+const speedSparkline = computed(() => {
+    const data = props.speedHistory;
+    if (!data || data.length < 2) return '';
+    return toPolyline(data, 80, 24, 0, speedMax.value);
+});
 
 // SVG chart helpers
 function toPolyline(data, viewWidth, viewHeight, minVal, maxVal) {

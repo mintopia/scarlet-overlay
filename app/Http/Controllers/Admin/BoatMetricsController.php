@@ -13,10 +13,10 @@ class BoatMetricsController extends Controller
     {
         return Inertia::render('Admin/BoatMetrics', [
             'boat' => $metrics->getBoatMetrics(),
-            'pressureHistory' => $prometheus->queryRange('scarlet_signalk_environment_outside_pressure_hpa', '24h', '300s'),
-            'batteryHistory' => $prometheus->queryRange('scarlet_signalk_electrical_batteries_house_soc', '24h', '300s'),
-            'waterTempHistory' => $prometheus->queryRange('scarlet_signalk_environment_water_temperature_c', '24h', '300s'),
-            'airTempHistory' => $prometheus->queryRange('scarlet_signalk_environment_outside_temperature_c', '24h', '300s'),
+            'batteryHistory' => $prometheus->queryRange('scarlet_system_battery_voltage_volts', '24h', '300s'),
+            'tempHistory' => $prometheus->queryRange('scarlet_environment_temperature_celsius', '24h', '300s'),
+            'humidityHistory' => $prometheus->queryRange('scarlet_environment_humidity_percent', '24h', '300s'),
+            'speedHistory' => $prometheus->queryRange('scarlet_gps_speed_kn', '24h', '300s'),
         ]);
     }
 }
