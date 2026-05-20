@@ -1,5 +1,5 @@
 <script setup>
-import { ref, computed, onMounted, onUnmounted } from 'vue';
+import { ref, computed, watch, onMounted, onUnmounted, nextTick } from 'vue';
 import { Head } from '@inertiajs/vue3';
 import { useScarletMetrics } from '../../composables/useScarletMetrics';
 import { useVideoFeed } from '../../composables/useVideoFeed';
@@ -79,6 +79,13 @@ const offlineLastUpdate = computed(() => {
     const mm = String(ago.getMinutes()).padStart(2, '0');
     const dd = ago.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' });
     return `Last update received ${hh}:${mm} · ${dd}`;
+});
+
+watch(overlayState, () => {
+    nextTick(() => {
+        mapPip?.invalidateSize();
+        mapFull?.invalidateSize();
+    });
 });
 
 onMounted(() => {
