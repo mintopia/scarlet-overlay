@@ -23,6 +23,9 @@ return [
         'port' => (int) env('REVERB_PUBLIC_PORT', env('REVERB_PORT', 8080)),
         'scheme' => env('REVERB_PUBLIC_SCHEME', env('REVERB_SCHEME', 'http')),
     ],
+    'mediamtx' => [
+        'api_url' => env('MEDIAMTX_API_URL', 'http://mediamtx:9997'),
+    ],
     'metrics' => [
         'prometheus_url' => env('PROMETHEUS_URL', 'http://prometheus:9090'),
         'push_interval' => (int) env('METRICS_PUSH_INTERVAL', 15),

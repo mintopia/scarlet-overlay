@@ -56,6 +56,16 @@ services:
     networks:
       - scarlet
 
+  mediamtx:
+    image: bluenviron/mediamtx:latest
+    ports:
+      - "${MEDIAMTX_WEBRTC_PORT:-8889}:8889"
+      - "${MEDIAMTX_SRT_PORT:-8890}:8890/udp"
+    volumes:
+      - ./docker/mediamtx/mediamtx.yml:/mediamtx.yml:ro
+    networks:
+      - scarlet
+
   otel-collector:
     image: otel/opentelemetry-collector-contrib:latest
     ports:

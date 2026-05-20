@@ -1,0 +1,17 @@
+logLevel: info
+logDestinations: [stdout]
+
+api: yes
+apiAddress: :9997
+
+rtsp: no
+rtmp: no
+hls: no
+srt: yes
+srtAddress: :8890
+
+webrtc: yes
+webrtcAddress: :8889
+
+paths:
+  live:
