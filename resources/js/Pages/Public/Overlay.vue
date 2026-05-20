@@ -133,12 +133,14 @@ onUnmounted(() => {
         </div>
 
         <!-- Offline card -->
-        <div v-if="overlayState === 'offline'" class="offline-card">
-            <div class="offline-inner">
-                <p class="offline-title">Telemetry Unavailable</p>
-                <p class="offline-time">{{ offlineLastUpdate }}</p>
+        <Transition name="offline-fade">
+            <div v-if="overlayState === 'offline'" class="offline-card">
+                <div class="offline-inner">
+                    <p class="offline-title">Telemetry Unavailable</p>
+                    <p class="offline-time">{{ offlineLastUpdate }}</p>
+                </div>
             </div>
-        </div>
+        </Transition>
 
         <!-- LOWER THIRD -->
         <div class="lt-position">
@@ -217,6 +219,7 @@ onUnmounted(() => {
     top: 16px;
     left: 16px;
     z-index: 10;
+    transition: opacity 0.4s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 [data-state="video-live"] .tl-cluster {
@@ -228,6 +231,7 @@ onUnmounted(() => {
     top: 16px;
     right: 16px;
     z-index: 10;
+    transition: opacity 0.4s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .bl-cluster {
@@ -235,13 +239,20 @@ onUnmounted(() => {
     bottom: 68px;
     left: 16px;
     z-index: 10;
-    display: none;
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(6px);
+    transition: opacity 0.4s cubic-bezier(0.16, 1, 0.3, 1),
+                visibility 0.4s,
+                transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 [data-state="no-video"] .bl-cluster,
 [data-state="offline"] .bl-cluster,
 [data-state="port"] .bl-cluster {
-    display: block;
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
 }
 
 .lt-position {
@@ -250,6 +261,8 @@ onUnmounted(() => {
     left: 12px;
     right: 12px;
     z-index: 10;
+    transition: opacity 0.4s cubic-bezier(0.16, 1, 0.3, 1),
+                transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 /* ── Offline card ───────────────────────── */
@@ -292,6 +305,31 @@ onUnmounted(() => {
 [data-state="loading"] .bl-cluster,
 [data-state="loading"] .lt-position {
     opacity: 0;
+    transform: translateY(6px);
+}
+
+/* ── Offline card entrance ─────────────── */
+.offline-fade-enter-active,
+.offline-fade-leave-active {
+    transition: opacity 0.5s cubic-bezier(0.16, 1, 0.3, 1),
+                transform 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.offline-fade-enter-from,
+.offline-fade-leave-to {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(0.96);
+}
+
+/* ── Reduced motion ────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+    .tl-cluster,
+    .wx-cluster,
+    .bl-cluster,
+    .lt-position,
+    .offline-fade-enter-active,
+    .offline-fade-leave-active {
+        transition: none;
+    }
 }
 </style>
 

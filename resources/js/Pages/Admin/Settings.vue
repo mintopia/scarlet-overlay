@@ -37,7 +37,7 @@
                 >
                     Save
                 </button>
-                <span v-if="identityForm.wasSuccessful" class="text-[13px] text-green">Saved.</span>
+                <Transition name="saved-fade"><span v-if="identityForm.wasSuccessful" class="text-[13px] text-green">Saved.</span></Transition>
             </div>
         </form>
 
@@ -74,7 +74,7 @@
                 >
                     Save
                 </button>
-                <span v-if="passageForm.wasSuccessful" class="text-[13px] text-green">Saved.</span>
+                <Transition name="saved-fade"><span v-if="passageForm.wasSuccessful" class="text-[13px] text-green">Saved.</span></Transition>
             </div>
         </form>
 
@@ -99,7 +99,7 @@
                 >
                     Save
                 </button>
-                <span v-if="portForm.wasSuccessful" class="text-[13px] text-green">Saved.</span>
+                <Transition name="saved-fade"><span v-if="portForm.wasSuccessful" class="text-[13px] text-green">Saved.</span></Transition>
             </div>
         </form>
         <!-- Stream -->
@@ -137,7 +137,7 @@
                 >
                     Save
                 </button>
-                <span v-if="streamForm.wasSuccessful" class="text-[13px] text-green">Saved.</span>
+                <Transition name="saved-fade"><span v-if="streamForm.wasSuccessful" class="text-[13px] text-green">Saved.</span></Transition>
             </div>
         </form>
     </AdminLayout>
@@ -168,3 +168,17 @@ const streamForm = useForm({
     srt_stats_url: props.settings?.srt_stats_url ?? '',
 });
 </script>
+
+<style scoped>
+.saved-fade-enter-active {
+    transition: opacity 0.3s cubic-bezier(0.16, 1, 0.3, 1),
+                transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.saved-fade-enter-from {
+    opacity: 0;
+    transform: translateX(-4px);
+}
+@media (prefers-reduced-motion: reduce) {
+    .saved-fade-enter-active { transition: none; }
+}
+</style>

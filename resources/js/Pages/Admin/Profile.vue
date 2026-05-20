@@ -36,7 +36,7 @@
                 >
                     Save
                 </button>
-                <span v-if="profileForm.wasSuccessful" class="text-[13px] text-green">Saved.</span>
+                <Transition name="saved-fade"><span v-if="profileForm.wasSuccessful" class="text-[13px] text-green">Saved.</span></Transition>
             </div>
         </form>
 
@@ -85,7 +85,7 @@
                 >
                     Update password
                 </button>
-                <span v-if="passwordForm.wasSuccessful" class="text-[13px] text-green">Password updated.</span>
+                <Transition name="saved-fade"><span v-if="passwordForm.wasSuccessful" class="text-[13px] text-green">Password updated.</span></Transition>
             </div>
         </form>
 
@@ -316,3 +316,17 @@ onMounted(() => {
     fetchPasskeys();
 });
 </script>
+
+<style scoped>
+.saved-fade-enter-active {
+    transition: opacity 0.3s cubic-bezier(0.16, 1, 0.3, 1),
+                transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.saved-fade-enter-from {
+    opacity: 0;
+    transform: translateX(-4px);
+}
+@media (prefers-reduced-motion: reduce) {
+    .saved-fade-enter-active { transition: none; }
+}
+</style>
