@@ -11,7 +11,6 @@ defineProps({
     passageTo: String,
     clock: String,
     clockDate: String,
-    showMetrics: { type: Boolean, default: true },
 });
 </script>
 
@@ -21,23 +20,21 @@ defineProps({
             <span class="lt-name">{{ boatName }}</span>
         </div>
         <div class="lt-body">
-            <template v-if="showMetrics">
-                <div class="lt-metric">
-                    <div class="lt-label">SPEED</div>
-                    <div class="lt-val">{{ formatVal(boat?.speed_sog) }} kn</div>
-                </div>
-                <div class="lt-sep"></div>
-                <div class="lt-metric">
-                    <div class="lt-label">HEADING</div>
-                    <div class="lt-val">{{ formatVal(boat?.heading ?? boat?.cog, 0) }}°</div>
-                </div>
-                <div class="lt-sep"></div>
-                <div class="lt-metric">
-                    <div class="lt-label">DEPTH</div>
-                    <div class="lt-val">{{ formatVal(boat?.depth) }} m</div>
-                </div>
-                <div class="lt-sep"></div>
-            </template>
+            <div class="lt-metric">
+                <div class="lt-label">SPEED</div>
+                <div class="lt-val">{{ formatVal(boat?.speed_sog) }} kn</div>
+            </div>
+            <div class="lt-sep"></div>
+            <div class="lt-metric">
+                <div class="lt-label">HEADING</div>
+                <div class="lt-val">{{ formatVal(boat?.heading ?? boat?.cog, 0) }}°</div>
+            </div>
+            <div class="lt-sep"></div>
+            <div class="lt-metric">
+                <div class="lt-label">DEPTH</div>
+                <div class="lt-val">{{ formatVal(boat?.depth) }} m</div>
+            </div>
+            <div class="lt-sep"></div>
             <span class="lt-status" :class="statusClass">{{ statusText }}</span>
             <div v-if="statusText === 'In Port' && portName" class="lt-sep"></div>
             <div v-if="statusText === 'In Port' && portName" class="lt-passage-wrap">

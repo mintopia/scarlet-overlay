@@ -62,8 +62,6 @@ const liveBadgeExt = computed(() => {
 
 const showBadgeExt = computed(() => overlayState.value !== 'video-live' && overlayState.value !== 'loading');
 
-const showMetrics = computed(() => overlayState.value !== 'port');
-
 const weatherProps = computed(() => ({
     wxIcon: wxIcon.value,
     wxTemp: wxTemp.value,
@@ -152,7 +150,6 @@ onUnmounted(() => {
                 :passage-to="passageTo"
                 :clock="clock"
                 :clock-date="clockDate"
-                :show-metrics="showMetrics"
             />
         </div>
     </div>
