@@ -46,6 +46,7 @@ Route::middleware('auth')->prefix('admin')->group(function () {
     Route::put('/settings/identity', [SettingsController::class, 'updateIdentity'])->name('admin.settings.identity');
     Route::put('/settings/passage', [SettingsController::class, 'updatePassage'])->name('admin.settings.passage');
     Route::put('/settings/port', [SettingsController::class, 'updatePort'])->name('admin.settings.port');
+    Route::put('/settings/stream', [SettingsController::class, 'updateStream'])->name('admin.settings.stream');
     Route::get('/tracker', [TrackerController::class, 'index'])->name('admin.tracker');
     Route::get('/metrics', [BoatMetricsController::class, 'index'])->name('admin.metrics');
     Route::get('/profile', [ProfileController::class, 'index'])->name('admin.profile');

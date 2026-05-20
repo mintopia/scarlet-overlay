@@ -52,4 +52,15 @@ class SettingsController extends Controller
 
         return back()->with('success', 'Port settings updated.');
     }
+
+    public function updateStream(Request $request)
+    {
+        $validated = $request->validate([
+            'srt_url' => ['nullable', 'string', 'max:500'],
+        ]);
+
+        BoatSetting::setValue('srt_url', $validated['srt_url'] ?? '');
+
+        return back()->with('success', 'Stream settings updated.');
+    }
 }

@@ -24,8 +24,9 @@
                 port: @json($reverb['port']),
                 scheme: @json($reverb['scheme']),
             },
+            srtUrl: @json($srtUrl),
             tileUrl: '/openseamap/{z}/{x}/{y}',
-            videoFeedActive: false,
+            videoFeedActive: @json(!empty($srtUrl)),
         };
     </script>
 </head>
