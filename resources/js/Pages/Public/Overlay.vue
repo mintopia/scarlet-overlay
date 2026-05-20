@@ -42,8 +42,8 @@ let mapFull = null;
 
 const overlayState = computed(() => {
     if (isOffline.value) return 'offline';
-    if (statusText.value === 'In Port') return 'port';
     if (videoActive.value) return 'video-live';
+    if (statusText.value === 'In Port') return 'port';
     if (videoChecked.value) return 'no-video';
     return 'loading';
 });
