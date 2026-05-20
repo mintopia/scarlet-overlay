@@ -71,15 +71,12 @@
             </div>
         </div>
 
-        {{-- Coordinate badge: bottom-left of map area, above lower third --}}
-        <div id="coord-badge">--&deg;N &ensp; --&deg;W</div>
-
-        {{-- Speed legend (decorative) --}}
-        <div id="speed-legend">
-            <div class="speed-legend-track"></div>
-            <div class="speed-legend-labels">
+        {{-- Bottom-left cluster: coord badge + speed legend --}}
+        <div id="bottom-badges">
+            <div id="coord-badge">--&deg;N &ensp; --&deg;W</div>
+            <div id="speed-legend">
                 <span>0 kn</span>
-                <span>5 kn</span>
+                <div class="speed-legend-track"></div>
                 <span>10 kn</span>
             </div>
         </div>

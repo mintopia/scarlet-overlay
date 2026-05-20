@@ -285,11 +285,25 @@ html, body {
 
 /* ── Coordinate badge ──────────────────────────────────────────────────── */
 
-#coord-badge {
+/* ── Bottom-left cluster (coord + speed legend) ──────────────────────── */
+
+#bottom-badges {
     position: absolute;
     bottom: 148px;
     left: 32px;
+    z-index: 15;
     display: none;
+    flex-direction: column;
+    gap: 8px;
+}
+
+[data-state="no-video"] #bottom-badges,
+[data-state="offline"]  #bottom-badges,
+[data-state="port"]     #bottom-badges {
+    display: flex;
+}
+
+#coord-badge {
     font-size: 22px;
     font-weight: 500;
     color: var(--text-bright);
@@ -299,31 +313,29 @@ html, body {
     padding: 10px 20px;
     border-radius: var(--radius-sm);
     border: 1px solid var(--chrome-border);
-    z-index: 15;
     letter-spacing: 0.02em;
-}
-
-[data-state="no-video"] #coord-badge,
-[data-state="offline"]  #coord-badge,
-[data-state="port"]     #coord-badge {
-    display: block;
 }
 
 [data-state="offline"] #coord-badge {
     color: var(--text-dim);
 }
 
-/* ── Speed legend ──────────────────────────────────────────────────────── */
+/* ── Speed legend (inline) ────────────────────────────────────────────── */
 
 #speed-legend {
     display: none;
-    position: absolute;
-    bottom: 148px;
-    right: 32px;
-    z-index: 15;
-    flex-direction: column;
-    gap: 5px;
-    align-items: stretch;
+    align-items: center;
+    gap: 10px;
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--text-dim);
+    background: var(--chrome-72);
+    backdrop-filter: var(--blur);
+    -webkit-backdrop-filter: var(--blur);
+    padding: 8px 16px;
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--chrome-border);
+    width: fit-content;
 }
 
 [data-state="no-video"] #speed-legend {
@@ -331,19 +343,10 @@ html, body {
 }
 
 .speed-legend-track {
-    width: 180px;
-    height: 5px;
-    border-radius: 3px;
+    width: 80px;
+    height: 4px;
+    border-radius: 2px;
     background: linear-gradient(to right, var(--speed-0), var(--speed-5), var(--speed-10));
-}
-
-.speed-legend-labels {
-    display: flex;
-    justify-content: space-between;
-    font-size: 14px;
-    font-weight: 500;
-    color: var(--text-dim);
-    letter-spacing: 0.02em;
 }
 
 /* ── Offline card ──────────────────────────────────────────────────────── */
@@ -448,23 +451,25 @@ html, body {
 }
 
 .lt-metric {
-    display: flex;
-    align-items: baseline;
-    gap: 8px;
-    padding: 0 12px;
+    padding: 0 6px;
     flex-shrink: 0;
 }
 
 .lt-metric-label {
-    font-size: 17px;
-    font-weight: 500;
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.06em;
     color: var(--text-dim);
+    line-height: 1;
+    white-space: nowrap;
 }
 
 .lt-metric-value {
-    font-size: 28px;
+    font-size: 26px;
     font-weight: 600;
     color: var(--text-bright);
+    line-height: 1.2;
+    white-space: nowrap;
 }
 
 [data-state="offline"] .lt-metric-label {
