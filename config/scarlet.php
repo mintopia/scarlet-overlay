@@ -15,9 +15,9 @@ return [
         'latitude' => env('SCARLET_HOME_LATITUDE', 51.53433094575387),
     ],
     'reverb' => [
-        'host' => env('REVERB_PUBLIC_HOST', env('REVERB_HOST', 'localhost')),
-        'port' => (int) env('REVERB_PUBLIC_PORT', env('REVERB_PORT', 8080)),
-        'scheme' => env('REVERB_PUBLIC_SCHEME', env('REVERB_SCHEME', 'http')),
+        'host' => env('REVERB_PUBLIC_HOST', ''),
+        'port' => (int) env('REVERB_PUBLIC_PORT', 443),
+        'scheme' => env('REVERB_PUBLIC_SCHEME', 'https'),
     ],
     'mediamtx' => [
         'api_url' => env('MEDIAMTX_API_URL', 'http://mediamtx:9997'),

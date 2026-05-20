@@ -323,7 +323,7 @@ const props = defineProps({
 });
 
 const metrics = ref(null);
-const lastUpdate = ref(null);
+const lastUpdate = ref(props.tracker ? Date.now() : null);
 let echoChannel = null;
 if (window.Echo) {
     echoChannel = window.Echo.channel('metrics');

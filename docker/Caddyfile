@@ -50,6 +50,15 @@
 			}
 		}
 
+		# Laravel Reverb WebSocket — /app/* and /apps/* proxied to reverb:8080
+		@reverb {
+			path /app/*
+			path /apps/*
+		}
+		handle @reverb {
+			reverse_proxy reverb:8080
+		}
+
 		# Mercure configuration is injected here...
 		{$CADDY_SERVER_EXTRA_DIRECTIVES}
 
