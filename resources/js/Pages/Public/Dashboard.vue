@@ -648,7 +648,6 @@ onUnmounted(() => {
     z-index: 10;
     display: flex;
     align-items: stretch;
-    border-radius: var(--radius);
     overflow: hidden;
     min-height: 48px;
 }
