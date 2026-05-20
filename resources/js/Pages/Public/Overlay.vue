@@ -14,8 +14,6 @@ const props = defineProps({
     passageFrom: String,
     passageTo: String,
     portName: String,
-    utcOffset: Number,
-    timeLabel: String,
 });
 
 const {
@@ -27,8 +25,6 @@ const {
 } = useScarletMetrics({
     initialMetrics: props.initialMetrics,
     portName: props.portName,
-    utcOffset: props.utcOffset,
-    timeLabel: props.timeLabel,
 });
 
 const videoRef = ref(null);

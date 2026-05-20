@@ -17,6 +17,7 @@ class Weather
     public ?float $seaTemp = null;
     public float $current = 0;
     public int $currentDirection = 0;
+    public string $timezone = 'UTC';
 
     public function getWeatherSummary(): string
     {

@@ -18,8 +18,6 @@ class OverlayController extends Controller
             'passageFrom' => BoatSetting::getValue('passage_from', ''),
             'passageTo' => BoatSetting::getValue('passage_to', ''),
             'portName' => BoatSetting::getValue('port_name', ''),
-            'utcOffset' => config('scarlet.time.offset'),
-            'timeLabel' => config('scarlet.time.label'),
         ]);
     }
 }

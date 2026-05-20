@@ -6,10 +6,6 @@ return [
             'marine' => env('WEATHER_MARINE_ENDPOINT', 'https://marine-api.open-meteo.com/v1/'),
         ],
     ],
-    'time' => [
-        'offset' => env('SCARLET_TIME_OFFSET', 0),
-        'label' => env('SCARLET_TIME_LABEL', 'UTC'),
-    ],
     'name' => env('SCARLET_NAME', 'Scarlet'),
     'passage' => env('SCARLET_PASSAGE', ''),
     'mmsi' => env('SCARLET_MMSI', ''),

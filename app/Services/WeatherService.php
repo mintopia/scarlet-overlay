@@ -77,6 +77,7 @@ class WeatherService
         $weather = new Weather;
         $weather->latitude = $forecast['latitude'] ?? null;
         $weather->longitude = $forecast['longitude'] ?? null;
+        $weather->timezone = $forecast['timezone'] ?? 'UTC';
         $weather->temp = (float)$forecast['current']['temperature_2m'] ?? null;
         $weather->daytime = (bool)$forecast['current']['is_day'] ?? true;
         $weather->wmoCode = (float)$forecast['current']['weather_code'] ?? 0;

@@ -8,8 +8,6 @@ export function useScarletMetrics(options = {}) {
     const {
         initialMetrics = null,
         portName = '',
-        utcOffset = null,
-        timeLabel = null,
     } = options;
 
     // ── Reactive state ──────────────────────────────────────────────────
@@ -64,21 +62,14 @@ export function useScarletMetrics(options = {}) {
 
     // ── Clock ────────────────────────────────────────────────────────────
     function updateClock() {
-        if (utcOffset != null) {
-            const now = new Date();
-            const utcMs = now.getTime() + now.getTimezoneOffset() * 60000;
-            const local = new Date(utcMs + utcOffset * 3600000);
-            const hh = String(local.getHours()).padStart(2, '0');
-            const mm = String(local.getMinutes()).padStart(2, '0');
-            const day = local.getDate();
-            const mon = local.toLocaleDateString('en-GB', { month: 'short' });
-            clock.value = `${hh}:${mm}`;
-            clockDate.value = timeLabel ? `${day} ${mon} · ${timeLabel}` : `${day} ${mon}`;
-        } else {
-            const now = new Date();
-            clock.value = now.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
-            clockDate.value = now.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' });
-        }
+        const tz = weather.value?.timezone || 'UTC';
+        const now = new Date();
+        const timeFmt = new Intl.DateTimeFormat('en-GB', { hour: '2-digit', minute: '2-digit', timeZone: tz });
+        const dayFmt = new Intl.DateTimeFormat('en-GB', { day: 'numeric', month: 'short', timeZone: tz });
+        const tzShort = new Intl.DateTimeFormat('en-GB', { timeZoneName: 'short', timeZone: tz });
+        const tzLabel = tzShort.formatToParts(now).find(p => p.type === 'timeZoneName')?.value ?? '';
+        clock.value = timeFmt.format(now);
+        clockDate.value = `${dayFmt.format(now)} · ${tzLabel}`;
     }
 
     updateClock();
