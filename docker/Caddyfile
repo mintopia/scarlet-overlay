@@ -42,16 +42,11 @@
 			}
 		}
 
-		# MediaMTX HLS — /hls/live/* strips prefix, /live/* handles redirects
+		# MediaMTX HLS — /hls/live/index.m3u8 → mediamtx:8888/live/index.m3u8
 		handle_path /hls/* {
 			reverse_proxy mediamtx:8888 {
 				header_up Host {upstream_hostport}
-			}
-		}
-
-		handle /live/* {
-			reverse_proxy mediamtx:8888 {
-				header_up Host {upstream_hostport}
+				header_up Authorization "Bearer scarlet-hls-internal"
 			}
 		}
 
