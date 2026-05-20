@@ -1,4 +1,5 @@
 <template>
+    <Head title="Sign In" />
     <div class="login-page">
         <div class="login-card">
             <div class="brand">
@@ -60,7 +61,7 @@
 
 <script setup>
 import { ref } from 'vue';
-import { useForm } from '@inertiajs/vue3';
+import { Head, useForm } from '@inertiajs/vue3';
 
 const form = useForm({
     email: '',

@@ -1,5 +1,6 @@
 <template>
     <AdminLayout>
+        <Head title="Settings" />
         <h1 class="text-[22px] font-bold mb-6">Settings</h1>
 
         <!-- Boat Identity -->
@@ -115,17 +116,6 @@
                 <p class="mt-1 text-[12px] text-text-secondary">The SRT ingest URL for the video feed on the broadcast overlay.</p>
                 <p v-if="streamForm.errors.srt_url" class="mt-1 text-xs text-red-500">{{ streamForm.errors.srt_url }}</p>
             </div>
-            <div class="mt-4">
-                <label class="block text-[13px] font-medium text-text-secondary mb-1.5">WHEP Playback URL</label>
-                <input
-                    v-model="streamForm.whep_url"
-                    type="text"
-                    placeholder="e.g. https://mediamtx.example.com:8889/stream/whep"
-                    class="w-full h-[42px] px-3.5 text-sm bg-bg border border-border rounded-[7px] font-sans focus:border-scarlet focus:ring-1 focus:ring-scarlet/20 outline-none"
-                />
-                <p class="mt-1 text-[12px] text-text-secondary">The WHEP endpoint from MediaMTX for WebRTC playback in the overlay.</p>
-                <p v-if="streamForm.errors.whep_url" class="mt-1 text-xs text-red-500">{{ streamForm.errors.whep_url }}</p>
-            </div>
             <div class="flex items-center gap-3 mt-5">
                 <button
                     type="submit"
@@ -141,7 +131,7 @@
 </template>
 
 <script setup>
-import { useForm } from '@inertiajs/vue3';
+import { Head, useForm } from '@inertiajs/vue3';
 import AdminLayout from '@/Layouts/AdminLayout.vue';
 
 const props = defineProps({ settings: Object });
@@ -162,6 +152,5 @@ const portForm = useForm({
 
 const streamForm = useForm({
     srt_url: props.settings?.srt_url ?? '',
-    whep_url: props.settings?.whep_url ?? '',
 });
 </script>

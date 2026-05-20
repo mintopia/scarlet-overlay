@@ -1,4 +1,5 @@
 <template>
+    <Head title="Accept Invitation" />
     <div class="register-page">
         <div class="register-card">
             <div class="brand">
@@ -69,7 +70,7 @@
 </template>
 
 <script setup>
-import { useForm } from '@inertiajs/vue3';
+import { Head, useForm } from '@inertiajs/vue3';
 
 const props = defineProps({
     token: String,

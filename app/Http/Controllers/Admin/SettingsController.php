@@ -58,12 +58,10 @@ class SettingsController extends Controller
     {
         $validated = $request->validate([
             'srt_url' => ['nullable', 'string', 'max:500'],
-            'whep_url' => ['nullable', 'string', 'max:500'],
         ]);
 
         $srtUrl = $validated['srt_url'] ?? '';
         BoatSetting::setValue('srt_url', $srtUrl);
-        BoatSetting::setValue('whep_url', $validated['whep_url'] ?? '');
 
         $mediaMtx->setPathSource('live', $srtUrl);
 

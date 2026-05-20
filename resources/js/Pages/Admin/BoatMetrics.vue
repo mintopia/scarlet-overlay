@@ -1,5 +1,6 @@
 <template>
     <AdminLayout>
+        <Head title="Boat Metrics" />
         <!-- 1. Page header -->
         <div class="flex items-baseline justify-between mb-6">
             <h1 class="text-[22px] font-bold">Boat Metrics</h1>
@@ -491,6 +492,7 @@
 </template>
 
 <script setup>
+import { Head } from '@inertiajs/vue3';
 import AdminLayout from '@/Layouts/AdminLayout.vue';
 import { useMetrics } from '@/composables/useEcho.js';
 import { computed, ref, onMounted, onUnmounted } from 'vue';

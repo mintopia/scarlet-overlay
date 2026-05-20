@@ -21,6 +21,9 @@ const Overlay = {
     whepRetryDelay: 5000,
     whepUrl: '/rtc/live/whep',
     hlsUrl: '/hls/live/index.m3u8',
+    videoWatchdog: null,
+    lastFramesDecoded: null,
+    videoStallCount: 0,
 
     // ── Maps ────────────────────────────────────────────────────────────
     maps: { pip: null, full: null },
@@ -373,6 +376,7 @@ const Overlay = {
         try {
             this.peerConnection = await this.startWhep();
             this.setVideoFeedActive(true);
+            this.startVideoWatchdog();
 
             this.peerConnection.addEventListener('connectionstatechange', () => {
                 const s = this.peerConnection?.connectionState;
@@ -464,6 +468,8 @@ const Overlay = {
     },
 
     teardownPlayer() {
+        this.stopVideoWatchdog();
+
         if (this.peerConnection) {
             try { this.peerConnection.close(); } catch {}
             this.peerConnection = null;
@@ -475,6 +481,49 @@ const Overlay = {
             video.removeAttribute('src');
             video.load();
         }
+    },
+
+    startVideoWatchdog() {
+        this.stopVideoWatchdog();
+        this.lastFramesDecoded = null;
+        this.videoStallCount = 0;
+
+        this.videoWatchdog = setInterval(async () => {
+            if (!this.videoFeedActive || !this.peerConnection) return;
+
+            try {
+                const stats = await this.peerConnection.getStats();
+                let currentFrames = 0;
+                stats.forEach(report => {
+                    if (report.type === 'inbound-rtp' && report.kind === 'video') {
+                        currentFrames = report.framesDecoded || 0;
+                    }
+                });
+
+                if (this.lastFramesDecoded !== null && currentFrames <= this.lastFramesDecoded) {
+                    this.videoStallCount++;
+                    if (this.videoStallCount >= 3) {
+                        console.warn('[Overlay] Video stalled — no new frames for 3s');
+                        this.setVideoFeedActive(false);
+                        this.scheduleRetry();
+                    }
+                } else {
+                    this.videoStallCount = 0;
+                }
+                this.lastFramesDecoded = currentFrames;
+            } catch {
+                // PC closed
+            }
+        }, 1000);
+    },
+
+    stopVideoWatchdog() {
+        if (this.videoWatchdog) {
+            clearInterval(this.videoWatchdog);
+            this.videoWatchdog = null;
+        }
+        this.lastFramesDecoded = null;
+        this.videoStallCount = 0;
     },
 
     scheduleRetry() {

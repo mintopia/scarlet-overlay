@@ -1,5 +1,6 @@
 <template>
     <AdminLayout>
+        <Head title="Profile" />
         <h1 class="text-[22px] font-bold mb-6">Profile</h1>
 
         <!-- Your Details -->
@@ -138,7 +139,7 @@
 
 <script setup>
 import { ref, onMounted } from 'vue';
-import { useForm } from '@inertiajs/vue3';
+import { Head, useForm } from '@inertiajs/vue3';
 import AdminLayout from '@/Layouts/AdminLayout.vue';
 
 const props = defineProps({ user: Object });
