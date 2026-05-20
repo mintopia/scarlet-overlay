@@ -4,7 +4,10 @@ namespace App\Services;
 
 class MetricsService
 {
-    public function __construct(protected PrometheusService $prometheus) {}
+    public function __construct(
+        protected PrometheusService $prometheus,
+        protected WeatherService $weather,
+    ) {}
 
     public function getBoatMetrics(): array
     {
@@ -31,12 +34,24 @@ class MetricsService
         );
     }
 
+    public function getWeatherData(): ?array
+    {
+        try {
+            $weather = $this->weather->getWeather();
+            return (new \App\Http\Resources\V1\WeatherResource($weather))
+                ->toArray(request());
+        } catch (\Throwable) {
+            return null;
+        }
+    }
+
     public function getAllMetrics(): array
     {
         return [
             'boat' => $this->getBoatMetrics(),
             'tracker' => $this->getTrackerMetrics(),
             'gps' => $this->getGpsMetrics(),
+            'weather' => $this->getWeatherData(),
             'timestamp' => now()->toIso8601String(),
         ];
     }

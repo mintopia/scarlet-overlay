@@ -18,7 +18,7 @@ const props = defineProps({
 const mapContainer = ref(null);
 const boat = ref(props.initialMetrics?.boat ?? {});
 const gps = ref(props.initialMetrics?.gps ?? {});
-const weather = ref(null);
+const weather = ref(props.initialMetrics?.weather ?? null);
 const clock = ref('--:--');
 const clockDate = ref('');
 const lastUpdate = ref(props.initialMetrics ? new Date() : null);
@@ -28,7 +28,6 @@ let boatMarker = null;
 let trackSegments = [];
 let trackPoints = [];
 let clockInterval = null;
-let weatherInterval = null;
 let userPanned = false;
 
 const fmt = (val, decimals = 1) => val != null ? Number(val).toFixed(decimals) : '--';
@@ -119,13 +118,6 @@ function updateClock() {
     clockDate.value = now.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' });
 }
 
-async function fetchWeather() {
-    try {
-        const res = await fetch('/api/v1/weather');
-        if (res.ok) weather.value = await res.json();
-    } catch (e) { /* silent */ }
-}
-
 function updateMap(newGps, newBoat) {
     if (!newGps?.latitude || !newGps?.longitude || !map) return;
     const pos = [newGps.latitude, newGps.longitude];
@@ -186,13 +178,11 @@ onMounted(() => {
     updateClock();
     clockInterval = setInterval(updateClock, 1000);
 
-    fetchWeather();
-    weatherInterval = setInterval(fetchWeather, 5 * 60 * 1000);
-
     if (window.Echo) {
         window.Echo.channel('metrics').listen('.metrics.updated', (data) => {
             boat.value = data.boat;
             gps.value = data.gps;
+            if (data.weather) weather.value = data.weather;
             lastUpdate.value = new Date();
             updateMap(data.gps, data.boat);
         });
@@ -201,7 +191,6 @@ onMounted(() => {
 
 onUnmounted(() => {
     clearInterval(clockInterval);
-    clearInterval(weatherInterval);
     if (window.Echo) window.Echo.leave('metrics');
     map?.remove();
 });

@@ -11,7 +11,6 @@ const Overlay = {
     lastMetricsTime: null,
     lastMetricsData: null,
     clockTimer: null,
-    weatherTimer: null,
     elements: {},
 
     // ── Video / WHEP ────────────────────────────────────────────────────
@@ -97,6 +96,9 @@ const Overlay = {
         this.updateLiveBadge(newState);
         if (data.gps) {
             this.updateMap(data.gps, data.boat);
+        }
+        if (data.weather) {
+            this.updateWeatherDOM(data.weather);
         }
     },
 
@@ -223,17 +225,6 @@ const Overlay = {
     },
 
     // ── Weather ─────────────────────────────────────────────────────────
-    async fetchWeather() {
-        try {
-            const response = await fetch('/api/v1/weather');
-            if (!response.ok) return;
-            const data = await response.json();
-            this.updateWeatherDOM(data);
-        } catch (e) {
-            console.warn('[Overlay] Weather fetch failed:', e);
-        }
-    },
-
     weatherIcons: {
         'day-sunny': '☀️',
         'night-clear': '🌙',
@@ -626,9 +617,6 @@ const Overlay = {
 
         this.clockTimer = setInterval(() => this.updateClock(), 1000);
         this.updateClock();
-
-        this.fetchWeather();
-        this.weatherTimer = setInterval(() => this.fetchWeather(), 5 * 60 * 1000);
 
         this.initMaps();
         this.initWebSocket();
