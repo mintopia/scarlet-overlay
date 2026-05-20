@@ -105,7 +105,7 @@ export function useScarletMetrics(options = {}) {
         const initialPos = gps.value?.latitude
             ? [gps.value.latitude, gps.value.longitude]
             : [50.6931, -1.6433];
-        const map = L.map(el, mapOpts).setView(initialPos, 14);
+        const map = L.map(el, mapOpts).setView(initialPos, 16);
         L.tileLayer('/openseamap/{z}/{x}/{y}', { maxZoom: 18 }).addTo(map);
         return map;
     }
