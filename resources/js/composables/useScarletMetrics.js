@@ -1,6 +1,7 @@
 // resources/js/composables/useScarletMetrics.js
 import { ref, computed, unref, onUnmounted } from 'vue';
 import L from 'leaflet';
+import 'leaflet/dist/leaflet.css';
 import { speedToColor, makeBoatIcon, formatCoord, getWeatherIcon, getWeatherLabel } from '../scarlet';
 
 export function useScarletMetrics(options = {}) {
