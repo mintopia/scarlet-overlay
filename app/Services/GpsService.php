@@ -32,7 +32,7 @@ class GpsService
         $gps->satellites = (int) ($data['satellites'] ?? 0);
         $gps->hdop = (int) ($data['hdop'] ?? 9999);
         $gps->valid = $gps->latitude !== 0.0 && $gps->longitude !== 0.0;
-        $gps->timestamp = now();
+        $gps->timestamp = \Carbon\CarbonImmutable::now();
 
         Cache::put('gps.location', $gps, 10);
         return $gps;
