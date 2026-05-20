@@ -57,9 +57,11 @@ class SettingsController extends Controller
     {
         $validated = $request->validate([
             'srt_url' => ['nullable', 'string', 'max:500'],
+            'whep_url' => ['nullable', 'string', 'max:500'],
         ]);
 
         BoatSetting::setValue('srt_url', $validated['srt_url'] ?? '');
+        BoatSetting::setValue('whep_url', $validated['whep_url'] ?? '');
 
         return back()->with('success', 'Stream settings updated.');
     }

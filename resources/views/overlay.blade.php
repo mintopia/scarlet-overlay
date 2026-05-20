@@ -24,14 +24,16 @@
                 port: @json($reverb['port']),
                 scheme: @json($reverb['scheme']),
             },
-            srtUrl: @json($srtUrl),
+            whepUrl: @json($whepUrl),
             tileUrl: '/openseamap/{z}/{x}/{y}',
-            videoFeedActive: @json(!empty($srtUrl)),
         };
     </script>
 </head>
 <body>
     <div id="overlay" data-state="loading">
+
+        {{-- Video feed: full-screen, behind all chrome --}}
+        <video id="video-feed" autoplay muted playsinline></video>
 
         {{-- PiP map: top-left, visible in video-live state only --}}
         <div id="map-pip"></div>

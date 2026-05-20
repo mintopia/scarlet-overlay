@@ -14,6 +14,12 @@ const Overlay = {
     weatherTimer: null,
     elements: {},
 
+    // ── Video / WHEP ────────────────────────────────────────────────────
+    videoFeedActive: false,
+    peerConnection: null,
+    whepRetryTimer: null,
+    whepRetryDelay: 5000,
+
     // ── Maps ────────────────────────────────────────────────────────────
     maps: { pip: null, full: null },
     trackPoints: [],
@@ -52,8 +58,7 @@ const Overlay = {
             return 'port';
         }
 
-        // Video live / no-video distinguished by videoFeedActive flag
-        if (window.scarletConfig?.videoFeedActive) return 'video-live';
+        if (this.videoFeedActive) return 'video-live';
 
         return 'no-video';
     },
@@ -355,6 +360,112 @@ const Overlay = {
         }
     },
 
+    // ── WHEP video feed ────────────────────────────────────────────────────
+    initVideo() {
+        const whepUrl = window.scarletConfig?.whepUrl;
+        if (!whepUrl) return;
+
+        this.connectWhep(whepUrl);
+    },
+
+    async connectWhep(whepUrl) {
+        this.teardownPlayer();
+
+        const pc = new RTCPeerConnection();
+        this.peerConnection = pc;
+
+        pc.addTransceiver('video', { direction: 'recvonly' });
+        pc.addTransceiver('audio', { direction: 'recvonly' });
+
+        const video = this.el('video-feed');
+        pc.ontrack = (e) => {
+            if (video && e.streams[0]) {
+                video.srcObject = e.streams[0];
+            }
+        };
+
+        pc.onconnectionstatechange = () => {
+            const state = pc.connectionState;
+            console.log('[Overlay] WebRTC connection:', state);
+
+            if (state === 'connected') {
+                this.setVideoFeedActive(true);
+            } else if (state === 'failed' || state === 'disconnected' || state === 'closed') {
+                this.setVideoFeedActive(false);
+                this.scheduleWhepRetry(whepUrl);
+            }
+        };
+
+        try {
+            const offer = await pc.createOffer();
+            await pc.setLocalDescription(offer);
+
+            const res = await fetch(whepUrl, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/sdp' },
+                body: pc.localDescription.sdp,
+            });
+
+            if (!res.ok) throw new Error(`WHEP ${res.status}`);
+
+            const answer = await res.text();
+            await pc.setRemoteDescription({ type: 'answer', sdp: answer });
+
+            // Timeout if connection doesn't establish within 5s
+            setTimeout(() => {
+                if (pc.connectionState !== 'connected') {
+                    console.warn('[Overlay] WHEP connection timeout');
+                    this.teardownPlayer();
+                    this.setVideoFeedActive(false);
+                    this.scheduleWhepRetry(whepUrl);
+                }
+            }, 5000);
+        } catch (e) {
+            console.warn('[Overlay] WHEP connect failed:', e.message);
+            this.teardownPlayer();
+            this.setVideoFeedActive(false);
+            this.scheduleWhepRetry(whepUrl);
+        }
+    },
+
+    teardownPlayer() {
+        if (this.peerConnection) {
+            this.peerConnection.ontrack = null;
+            this.peerConnection.onconnectionstatechange = null;
+            this.peerConnection.close();
+            this.peerConnection = null;
+        }
+
+        const video = this.el('video-feed');
+        if (video) {
+            video.srcObject = null;
+            video.removeAttribute('src');
+            video.load();
+        }
+    },
+
+    scheduleWhepRetry(whepUrl) {
+        if (this.whepRetryTimer) return;
+
+        this.whepRetryTimer = setTimeout(() => {
+            this.whepRetryTimer = null;
+            this.connectWhep(whepUrl);
+        }, this.whepRetryDelay);
+    },
+
+    setVideoFeedActive(active) {
+        if (this.videoFeedActive === active) return;
+
+        this.videoFeedActive = active;
+        console.log('[Overlay] Video feed:', active ? 'active' : 'inactive');
+
+        if (this.lastMetricsData) {
+            const newState = this.determineState(this.lastMetricsData);
+            this.setState(newState);
+            this.updateLiveBadge(newState);
+        }
+    },
+
     // ── Init ─────────────────────────────────────────────────────────────
     init() {
         this.clockTimer = setInterval(() => this.updateClock(), 1000);
@@ -365,6 +476,7 @@ const Overlay = {
 
         this.initMaps();
         this.initWebSocket();
+        this.initVideo();
     },
 };
 
