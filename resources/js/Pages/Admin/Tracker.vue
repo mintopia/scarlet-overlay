@@ -63,12 +63,21 @@
 
             <!-- Battery -->
             <div class="bg-surface border border-border rounded-[10px] p-4">
-                <div class="text-[11px] font-semibold text-text-dim uppercase tracking-wide mb-2">Battery</div>
+                <div class="flex items-center justify-between mb-2">
+                    <div class="text-[11px] font-semibold text-text-dim uppercase tracking-wide">Battery</div>
+                    <span
+                        v-if="isUsbPowered"
+                        class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full text-[10px] font-semibold bg-green-bg text-green"
+                    >
+                        <svg viewBox="0 0 16 16" width="10" height="10" fill="currentColor"><path d="M9.5 1L4 9h4l-1.5 6L13 7H9l.5-6z"/></svg>
+                        USB
+                    </span>
+                </div>
                 <div class="text-[20px] font-bold tabular-nums" :class="batteryColor">
                     {{ live?.battery_percent != null ? live.battery_percent.toFixed(0) + '%' : '—' }}
                 </div>
                 <div class="text-[12px] text-text-secondary tabular-nums mt-0.5">
-                    {{ live?.battery_voltage != null ? live.battery_voltage.toFixed(2) + ' V' : '' }}
+                    {{ live?.battery_voltage != null ? Number(live.battery_voltage).toFixed(2) + ' V' : '' }}
                 </div>
             </div>
         </div>
@@ -279,6 +288,13 @@
                         <td class="py-2.5 font-medium tabular-nums">{{ gps?.hdop != null ? gps.hdop.toFixed(1) : '—' }}</td>
                     </tr>
                     <tr>
+                        <td class="py-2.5 text-text-secondary">Power Source</td>
+                        <td class="py-2.5 font-medium">
+                            <span v-if="isUsbPowered" class="text-green">USB</span>
+                            <span v-else>Battery</span>
+                        </td>
+                    </tr>
+                    <tr>
                         <td class="py-2.5 text-text-secondary">Heap Free</td>
                         <td class="py-2.5 font-medium tabular-nums">{{ live?.heap_free != null ? formatBytes(live.heap_free) : '—' }}</td>
                     </tr>
@@ -338,7 +354,10 @@ const primaryConnection = computed(() => {
     return t.lte_rssi != null ? 'lte' : 'wifi';
 });
 
+const isUsbPowered = computed(() => (live.value?.usb_powered ?? 0) >= 1);
+
 const batteryColor = computed(() => {
+    if (isUsbPowered.value) return 'text-green';
     const pct = live.value?.battery_percent;
     if (pct == null) return 'text-text-primary';
     if (pct > 50) return 'text-green';
