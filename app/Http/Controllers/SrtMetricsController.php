@@ -3,20 +3,13 @@
 namespace App\Http\Controllers;
 
 use App\Models\BoatSetting;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 
 class SrtMetricsController extends Controller
 {
-    public function __invoke(Request $request)
+    public function __invoke()
     {
-        $token = config('scarlet.metrics.token');
-
-        if ($token && $request->bearerToken() !== $token) {
-            return response('Unauthorized', 401)
-                ->header('WWW-Authenticate', 'Bearer');
-        }
         $url = BoatSetting::getValue('srt_stats_url', '');
 
         if (!$url) {

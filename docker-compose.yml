@@ -71,6 +71,8 @@ services:
     ports:
       - "${OTEL_GRPC_PORT:-4317}:4317"
       - "${OTEL_HTTP_PORT:-4318}:4318"
+    environment:
+      OTEL_AUTH_TOKEN: "${OTEL_AUTH_TOKEN}"
     volumes:
       - ./docker/otel-collector/config.yaml:/etc/otelcol-contrib/config.yaml:ro
     networks:

@@ -1,10 +1,18 @@
+extensions:
+  bearertokenauth:
+    token: "${OTEL_AUTH_TOKEN}"
+
 receivers:
   otlp:
     protocols:
       grpc:
         endpoint: 0.0.0.0:4317
+        auth:
+          authenticator: bearertokenauth
       http:
         endpoint: 0.0.0.0:4318
+        auth:
+          authenticator: bearertokenauth
 
 processors:
   batch:
@@ -26,6 +34,8 @@ exporters:
     metric_expiration: 10m
 
 service:
+  extensions: [bearertokenauth]
+
   telemetry:
     logs:
       level: warn
