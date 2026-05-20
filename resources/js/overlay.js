@@ -15,6 +15,7 @@ const Overlay = {
     elements: {},
 
     // ── Video / WHEP ────────────────────────────────────────────────────
+    videoChecked: false,
     videoFeedActive: false,
     peerConnection: null,
     whepRetryTimer: null,
@@ -48,7 +49,11 @@ const Overlay = {
     },
 
     determineState(data) {
-        if (!data || !this.lastMetricsTime) return 'loading';
+        if (!data || !this.lastMetricsTime) {
+            if (this.videoFeedActive) return 'video-live';
+            if (this.videoChecked) return 'no-video';
+            return 'loading';
+        }
 
         const ageMs = Date.now() - this.lastMetricsTime;
         const twoHours = 2 * 60 * 60 * 1000;
@@ -58,7 +63,6 @@ const Overlay = {
         const speed = data.boat?.speed_sog;
         const portName = window.scarletConfig?.portName;
 
-        // Port: no speed (null or 0) AND a port name is configured
         if ((speed === null || speed === undefined || speed === 0) && portName) {
             return 'port';
         }
@@ -552,16 +556,15 @@ const Overlay = {
     },
 
     setVideoFeedActive(active) {
-        if (this.videoFeedActive === active) return;
+        if (this.videoFeedActive === active && this.videoChecked) return;
 
+        this.videoChecked = true;
         this.videoFeedActive = active;
         console.log('[Overlay] Video feed:', active ? 'active' : 'inactive');
 
-        if (this.lastMetricsData) {
-            const newState = this.determineState(this.lastMetricsData);
-            this.setState(newState);
-            this.updateLiveBadge(newState);
-        }
+        const newState = this.determineState(this.lastMetricsData);
+        this.setState(newState);
+        this.updateLiveBadge(newState);
     },
 
     // ── Init ─────────────────────────────────────────────────────────────
