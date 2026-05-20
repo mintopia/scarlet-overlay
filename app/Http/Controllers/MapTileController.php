@@ -14,6 +14,8 @@ class MapTileController extends Controller
         if ($filename === null) {
             abort(404);
         }
-        return Storage::response($filename);
+        return Storage::response($filename, null, [
+            'Cache-Control' => 'public, max-age=604800, immutable',
+        ]);
     }
 }
