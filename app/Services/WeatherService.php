@@ -60,6 +60,7 @@ class WeatherService
             'latitude' => $latitude,
             'current' => 'weather_code,temperature_2m,is_day,wind_speed_10m,wind_direction_10m',
             'wind_speed_unit' => 'kn',
+            'timezone' => 'auto',
         ];
 
         Log::debug("Fetching weather forecast for {$latitude}, {$longitude}");
