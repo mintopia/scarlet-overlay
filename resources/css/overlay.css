@@ -40,8 +40,8 @@
     --speed-10: oklch(0.56 0.20 27);
 
     /* Radii */
-    --radius:    14px;
-    --radius-sm: 10px;
+    --radius:    16px;
+    --radius-sm: 12px;
 
     /* Typography */
     --font: 'Outfit', system-ui, sans-serif;
@@ -89,13 +89,12 @@ html, body {
 
 /* ── Maps ──────────────────────────────────────────────────────────────── */
 
-/* PiP map: top-left corner, shown only when video is live */
 #map-pip {
     position: absolute;
-    top: 28px;
-    left: 28px;
-    width: 340px;
-    height: 240px;
+    top: 32px;
+    left: 32px;
+    width: 380px;
+    height: 260px;
     border-radius: var(--radius);
     overflow: hidden;
     border: 1.5px solid var(--chrome-border);
@@ -103,7 +102,6 @@ html, body {
     background: oklch(0.12 0.02 210);
 }
 
-/* Full-screen map: occupies entire canvas, hidden during video-live */
 #map-full {
     position: absolute;
     inset: 0;
@@ -114,7 +112,6 @@ html, body {
     background: oklch(0.12 0.02 210);
 }
 
-/* State-based map visibility */
 [data-state="video-live"] #map-pip  { display: block; }
 [data-state="video-live"] #map-full { display: none;  }
 
@@ -127,14 +124,11 @@ html, body {
 [data-state="port"] #map-pip        { display: none;  }
 [data-state="port"] #map-full       { display: block; }
 
-/* Hide track overlay pane in port state (no track relevant) */
 [data-state="port"] .leaflet-overlay-pane { display: none; }
 
-/* Dim track + marker in offline state */
 [data-state="offline"] .leaflet-overlay-pane { opacity: 0.5; }
 [data-state="offline"] .boat-marker          { opacity: 0.5; }
 
-/* Boat marker icon */
 .boat-marker {
     background: none !important;
     border: none !important;
@@ -144,8 +138,8 @@ html, body {
 
 #live-badge {
     position: absolute;
-    top: 28px;
-    left: 28px;
+    top: 32px;
+    left: 32px;
     z-index: 20;
     display: flex;
     align-items: stretch;
@@ -154,22 +148,21 @@ html, body {
     box-shadow: 0 2px 12px var(--scarlet-glow);
 }
 
-/* In video-live state the PiP sits top-left, so shift badge right */
 [data-state="video-live"] #live-badge {
-    left: 380px;
+    left: 424px;
 }
 
 .live-scarlet {
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: 10px;
     background: var(--scarlet);
-    padding: 8px 16px 8px 12px;
+    padding: 10px 20px 10px 14px;
 }
 
 .live-dot {
-    width: 10px;
-    height: 10px;
+    width: 12px;
+    height: 12px;
     border-radius: 50%;
     background: var(--text-bright);
     animation: live-pulse 2s ease-in-out infinite;
@@ -182,33 +175,30 @@ html, body {
 }
 
 .live-text {
-    font-size: 16px;
+    font-size: 20px;
     font-weight: 700;
     letter-spacing: 0.08em;
     color: var(--text-bright);
 }
 
-/* Extension text panel (e.g. "Video Offline", "Updated 14:31") */
 #live-extension {
     display: none;
     align-items: center;
     background: var(--chrome-72);
     backdrop-filter: var(--blur);
     -webkit-backdrop-filter: var(--blur);
-    padding: 8px 14px;
-    font-size: 14px;
+    padding: 10px 18px;
+    font-size: 18px;
     font-weight: 600;
     color: var(--text-dim);
     letter-spacing: 0.03em;
 }
 
-/* Show extension in states that need it */
 [data-state="no-video"] #live-extension,
 [data-state="port"]     #live-extension {
     display: flex;
 }
 
-/* Offline badge: different styling — muted chrome, amber dot */
 [data-state="offline"] #live-badge {
     box-shadow: none;
 }
@@ -243,10 +233,10 @@ html, body {
 
 #weather-strip {
     position: absolute;
-    top: 28px;
-    right: 28px;
+    top: 32px;
+    right: 32px;
     display: flex;
-    gap: 6px;
+    gap: 8px;
     z-index: 15;
 }
 
@@ -255,33 +245,32 @@ html, body {
     backdrop-filter: var(--blur);
     -webkit-backdrop-filter: var(--blur);
     border-radius: var(--radius-sm);
-    padding: 8px 14px;
+    padding: 10px 18px;
     text-align: center;
     border: 1px solid var(--chrome-border);
 }
 
 .wx-label {
-    font-size: 11px;
+    font-size: 13px;
     font-weight: 600;
     letter-spacing: 0.04em;
     color: var(--text-dim);
-    margin-bottom: 3px;
+    margin-bottom: 4px;
     text-transform: uppercase;
 }
 
 .wx-val {
-    font-size: 18px;
+    font-size: 24px;
     font-weight: 500;
     color: var(--text-bright);
 }
 
 .wx-sub {
-    font-size: 13px;
+    font-size: 16px;
     color: var(--text-dim);
     margin-top: 2px;
 }
 
-/* Dim weather in offline state */
 [data-state="offline"] #weather-strip {
     opacity: 0.5;
 }
@@ -298,23 +287,22 @@ html, body {
 
 #coord-badge {
     position: absolute;
-    bottom: 100px;
-    left: 28px;
+    bottom: 116px;
+    left: 32px;
     display: none;
-    font-size: 18px;
+    font-size: 22px;
     font-weight: 500;
     color: var(--text-bright);
     background: var(--chrome-72);
     backdrop-filter: var(--blur);
     -webkit-backdrop-filter: var(--blur);
-    padding: 8px 16px;
+    padding: 10px 20px;
     border-radius: var(--radius-sm);
     border: 1px solid var(--chrome-border);
     z-index: 15;
     letter-spacing: 0.02em;
 }
 
-/* Show coord badge on full-map states */
 [data-state="no-video"] #coord-badge,
 [data-state="offline"]  #coord-badge,
 [data-state="port"]     #coord-badge {
@@ -330,30 +318,29 @@ html, body {
 #speed-legend {
     display: none;
     position: absolute;
-    bottom: 100px;
-    right: 28px;
+    bottom: 116px;
+    right: 32px;
     z-index: 15;
     flex-direction: column;
-    gap: 4px;
+    gap: 5px;
     align-items: stretch;
 }
 
-/* Show speed legend on full-map active states */
 [data-state="no-video"] #speed-legend {
     display: flex;
 }
 
 .speed-legend-track {
-    width: 160px;
-    height: 4px;
-    border-radius: 2px;
+    width: 180px;
+    height: 5px;
+    border-radius: 3px;
     background: linear-gradient(to right, var(--speed-0), var(--speed-5), var(--speed-10));
 }
 
 .speed-legend-labels {
     display: flex;
     justify-content: space-between;
-    font-size: 12px;
+    font-size: 14px;
     font-weight: 500;
     color: var(--text-dim);
     letter-spacing: 0.02em;
@@ -380,19 +367,19 @@ html, body {
     -webkit-backdrop-filter: var(--blur);
     border: 1px solid var(--chrome-border);
     border-radius: var(--radius);
-    padding: 32px 44px;
+    padding: 40px 56px;
     text-align: center;
 }
 
 .offline-title {
-    font-size: 24px;
+    font-size: 30px;
     font-weight: 600;
     color: var(--text-bright);
-    margin-bottom: 8px;
+    margin-bottom: 10px;
 }
 
 .offline-time {
-    font-size: 18px;
+    font-size: 22px;
     font-weight: 500;
     color: var(--text-mid);
 }
@@ -401,9 +388,9 @@ html, body {
 
 #lower-third {
     position: absolute;
-    bottom: 28px;
-    left: 28px;
-    right: 28px;
+    bottom: 32px;
+    left: 32px;
+    right: 32px;
     display: flex;
     align-items: stretch;
     border-radius: var(--radius);
@@ -411,10 +398,9 @@ html, body {
     z-index: 15;
 }
 
-/* Brand tab (scarlet) with diagonal trailing edge */
 .lt-brand {
     background: var(--scarlet);
-    padding: 0 24px;
+    padding: 0 28px;
     display: flex;
     align-items: center;
     position: relative;
@@ -422,27 +408,25 @@ html, body {
     z-index: 1;
 }
 
-/* Diagonal edge: triangle cut at right edge of brand tab */
 .lt-brand::after {
     content: '';
     position: absolute;
-    right: -18px;
+    right: -22px;
     top: 0;
-    width: 18px;
+    width: 22px;
     height: 100%;
     background: var(--scarlet);
     clip-path: polygon(0 0, 0 100%, 100% 100%);
 }
 
 .lt-name {
-    font-size: 24px;
+    font-size: 30px;
     font-weight: 700;
     letter-spacing: 0.03em;
     color: var(--text-bright);
     white-space: nowrap;
 }
 
-/* Chrome body — spans rest of lower third */
 .lt-body {
     flex: 1;
     display: flex;
@@ -450,12 +434,11 @@ html, body {
     background: var(--chrome-72);
     backdrop-filter: var(--blur);
     -webkit-backdrop-filter: var(--blur);
-    padding: 14px 22px 14px 34px;
-    margin-left: -14px;
-    gap: 10px;
+    padding: 18px 26px 18px 40px;
+    margin-left: -16px;
+    gap: 14px;
 }
 
-/* Metrics strip (speed / heading / depth) — hidden in port state */
 #metrics-strip {
     display: contents;
 }
@@ -467,24 +450,23 @@ html, body {
 .lt-metric {
     display: flex;
     align-items: baseline;
-    gap: 6px;
-    padding: 0 10px;
+    gap: 8px;
+    padding: 0 12px;
     flex-shrink: 0;
 }
 
 .lt-metric-label {
-    font-size: 14px;
+    font-size: 17px;
     font-weight: 500;
     color: var(--text-dim);
 }
 
 .lt-metric-value {
-    font-size: 22px;
+    font-size: 28px;
     font-weight: 600;
     color: var(--text-bright);
 }
 
-/* Dim metrics in offline state */
 [data-state="offline"] .lt-metric-label {
     color: var(--text-stale);
 }
@@ -493,21 +475,19 @@ html, body {
     color: var(--text-dim);
 }
 
-/* Vertical separator */
 .lt-sep {
     width: 1px;
-    height: 28px;
+    height: 34px;
     background: var(--chrome-border);
     flex-shrink: 0;
 }
 
-/* Status pill */
 .lt-status {
-    font-size: 15px;
+    font-size: 18px;
     font-weight: 600;
     letter-spacing: 0.03em;
-    padding: 5px 12px;
-    border-radius: 6px;
+    padding: 6px 16px;
+    border-radius: 8px;
     white-space: nowrap;
     flex-shrink: 0;
 }
@@ -532,13 +512,12 @@ html, body {
     background: oklch(0.65 0.06 55 / 0.12);
 }
 
-/* Passage text */
 #passage {
-    font-size: 20px;
+    font-size: 24px;
     font-weight: 500;
     color: var(--text-mid);
     white-space: nowrap;
-    padding: 0 8px;
+    padding: 0 10px;
     flex: 1;
     text-align: center;
 }
@@ -548,51 +527,46 @@ html, body {
     font-weight: 600;
 }
 
-/* Port info — only shown in port state */
 #port-info {
     display: none;
-    font-size: 20px;
+    font-size: 24px;
     font-weight: 600;
     color: var(--text-bright);
     white-space: nowrap;
-    padding: 0 8px;
+    padding: 0 10px;
 }
 
 [data-state="port"] #port-info  { display: block; }
 [data-state="port"] #passage    { display: none; }
 
-/* Hide passage in offline state too (show dashes) */
-
 .lt-port-label {
-    font-size: 14px;
+    font-size: 17px;
     font-weight: 500;
     color: var(--text-dim);
-    margin-right: 6px;
+    margin-right: 8px;
 }
 
-/* Spacer pushes clock to right edge */
 .lt-spacer {
     flex: 1;
 }
 
-/* Clock */
 .lt-clock {
     text-align: right;
-    padding: 0 6px;
+    padding: 0 8px;
     flex-shrink: 0;
 }
 
 .lt-time {
-    font-size: 22px;
+    font-size: 28px;
     font-weight: 600;
     line-height: 1;
     color: var(--text-bright);
 }
 
 .lt-date {
-    font-size: 13px;
+    font-size: 16px;
     color: var(--text-dim);
-    margin-top: 3px;
+    margin-top: 4px;
     letter-spacing: 0.01em;
 }
 

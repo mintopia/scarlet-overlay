@@ -46,6 +46,10 @@ const Overlay = {
         if (this.state === newState) return;
         this.state = newState;
         document.getElementById('overlay').dataset.state = newState;
+        setTimeout(() => {
+            if (this.maps.pip)  this.maps.pip.invalidateSize();
+            if (this.maps.full) this.maps.full.invalidateSize();
+        }, 50);
     },
 
     determineState(data) {
@@ -575,6 +579,10 @@ const Overlay = {
         const scaleY = window.innerHeight / 1080;
         const scale = Math.min(scaleX, scaleY);
         overlay.style.transform = `scale(${scale})`;
+        setTimeout(() => {
+            if (this.maps?.pip)  this.maps.pip.invalidateSize();
+            if (this.maps?.full) this.maps.full.invalidateSize();
+        }, 100);
     },
 
     // ── Init ─────────────────────────────────────────────────────────────
