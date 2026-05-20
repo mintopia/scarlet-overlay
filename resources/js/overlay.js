@@ -390,6 +390,15 @@ const Overlay = {
         try {
             this.startHls();
             this.setVideoFeedActive(true);
+
+            const video = this.el('video-feed');
+            if (video) {
+                video.addEventListener('error', () => {
+                    console.warn('[Overlay] HLS stream error');
+                    this.setVideoFeedActive(false);
+                    this.scheduleRetry();
+                }, { once: true });
+            }
         } catch (e) {
             console.warn('[Overlay] HLS failed:', e.message);
             this.setVideoFeedActive(false);
@@ -399,41 +408,46 @@ const Overlay = {
 
     async startWhep() {
         const pc = new RTCPeerConnection();
-        pc.addTransceiver('video', { direction: 'recvonly' });
-        pc.addTransceiver('audio', { direction: 'recvonly' });
+        let timeoutId;
 
-        const video = this.el('video-feed');
-        pc.ontrack = (e) => {
-            if (video && e.streams[0]) {
-                video.srcObject = e.streams[0];
-            }
-        };
+        try {
+            pc.addTransceiver('video', { direction: 'recvonly' });
+            pc.addTransceiver('audio', { direction: 'recvonly' });
 
-        const connected = new Promise((resolve, reject) => {
-            const timer = setTimeout(() => reject(new Error('WHEP timeout')), 5000);
-            pc.addEventListener('connectionstatechange', () => {
-                if (pc.connectionState === 'connected') { clearTimeout(timer); resolve(); }
-                if (pc.connectionState === 'failed')    { clearTimeout(timer); reject(new Error('WHEP failed')); }
+            const video = this.el('video-feed');
+            pc.ontrack = (e) => {
+                if (video && e.streams[0]) {
+                    video.srcObject = e.streams[0];
+                }
+            };
+
+            const connected = new Promise((resolve, reject) => {
+                timeoutId = setTimeout(() => reject(new Error('WHEP timeout')), 5000);
+                pc.addEventListener('connectionstatechange', () => {
+                    if (pc.connectionState === 'connected') { clearTimeout(timeoutId); resolve(); }
+                    if (pc.connectionState === 'failed')    { clearTimeout(timeoutId); reject(new Error('WHEP failed')); }
+                });
             });
-        });
 
-        const offer = await pc.createOffer();
-        await pc.setLocalDescription(offer);
+            const offer = await pc.createOffer();
+            await pc.setLocalDescription(offer);
 
-        const res = await fetch(this.whepUrl, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/sdp' },
-            body: offer.sdp,
-        });
-        if (!res.ok) {
-            pc.close();
-            throw new Error(`WHEP ${res.status}`);
+            const res = await fetch(this.whepUrl, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/sdp' },
+                body: offer.sdp,
+            });
+            if (!res.ok) throw new Error(`WHEP ${res.status}`);
+
+            const answer = await res.text();
+            await pc.setRemoteDescription({ type: 'answer', sdp: answer });
+            await connected;
+            return pc;
+        } catch (e) {
+            clearTimeout(timeoutId);
+            try { pc.close(); } catch {}
+            throw e;
         }
-
-        const answer = await res.text();
-        await pc.setRemoteDescription({ type: 'answer', sdp: answer });
-        await connected;
-        return pc;
     },
 
     startHls() {
