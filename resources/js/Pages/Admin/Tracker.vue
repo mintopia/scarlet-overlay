@@ -311,7 +311,6 @@
 <script setup>
 import { Head } from '@inertiajs/vue3';
 import AdminLayout from '@/Layouts/AdminLayout.vue';
-import { useMetrics } from '@/composables/useEcho.js';
 import { computed, ref, onMounted, onUnmounted } from 'vue';
 
 const props = defineProps({
@@ -323,7 +322,16 @@ const props = defineProps({
     humidityHistory: Array,
 });
 
-const { metrics, lastUpdate } = useMetrics();
+const metrics = ref(null);
+const lastUpdate = ref(null);
+let echoChannel = null;
+if (window.Echo) {
+    echoChannel = window.Echo.channel('metrics');
+    echoChannel.listen('.metrics.updated', (data) => {
+        metrics.value = data;
+        lastUpdate.value = Date.now();
+    });
+}
 
 const live = computed(() => metrics.value?.tracker ?? props.tracker);
 
@@ -331,7 +339,10 @@ const live = computed(() => metrics.value?.tracker ?? props.tracker);
 const now = ref(Date.now());
 let ticker = null;
 onMounted(() => { ticker = setInterval(() => { now.value = Date.now(); }, 1000); });
-onUnmounted(() => { if (ticker) clearInterval(ticker); });
+onUnmounted(() => {
+    if (ticker) clearInterval(ticker);
+    if (echoChannel) window.Echo?.leave('metrics');
+});
 
 const timeSinceUpdate = computed(() => {
     if (!lastUpdate.value) return 'Loading...';

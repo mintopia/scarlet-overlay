@@ -10,8 +10,6 @@ export default defineConfig({
             input: [
                 'resources/css/app.css',
                 'resources/js/app.js',
-                'resources/css/overlay.css',
-                'resources/js/overlay.js',
             ],
             refresh: true,
         }),
