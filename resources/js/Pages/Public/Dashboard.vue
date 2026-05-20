@@ -73,15 +73,25 @@ const lastUpdateText = computed(() => {
     return lastUpdate.value.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
 });
 
-// Weather computed values
-const wxTemp = computed(() => weather.value?.temperature != null ? `${Number(weather.value.temperature).toFixed(1)}°` : '--');
-const wxCondition = computed(() => weather.value?.condition ?? 'Unknown');
-const wxIcon = computed(() => weather.value?.icon ?? '🌤');
-const wxSeaTemp = computed(() => weather.value?.sea_temperature != null ? `${Number(weather.value.sea_temperature).toFixed(1)}°` : '--');
-const wxWindSpeed = computed(() => weather.value?.wind_speed != null ? `${Math.round(weather.value.wind_speed)} kn` : '--');
-const wxWindDir = computed(() => weather.value?.wind_direction ?? '');
-const wxWaveHeight = computed(() => weather.value?.wave_height != null ? `${Number(weather.value.wave_height).toFixed(1)} m` : '--');
-const wxWavePeriod = computed(() => weather.value?.wave_period != null ? `${Math.round(weather.value.wave_period)} s` : '');
+const weatherIcons = {
+    'day-sunny': '☀️', 'night-clear': '🌙', 'cloud': '⛅', 'cloudy': '☁️',
+    'fog': '🌫️', 'sprinkle': '🌦️', 'rain': '🌧️', 'snow': '❄️',
+    'showers': '🌦️', 'thunderstorm': '⛈️', 'na': '🌤️',
+};
+const weatherLabels = {
+    'day-sunny': 'Clear', 'night-clear': 'Clear', 'cloud': 'Partly Cloudy',
+    'cloudy': 'Overcast', 'fog': 'Fog', 'sprinkle': 'Drizzle', 'rain': 'Rain',
+    'snow': 'Snow', 'showers': 'Showers', 'thunderstorm': 'Thunderstorm', 'na': 'Unknown',
+};
+
+const wxTemp = computed(() => weather.value?.temp != null ? `${Number(weather.value.temp).toFixed(1)}°` : '--');
+const wxCondition = computed(() => weatherLabels[weather.value?.summary] ?? 'Unknown');
+const wxIcon = computed(() => weatherIcons[weather.value?.summary] ?? '🌤');
+const wxSeaTemp = computed(() => weather.value?.seaTemp != null ? `${Number(weather.value.seaTemp).toFixed(1)}°` : '--');
+const wxWindSpeed = computed(() => weather.value?.wind?.speed != null ? `${Math.round(weather.value.wind.speed)} kn` : '--');
+const wxWindDir = computed(() => weather.value?.wind?.direction ?? '');
+const wxWaveHeight = computed(() => weather.value?.waves?.height != null ? `${Number(weather.value.waves.height).toFixed(1)} m` : '--');
+const wxWavePeriod = computed(() => weather.value?.waves?.period != null ? `${Math.round(weather.value.waves.period)} s` : '');
 
 function speedToColor(speed) {
     const s = speed ?? 0;
