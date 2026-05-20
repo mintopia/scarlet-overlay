@@ -105,16 +105,29 @@
         <!-- Stream -->
         <form @submit.prevent="streamForm.put(route('admin.settings.stream'))" class="bg-surface border border-border rounded-[10px] p-6 mb-6">
             <h2 class="text-[15px] font-semibold mb-4">Stream</h2>
-            <div>
-                <label class="block text-[13px] font-medium text-text-secondary mb-1.5">SRT URL</label>
-                <input
-                    v-model="streamForm.srt_url"
-                    type="text"
-                    placeholder="e.g. srt://host:port?streamid=..."
-                    class="w-full h-[42px] px-3.5 text-sm bg-bg border border-border rounded-[7px] font-sans focus:border-scarlet focus:ring-1 focus:ring-scarlet/20 outline-none"
-                />
-                <p class="mt-1 text-[12px] text-text-secondary">The SRT ingest URL for the video feed on the broadcast overlay.</p>
-                <p v-if="streamForm.errors.srt_url" class="mt-1 text-xs text-red-500">{{ streamForm.errors.srt_url }}</p>
+            <div class="grid grid-cols-1 gap-4">
+                <div>
+                    <label class="block text-[13px] font-medium text-text-secondary mb-1.5">SRT URL</label>
+                    <input
+                        v-model="streamForm.srt_url"
+                        type="text"
+                        placeholder="e.g. srt://host:port?streamid=..."
+                        class="w-full h-[42px] px-3.5 text-sm bg-bg border border-border rounded-[7px] font-sans focus:border-scarlet focus:ring-1 focus:ring-scarlet/20 outline-none"
+                    />
+                    <p class="mt-1 text-[12px] text-text-secondary">The SRT ingest URL for the video feed on the broadcast overlay.</p>
+                    <p v-if="streamForm.errors.srt_url" class="mt-1 text-xs text-red-500">{{ streamForm.errors.srt_url }}</p>
+                </div>
+                <div>
+                    <label class="block text-[13px] font-medium text-text-secondary mb-1.5">SRT Stats URL</label>
+                    <input
+                        v-model="streamForm.srt_stats_url"
+                        type="text"
+                        placeholder="e.g. https://stats.srt.belabox.net/..."
+                        class="w-full h-[42px] px-3.5 text-sm bg-bg border border-border rounded-[7px] font-sans focus:border-scarlet focus:ring-1 focus:ring-scarlet/20 outline-none"
+                    />
+                    <p class="mt-1 text-[12px] text-text-secondary">BELABOX SRT stats endpoint for the Stream Monitor page.</p>
+                    <p v-if="streamForm.errors.srt_stats_url" class="mt-1 text-xs text-red-500">{{ streamForm.errors.srt_stats_url }}</p>
+                </div>
             </div>
             <div class="flex items-center gap-3 mt-5">
                 <button
@@ -152,5 +165,6 @@ const portForm = useForm({
 
 const streamForm = useForm({
     srt_url: props.settings?.srt_url ?? '',
+    srt_stats_url: props.settings?.srt_stats_url ?? '',
 });
 </script>

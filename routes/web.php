@@ -4,6 +4,7 @@ use App\Http\Controllers\Admin\BoatMetricsController;
 use App\Http\Controllers\Admin\ProfileController;
 use App\Http\Controllers\Admin\SettingsController;
 use App\Http\Controllers\Admin\TeamController;
+use App\Http\Controllers\Admin\StreamMonitorController;
 use App\Http\Controllers\Admin\TrackerController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\PasskeyController;
@@ -47,6 +48,8 @@ Route::middleware('auth')->prefix('admin')->group(function () {
     Route::put('/settings/passage', [SettingsController::class, 'updatePassage'])->name('admin.settings.passage');
     Route::put('/settings/port', [SettingsController::class, 'updatePort'])->name('admin.settings.port');
     Route::put('/settings/stream', [SettingsController::class, 'updateStream'])->name('admin.settings.stream');
+    Route::get('/stream', [StreamMonitorController::class, 'index'])->name('admin.stream');
+    Route::get('/stream/stats', [StreamMonitorController::class, 'stats'])->name('admin.stream.stats');
     Route::get('/tracker', [TrackerController::class, 'index'])->name('admin.tracker');
     Route::get('/metrics', [BoatMetricsController::class, 'index'])->name('admin.metrics');
     Route::get('/profile', [ProfileController::class, 'index'])->name('admin.profile');

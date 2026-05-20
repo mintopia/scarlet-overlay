@@ -12,6 +12,7 @@
                 <NavLink href="/admin/settings" icon="settings" :active="currentPage === 'Admin/Settings'">Settings</NavLink>
                 <NavLink href="/admin/tracker" icon="activity" :active="currentPage === 'Admin/Tracker'">Tracker</NavLink>
                 <NavLink href="/admin/metrics" icon="chart" :active="currentPage === 'Admin/BoatMetrics'">Boat Metrics</NavLink>
+                <NavLink href="/admin/stream" icon="radio" :active="currentPage === 'Admin/StreamMonitor'">Stream Monitor</NavLink>
 
                 <div class="nav-label">Links</div>
                 <a href="/overlay" target="_blank" class="nav-link">
