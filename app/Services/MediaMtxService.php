@@ -26,7 +26,7 @@ class MediaMtxService
 
         try {
             $response = Http::timeout(5)
-                ->patch("{$this->baseUrl}/v3/config/paths/edit/{$path}", $config);
+                ->patch("{$this->baseUrl}/v3/config/paths/patch/{$path}", $config);
 
             if ($response->status() === 404) {
                 $response = Http::timeout(5)
