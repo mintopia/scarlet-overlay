@@ -322,8 +322,14 @@ onUnmounted(() => {
                 </div>
                 <div class="lt-sep"></div>
                 <span class="lt-status" :class="statusClass">{{ statusText }}</span>
-                <div v-if="passageFrom || passageTo" class="lt-sep"></div>
-                <div v-if="passageFrom || passageTo" class="lt-passage-wrap">
+                <div v-if="statusText === 'In Port' && portName" class="lt-sep"></div>
+                <div v-if="statusText === 'In Port' && portName" class="lt-passage-wrap">
+                    <div class="lt-passage">
+                        <span class="lt-port-label">Currently at</span> <strong>{{ portName }}</strong>
+                    </div>
+                </div>
+                <div v-else-if="passageFrom || passageTo" class="lt-sep"></div>
+                <div v-else-if="passageFrom || passageTo" class="lt-passage-wrap">
                     <div class="lt-passage">
                         <strong>{{ passageFrom }}</strong>
                         <span v-if="passageFrom && passageTo"> → </span>
@@ -765,6 +771,13 @@ onUnmounted(() => {
 .lt-passage strong {
     color: oklch(0.96 0.005 70);
     font-weight: 600;
+}
+
+.lt-port-label {
+    font-size: 11px;
+    font-weight: 500;
+    color: oklch(0.62 0.008 70);
+    margin-right: 4px;
 }
 
 .lt-clock {

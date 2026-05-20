@@ -15,13 +15,15 @@ class GpsService
             return $cached;
         }
 
+        $mappings = config('scarlet.metrics.mappings.gps');
+
         $data = $this->prometheus->queryMultiple([
-            'latitude' => 'scarlet_gps_latitude',
-            'longitude' => 'scarlet_gps_longitude',
-            'speed' => 'scarlet_boat_speed_kn',
-            'course' => 'scarlet_boat_heading_deg',
-            'satellites' => 'scarlet_gps_satellites',
-            'hdop' => 'scarlet_gps_hdop',
+            'latitude' => $mappings['latitude'],
+            'longitude' => $mappings['longitude'],
+            'speed' => $mappings['speed'],
+            'course' => $mappings['heading'],
+            'satellites' => $mappings['satellites'],
+            'hdop' => $mappings['hdop'],
         ]);
 
         $gps = new Gps();
