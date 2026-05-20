@@ -15,7 +15,7 @@
                         required
                         class="w-full h-[42px] px-3.5 text-sm bg-bg border border-border rounded-[7px] font-sans focus:border-scarlet focus:ring-1 focus:ring-scarlet/20 outline-none"
                     />
-                    <p v-if="profileForm.errors.name" class="mt-1 text-xs text-red-500">{{ profileForm.errors.name }}</p>
+                    <p v-if="profileForm.errors.name" class="mt-1 text-xs text-error">{{ profileForm.errors.name }}</p>
                 </div>
                 <div>
                     <label class="block text-[13px] font-medium text-text-secondary mb-1.5">Email</label>
@@ -25,7 +25,7 @@
                         required
                         class="w-full h-[42px] px-3.5 text-sm bg-bg border border-border rounded-[7px] font-sans focus:border-scarlet focus:ring-1 focus:ring-scarlet/20 outline-none"
                     />
-                    <p v-if="profileForm.errors.email" class="mt-1 text-xs text-red-500">{{ profileForm.errors.email }}</p>
+                    <p v-if="profileForm.errors.email" class="mt-1 text-xs text-error">{{ profileForm.errors.email }}</p>
                 </div>
             </div>
             <div class="flex items-center gap-3 mt-5">
@@ -36,7 +36,7 @@
                 >
                     Save
                 </button>
-                <span v-if="profileForm.wasSuccessful" class="text-[13px] text-green-600">Saved.</span>
+                <span v-if="profileForm.wasSuccessful" class="text-[13px] text-green">Saved.</span>
             </div>
         </form>
 
@@ -53,7 +53,7 @@
                         autocomplete="current-password"
                         class="w-full h-[42px] px-3.5 text-sm bg-bg border border-border rounded-[7px] font-sans focus:border-scarlet focus:ring-1 focus:ring-scarlet/20 outline-none sm:max-w-sm"
                     />
-                    <p v-if="passwordForm.errors.current_password" class="mt-1 text-xs text-red-500">{{ passwordForm.errors.current_password }}</p>
+                    <p v-if="passwordForm.errors.current_password" class="mt-1 text-xs text-error">{{ passwordForm.errors.current_password }}</p>
                 </div>
                 <div>
                     <label class="block text-[13px] font-medium text-text-secondary mb-1.5">New Password</label>
@@ -64,7 +64,7 @@
                         autocomplete="new-password"
                         class="w-full h-[42px] px-3.5 text-sm bg-bg border border-border rounded-[7px] font-sans focus:border-scarlet focus:ring-1 focus:ring-scarlet/20 outline-none sm:max-w-sm"
                     />
-                    <p v-if="passwordForm.errors.password" class="mt-1 text-xs text-red-500">{{ passwordForm.errors.password }}</p>
+                    <p v-if="passwordForm.errors.password" class="mt-1 text-xs text-error">{{ passwordForm.errors.password }}</p>
                 </div>
                 <div>
                     <label class="block text-[13px] font-medium text-text-secondary mb-1.5">Confirm New Password</label>
@@ -85,7 +85,7 @@
                 >
                     Update password
                 </button>
-                <span v-if="passwordForm.wasSuccessful" class="text-[13px] text-green-600">Password updated.</span>
+                <span v-if="passwordForm.wasSuccessful" class="text-[13px] text-green">Password updated.</span>
             </div>
         </form>
 
@@ -102,8 +102,8 @@
                     {{ passkeyRegistering ? 'Registering…' : 'Register new' }}
                 </button>
             </div>
-            <p v-if="passkeyError" class="mb-3 text-[13px] text-red-500">{{ passkeyError }}</p>
-            <p v-if="passkeySuccess" class="mb-3 text-[13px] text-green-600">{{ passkeySuccess }}</p>
+            <p v-if="passkeyError" class="mb-3 text-[13px] text-error">{{ passkeyError }}</p>
+            <p v-if="passkeySuccess" class="mb-3 text-[13px] text-green">{{ passkeySuccess }}</p>
             <table class="w-full text-sm">
                 <thead>
                     <tr class="border-b border-border">
@@ -125,7 +125,7 @@
                             <button
                                 type="button"
                                 @click="removePasskey(pk.id)"
-                                class="text-[13px] text-red-500 hover:text-red-700 font-medium"
+                                class="text-[13px] text-error hover:text-scarlet-hover font-medium"
                             >
                                 Remove
                             </button>

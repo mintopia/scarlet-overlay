@@ -53,7 +53,7 @@
                             <button
                                 v-if="isOwner && member.id !== currentUserId"
                                 @click="confirmRemove(member)"
-                                class="text-[13px] text-red-500 hover:text-red-700 font-medium"
+                                class="text-[13px] text-error hover:text-scarlet-hover font-medium"
                             >
                                 Remove
                             </button>
@@ -95,7 +95,7 @@
                                 </button>
                                 <button
                                     @click="cancelInvite(invite)"
-                                    class="text-[13px] text-text-secondary hover:text-red-500 font-medium"
+                                    class="text-[13px] text-text-secondary hover:text-error font-medium"
                                 >
                                     Cancel
                                 </button>
@@ -107,8 +107,8 @@
         </div>
 
         <!-- Invite Modal -->
-        <div v-if="showInviteModal" class="modal-overlay" @click.self="showInviteModal = false">
-            <div class="modal-card">
+        <div v-if="showInviteModal" class="modal-overlay" @click.self="showInviteModal = false" @keydown.esc="showInviteModal = false">
+            <div class="modal-card" role="dialog" aria-modal="true" aria-label="Invite a crew member">
                 <h3 class="text-[16px] font-semibold mb-4">Invite a crew member</h3>
                 <form @submit.prevent="sendInvite">
                     <div class="mb-4">
@@ -121,7 +121,7 @@
                             class="w-full h-[42px] px-3.5 text-sm bg-bg border border-border rounded-[7px] font-sans focus:border-scarlet focus:ring-1 focus:ring-scarlet/20 outline-none"
                             autofocus
                         />
-                        <p v-if="inviteForm.errors.email" class="mt-1 text-xs text-red-500">{{ inviteForm.errors.email }}</p>
+                        <p v-if="inviteForm.errors.email" class="mt-1 text-xs text-error">{{ inviteForm.errors.email }}</p>
                     </div>
                     <div class="flex items-center justify-end gap-3">
                         <button type="button" @click="showInviteModal = false" class="px-4 h-9 text-[13px] font-medium text-text-secondary hover:text-primary">
@@ -140,8 +140,8 @@
         </div>
 
         <!-- Remove Confirm Modal -->
-        <div v-if="removingMember" class="modal-overlay" @click.self="removingMember = null">
-            <div class="modal-card">
+        <div v-if="removingMember" class="modal-overlay" @click.self="removingMember = null" @keydown.esc="removingMember = null">
+            <div class="modal-card" role="dialog" aria-modal="true" aria-label="Confirm member removal">
                 <h3 class="text-[16px] font-semibold mb-2">Remove {{ removingMember.name }}?</h3>
                 <p class="text-[13px] text-text-secondary mb-5">This will permanently remove their access to the dashboard.</p>
                 <div class="flex items-center justify-end gap-3">
@@ -150,7 +150,7 @@
                     </button>
                     <button
                         @click="removeMember"
-                        class="px-4 h-9 bg-red-500 text-white text-[13px] font-semibold rounded-[7px] hover:bg-red-600"
+                        class="px-4 h-9 bg-error text-white text-[13px] font-semibold rounded-[7px] hover:bg-scarlet-hover"
                     >
                         Remove
                     </button>
@@ -245,15 +245,15 @@ function formatDate(dateStr) {
 
 .modal-overlay {
     position: fixed; inset: 0;
-    background: oklch(0 0 0 / 0.35);
+    background: oklch(0.05 0.008 40 / 0.45);
     display: flex; align-items: center; justify-content: center;
     z-index: 50; padding: 24px;
 }
 .modal-card {
-    background: oklch(1 0 0);
+    background: var(--color-surface);
     border-radius: 12px;
     padding: 28px 28px 24px;
     width: 100%; max-width: 400px;
-    box-shadow: 0 8px 40px oklch(0 0 0 / 0.14);
+    box-shadow: 0 8px 40px oklch(0.05 0.008 40 / 0.14);
 }
 </style>

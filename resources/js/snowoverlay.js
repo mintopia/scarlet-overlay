@@ -18,7 +18,7 @@ const Overlay = {
         }).then(payload => {
             Overlay.updateWeatherDOM(payload);
         }).catch(error => {
-            console.log('Unable to fetch weather from API', error);
+            // Silently ignore — weather will retry on next interval
         });
     },
 

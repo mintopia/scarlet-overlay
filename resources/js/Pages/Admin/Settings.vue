@@ -15,7 +15,7 @@
                         required
                         class="w-full h-[42px] px-3.5 text-sm bg-bg border border-border rounded-[7px] font-sans focus:border-scarlet focus:ring-1 focus:ring-scarlet/20 outline-none"
                     />
-                    <p v-if="identityForm.errors.boat_name" class="mt-1 text-xs text-red-500">{{ identityForm.errors.boat_name }}</p>
+                    <p v-if="identityForm.errors.boat_name" class="mt-1 text-xs text-error">{{ identityForm.errors.boat_name }}</p>
                 </div>
                 <div>
                     <label class="block text-[13px] font-medium text-text-secondary mb-1.5">MMSI (9 digits)</label>
@@ -26,7 +26,7 @@
                         placeholder="e.g. 235117890"
                         class="w-full h-[42px] px-3.5 text-sm bg-bg border border-border rounded-[7px] font-sans focus:border-scarlet focus:ring-1 focus:ring-scarlet/20 outline-none"
                     />
-                    <p v-if="identityForm.errors.mmsi" class="mt-1 text-xs text-red-500">{{ identityForm.errors.mmsi }}</p>
+                    <p v-if="identityForm.errors.mmsi" class="mt-1 text-xs text-error">{{ identityForm.errors.mmsi }}</p>
                 </div>
             </div>
             <div class="flex items-center gap-3 mt-5">
@@ -37,7 +37,7 @@
                 >
                     Save
                 </button>
-                <span v-if="identityForm.wasSuccessful" class="text-[13px] text-green-600">Saved.</span>
+                <span v-if="identityForm.wasSuccessful" class="text-[13px] text-green">Saved.</span>
             </div>
         </form>
 
@@ -53,7 +53,7 @@
                         placeholder="e.g. La Rochelle"
                         class="w-full h-[42px] px-3.5 text-sm bg-bg border border-border rounded-[7px] font-sans focus:border-scarlet focus:ring-1 focus:ring-scarlet/20 outline-none"
                     />
-                    <p v-if="passageForm.errors.passage_from" class="mt-1 text-xs text-red-500">{{ passageForm.errors.passage_from }}</p>
+                    <p v-if="passageForm.errors.passage_from" class="mt-1 text-xs text-error">{{ passageForm.errors.passage_from }}</p>
                 </div>
                 <div>
                     <label class="block text-[13px] font-medium text-text-secondary mb-1.5">To</label>
@@ -63,7 +63,7 @@
                         placeholder="e.g. Hendaye"
                         class="w-full h-[42px] px-3.5 text-sm bg-bg border border-border rounded-[7px] font-sans focus:border-scarlet focus:ring-1 focus:ring-scarlet/20 outline-none"
                     />
-                    <p v-if="passageForm.errors.passage_to" class="mt-1 text-xs text-red-500">{{ passageForm.errors.passage_to }}</p>
+                    <p v-if="passageForm.errors.passage_to" class="mt-1 text-xs text-error">{{ passageForm.errors.passage_to }}</p>
                 </div>
             </div>
             <div class="flex items-center gap-3 mt-5">
@@ -74,7 +74,7 @@
                 >
                     Save
                 </button>
-                <span v-if="passageForm.wasSuccessful" class="text-[13px] text-green-600">Saved.</span>
+                <span v-if="passageForm.wasSuccessful" class="text-[13px] text-green">Saved.</span>
             </div>
         </form>
 
@@ -89,7 +89,7 @@
                     placeholder="e.g. Lymington Marina"
                     class="w-full h-[42px] px-3.5 text-sm bg-bg border border-border rounded-[7px] font-sans focus:border-scarlet focus:ring-1 focus:ring-scarlet/20 outline-none sm:max-w-sm"
                 />
-                <p v-if="portForm.errors.port_name" class="mt-1 text-xs text-red-500">{{ portForm.errors.port_name }}</p>
+                <p v-if="portForm.errors.port_name" class="mt-1 text-xs text-error">{{ portForm.errors.port_name }}</p>
             </div>
             <div class="flex items-center gap-3 mt-5">
                 <button
@@ -99,7 +99,7 @@
                 >
                     Save
                 </button>
-                <span v-if="portForm.wasSuccessful" class="text-[13px] text-green-600">Saved.</span>
+                <span v-if="portForm.wasSuccessful" class="text-[13px] text-green">Saved.</span>
             </div>
         </form>
         <!-- Stream -->
@@ -115,7 +115,7 @@
                         class="w-full h-[42px] px-3.5 text-sm bg-bg border border-border rounded-[7px] font-sans focus:border-scarlet focus:ring-1 focus:ring-scarlet/20 outline-none"
                     />
                     <p class="mt-1 text-[12px] text-text-secondary">The SRT ingest URL for the video feed on the broadcast overlay.</p>
-                    <p v-if="streamForm.errors.srt_url" class="mt-1 text-xs text-red-500">{{ streamForm.errors.srt_url }}</p>
+                    <p v-if="streamForm.errors.srt_url" class="mt-1 text-xs text-error">{{ streamForm.errors.srt_url }}</p>
                 </div>
                 <div>
                     <label class="block text-[13px] font-medium text-text-secondary mb-1.5">SRT Stats URL</label>
@@ -126,7 +126,7 @@
                         class="w-full h-[42px] px-3.5 text-sm bg-bg border border-border rounded-[7px] font-sans focus:border-scarlet focus:ring-1 focus:ring-scarlet/20 outline-none"
                     />
                     <p class="mt-1 text-[12px] text-text-secondary">BELABOX SRT stats endpoint for the Stream Monitor page.</p>
-                    <p v-if="streamForm.errors.srt_stats_url" class="mt-1 text-xs text-red-500">{{ streamForm.errors.srt_stats_url }}</p>
+                    <p v-if="streamForm.errors.srt_stats_url" class="mt-1 text-xs text-error">{{ streamForm.errors.srt_stats_url }}</p>
                 </div>
             </div>
             <div class="flex items-center gap-3 mt-5">
@@ -137,7 +137,7 @@
                 >
                     Save
                 </button>
-                <span v-if="streamForm.wasSuccessful" class="text-[13px] text-green-600">Saved.</span>
+                <span v-if="streamForm.wasSuccessful" class="text-[13px] text-green">Saved.</span>
             </div>
         </form>
     </AdminLayout>

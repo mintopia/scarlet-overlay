@@ -49,6 +49,10 @@ defineProps({
     50% { opacity: 0.45; transform: scale(0.8); }
 }
 
+@media (prefers-reduced-motion: reduce) {
+    .live-dot { animation: none; }
+}
+
 .live-label {
     font-size: 11px;
     font-weight: 700;

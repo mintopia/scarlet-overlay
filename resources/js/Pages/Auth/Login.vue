@@ -208,10 +208,10 @@ async function loginWithPasskey() {
 .login-card {
     width: 100%;
     max-width: 380px;
-    background: oklch(1 0 0);
+    background: var(--color-surface);
     border-radius: 14px;
     padding: 40px 36px 36px;
-    box-shadow: 0 1px 3px oklch(0 0 0 / 0.04), 0 8px 32px oklch(0 0 0 / 0.06);
+    box-shadow: 0 1px 3px oklch(0.05 0.008 40 / 0.04), 0 8px 32px oklch(0.05 0.008 40 / 0.06);
 }
 
 .brand { text-align: center; margin-bottom: 32px; }
