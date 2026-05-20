@@ -6,16 +6,6 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <style>
-        *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
-        html, body {
-            width: 100vw; height: 100vh; overflow: hidden;
-            background: oklch(0.05 0.01 40);
-            font-family: 'Outfit', system-ui, sans-serif;
-            font-variant-numeric: tabular-nums;
-            color: oklch(0.96 0.005 70);
-        }
-    </style>
     <script>
         window.scarletConfig = {
             reverb: {

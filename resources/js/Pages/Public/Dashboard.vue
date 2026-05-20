@@ -3,6 +3,10 @@ import { ref, computed, onMounted, onUnmounted } from 'vue';
 import { Head } from '@inertiajs/vue3';
 import { useScarletMetrics } from '../../composables/useScarletMetrics';
 import { formatVal } from '../../scarlet';
+import ScarletWeather from '../../components/ScarletWeather.vue';
+import ScarletLiveBadge from '../../components/ScarletLiveBadge.vue';
+import ScarletBottomBadges from '../../components/ScarletBottomBadges.vue';
+import ScarletLowerThird from '../../components/ScarletLowerThird.vue';
 
 const props = defineProps({
     initialMetrics: Object,
@@ -42,6 +46,17 @@ const heelSide = computed(() => {
     return heel < 0 ? 'port' : 'starboard';
 });
 
+const weatherProps = computed(() => ({
+    wxIcon: wxIcon.value,
+    wxTemp: wxTemp.value,
+    wxCondition: wxCondition.value,
+    wxSeaTemp: wxSeaTemp.value,
+    wxWindSpeed: wxWindSpeed.value,
+    wxWindDir: wxWindDir.value,
+    wxWaveHeight: wxWaveHeight.value,
+    wxWavePeriod: wxWavePeriod.value,
+}));
+
 function zoomIn() { map?.zoomIn(); }
 function zoomOut() { map?.zoomOut(); }
 
@@ -66,24 +81,13 @@ onUnmounted(() => {
     <Head :title="`${boatName} — Live Dashboard`" />
 
     <div class="dashboard">
-        <!-- Full-viewport Leaflet map -->
         <div ref="mapContainer" class="map-container"></div>
 
         <!-- TOP-LEFT: LIVE badge + map controls -->
         <div class="tl-cluster">
-            <!-- LIVE badge -->
-            <div class="live-badge">
-                <div class="live-scarlet">
-                    <div class="live-dot"></div>
-                    <span class="live-label">LIVE</span>
-                </div>
-                <div class="live-ext">
-                    <span v-if="lastUpdateText">Updated {{ lastUpdateText }}</span>
-                    <span v-else>Connecting…</span>
-                </div>
-            </div>
-
-            <!-- Map controls -->
+            <ScarletLiveBadge
+                :extension="lastUpdateText ? `Updated ${lastUpdateText}` : 'Connecting…'"
+            />
             <div class="map-controls">
                 <button class="map-ctrl map-ctrl--top" @click="zoomIn" title="Zoom in">+</button>
                 <button class="map-ctrl map-ctrl--bottom" @click="zoomOut" title="Zoom out">&minus;</button>
@@ -101,39 +105,14 @@ onUnmounted(() => {
             </div>
         </div>
 
-        <!-- TOP-RIGHT: Weather pills -->
+        <!-- TOP-RIGHT: Weather -->
         <div class="wx-cluster">
-            <div class="pill pill--hero">
-                <span class="wx-icon">{{ wxIcon }}</span>
-                <div>
-                    <div class="pill-val">{{ wxTemp }}</div>
-                    <div class="pill-sub">{{ wxCondition }}</div>
-                </div>
-            </div>
-            <div class="pill">
-                <div class="pill-lbl">SEA</div>
-                <div class="pill-val">{{ wxSeaTemp }}</div>
-            </div>
-            <div class="pill">
-                <div class="pill-lbl">WIND</div>
-                <div class="pill-val">{{ wxWindSpeed }}</div>
-                <div class="pill-sub">{{ wxWindDir }}</div>
-            </div>
-            <div class="pill">
-                <div class="pill-lbl">WAVES</div>
-                <div class="pill-val">{{ wxWaveHeight }}</div>
-                <div class="pill-sub">{{ wxWavePeriod }}</div>
-            </div>
+            <ScarletWeather v-bind="weatherProps" />
         </div>
 
         <!-- BOTTOM-LEFT: Coords + speed legend -->
-        <div class="bottom-badges">
-            <div class="coord-badge">{{ coordText }}</div>
-            <div class="speed-legend">
-                <span>0 kn</span>
-                <div class="legend-gradient"></div>
-                <span>10 kn</span>
-            </div>
+        <div class="bl-cluster">
+            <ScarletBottomBadges :coord-text="coordText" />
         </div>
 
         <!-- BOTTOM-RIGHT: Sailing instrument pills -->
@@ -166,80 +145,23 @@ onUnmounted(() => {
         </div>
 
         <!-- LOWER THIRD -->
-        <div class="lower-third">
-            <div class="lt-brand">
-                <span class="lt-name">{{ boatName }}</span>
-            </div>
-            <div class="lt-body">
-                <div class="lt-metric">
-                    <div class="lt-label">SPEED</div>
-                    <div class="lt-val">{{ formatVal(boat?.speed_sog) }} kn</div>
-                </div>
-                <div class="lt-sep"></div>
-                <div class="lt-metric">
-                    <div class="lt-label">HEADING</div>
-                    <div class="lt-val">{{ formatVal(boat?.heading ?? boat?.cog, 0) }}°</div>
-                </div>
-                <div class="lt-sep"></div>
-                <div class="lt-metric">
-                    <div class="lt-label">DEPTH</div>
-                    <div class="lt-val">{{ formatVal(boat?.depth) }} m</div>
-                </div>
-                <div class="lt-sep"></div>
-                <span class="lt-status" :class="statusClass">{{ statusText }}</span>
-                <div v-if="statusText === 'In Port' && portName" class="lt-sep"></div>
-                <div v-if="statusText === 'In Port' && portName" class="lt-passage-wrap">
-                    <div class="lt-passage">
-                        <span class="lt-port-label">Currently at</span> <strong>{{ portName }}</strong>
-                    </div>
-                </div>
-                <div v-else-if="passageFrom || passageTo" class="lt-sep"></div>
-                <div v-else-if="passageFrom || passageTo" class="lt-passage-wrap">
-                    <div class="lt-passage">
-                        <strong>{{ passageFrom }}</strong>
-                        <span v-if="passageFrom && passageTo"> → </span>
-                        <strong>{{ passageTo }}</strong>
-                    </div>
-                </div>
-                <div class="lt-clock">
-                    <div class="lt-time">{{ clock }}</div>
-                    <div class="lt-date">{{ clockDate }}</div>
-                </div>
-            </div>
+        <div class="lt-position">
+            <ScarletLowerThird
+                :boat-name="boatName"
+                :boat="boat"
+                :status-text="statusText"
+                :status-class="statusClass"
+                :port-name="portName"
+                :passage-from="passageFrom"
+                :passage-to="passageTo"
+                :clock="clock"
+                :clock-date="clockDate"
+            />
         </div>
     </div>
 </template>
 
 <style scoped>
-:root {
-    --scarlet: oklch(0.54 0.22 27);
-    --scarlet-light: oklch(0.62 0.18 27);
-    --scarlet-glow: oklch(0.54 0.22 27 / 0.25);
-    --chrome: oklch(0.08 0.008 40 / 0.72);
-    --chrome-border: oklch(0.32 0.01 40 / 0.18);
-    --text-bright: oklch(0.96 0.005 70);
-    --text-mid: oklch(0.75 0.008 70);
-    --text-dim: oklch(0.62 0.008 70);
-    --sail-green: oklch(0.78 0.12 155);
-    --sail-green-bg: oklch(0.78 0.12 155 / 0.12);
-    --power-amber: oklch(0.78 0.16 80);
-    --power-amber-bg: oklch(0.78 0.16 80 / 0.12);
-    --port-blue: oklch(0.70 0.12 240);
-    --port-blue-bg: oklch(0.70 0.12 240 / 0.12);
-    --radius: 10px;
-    --radius-sm: 7px;
-    --blur: blur(24px);
-}
-
-/* Reset and base */
-*,
-*::before,
-*::after {
-    box-sizing: border-box;
-    margin: 0;
-    padding: 0;
-}
-
 /* Full-viewport dashboard frame */
 .dashboard {
     position: fixed;
@@ -250,14 +172,13 @@ onUnmounted(() => {
     overflow: hidden;
 }
 
-/* Map fills entire viewport */
 .map-container {
     position: absolute;
     inset: 0;
     z-index: 0;
 }
 
-/* ── TOP-LEFT CLUSTER ──────────────────────────── */
+/* TOP-LEFT */
 .tl-cluster {
     position: absolute;
     top: 16px;
@@ -268,62 +189,10 @@ onUnmounted(() => {
     gap: 6px;
 }
 
-/* LIVE badge */
-.live-badge {
-    display: flex;
-    align-items: stretch;
-    border-radius: var(--radius-sm);
-    overflow: hidden;
-    box-shadow: 0 2px 16px oklch(0.54 0.22 27 / 0.25);
-}
-
-.live-scarlet {
-    display: flex;
-    align-items: center;
-    gap: 7px;
-    background: oklch(0.54 0.22 27);
-    padding: 7px 14px 7px 10px;
-}
-
-.live-dot {
-    width: 8px;
-    height: 8px;
-    border-radius: 50%;
-    background: oklch(0.96 0.005 70);
-    animation: pulse 2s ease-in-out infinite;
-    flex-shrink: 0;
-}
-
-@keyframes pulse {
-    0%, 100% { opacity: 1; transform: scale(1); }
-    50% { opacity: 0.45; transform: scale(0.8); }
-}
-
-.live-label {
-    font-size: 11px;
-    font-weight: 700;
-    letter-spacing: 0.08em;
-    color: oklch(0.96 0.005 70);
-}
-
-.live-ext {
-    display: flex;
-    align-items: center;
-    background: oklch(0.08 0.008 40 / 0.72);
-    backdrop-filter: blur(24px);
-    -webkit-backdrop-filter: blur(24px);
-    padding: 7px 14px;
-    font-size: 10px;
-    font-weight: 500;
-    color: oklch(0.62 0.008 70);
-    letter-spacing: 0.02em;
-}
-
 /* Map controls */
 .map-controls {
     display: flex;
     flex-direction: column;
-    gap: 0;
 }
 
 .map-ctrl {
@@ -351,25 +220,41 @@ onUnmounted(() => {
 }
 
 .map-ctrl--top {
-    border-radius: var(--radius-sm) var(--radius-sm) 0 0;
+    border-radius: 7px 7px 0 0;
     border-bottom: none;
 }
 
 .map-ctrl--bottom {
-    border-radius: 0 0 var(--radius-sm) var(--radius-sm);
+    border-radius: 0 0 7px 7px;
 }
 
 .map-ctrl--single {
-    border-radius: var(--radius-sm);
+    border-radius: 7px;
     font-size: 14px;
     stroke: oklch(0.75 0.008 70);
     color: oklch(0.75 0.008 70);
 }
 
-/* ── TOP-RIGHT: WEATHER ─────────────────────────── */
+/* TOP-RIGHT */
 .wx-cluster {
     position: absolute;
     top: 16px;
+    right: 16px;
+    z-index: 10;
+}
+
+/* BOTTOM-LEFT */
+.bl-cluster {
+    position: absolute;
+    bottom: 68px;
+    left: 16px;
+    z-index: 10;
+}
+
+/* BOTTOM-RIGHT: instruments */
+.instruments {
+    position: absolute;
+    bottom: 68px;
     right: 16px;
     z-index: 10;
     display: flex;
@@ -377,12 +262,12 @@ onUnmounted(() => {
     align-items: stretch;
 }
 
-/* ── SHARED PILL ────────────────────────────────── */
+/* Pill styles for instruments (dashboard-only) */
 .pill {
     background: oklch(0.08 0.008 40 / 0.72);
     backdrop-filter: blur(24px);
     -webkit-backdrop-filter: blur(24px);
-    border-radius: var(--radius-sm);
+    border-radius: 7px;
     padding: 7px 12px;
     text-align: center;
     border: 1px solid oklch(0.32 0.01 40 / 0.18);
@@ -410,27 +295,6 @@ onUnmounted(() => {
     margin-top: 2px;
 }
 
-/* Hero weather pill */
-.pill--hero {
-    display: flex;
-    gap: 8px;
-    align-items: center;
-    text-align: left;
-    padding: 7px 14px;
-}
-
-.wx-icon {
-    font-size: 20px;
-    line-height: 1;
-    flex-shrink: 0;
-}
-
-.pill--hero .pill-val {
-    font-size: 16px;
-    font-weight: 700;
-}
-
-/* Compound pill — two values side by side */
 .pill--compound {
     display: flex;
     gap: 0;
@@ -448,222 +312,13 @@ onUnmounted(() => {
     border-left: 1px solid oklch(0.32 0.01 40 / 0.18);
 }
 
-/* ── BOTTOM-LEFT ────────────────────────────────── */
-.bottom-badges {
-    position: absolute;
-    bottom: 68px;
-    left: 16px;
-    z-index: 10;
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
-}
-
-.coord-badge {
-    font-size: 13px;
-    font-weight: 500;
-    color: oklch(0.96 0.005 70);
-    background: oklch(0.08 0.008 40 / 0.72);
-    backdrop-filter: blur(24px);
-    -webkit-backdrop-filter: blur(24px);
-    padding: 6px 14px;
-    border-radius: var(--radius-sm);
-    border: 1px solid oklch(0.32 0.01 40 / 0.18);
-    letter-spacing: 0.02em;
-}
-
-.speed-legend {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    font-size: 10px;
-    font-weight: 500;
-    color: oklch(0.62 0.008 70);
-    background: oklch(0.08 0.008 40 / 0.72);
-    backdrop-filter: blur(24px);
-    -webkit-backdrop-filter: blur(24px);
-    padding: 5px 12px;
-    border-radius: var(--radius-sm);
-    border: 1px solid oklch(0.32 0.01 40 / 0.18);
-    width: fit-content;
-}
-
-.legend-gradient {
-    width: 52px;
-    height: 3px;
-    background: linear-gradient(to right,
-        oklch(0.52 0.10 260),
-        oklch(0.62 0.14 155),
-        oklch(0.56 0.20 27)
-    );
-    border-radius: 2px;
-}
-
-/* ── BOTTOM-RIGHT: INSTRUMENTS ──────────────────── */
-.instruments {
-    position: absolute;
-    bottom: 68px;
-    right: 16px;
-    z-index: 10;
-    display: flex;
-    gap: 5px;
-    align-items: stretch;
-}
-
-/* ── LOWER THIRD ────────────────────────────────── */
-.lower-third {
+/* LOWER THIRD positioning */
+.lt-position {
     position: absolute;
     bottom: 12px;
     left: 12px;
     right: 12px;
     z-index: 10;
-    display: flex;
-    align-items: stretch;
-    overflow: hidden;
-    min-height: 48px;
-    border-radius: var(--radius);
-}
-
-.lt-brand {
-    background: oklch(0.54 0.22 27);
-    padding: 0 22px;
-    display: flex;
-    align-items: center;
-    position: relative;
-    flex-shrink: 0;
-    z-index: 1;
-}
-
-.lt-brand::after {
-    content: '';
-    position: absolute;
-    right: -16px;
-    top: 0;
-    width: 16px;
-    height: 100%;
-    background: oklch(0.54 0.22 27);
-    clip-path: polygon(0 0, 0 100%, 100% 100%);
-}
-
-.lt-name {
-    font-size: 18px;
-    font-weight: 700;
-    letter-spacing: 0.03em;
-    color: oklch(0.96 0.005 70);
-    white-space: nowrap;
-}
-
-.lt-body {
-    flex: 1;
-    display: flex;
-    align-items: center;
-    background: oklch(0.08 0.008 40 / 0.72);
-    backdrop-filter: blur(24px);
-    -webkit-backdrop-filter: blur(24px);
-    padding: 10px 18px 10px 30px;
-    margin-left: -12px;
-    gap: 10px;
-    overflow: hidden;
-}
-
-.lt-metric {
-    padding: 0 2px;
-    flex-shrink: 0;
-}
-
-.lt-label {
-    font-size: 8px;
-    font-weight: 600;
-    letter-spacing: 0.06em;
-    color: oklch(0.62 0.008 70);
-    line-height: 1;
-    white-space: nowrap;
-}
-
-.lt-val {
-    font-size: 16px;
-    font-weight: 600;
-    color: oklch(0.96 0.005 70);
-    line-height: 1.2;
-    white-space: nowrap;
-}
-
-.lt-sep {
-    width: 1px;
-    height: 24px;
-    background: oklch(0.32 0.01 40 / 0.18);
-    flex-shrink: 0;
-}
-
-.lt-status {
-    font-size: 10px;
-    font-weight: 600;
-    letter-spacing: 0.03em;
-    padding: 4px 10px;
-    border-radius: 4px;
-    white-space: nowrap;
-    flex-shrink: 0;
-}
-
-.status-sail {
-    color: oklch(0.78 0.12 155);
-    background: oklch(0.78 0.12 155 / 0.12);
-}
-
-.status-power {
-    color: oklch(0.78 0.16 80);
-    background: oklch(0.78 0.16 80 / 0.12);
-}
-
-.status-port {
-    color: oklch(0.70 0.12 240);
-    background: oklch(0.70 0.12 240 / 0.12);
-}
-
-.lt-passage-wrap {
-    flex: 1;
-    display: flex;
-    justify-content: center;
-    overflow: hidden;
-}
-
-.lt-passage {
-    font-size: 14px;
-    font-weight: 500;
-    color: oklch(0.75 0.008 70);
-    white-space: nowrap;
-}
-
-.lt-passage strong {
-    color: oklch(0.96 0.005 70);
-    font-weight: 600;
-}
-
-.lt-port-label {
-    font-size: 11px;
-    font-weight: 500;
-    color: oklch(0.62 0.008 70);
-    margin-right: 4px;
-}
-
-.lt-clock {
-    text-align: right;
-    flex-shrink: 0;
-    padding: 0 2px;
-}
-
-.lt-time {
-    font-size: 16px;
-    font-weight: 600;
-    color: oklch(0.96 0.005 70);
-    line-height: 1;
-}
-
-.lt-date {
-    font-size: 9px;
-    font-weight: 500;
-    color: oklch(0.62 0.008 70);
-    margin-top: 2px;
 }
 </style>
 
