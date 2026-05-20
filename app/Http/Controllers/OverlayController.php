@@ -13,7 +13,6 @@ class OverlayController extends Controller
             'passageFrom' => BoatSetting::getValue('passage_from', ''),
             'passageTo' => BoatSetting::getValue('passage_to', ''),
             'portName' => BoatSetting::getValue('port_name', ''),
-            'whepUrl' => BoatSetting::getValue('whep_url', ''),
             'reverb' => config('scarlet.reverb'),
             'reverbKey' => config('broadcasting.connections.reverb.key'),
             'utcOffset' => config('scarlet.time.offset'),

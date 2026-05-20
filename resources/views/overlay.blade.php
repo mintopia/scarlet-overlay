@@ -24,7 +24,6 @@
                 port: @json($reverb['port']),
                 scheme: @json($reverb['scheme']),
             },
-            whepUrl: @json($whepUrl),
             tileUrl: '/openseamap/{z}/{x}/{y}',
         };
     </script>

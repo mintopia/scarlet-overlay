@@ -35,6 +35,20 @@
 		root * "{$APP_PUBLIC_PATH}"
 		encode zstd br gzip
 
+		# MediaMTX WebRTC (WHEP) — /rtc/live/whep → mediamtx:8889/live/whep
+		handle_path /rtc/* {
+			reverse_proxy mediamtx:8889 {
+				header_up Host {upstream_hostport}
+			}
+		}
+
+		# MediaMTX HLS — /hls/live/index.m3u8 → mediamtx:8888/live/index.m3u8
+		handle_path /hls/* {
+			reverse_proxy mediamtx:8888 {
+				header_up Host {upstream_hostport}
+			}
+		}
+
 		# Mercure configuration is injected here...
 		{$CADDY_SERVER_EXTRA_DIRECTIVES}
 

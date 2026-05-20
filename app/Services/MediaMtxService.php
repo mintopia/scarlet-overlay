@@ -16,17 +16,21 @@ class MediaMtxService
 
     public function setPathSource(string $path, string $source): bool
     {
+        $config = ['source' => $source];
+
+        if ($source !== '') {
+            $config['sourceOnDemand'] = true;
+            $config['sourceOnDemandStartTimeout'] = '10s';
+            $config['sourceOnDemandCloseAfter'] = '10s';
+        }
+
         try {
             $response = Http::timeout(5)
-                ->patch("{$this->baseUrl}/v3/config/paths/edit/{$path}", [
-                    'source' => $source,
-                ]);
+                ->patch("{$this->baseUrl}/v3/config/paths/edit/{$path}", $config);
 
             if ($response->status() === 404) {
                 $response = Http::timeout(5)
-                    ->post("{$this->baseUrl}/v3/config/paths/add/{$path}", [
-                        'source' => $source,
-                    ]);
+                    ->post("{$this->baseUrl}/v3/config/paths/add/{$path}", $config);
             }
 
             if ($response->successful()) {

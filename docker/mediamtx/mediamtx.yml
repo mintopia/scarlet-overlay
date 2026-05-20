@@ -4,14 +4,21 @@ logDestinations: [stdout]
 api: yes
 apiAddress: :9997
 
-rtsp: no
-rtmp: no
-hls: no
-srt: yes
-srtAddress: :8890
+srt: no
+
+rtsp: yes
+rtspAddress: :8554
+rtspTransports: [tcp]
 
 webrtc: yes
 webrtcAddress: :8889
+webrtcAllowOrigins: ["*"]
+webrtcICEServers2: []
+
+hls: yes
+hlsAddress: :8888
+hlsAllowOrigins: ["*"]
+hlsAlwaysRemux: yes
 
 paths:
   live:

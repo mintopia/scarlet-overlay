@@ -19,6 +19,8 @@ const Overlay = {
     peerConnection: null,
     whepRetryTimer: null,
     whepRetryDelay: 5000,
+    whepUrl: '/rtc/live/whep',
+    hlsUrl: '/hls/live/index.m3u8',
 
     // ── Maps ────────────────────────────────────────────────────────────
     maps: { pip: null, full: null },
@@ -360,20 +362,43 @@ const Overlay = {
         }
     },
 
-    // ── WHEP video feed ────────────────────────────────────────────────────
+    // ── Video feed (WHEP + HLS fallback) ──────────────────────────────────
     initVideo() {
-        const whepUrl = window.scarletConfig?.whepUrl;
-        if (!whepUrl) return;
-
-        this.connectWhep(whepUrl);
+        this.connectVideo();
     },
 
-    async connectWhep(whepUrl) {
+    async connectVideo() {
         this.teardownPlayer();
 
-        const pc = new RTCPeerConnection();
-        this.peerConnection = pc;
+        try {
+            this.peerConnection = await this.startWhep();
+            this.setVideoFeedActive(true);
 
+            this.peerConnection.addEventListener('connectionstatechange', () => {
+                const s = this.peerConnection?.connectionState;
+                if (s === 'failed' || s === 'disconnected' || s === 'closed') {
+                    console.warn('[Overlay] WebRTC disconnected:', s);
+                    this.setVideoFeedActive(false);
+                    this.scheduleRetry();
+                }
+            });
+            return;
+        } catch (e) {
+            console.warn('[Overlay] WHEP failed, trying HLS:', e.message);
+        }
+
+        try {
+            this.startHls();
+            this.setVideoFeedActive(true);
+        } catch (e) {
+            console.warn('[Overlay] HLS failed:', e.message);
+            this.setVideoFeedActive(false);
+            this.scheduleRetry();
+        }
+    },
+
+    async startWhep() {
+        const pc = new RTCPeerConnection();
         pc.addTransceiver('video', { direction: 'recvonly' });
         pc.addTransceiver('audio', { direction: 'recvonly' });
 
@@ -384,55 +409,49 @@ const Overlay = {
             }
         };
 
-        pc.onconnectionstatechange = () => {
-            const state = pc.connectionState;
-            console.log('[Overlay] WebRTC connection:', state);
-
-            if (state === 'connected') {
-                this.setVideoFeedActive(true);
-            } else if (state === 'failed' || state === 'disconnected' || state === 'closed') {
-                this.setVideoFeedActive(false);
-                this.scheduleWhepRetry(whepUrl);
-            }
-        };
-
-        try {
-            const offer = await pc.createOffer();
-            await pc.setLocalDescription(offer);
-
-            const res = await fetch(whepUrl, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/sdp' },
-                body: pc.localDescription.sdp,
+        const connected = new Promise((resolve, reject) => {
+            const timer = setTimeout(() => reject(new Error('WHEP timeout')), 5000);
+            pc.addEventListener('connectionstatechange', () => {
+                if (pc.connectionState === 'connected') { clearTimeout(timer); resolve(); }
+                if (pc.connectionState === 'failed')    { clearTimeout(timer); reject(new Error('WHEP failed')); }
             });
+        });
 
-            if (!res.ok) throw new Error(`WHEP ${res.status}`);
+        const offer = await pc.createOffer();
+        await pc.setLocalDescription(offer);
 
-            const answer = await res.text();
-            await pc.setRemoteDescription({ type: 'answer', sdp: answer });
-
-            // Timeout if connection doesn't establish within 5s
-            setTimeout(() => {
-                if (pc.connectionState !== 'connected') {
-                    console.warn('[Overlay] WHEP connection timeout');
-                    this.teardownPlayer();
-                    this.setVideoFeedActive(false);
-                    this.scheduleWhepRetry(whepUrl);
-                }
-            }, 5000);
-        } catch (e) {
-            console.warn('[Overlay] WHEP connect failed:', e.message);
-            this.teardownPlayer();
-            this.setVideoFeedActive(false);
-            this.scheduleWhepRetry(whepUrl);
+        const res = await fetch(this.whepUrl, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/sdp' },
+            body: offer.sdp,
+        });
+        if (!res.ok) {
+            pc.close();
+            throw new Error(`WHEP ${res.status}`);
         }
+
+        const answer = await res.text();
+        await pc.setRemoteDescription({ type: 'answer', sdp: answer });
+        await connected;
+        return pc;
+    },
+
+    startHls() {
+        const video = this.el('video-feed');
+        if (!video) throw new Error('No video element');
+
+        if (video.canPlayType('application/vnd.apple.mpegurl')) {
+            video.src = this.hlsUrl;
+            video.play().catch(() => {});
+            return;
+        }
+
+        throw new Error('HLS not supported natively and no hls.js loaded');
     },
 
     teardownPlayer() {
         if (this.peerConnection) {
-            this.peerConnection.ontrack = null;
-            this.peerConnection.onconnectionstatechange = null;
-            this.peerConnection.close();
+            try { this.peerConnection.close(); } catch {}
             this.peerConnection = null;
         }
 
@@ -444,12 +463,12 @@ const Overlay = {
         }
     },
 
-    scheduleWhepRetry(whepUrl) {
+    scheduleRetry() {
         if (this.whepRetryTimer) return;
 
         this.whepRetryTimer = setTimeout(() => {
             this.whepRetryTimer = null;
-            this.connectWhep(whepUrl);
+            this.connectVideo();
         }, this.whepRetryDelay);
     },
 
