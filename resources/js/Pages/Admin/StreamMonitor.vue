@@ -143,9 +143,9 @@
                 <div class="bg-surface border border-border rounded-[10px] p-4">
                     <div class="text-[11px] font-semibold text-text-dim uppercase tracking-wide mb-2">Network</div>
                     <div class="text-[20px] font-bold tabular-nums leading-none mb-1">
-                        {{ publisher?.network != null ? formatBytes(publisher.network) : '—' }}
+                        {{ formatBitrate(publisher?.network) }}
                     </div>
-                    <div class="text-[11px] text-text-dim">transferred</div>
+                    <div class="text-[11px] text-text-dim">Mbps</div>
                 </div>
             </div>
         </template>
@@ -207,15 +207,6 @@ function historyWindow(history) {
 function formatBitrate(bps) {
     if (bps == null || bps === 0) return '0.00';
     return (bps / 1_000_000).toFixed(2);
-}
-
-function formatBytes(bytes) {
-    if (bytes == null) return '—';
-    const b = Number(bytes);
-    if (b < 1024) return `${b} B`;
-    if (b < 1048576) return `${(b / 1024).toFixed(1)} KB`;
-    if (b < 1073741824) return `${(b / 1048576).toFixed(1)} MB`;
-    return `${(b / 1073741824).toFixed(2)} GB`;
 }
 
 function toLine(data, max) {

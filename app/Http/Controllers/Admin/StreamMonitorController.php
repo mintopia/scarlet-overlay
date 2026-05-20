@@ -19,7 +19,7 @@ class StreamMonitorController extends Controller
             'rtt' => 'scarlet_srt_publisher_rtt_ms',
             'latency' => 'scarlet_srt_publisher_latency_ms',
             'dropped_pkts' => 'scarlet_srt_publisher_dropped_packets_total',
-            'network' => 'scarlet_srt_publisher_network_bytes',
+            'network' => 'scarlet_srt_publisher_network_bps',
         ]);
 
         return Inertia::render('Admin/StreamMonitor', [

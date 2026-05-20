@@ -4,7 +4,8 @@ logDestinations: [stdout]
 api: yes
 apiAddress: :9997
 
-srt: no
+srt: yes
+srtAddress: :8890
 
 rtsp: yes
 rtspAddress: :8554
@@ -22,3 +23,7 @@ hlsAlwaysRemux: yes
 
 paths:
   live:
+    source: publisher
+    sourceOnDemand: yes
+    sourceOnDemandStartTimeout: 10s
+    sourceOnDemandCloseAfter: 10s

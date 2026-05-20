@@ -55,9 +55,9 @@ class SrtMetricsController extends Controller
             $lines[] = '# TYPE scarlet_srt_publisher_dropped_packets_total gauge';
             $lines[] = "scarlet_srt_publisher_dropped_packets_total{$labels} " . ($pub['dropped_pkts'] ?? 0);
 
-            $lines[] = '# HELP scarlet_srt_publisher_network_bytes Publisher network bytes';
-            $lines[] = '# TYPE scarlet_srt_publisher_network_bytes gauge';
-            $lines[] = "scarlet_srt_publisher_network_bytes{$labels} " . ($pub['network'] ?? 0);
+            $lines[] = '# HELP scarlet_srt_publisher_network_bps Publisher network bandwidth in bits per second';
+            $lines[] = '# TYPE scarlet_srt_publisher_network_bps gauge';
+            $lines[] = "scarlet_srt_publisher_network_bps{$labels} " . (($pub['network'] ?? 0) * 1000);
         }
 
         $consumers = $data['consumers'] ?? [];
