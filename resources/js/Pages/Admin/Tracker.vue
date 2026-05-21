@@ -358,11 +358,8 @@ const isConnected = computed(() => {
 const primaryConnection = computed(() => {
     const t = live.value;
     if (!t) return 'lte';
-    // Prefer LTE if it has a stronger signal (higher dBm = less negative = better)
-    if (t.lte_rssi != null && t.wifi_rssi != null) {
-        return t.lte_rssi >= t.wifi_rssi ? 'lte' : 'wifi';
-    }
-    return t.lte_rssi != null ? 'lte' : 'wifi';
+    if (t.wifi_rssi != null) return 'wifi';
+    return 'lte';
 });
 
 const isUsbPowered = computed(() => (live.value?.usb_powered ?? 0) >= 1);
