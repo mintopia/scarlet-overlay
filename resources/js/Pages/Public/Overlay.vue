@@ -273,6 +273,12 @@ onUnmounted(() => {
     transform: translateY(0);
 }
 
+[data-state="video-live"] .bl-cluster {
+    top: 224px;
+    bottom: auto;
+    flex-direction: column-reverse;
+}
+
 .lt-position {
     position: absolute;
     bottom: 12px;
@@ -351,12 +357,6 @@ onUnmounted(() => {
 }
 
 /* ── Overlay text scale (~1.5x) ────────── */
-
-/* Live badge */
-.overlay :deep(.live-label) { font-size: 13px; }
-.overlay :deep(.live-dot) { width: 9px; height: 9px; }
-.overlay :deep(.live-scarlet) { gap: 8px; padding: 8px 16px 8px 12px; }
-.overlay :deep(.live-ext) { font-size: 12px; padding: 8px 14px; }
 
 /* Weather pills */
 .overlay :deep(.pill-lbl) { font-size: 12px; }
