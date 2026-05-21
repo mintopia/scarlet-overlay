@@ -197,14 +197,16 @@ export function useVideoFeed(videoEl) {
                     }
                     lastFramesDecoded = currentFrames;
                 } catch {
-                    // PC closed
+                    setActive(false);
+                    scheduleRetry();
                 }
                 return;
             }
 
-            if (hlsInstance) {
-                const video = getVideoElement();
-                if (video && video.paused && !video.ended) {
+            const video = getVideoElement();
+            if (video) {
+                const pos = video.currentTime;
+                if (lastFramesDecoded !== null && pos === lastFramesDecoded) {
                     videoStallCount++;
                     if (videoStallCount >= 3) {
                         setActive(false);
@@ -213,6 +215,7 @@ export function useVideoFeed(videoEl) {
                 } else {
                     videoStallCount = 0;
                 }
+                lastFramesDecoded = pos;
             }
         }, 1000);
     }
