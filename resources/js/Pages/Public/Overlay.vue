@@ -264,6 +264,7 @@ onUnmounted(() => {
                 transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
+[data-state="video-live"] .bl-cluster,
 [data-state="no-video"] .bl-cluster,
 [data-state="offline"] .bl-cluster,
 [data-state="port"] .bl-cluster {
