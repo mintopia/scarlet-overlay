@@ -1,5 +1,8 @@
 <script setup>
-defineProps({
+import { computed } from 'vue';
+import { useSpringValue } from '../composables/useSpringValue';
+
+const props = defineProps({
     wxIcon: String,
     wxTemp: String,
     wxCondition: String,
@@ -8,7 +11,24 @@ defineProps({
     wxWindDir: String,
     wxWaveHeight: String,
     wxWavePeriod: String,
+    rawTemp: { type: Number, default: null },
+    rawSeaTemp: { type: Number, default: null },
+    rawWindSpeed: { type: Number, default: null },
+    rawWaveHeight: { type: Number, default: null },
+    rawWavePeriod: { type: Number, default: null },
 });
+
+const animTemp = useSpringValue(() => props.rawTemp, { tension: 60, friction: 10 });
+const animSea = useSpringValue(() => props.rawSeaTemp, { tension: 60, friction: 10 });
+const animWind = useSpringValue(() => props.rawWindSpeed, { tension: 80, friction: 12 });
+const animWaveH = useSpringValue(() => props.rawWaveHeight, { tension: 60, friction: 10 });
+const animWaveP = useSpringValue(() => props.rawWavePeriod, { tension: 60, friction: 10 });
+
+const dispTemp = computed(() => props.rawTemp != null ? `${animTemp.value.toFixed(1)}°` : props.wxTemp);
+const dispSea = computed(() => props.rawSeaTemp != null ? `${animSea.value.toFixed(1)}°` : props.wxSeaTemp);
+const dispWind = computed(() => props.rawWindSpeed != null ? `${Math.round(animWind.value)} kn` : props.wxWindSpeed);
+const dispWaveH = computed(() => props.rawWaveHeight != null ? `${animWaveH.value.toFixed(1)} m` : props.wxWaveHeight);
+const dispWaveP = computed(() => props.rawWavePeriod != null ? `${Math.round(animWaveP.value)} s` : props.wxWavePeriod);
 </script>
 
 <template>
@@ -16,23 +36,23 @@ defineProps({
         <div class="pill pill--hero">
             <span class="wx-icon">{{ wxIcon }}</span>
             <div>
-                <div class="pill-val">{{ wxTemp }}</div>
+                <div class="pill-val">{{ dispTemp }}</div>
                 <div class="pill-sub">{{ wxCondition }}</div>
             </div>
         </div>
         <div class="pill">
             <div class="pill-lbl">SEA</div>
-            <div class="pill-val">{{ wxSeaTemp }}</div>
+            <div class="pill-val">{{ dispSea }}</div>
         </div>
         <div class="pill">
             <div class="pill-lbl">WIND</div>
-            <div class="pill-val">{{ wxWindSpeed }}</div>
+            <div class="pill-val">{{ dispWind }}</div>
             <div class="pill-sub">{{ wxWindDir }}</div>
         </div>
         <div class="pill">
             <div class="pill-lbl">WAVES</div>
-            <div class="pill-val">{{ wxWaveHeight }}</div>
-            <div class="pill-sub">{{ wxWavePeriod }}</div>
+            <div class="pill-val">{{ dispWaveH }}</div>
+            <div class="pill-sub">{{ dispWaveP }}</div>
         </div>
     </div>
 </template>

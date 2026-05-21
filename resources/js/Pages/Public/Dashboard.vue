@@ -2,11 +2,12 @@
 import { ref, computed, onMounted, onUnmounted } from 'vue';
 import { Head } from '@inertiajs/vue3';
 import { useScarletMetrics } from '../../composables/useScarletMetrics';
-import { formatVal } from '../../scarlet';
+import { useSpringValue, useAngleSpring } from '../../composables/useSpringValue';
 import ScarletWeather from '../../components/ScarletWeather.vue';
 import ScarletLiveBadge from '../../components/ScarletLiveBadge.vue';
 import ScarletBottomBadges from '../../components/ScarletBottomBadges.vue';
 import ScarletLowerThird from '../../components/ScarletLowerThird.vue';
+import ScarletCompass from '../../components/ScarletCompass.vue';
 
 const props = defineProps({
     initialMetrics: Object,
@@ -24,7 +25,7 @@ const autoCenter = ref(true);
 let map = null;
 
 const {
-    boat, gps,
+    boat, gps, weather,
     clock, clockDate,
     coordText, statusText, statusClass, lastUpdateText,
     wxTemp, wxCondition, wxIcon, wxSeaTemp, wxWindSpeed, wxWindDir, wxWaveHeight, wxWavePeriod,
@@ -55,7 +56,29 @@ const weatherProps = computed(() => ({
     wxWindDir: wxWindDir.value,
     wxWaveHeight: wxWaveHeight.value,
     wxWavePeriod: wxWavePeriod.value,
+    rawTemp: weather.value?.temp != null ? Number(weather.value.temp) : null,
+    rawSeaTemp: weather.value?.seaTemp != null ? Number(weather.value.seaTemp) : null,
+    rawWindSpeed: weather.value?.wind?.speed != null ? Number(weather.value.wind.speed) : null,
+    rawWaveHeight: weather.value?.waves?.height != null ? Number(weather.value.waves.height) : null,
+    rawWavePeriod: weather.value?.waves?.period != null ? Number(weather.value.waves.period) : null,
 }));
+
+const compassHeading = computed(() => boat.value?.heading ?? boat.value?.cog ?? 0);
+const compassWind = computed(() => {
+    const dir = weather.value?.wind?.direction;
+    return dir != null ? Number(dir) : null;
+});
+
+const animAppWind = useSpringValue(() => boat.value?.wind_speed_apparent, { tension: 80, friction: 12 });
+const animWindAngle = useAngleSpring(() => Math.abs(boat.value?.wind_angle_apparent ?? 0));
+const animHeel = useSpringValue(() => Math.abs(boat.value?.heel ?? 0), { tension: 80, friction: 12 });
+const animPressure = useSpringValue(() => boat.value?.pressure, { tension: 60, friction: 10 });
+const animTrip = useSpringValue(() => boat.value?.trip_log, { tension: 60, friction: 10 });
+
+function fmtSpring(anim, raw, decimals = 1) {
+    if (raw == null) return '--';
+    return Number(anim).toFixed(decimals);
+}
 
 function zoomIn() { map?.zoomIn(); }
 function zoomOut() { map?.zoomOut(); }
@@ -115,32 +138,33 @@ onUnmounted(() => {
             <ScarletBottomBadges :coord-text="coordText" />
         </div>
 
-        <!-- BOTTOM-RIGHT: Sailing instrument pills -->
+        <!-- BOTTOM-RIGHT: Compass + sailing instrument pills -->
         <div class="instruments">
+            <ScarletCompass :heading="compassHeading" :wind-direction="compassWind" :size="68" />
             <div class="pill pill--compound">
                 <div class="pill-cell">
                     <div class="pill-lbl">APP. WIND</div>
-                    <div class="pill-val">{{ formatVal(boat?.wind_speed_apparent) }} kn</div>
+                    <div class="pill-val">{{ fmtSpring(animAppWind, boat?.wind_speed_apparent) }} kn</div>
                 </div>
                 <div class="pill-cell">
                     <div class="pill-lbl">ANGLE</div>
-                    <div class="pill-val">{{ formatVal(Math.abs(boat?.wind_angle_apparent ?? 0), 0) }}°</div>
+                    <div class="pill-val">{{ fmtSpring(animWindAngle, boat?.wind_angle_apparent, 0) }}°</div>
                     <div class="pill-sub">{{ windAngleSide }}</div>
                 </div>
             </div>
             <div class="pill">
                 <div class="pill-lbl">HEEL</div>
-                <div class="pill-val">{{ formatVal(Math.abs(boat?.heel ?? 0), 0) }}°</div>
+                <div class="pill-val">{{ fmtSpring(animHeel, boat?.heel, 0) }}°</div>
                 <div class="pill-sub">{{ heelSide }}</div>
             </div>
             <div class="pill">
                 <div class="pill-lbl">PRESSURE</div>
-                <div class="pill-val">{{ formatVal(boat?.pressure, 0) }}</div>
+                <div class="pill-val">{{ fmtSpring(animPressure, boat?.pressure, 0) }}</div>
                 <div class="pill-sub">hPa</div>
             </div>
             <div class="pill">
                 <div class="pill-lbl">TRIP</div>
-                <div class="pill-val">{{ formatVal(boat?.trip_log) }} nm</div>
+                <div class="pill-val">{{ fmtSpring(animTrip, boat?.trip_log) }} nm</div>
             </div>
         </div>
 
@@ -258,8 +282,8 @@ onUnmounted(() => {
     right: 16px;
     z-index: 10;
     display: flex;
-    gap: 5px;
-    align-items: stretch;
+    gap: 6px;
+    align-items: center;
 }
 
 /* Pill styles for instruments (dashboard-only) */

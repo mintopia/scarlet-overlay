@@ -7,6 +7,7 @@ import ScarletWeather from '../../components/ScarletWeather.vue';
 import ScarletLiveBadge from '../../components/ScarletLiveBadge.vue';
 import ScarletBottomBadges from '../../components/ScarletBottomBadges.vue';
 import ScarletLowerThird from '../../components/ScarletLowerThird.vue';
+import ScarletCompass from '../../components/ScarletCompass.vue';
 
 const props = defineProps({
     initialMetrics: Object,
@@ -17,7 +18,7 @@ const props = defineProps({
 });
 
 const {
-    boat, gps, lastUpdate,
+    boat, gps, weather, lastUpdate,
     clock, clockDate,
     coordText, isOffline, statusText, statusClass, lastUpdateText,
     wxTemp, wxCondition, wxIcon, wxSeaTemp, wxWindSpeed, wxWindDir, wxWaveHeight, wxWavePeriod,
@@ -66,7 +67,18 @@ const weatherProps = computed(() => ({
     wxWindDir: wxWindDir.value,
     wxWaveHeight: wxWaveHeight.value,
     wxWavePeriod: wxWavePeriod.value,
+    rawTemp: weather.value?.temp != null ? Number(weather.value.temp) : null,
+    rawSeaTemp: weather.value?.seaTemp != null ? Number(weather.value.seaTemp) : null,
+    rawWindSpeed: weather.value?.wind?.speed != null ? Number(weather.value.wind.speed) : null,
+    rawWaveHeight: weather.value?.waves?.height != null ? Number(weather.value.waves.height) : null,
+    rawWavePeriod: weather.value?.waves?.period != null ? Number(weather.value.waves.period) : null,
 }));
+
+const compassHeading = computed(() => boat.value?.heading ?? boat.value?.cog ?? 0);
+const compassWind = computed(() => {
+    const dir = weather.value?.wind?.direction;
+    return dir != null ? Number(dir) : null;
+});
 
 const offlineLastUpdate = computed(() => {
     if (!lastUpdate.value) return 'Last update received —';
@@ -127,8 +139,9 @@ onUnmounted(() => {
             <ScarletWeather v-bind="weatherProps" />
         </div>
 
-        <!-- BOTTOM-LEFT: Coords + speed legend -->
+        <!-- BOTTOM-LEFT: Compass + coords + speed legend -->
         <div class="bl-cluster">
+            <ScarletCompass :heading="compassHeading" :wind-direction="compassWind" :size="76" />
             <ScarletBottomBadges :coord-text="coordText" />
         </div>
 
@@ -239,6 +252,10 @@ onUnmounted(() => {
     bottom: 68px;
     left: 16px;
     z-index: 10;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
     opacity: 0;
     visibility: hidden;
     transform: translateY(6px);

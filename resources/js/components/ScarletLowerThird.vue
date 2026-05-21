@@ -1,7 +1,7 @@
 <script setup>
-import { formatVal } from '../scarlet';
+import { useSpringValue, useAngleSpring } from '../composables/useSpringValue';
 
-defineProps({
+const props = defineProps({
     boatName: String,
     boat: Object,
     statusText: String,
@@ -12,6 +12,20 @@ defineProps({
     clock: String,
     clockDate: String,
 });
+
+const animSpeed = useSpringValue(() => props.boat?.speed_sog);
+const animHeading = useAngleSpring(() => props.boat?.heading ?? props.boat?.cog);
+const animDepth = useSpringValue(() => props.boat?.depth);
+
+function fmtSpring(anim, raw, decimals = 1) {
+    if (raw == null) return '--';
+    return Number(anim).toFixed(decimals);
+}
+
+function fmtHeading(anim, raw) {
+    if (raw == null) return '--';
+    return Math.round(((anim % 360) + 360) % 360);
+}
 </script>
 
 <template>
@@ -22,17 +36,17 @@ defineProps({
         <div class="lt-body">
             <div class="lt-metric">
                 <div class="lt-label">SPEED</div>
-                <div class="lt-val">{{ formatVal(boat?.speed_sog) }} kn</div>
+                <div class="lt-val">{{ fmtSpring(animSpeed, boat?.speed_sog) }} kn</div>
             </div>
             <div class="lt-sep"></div>
             <div class="lt-metric">
                 <div class="lt-label">HEADING</div>
-                <div class="lt-val">{{ formatVal(boat?.heading ?? boat?.cog, 0) }}°</div>
+                <div class="lt-val">{{ fmtHeading(animHeading, boat?.heading ?? boat?.cog) }}°</div>
             </div>
             <div class="lt-sep"></div>
             <div class="lt-metric">
                 <div class="lt-label">DEPTH</div>
-                <div class="lt-val">{{ formatVal(boat?.depth) }} m</div>
+                <div class="lt-val">{{ fmtSpring(animDepth, boat?.depth) }} m</div>
             </div>
             <div class="lt-sep"></div>
             <span class="lt-status" :class="statusClass">{{ statusText }}</span>
