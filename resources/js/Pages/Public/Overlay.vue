@@ -249,7 +249,7 @@ onUnmounted(() => {
 
 .bl-cluster {
     position: absolute;
-    bottom: 68px;
+    bottom: 88px;
     left: 16px;
     z-index: 10;
     display: flex;
@@ -353,10 +353,10 @@ onUnmounted(() => {
 /* ── Overlay text scale (~1.5x) ────────── */
 
 /* Live badge */
-.overlay :deep(.live-label) { font-size: 16px; }
-.overlay :deep(.live-dot) { width: 12px; height: 12px; }
-.overlay :deep(.live-scarlet) { gap: 10px; padding: 10px 20px 10px 14px; }
-.overlay :deep(.live-ext) { font-size: 15px; padding: 10px 18px; }
+.overlay :deep(.live-label) { font-size: 13px; }
+.overlay :deep(.live-dot) { width: 9px; height: 9px; }
+.overlay :deep(.live-scarlet) { gap: 8px; padding: 8px 16px 8px 12px; }
+.overlay :deep(.live-ext) { font-size: 12px; padding: 8px 14px; }
 
 /* Weather pills */
 .overlay :deep(.pill-lbl) { font-size: 12px; }
