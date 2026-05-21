@@ -94,9 +94,9 @@ function fmtHeading(anim, raw) {
 .lt-brand::after {
     content: '';
     position: absolute;
-    right: -16px;
+    right: -17px;
     top: 0;
-    width: 16px;
+    width: 17px;
     height: 100%;
     background: oklch(0.54 0.22 27);
     clip-path: polygon(0 0, 0 100%, 100% 100%);
