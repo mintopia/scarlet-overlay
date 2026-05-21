@@ -141,7 +141,7 @@ onUnmounted(() => {
 
         <!-- BOTTOM-LEFT: Compass + coords + speed legend -->
         <div class="bl-cluster">
-            <ScarletCompass :heading="compassHeading" :wind-direction="compassWind" :size="76" />
+            <ScarletCompass :heading="compassHeading" :wind-direction="compassWind" :size="110" />
             <ScarletBottomBadges :coord-text="coordText" />
         </div>
 
@@ -298,19 +298,19 @@ onUnmounted(() => {
     -webkit-backdrop-filter: blur(24px);
     border: 1px solid oklch(0.32 0.01 40 / 0.18);
     border-radius: 10px;
-    padding: 30px 44px;
+    padding: 40px 60px;
     text-align: center;
 }
 
 .offline-title {
-    font-size: 20px;
+    font-size: 30px;
     font-weight: 600;
     color: oklch(0.96 0.005 70);
-    margin-bottom: 8px;
+    margin-bottom: 10px;
 }
 
 .offline-time {
-    font-size: 14px;
+    font-size: 21px;
     font-weight: 500;
     color: oklch(0.75 0.008 70);
 }
@@ -349,6 +349,46 @@ onUnmounted(() => {
         transition: none;
     }
 }
+
+/* ── Overlay text scale (~1.5x) ────────── */
+
+/* Live badge */
+.overlay :deep(.live-label) { font-size: 16px; }
+.overlay :deep(.live-dot) { width: 12px; height: 12px; }
+.overlay :deep(.live-scarlet) { gap: 10px; padding: 10px 20px 10px 14px; }
+.overlay :deep(.live-ext) { font-size: 15px; padding: 10px 18px; }
+
+/* Weather pills */
+.overlay :deep(.pill-lbl) { font-size: 12px; }
+.overlay :deep(.pill-val) { font-size: 21px; }
+.overlay :deep(.pill-sub) { font-size: 14px; }
+.overlay :deep(.pill) { padding: 10px 16px; min-width: 72px; }
+.overlay :deep(.pill--hero) { padding: 10px 18px; }
+.overlay :deep(.pill--hero .pill-val) { font-size: 24px; }
+.overlay :deep(.wx-icon) { font-size: 30px; }
+
+/* Lower third */
+.overlay :deep(.lower-third) { min-height: 64px; border-radius: 12px; }
+.overlay :deep(.lt-brand) { padding: 0 30px; }
+.overlay :deep(.lt-brand::after) { right: -22px; width: 22px; }
+.overlay :deep(.lt-name) { font-size: 27px; }
+.overlay :deep(.lt-body) { padding: 14px 24px 14px 40px; gap: 14px; }
+.overlay :deep(.lt-label) { font-size: 12px; }
+.overlay :deep(.lt-val) { font-size: 24px; }
+.overlay :deep(.lt-sep) { height: 32px; }
+.overlay :deep(.lt-status) { font-size: 15px; padding: 6px 14px; }
+.overlay :deep(.lt-passage) { font-size: 21px; }
+.overlay :deep(.lt-port-label) { font-size: 16px; }
+.overlay :deep(.lt-time) { font-size: 24px; }
+.overlay :deep(.lt-date) { font-size: 14px; }
+
+/* Bottom badges */
+.overlay :deep(.coord-badge) { font-size: 20px; padding: 9px 18px; }
+.overlay :deep(.speed-legend) { font-size: 15px; padding: 7px 16px; }
+.overlay :deep(.legend-gradient) { width: 72px; }
+
+/* Compass heading readout */
+.overlay :deep(.compass-heading) { font-size: 15px; padding: 2px 8px; }
 </style>
 
 <style>
