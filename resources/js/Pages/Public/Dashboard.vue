@@ -133,14 +133,14 @@ onUnmounted(() => {
             <ScarletWeather v-bind="weatherProps" />
         </div>
 
-        <!-- BOTTOM-LEFT: Coords + speed legend -->
+        <!-- BOTTOM-LEFT: Compass + coords + speed legend -->
         <div class="bl-cluster">
+            <ScarletCompass :heading="compassHeading" :wind-direction="compassWind" :size="76" />
             <ScarletBottomBadges :coord-text="coordText" />
         </div>
 
-        <!-- BOTTOM-RIGHT: Compass + sailing instrument pills -->
+        <!-- BOTTOM-RIGHT: Sailing instrument pills -->
         <div class="instruments">
-            <ScarletCompass :heading="compassHeading" :wind-direction="compassWind" :size="68" />
             <div class="pill pill--compound">
                 <div class="pill-cell">
                     <div class="pill-lbl">APP. WIND</div>
@@ -273,6 +273,10 @@ onUnmounted(() => {
     bottom: 68px;
     left: 16px;
     z-index: 10;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
 }
 
 /* BOTTOM-RIGHT: instruments */
@@ -282,8 +286,8 @@ onUnmounted(() => {
     right: 16px;
     z-index: 10;
     display: flex;
-    gap: 6px;
-    align-items: center;
+    gap: 5px;
+    align-items: stretch;
 }
 
 /* Pill styles for instruments (dashboard-only) */
