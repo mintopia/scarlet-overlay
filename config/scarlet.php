@@ -33,9 +33,43 @@ return [
 
         'mappings' => [
             'boat' => [
-                'speed_sog' => 'scarlet_gps_speed_kn',
-                'heading' => 'scarlet_gps_heading_deg',
+                // Navigation (Signal K — more accurate than tracker GPS)
+                'speed_sog' => 'scarlet_signalk_navigation_speedOverGround * 1.94384',
+                'speed_stw' => 'scarlet_signalk_navigation_speedThroughWater * 1.94384',
+                'heading' => 'scarlet_signalk_navigation_headingMagnetic * 180 / 3.14159265359',
+                'cog' => 'scarlet_signalk_navigation_courseOverGroundTrue * 180 / 3.14159265359',
+                'depth' => 'scarlet_signalk_environment_depth_belowSurface',
+                'heel' => 'scarlet_signalk_navigation_attitude_roll * 180 / 3.14159265359',
+                'trip_log' => 'scarlet_signalk_navigation_trip_log / 1852',
+
+                // Wind (apparent from Signal K, true from tracker)
+                'wind_speed_apparent' => 'scarlet_signalk_environment_wind_speedApparent * 1.94384',
+                'wind_angle_apparent' => 'scarlet_signalk_environment_wind_angleApparent * 180 / 3.14159265359',
+                'wind_speed_true' => 'scarlet_boat_wind_speed_kn',
+                'wind_direction_true' => 'scarlet_boat_wind_direction_deg',
+
+                // Environment
                 'air_temp' => 'scarlet_environment_temperature_celsius',
+                'water_temp' => 'scarlet_signalk_environment_water_temperature - 273.15',
+
+                // Batteries (Signal K: bank 0 = house, bank 1 = engine)
+                'house_battery_voltage' => 'scarlet_signalk_electrical_batteries_0_voltage',
+                'house_battery_soc' => 'scarlet_signalk_electrical_batteries_0_capacity_stateOfCharge * 100',
+                'house_battery_current' => 'scarlet_signalk_electrical_batteries_0_current',
+                'house_battery_time_remaining' => 'scarlet_signalk_electrical_batteries_0_capacity_timeRemaining / 3600',
+                'engine_battery_voltage' => 'scarlet_signalk_electrical_batteries_1_voltage',
+
+                // Tanks
+                'fuel_level' => 'scarlet_boat_fuel_tank_percent',
+                'water_level' => 'scarlet_mqtt_percent{topic="watertank"}',
+
+                // Cabin environment (Zigbee sensors via MQTT)
+                'cabin_temp_quarterberth' => 'scarlet_mqtt_temperature{topic="zigbee2mqtt/Quarterberth"}',
+                'cabin_humidity_quarterberth' => 'scarlet_mqtt_humidity{topic="zigbee2mqtt/Quarterberth"}',
+                'cabin_temp_main' => 'scarlet_mqtt_temperature{topic="zigbee2mqtt/Main Cabin"}',
+                'cabin_humidity_main' => 'scarlet_mqtt_humidity{topic="zigbee2mqtt/Main Cabin"}',
+                'cabin_temp_forepeak' => 'scarlet_environment_temperature_celsius',
+                'cabin_humidity_forepeak' => 'scarlet_environment_humidity_percent',
             ],
 
             'tracker' => [
@@ -65,10 +99,14 @@ return [
             ],
 
             'history' => [
-                'battery' => 'scarlet_system_battery_voltage_volts',
-                'temperature' => 'scarlet_environment_temperature_celsius',
-                'humidity' => 'scarlet_environment_humidity_percent',
-                'speed' => 'scarlet_gps_speed_kn',
+                'battery' => 'scarlet_signalk_electrical_batteries_0_voltage',
+                'speed' => 'scarlet_signalk_navigation_speedOverGround * 1.94384',
+                'temp_forepeak' => 'scarlet_environment_temperature_celsius',
+                'temp_quarterberth' => 'scarlet_mqtt_temperature{topic="zigbee2mqtt/Quarterberth"}',
+                'temp_main_cabin' => 'scarlet_mqtt_temperature{topic="zigbee2mqtt/Main Cabin"}',
+                'humidity_forepeak' => 'scarlet_environment_humidity_percent',
+                'humidity_quarterberth' => 'scarlet_mqtt_humidity{topic="zigbee2mqtt/Quarterberth"}',
+                'humidity_main_cabin' => 'scarlet_mqtt_humidity{topic="zigbee2mqtt/Main Cabin"}',
             ],
         ],
     ],
