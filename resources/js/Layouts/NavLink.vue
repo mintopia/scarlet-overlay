@@ -52,5 +52,12 @@ defineProps({
     width: 18px; height: 18px; flex-shrink: 0;
     stroke: currentColor; fill: none;
     stroke-width: 2; stroke-linecap: round; stroke-linejoin: round;
+    transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.nav-link--active .nav-icon { transform: scale(1.12); }
+
+@media (prefers-reduced-motion: reduce) {
+    .nav-icon { transition: none; }
 }
 </style>

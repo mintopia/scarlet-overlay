@@ -39,7 +39,7 @@
             <div class="flex items-center gap-3 mt-5">
                 <button type="submit" :disabled="form.processing" class="btn btn--primary">Save Changes</button>
                 <Link href="/admin/journeys" class="btn btn--ghost">Cancel</Link>
-                <Transition name="saved-fade"><span v-if="form.wasSuccessful" class="text-[13px] text-green">Saved.</span></Transition>
+                <Transition name="saved-fade"><SavedCheck v-if="form.wasSuccessful" /></Transition>
             </div>
         </form>
 
@@ -53,7 +53,7 @@
             </div>
             <div class="flex items-center gap-3 mt-4">
                 <button type="submit" :disabled="gpxForm.processing || !gpxForm.gpx_file" class="btn btn--primary">Upload</button>
-                <Transition name="saved-fade"><span v-if="gpxForm.wasSuccessful" class="text-[13px] text-green">Uploaded.</span></Transition>
+                <Transition name="saved-fade"><SavedCheck v-if="gpxForm.wasSuccessful" label="Uploaded" /></Transition>
             </div>
         </form>
 
@@ -63,25 +63,55 @@
             <p class="text-[13px] text-text-secondary mb-3">{{ journey.track_point_count }} track points recorded.</p>
             <p v-if="reimportForm.errors.reimport" class="text-[12px] text-red-600 mb-3">{{ reimportForm.errors.reimport }}</p>
             <div class="flex items-center gap-3">
-                <button @click="reimport" :disabled="reimportForm.processing" class="btn btn--ghost">Re-import from Prometheus</button>
-                <Transition name="saved-fade"><span v-if="reimportForm.wasSuccessful" class="text-[13px] text-green">Import started.</span></Transition>
+                <button @click="showReimportModal = true" :disabled="reimportForm.processing" class="btn btn--ghost">Re-import from Prometheus</button>
+                <Transition name="saved-fade"><SavedCheck v-if="reimportForm.wasSuccessful" label="Import started" /></Transition>
             </div>
         </div>
 
         <!-- Danger Zone -->
-        <div class="panel p-6 border-red-200">
+        <div class="panel p-6 border-error bg-[oklch(0.58_0.20_27_/_0.08)]">
             <h2 class="text-[15px] font-semibold mb-3 text-red-600">Danger Zone</h2>
             <div class="flex items-center justify-between">
                 <p class="text-[13px] text-text-secondary">Permanently delete this journey and all its track data.</p>
-                <Link :href="`/admin/journeys/${journey.id}`" method="delete" as="button" class="btn btn--danger" @click="(e) => { if (!confirm('Delete this journey?')) e.preventDefault(); }">Delete Journey</Link>
+                <button @click="showDeleteModal = true" class="btn btn--danger">Delete Journey</button>
             </div>
         </div>
+
+        <!-- Reimport Confirmation Modal -->
+        <Transition name="modal">
+        <div v-if="showReimportModal" class="modal-overlay" @click.self="showReimportModal = false">
+            <div class="modal-card" role="dialog" aria-modal="true" aria-label="Confirm re-import">
+                <h3 class="text-[16px] font-semibold mb-2">Re-import track data?</h3>
+                <p class="text-[13px] text-text-secondary mb-5">This will delete all existing track points and re-import from Prometheus. The import runs in the background.</p>
+                <div class="flex items-center justify-end gap-3">
+                    <button @click="showReimportModal = false" class="btn btn--ghost">Cancel</button>
+                    <button @click="reimport" :disabled="reimportForm.processing" class="btn btn--primary">Re-import</button>
+                </div>
+            </div>
+        </div>
+        </Transition>
+
+        <!-- Delete Confirmation Modal -->
+        <Transition name="modal">
+        <div v-if="showDeleteModal" class="modal-overlay" @click.self="showDeleteModal = false">
+            <div class="modal-card" role="dialog" aria-modal="true" aria-label="Confirm delete journey">
+                <h3 class="text-[16px] font-semibold mb-2">Delete this journey?</h3>
+                <p class="text-[13px] text-text-secondary mb-5">This will permanently delete the journey and all its track points. This cannot be undone.</p>
+                <div class="flex items-center justify-end gap-3">
+                    <button @click="showDeleteModal = false" class="btn btn--ghost">Cancel</button>
+                    <button @click="deleteJourney" class="btn btn--danger">Delete</button>
+                </div>
+            </div>
+        </div>
+        </Transition>
     </AdminLayout>
 </template>
 
 <script setup>
-import { Head, Link, useForm } from '@inertiajs/vue3';
+import { ref } from 'vue';
+import { Head, Link, useForm, router } from '@inertiajs/vue3';
 import AdminLayout from '@/Layouts/AdminLayout.vue';
+import SavedCheck from '@/components/SavedCheck.vue';
 
 const props = defineProps({ journey: Object });
 
@@ -99,9 +129,31 @@ const gpxForm = useForm({
 });
 
 const reimportForm = useForm({});
+const showReimportModal = ref(false);
 function reimport() {
-    if (!confirm('This will delete existing track points and re-import from Prometheus. Continue?')) return;
+    showReimportModal.value = false;
     reimportForm.post(`/admin/journeys/${props.journey.id}/reimport`);
 }
+
+const showDeleteModal = ref(false);
+function deleteJourney() {
+    router.delete(`/admin/journeys/${props.journey.id}`);
+}
 </script>
+
+<style scoped>
+.modal-overlay {
+    position: fixed; inset: 0;
+    background: oklch(0.05 0.008 40 / 0.45);
+    display: flex; align-items: center; justify-content: center;
+    z-index: 50; padding: 24px;
+}
+.modal-card {
+    background: var(--color-surface);
+    border-radius: 12px;
+    padding: 28px 28px 24px;
+    width: 100%; max-width: 400px;
+    box-shadow: 0 8px 40px oklch(0.05 0.008 40 / 0.14);
+}
+</style>
 

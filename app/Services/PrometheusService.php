@@ -74,4 +74,39 @@ class PrometheusService
         }
         return $results;
     }
+
+    /**
+     * Run multiple queries and also report whether a fetch error occurred.
+     * Returns ['values' => [...], 'fetchError' => bool].
+     * fetchError is true when a network/HTTP exception was thrown; it is false
+     * when the fetch succeeded but Prometheus returned no data (publisher offline).
+     */
+    public function queryMultipleWithStatus(array $queries): array
+    {
+        $results = [];
+        $fetchError = false;
+
+        foreach ($queries as $key => $promql) {
+            try {
+                $response = Http::timeout(5)->get("{$this->baseUrl}/api/v1/query", [
+                    'query' => $promql,
+                ]);
+
+                if (!$response->ok()) {
+                    $fetchError = true;
+                    $results[$key] = null;
+                    continue;
+                }
+
+                $result = $response->json('data.result');
+                $results[$key] = empty($result) ? null : (float) $result[0]['value'][1];
+            } catch (\Throwable $e) {
+                Log::warning("Prometheus query failed [{$promql}]: {$e->getMessage()}");
+                $fetchError = true;
+                $results[$key] = null;
+            }
+        }
+
+        return ['values' => $results, 'fetchError' => $fetchError];
+    }
 }

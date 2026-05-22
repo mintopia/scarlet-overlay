@@ -15,7 +15,7 @@
                     <div class="text-[22px] font-bold text-scarlet tracking-wide">Scarlet</div>
                     <div class="text-[11px] font-medium text-text-dim mt-0.5">Admin</div>
                 </div>
-                <button class="md:hidden w-8 h-8 flex items-center justify-center rounded-lg text-text-dim" @click="sidebarOpen = false">
+                <button class="md:hidden w-11 h-11 flex items-center justify-center rounded-lg text-text-dim" aria-label="Close menu" @click="sidebarOpen = false">
                     <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" fill="none" stroke-width="2" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
                 </button>
             </div>
@@ -65,7 +65,7 @@
         <main class="flex-1 overflow-y-auto px-4 py-5 md:px-10 md:py-8">
             <!-- Mobile header -->
             <div class="flex items-center gap-3 mb-4 md:hidden">
-                <button @click="sidebarOpen = true" class="w-9 h-9 flex items-center justify-center rounded-lg border border-border text-text-secondary">
+                <button @click="sidebarOpen = true" class="w-11 h-11 flex items-center justify-center rounded-lg border border-border text-text-secondary" aria-label="Open menu">
                     <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" fill="none" stroke-width="2" stroke-linecap="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
                 </button>
                 <span class="text-[18px] font-bold text-scarlet tracking-wide">Scarlet</span>
@@ -78,14 +78,18 @@
 </template>
 
 <script setup>
-import { ref } from 'vue';
+import { ref, onUnmounted } from 'vue';
 import { Link, usePage, router } from '@inertiajs/vue3';
 import NavLink from './NavLink.vue';
 
 const currentPage = usePage().component;
 const sidebarOpen = ref(false);
 
-router.on('navigate', () => { sidebarOpen.value = false; });
+const removeListener = router.on('navigate', () => { sidebarOpen.value = false; });
+
+onUnmounted(() => {
+    removeListener();
+});
 </script>
 
 <style scoped>

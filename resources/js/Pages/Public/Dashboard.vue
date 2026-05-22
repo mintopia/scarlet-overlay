@@ -131,11 +131,11 @@ onUnmounted(() => {
                 :extension="lastUpdateText ? `Updated ${lastUpdateText}` : 'Connecting…'"
             />
             <div class="map-controls">
-                <button class="map-ctrl map-ctrl--top" @click="zoomIn" title="Zoom in">+</button>
-                <button class="map-ctrl map-ctrl--bottom" @click="zoomOut" title="Zoom out">&minus;</button>
+                <button class="map-ctrl map-ctrl--top" @click="zoomIn" title="Zoom in" aria-label="Zoom in">+</button>
+                <button class="map-ctrl map-ctrl--bottom" @click="zoomOut" title="Zoom out" aria-label="Zoom out">&minus;</button>
             </div>
             <div class="map-controls" style="margin-top: 6px;">
-                <button class="map-ctrl map-ctrl--single" @click="recentre" title="Re-centre on boat">
+                <button class="map-ctrl map-ctrl--single" @click="recentre" title="Re-centre on boat" aria-label="Re-centre on boat">
                     <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
                         <circle cx="12" cy="12" r="3"/>
                         <line x1="12" y1="2" x2="12" y2="6"/>
@@ -355,15 +355,11 @@ onUnmounted(() => {
 }
 
 .pill-lbl {
-    font-size: 7px;
+    font-size: 9px;
     font-weight: 600;
     letter-spacing: 0.04em;
     color: oklch(0.62 0.008 70);
     margin-bottom: 2px;
-}
-
-@media (min-width: 640px) {
-    .pill-lbl { font-size: 8px; }
 }
 
 .pill-val {

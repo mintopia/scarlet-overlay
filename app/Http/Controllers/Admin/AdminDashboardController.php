@@ -40,6 +40,7 @@ class AdminDashboardController extends Controller
                 'duration' => $activeJourney->duration,
             ] : null,
             'recentJourneys' => $recentJourneys,
+            'timestamp' => now()->toIso8601String(),
         ]);
     }
 }

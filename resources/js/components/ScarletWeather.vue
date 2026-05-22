@@ -82,7 +82,7 @@ const dispWaveP = computed(() => props.rawWavePeriod != null ? `${Math.round(ani
 }
 
 .pill-lbl {
-    font-size: 8px;
+    font-size: 9px;
     font-weight: 600;
     letter-spacing: 0.04em;
     color: oklch(0.62 0.008 70);

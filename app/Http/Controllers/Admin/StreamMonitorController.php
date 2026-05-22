@@ -13,7 +13,7 @@ class StreamMonitorController extends Controller
     {
         $statsUrl = BoatSetting::getValue('srt_stats_url', '');
 
-        $current = $prometheus->queryMultiple([
+        $currentResult = $prometheus->queryMultipleWithStatus([
             'connected' => 'scarlet_srt_publisher_connected',
             'bitrate' => 'scarlet_srt_publisher_bitrate_bps',
             'rtt' => 'scarlet_srt_publisher_rtt_ms',
@@ -24,7 +24,8 @@ class StreamMonitorController extends Controller
 
         return Inertia::render('Admin/StreamMonitor', [
             'statsUrl' => $statsUrl,
-            'publisher' => $current,
+            'fetchError' => $currentResult['fetchError'],
+            'publisher' => $currentResult['values'],
             'bitrateHistory' => $prometheus->queryRange('scarlet_srt_publisher_bitrate_bps / 1000000', '1h', '15s'),
             'rttHistory' => $prometheus->queryRange('scarlet_srt_publisher_rtt_ms', '1h', '15s'),
             'droppedHistory' => $prometheus->queryRange('increase(scarlet_srt_publisher_dropped_packets_total[30s])', '1h', '15s'),

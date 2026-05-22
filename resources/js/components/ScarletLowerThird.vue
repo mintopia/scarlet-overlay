@@ -212,14 +212,16 @@ function fmtHeading(anim, raw) {
 }
 
 .lt-passage-wrap {
-    flex: 1;
-    display: none;
+    display: flex;
     justify-content: center;
     overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    max-width: 40vw;
 }
 
 @media (min-width: 640px) {
-    .lt-passage-wrap { display: flex; }
+    .lt-passage-wrap { max-width: none; flex: 1; }
 }
 
 .lt-passage {
@@ -235,11 +237,7 @@ function fmtHeading(anim, raw) {
 }
 
 .lt-passage-sep {
-    display: none;
-}
-
-@media (min-width: 640px) {
-    .lt-passage-sep { display: block; }
+    display: block;
 }
 
 .lt-port-label {

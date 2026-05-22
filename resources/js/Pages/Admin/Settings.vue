@@ -20,7 +20,7 @@
             </div>
             <div class="flex items-center gap-3 mt-5">
                 <button type="submit" :disabled="identityForm.processing" class="btn btn--primary">Save</button>
-                <Transition name="saved-fade"><span v-if="identityForm.wasSuccessful" class="text-[13px] text-green">Saved.</span></Transition>
+                <Transition name="saved-fade"><SavedCheck v-if="identityForm.wasSuccessful" /></Transition>
             </div>
         </form>
 
@@ -39,7 +39,7 @@
             </div>
             <div class="flex items-center gap-3 mt-5">
                 <button type="submit" :disabled="portForm.processing" class="btn btn--primary">Save</button>
-                <Transition name="saved-fade"><span v-if="portForm.wasSuccessful" class="text-[13px] text-green">Saved.</span></Transition>
+                <Transition name="saved-fade"><SavedCheck v-if="portForm.wasSuccessful" /></Transition>
             </div>
         </form>
 
@@ -62,7 +62,7 @@
             </div>
             <div class="flex items-center gap-3 mt-5">
                 <button type="submit" :disabled="streamForm.processing" class="btn btn--primary">Save</button>
-                <Transition name="saved-fade"><span v-if="streamForm.wasSuccessful" class="text-[13px] text-green">Saved.</span></Transition>
+                <Transition name="saved-fade"><SavedCheck v-if="streamForm.wasSuccessful" /></Transition>
             </div>
         </form>
     </AdminLayout>
@@ -71,6 +71,7 @@
 <script setup>
 import { Head, useForm } from '@inertiajs/vue3';
 import AdminLayout from '@/Layouts/AdminLayout.vue';
+import SavedCheck from '@/components/SavedCheck.vue';
 
 const props = defineProps({ settings: Object });
 

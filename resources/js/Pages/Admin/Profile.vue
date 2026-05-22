@@ -8,24 +8,24 @@
             <h2 class="text-[15px] font-semibold mb-4">Your Details</h2>
             <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
                 <div>
-                    <label class="block text-[13px] font-medium text-text-secondary mb-1.5">Name</label>
+                    <label class="field-label">Name</label>
                     <input
                         v-model="profileForm.name"
                         type="text"
                         required
-                        class="w-full h-[42px] px-3.5 text-sm bg-bg border border-border rounded-[7px] font-sans focus:border-scarlet focus:ring-1 focus:ring-scarlet/20 outline-none"
+                        class="field-input"
                     />
-                    <p v-if="profileForm.errors.name" class="mt-1 text-xs text-error">{{ profileForm.errors.name }}</p>
+                    <p v-if="profileForm.errors.name" class="field-error">{{ profileForm.errors.name }}</p>
                 </div>
                 <div>
-                    <label class="block text-[13px] font-medium text-text-secondary mb-1.5">Email</label>
+                    <label class="field-label">Email</label>
                     <input
                         v-model="profileForm.email"
                         type="email"
                         required
-                        class="w-full h-[42px] px-3.5 text-sm bg-bg border border-border rounded-[7px] font-sans focus:border-scarlet focus:ring-1 focus:ring-scarlet/20 outline-none"
+                        class="field-input"
                     />
-                    <p v-if="profileForm.errors.email" class="mt-1 text-xs text-error">{{ profileForm.errors.email }}</p>
+                    <p v-if="profileForm.errors.email" class="field-error">{{ profileForm.errors.email }}</p>
                 </div>
             </div>
             <div class="flex items-center gap-3 mt-5">
@@ -36,7 +36,7 @@
                 >
                     Save
                 </button>
-                <Transition name="saved-fade"><span v-if="profileForm.wasSuccessful" class="text-[13px] text-green">Saved.</span></Transition>
+                <Transition name="saved-fade"><SavedCheck v-if="profileForm.wasSuccessful" /></Transition>
             </div>
         </form>
 
@@ -45,35 +45,35 @@
             <h2 class="text-[15px] font-semibold mb-4">Change Password</h2>
             <div class="grid grid-cols-1 gap-4">
                 <div>
-                    <label class="block text-[13px] font-medium text-text-secondary mb-1.5">Current Password</label>
+                    <label class="field-label">Current Password</label>
                     <input
                         v-model="passwordForm.current_password"
                         type="password"
                         required
                         autocomplete="current-password"
-                        class="w-full h-[42px] px-3.5 text-sm bg-bg border border-border rounded-[7px] font-sans focus:border-scarlet focus:ring-1 focus:ring-scarlet/20 outline-none sm:max-w-sm"
+                        class="field-input sm:max-w-sm"
                     />
-                    <p v-if="passwordForm.errors.current_password" class="mt-1 text-xs text-error">{{ passwordForm.errors.current_password }}</p>
+                    <p v-if="passwordForm.errors.current_password" class="field-error">{{ passwordForm.errors.current_password }}</p>
                 </div>
                 <div>
-                    <label class="block text-[13px] font-medium text-text-secondary mb-1.5">New Password</label>
+                    <label class="field-label">New Password</label>
                     <input
                         v-model="passwordForm.password"
                         type="password"
                         required
                         autocomplete="new-password"
-                        class="w-full h-[42px] px-3.5 text-sm bg-bg border border-border rounded-[7px] font-sans focus:border-scarlet focus:ring-1 focus:ring-scarlet/20 outline-none sm:max-w-sm"
+                        class="field-input sm:max-w-sm"
                     />
-                    <p v-if="passwordForm.errors.password" class="mt-1 text-xs text-error">{{ passwordForm.errors.password }}</p>
+                    <p v-if="passwordForm.errors.password" class="field-error">{{ passwordForm.errors.password }}</p>
                 </div>
                 <div>
-                    <label class="block text-[13px] font-medium text-text-secondary mb-1.5">Confirm New Password</label>
+                    <label class="field-label">Confirm New Password</label>
                     <input
                         v-model="passwordForm.password_confirmation"
                         type="password"
                         required
                         autocomplete="new-password"
-                        class="w-full h-[42px] px-3.5 text-sm bg-bg border border-border rounded-[7px] font-sans focus:border-scarlet focus:ring-1 focus:ring-scarlet/20 outline-none sm:max-w-sm"
+                        class="field-input sm:max-w-sm"
                     />
                 </div>
             </div>
@@ -85,7 +85,7 @@
                 >
                     Update password
                 </button>
-                <Transition name="saved-fade"><span v-if="passwordForm.wasSuccessful" class="text-[13px] text-green">Password updated.</span></Transition>
+                <Transition name="saved-fade"><SavedCheck v-if="passwordForm.wasSuccessful" label="Password updated" /></Transition>
             </div>
         </form>
 
@@ -141,6 +141,7 @@
 import { ref, onMounted } from 'vue';
 import { Head, useForm } from '@inertiajs/vue3';
 import AdminLayout from '@/Layouts/AdminLayout.vue';
+import SavedCheck from '@/components/SavedCheck.vue';
 
 const props = defineProps({ user: Object });
 

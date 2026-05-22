@@ -4,6 +4,7 @@ import { Head } from '@inertiajs/vue3';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import { speedToColor, makeBoatIcon, formatCoord, addRouteLayer } from '../../scarlet';
+import { fmt, fmtDuration } from '@/composables/useFormatters.js';
 
 const props = defineProps({
     journey: Object,
@@ -15,9 +16,13 @@ const props = defineProps({
 const mapEl = ref(null);
 const scrubIndex = ref(0);
 const playing = ref(false);
+const playbackSpeed = ref(1);
+const speedOptions = [1, 2, 5, 10];
 let map = null;
 let marker = null;
 let playInterval = null;
+const REDUCED_MOTION = typeof window !== 'undefined' &&
+    window.matchMedia?.('(prefers-reduced-motion: reduce)')?.matches;
 
 const currentPoint = computed(() => props.trackPoints[scrubIndex.value] ?? null);
 const totalPoints = computed(() => props.trackPoints.length);
@@ -52,9 +57,15 @@ const durationText = computed(() => {
     return h > 0 ? `${h}h ${m}m` : `${m}m`;
 });
 
-function fmt(val, decimals = 1) {
-    if (val == null || isNaN(val)) return '--';
-    return Number(val).toFixed(decimals);
+function startPlayInterval() {
+    if (playInterval) { clearInterval(playInterval); playInterval = null; }
+    playInterval = setInterval(() => {
+        if (scrubIndex.value >= totalPoints.value - 1) {
+            stopPlay();
+            return;
+        }
+        scrubIndex.value++;
+    }, 100 / playbackSpeed.value);
 }
 
 function togglePlay() {
@@ -63,13 +74,7 @@ function togglePlay() {
     } else {
         if (scrubIndex.value >= totalPoints.value - 1) scrubIndex.value = 0;
         playing.value = true;
-        playInterval = setInterval(() => {
-            if (scrubIndex.value >= totalPoints.value - 1) {
-                stopPlay();
-                return;
-            }
-            scrubIndex.value++;
-        }, 100);
+        startPlayInterval();
     }
 }
 
@@ -77,6 +82,17 @@ function stopPlay() {
     playing.value = false;
     if (playInterval) { clearInterval(playInterval); playInterval = null; }
 }
+
+function cycleSpeed() {
+    const idx = speedOptions.indexOf(playbackSpeed.value);
+    playbackSpeed.value = speedOptions[(idx + 1) % speedOptions.length];
+}
+
+watch(playbackSpeed, () => {
+    if (playing.value) {
+        startPlayInterval();
+    }
+});
 
 function skipStart() { stopPlay(); scrubIndex.value = 0; }
 function skipEnd() { stopPlay(); scrubIndex.value = Math.max(0, totalPoints.value - 1); }
@@ -92,15 +108,26 @@ watch(scrubIndex, (idx) => {
     } else {
         marker = L.marker(pos, { icon }).addTo(map);
     }
-    map.panTo(pos, { animate: true, duration: 0.3 });
+    if (playing.value && !REDUCED_MOTION) {
+        const headingRad = (heading * Math.PI) / 180;
+        const zoom = map.getZoom();
+        const point = map.project(pos, zoom);
+        point.x += Math.sin(headingRad) * 60;
+        point.y -= Math.cos(headingRad) * 60;
+        const leadPos = map.unproject(point, zoom);
+        map.panTo(leadPos, { animate: true, duration: 0.5, easeLinearity: 0.25 });
+    } else {
+        map.panTo(pos, { animate: true, duration: 0.3 });
+    }
 });
 
 onMounted(() => {
     if (!mapEl.value || !props.gpsTrack.length) return;
 
     const firstPt = props.gpsTrack[0];
+    const entryZoom = REDUCED_MOTION ? 14 : 5;
     map = L.map(mapEl.value, { zoomControl: false, attributionControl: false })
-        .setView([firstPt[0], firstPt[1]], 14);
+        .setView([firstPt[0], firstPt[1]], entryZoom);
     L.tileLayer('/openseamap/{z}/{x}/{y}', { maxZoom: 18 }).addTo(map);
 
     for (let i = 1; i < props.gpsTrack.length; i++) {
@@ -111,7 +138,13 @@ onMounted(() => {
     }
 
     const bounds = L.latLngBounds(props.gpsTrack.map(p => [p[0], p[1]]));
-    map.fitBounds(bounds, { padding: [60, 60] });
+    if (REDUCED_MOTION) {
+        map.fitBounds(bounds, { padding: [60, 60] });
+    } else {
+        setTimeout(() => {
+            map.flyToBounds(bounds, { padding: [60, 60], duration: 2.2 });
+        }, 250);
+    }
 
     if (props.routeWaypoints.length) {
         addRouteLayer(map, props.routeWaypoints);
@@ -185,9 +218,10 @@ onUnmounted(() => {
             </div>
             <span class="timeline-time">{{ endTime }}</span>
             <div class="timeline-controls">
-                <button class="tl-btn" @click="skipStart" title="Skip to start">⏮</button>
-                <button class="tl-btn" @click="togglePlay" :title="playing ? 'Pause' : 'Play'">{{ playing ? '⏸' : '▶' }}</button>
-                <button class="tl-btn" @click="skipEnd" title="Skip to end">⏭</button>
+                <button class="tl-btn" @click="skipStart" title="Skip to start" aria-label="Skip to start">⏮</button>
+                <button class="tl-btn" @click="togglePlay" :title="playing ? 'Pause' : 'Play'" :aria-label="playing ? 'Pause' : 'Play'">{{ playing ? '⏸' : '▶' }}</button>
+                <button class="tl-btn" @click="skipEnd" title="Skip to end" aria-label="Skip to end">⏭</button>
+                <button class="tl-btn tl-speed" @click="cycleSpeed" :title="`Playback speed: ${playbackSpeed}x`" :aria-label="`Playback speed ${playbackSpeed}x, click to change`">{{ playbackSpeed }}x</button>
             </div>
         </div>
     </div>
@@ -365,8 +399,8 @@ onUnmounted(() => {
 }
 
 .tl-btn {
-    width: 36px;
-    height: 36px;
+    width: 44px;
+    height: 44px;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -379,8 +413,16 @@ onUnmounted(() => {
     transition: background 0.12s;
 }
 
+.tl-speed {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    color: oklch(0.54 0.22 27);
+    border-color: oklch(0.54 0.22 27 / 0.35);
+}
+
 @media (min-width: 640px) {
-    .tl-btn { width: 30px; height: 30px; }
+    .tl-btn { width: 44px; height: 44px; }
 }
 
 .tl-btn:hover { background: oklch(0.28 0.005 40 / 0.7); }
@@ -390,8 +432,41 @@ onUnmounted(() => {
     box-shadow: 0 0 0 2px oklch(0.54 0.22 27);
 }
 
+@keyframes chrome-enter {
+    from { opacity: 0; transform: translateY(-8px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes chrome-enter-up {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.title-overlay {
+    animation: chrome-enter 0.5s cubic-bezier(0.16, 1, 0.3, 1) 0.3s both;
+}
+
+.scrub-time {
+    animation: chrome-enter-up 0.4s cubic-bezier(0.16, 1, 0.3, 1) 0.8s both;
+}
+
+.metric-pill {
+    animation: chrome-enter-up 0.4s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.metric-pill:nth-child(1) { animation-delay: 0.6s; }
+.metric-pill:nth-child(2) { animation-delay: 0.68s; }
+.metric-pill:nth-child(3) { animation-delay: 0.76s; }
+.metric-pill:nth-child(4) { animation-delay: 0.84s; }
+.metric-pill:nth-child(5) { animation-delay: 0.92s; }
+
+.timeline {
+    animation: chrome-enter-up 0.5s cubic-bezier(0.16, 1, 0.3, 1) 0.5s both;
+}
+
 @media (prefers-reduced-motion: reduce) {
     .tl-btn { transition: none; }
+    .title-overlay, .scrub-time, .metric-pill, .timeline { animation: none; }
 }
 </style>
 

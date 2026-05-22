@@ -9,7 +9,7 @@
                 <button
                     v-if="isOwner"
                     @click="showInviteModal = true"
-                    class="px-3.5 h-8 bg-scarlet text-white text-[13px] font-semibold rounded-[7px] hover:bg-scarlet-hover"
+                    class="px-3.5 h-11 bg-scarlet text-white text-[13px] font-semibold rounded-[7px] hover:bg-scarlet-hover"
                 >
                     Invite member
                 </button>
@@ -36,7 +36,7 @@
                                     {{ member.initials }}
                                 </div>
                                 <div>
-                                    <div class="text-[14px] font-medium">{{ member.name }}</div>
+                                    <div class="text-[15px] font-medium">{{ member.name }}</div>
                                     <div class="text-[13px] text-text-secondary">{{ member.email }}</div>
                                 </div>
                             </div>
@@ -107,8 +107,9 @@
         </div>
 
         <!-- Invite Modal -->
+        <Transition name="modal">
         <div v-if="showInviteModal" class="modal-overlay" @click.self="showInviteModal = false" @keydown.esc="showInviteModal = false">
-            <div class="modal-card" role="dialog" aria-modal="true" aria-label="Invite a crew member">
+            <div class="modal-card" role="dialog" aria-modal="true" aria-label="Invite a crew member" @keydown.tab="trapFocus">
                 <h3 class="text-[16px] font-semibold mb-4">Invite a crew member</h3>
                 <form @submit.prevent="sendInvite">
                     <div class="mb-4">
@@ -138,10 +139,12 @@
                 </form>
             </div>
         </div>
+        </Transition>
 
         <!-- Remove Confirm Modal -->
+        <Transition name="modal">
         <div v-if="removingMember" class="modal-overlay" @click.self="removingMember = null" @keydown.esc="removingMember = null">
-            <div class="modal-card" role="dialog" aria-modal="true" aria-label="Confirm member removal">
+            <div class="modal-card" role="dialog" aria-modal="true" aria-label="Confirm member removal" @keydown.tab="trapFocus">
                 <h3 class="text-[16px] font-semibold mb-2">Remove {{ removingMember.name }}?</h3>
                 <p class="text-[13px] text-text-secondary mb-5">This will permanently remove their access to the dashboard.</p>
                 <div class="flex items-center justify-end gap-3">
@@ -157,6 +160,7 @@
                 </div>
             </div>
         </div>
+        </Transition>
     </AdminLayout>
 </template>
 
@@ -208,6 +212,20 @@ function removeMember() {
 
 function formatDate(dateStr) {
     return new Date(dateStr).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
+}
+
+function trapFocus(event) {
+    const modal = event.currentTarget;
+    const focusable = modal.querySelectorAll('input, button, [tabindex]:not([tabindex="-1"])');
+    const first = focusable[0];
+    const last = focusable[focusable.length - 1];
+    if (event.shiftKey && document.activeElement === first) {
+        event.preventDefault();
+        last.focus();
+    } else if (!event.shiftKey && document.activeElement === last) {
+        event.preventDefault();
+        first.focus();
+    }
 }
 </script>
 

@@ -40,7 +40,7 @@
         </div>
 
         <!-- Battery + Speed history -->
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4 mb-4">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4 mb-3">
             <div class="panel">
                 <div class="panel-head">
                     <span class="panel-title">Battery Voltage</span>
@@ -81,7 +81,7 @@
         </div>
 
         <!-- Battery Power (charge/discharge in watts) -->
-        <div class="panel mb-4">
+        <div class="panel mb-6">
             <div class="panel-head">
                 <span class="panel-title">Battery Power</span>
                 <span class="tabular-nums text-[12px] font-medium" :class="livePower != null && livePower >= 0 ? 'text-green' : 'text-amber'">{{ livePowerLabel }}</span>
@@ -118,7 +118,7 @@
         </div>
 
         <!-- Temperature + Humidity history -->
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4 mb-4">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4 mb-6">
             <div class="panel">
                 <div class="panel-title mb-0.5">Cabin Temperature</div>
                 <div class="chart-legend">
@@ -173,8 +173,10 @@
                 <div class="compass-layout">
                     <svg viewBox="0 0 140 140" class="compass-svg">
                         <circle cx="70" cy="70" r="64" fill="none" stroke="oklch(0.90 0.005 70)" stroke-width="1.5"/>
-                        <g v-for="tick in compassTicks" :key="tick">
+                        <g v-once>
                             <line
+                                v-for="tick in compassTicks"
+                                :key="tick"
                                 :x1="70 + 58 * Math.sin(tick * Math.PI / 180)"
                                 :y1="70 - 58 * Math.cos(tick * Math.PI / 180)"
                                 :x2="70 + 64 * Math.sin(tick * Math.PI / 180)"
@@ -275,7 +277,7 @@
                             <span class="tabular-nums font-semibold text-amber">{{ fmt(live?.fuel_level, 0) }}%</span>
                         </div>
                         <div class="tank-track">
-                            <div class="tank-fill bg-amber" :style="`width: ${clamp(live?.fuel_level)}%`"></div>
+                            <div class="tank-fill bg-amber" :style="{ transform: 'scaleX(' + (clamp(live?.fuel_level) / 100) + ')' }"></div>
                         </div>
                     </div>
                     <div>
@@ -284,7 +286,7 @@
                             <span class="tabular-nums font-semibold" style="color: oklch(0.55 0.15 240)">{{ fmt(live?.water_level, 0) }}%</span>
                         </div>
                         <div class="tank-track">
-                            <div class="tank-fill" style="background: oklch(0.55 0.15 240)" :style="`width: ${clamp(live?.water_level)}%`"></div>
+                            <div class="tank-fill" :style="{ background: 'oklch(0.55 0.15 240)', transform: 'scaleX(' + (clamp(live?.water_level) / 100) + ')' }"></div>
                         </div>
                     </div>
                 </div>
@@ -297,6 +299,7 @@
 import { Head } from '@inertiajs/vue3';
 import AdminLayout from '@/Layouts/AdminLayout.vue';
 import { computed, ref, onMounted, onUnmounted } from 'vue';
+import { fmt } from '@/composables/useFormatters.js';
 
 const props = defineProps({
     boat: Object,
@@ -424,11 +427,6 @@ function toPowerArea(data, w, h, absMax, positive) {
     return `0,${mid} ${filtered} ${w},${mid}`;
 }
 
-function fmt(val, decimals = 1) {
-    if (val == null || isNaN(val)) return '—';
-    return Number(val).toFixed(decimals);
-}
-
 function clamp(val) {
     if (val == null || isNaN(val)) return 0;
     return Math.min(100, Math.max(0, Number(val)));
@@ -457,7 +455,7 @@ function toArea(data, w, h, min, max) {
     background: var(--color-surface);
     border: 1px solid var(--color-border);
     border-radius: 10px;
-    margin-bottom: 16px;
+    margin-bottom: 24px;
     overflow: hidden;
 }
 
@@ -582,8 +580,10 @@ function toArea(data, w, h, min, max) {
 
 .tank-fill {
     height: 100%;
+    width: 100%;
     border-radius: 9999px;
-    transition: width 0.5s ease-out;
+    transform-origin: left;
+    transition: transform 0.5s ease-out;
 }
 
 .compass-layout {

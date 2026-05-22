@@ -4,7 +4,7 @@
         <h1 class="text-[22px] font-bold mb-6">Dashboard</h1>
 
         <!-- Active Journey / Start Journey -->
-        <div class="panel p-4 mb-4">
+        <div class="panel p-4 mb-6">
             <div class="panel-title mb-3">Journey</div>
             <template v-if="activeJourney">
                 <div class="flex items-baseline justify-between mb-2">
@@ -19,12 +19,12 @@
                     <div class="data-row"><span>Speed</span><span class="text-scarlet">{{ fmt(boat?.speed_sog) }} kn</span></div>
                 </div>
                 <div class="flex gap-2">
-                    <Link :href="`/admin/journeys/${activeJourney.id}/end`" method="post" as="button" class="btn btn--danger">End Journey</Link>
+                    <button @click="showEndModal = true" class="btn btn--danger">End Journey</button>
                     <Link href="/admin/journeys" class="btn btn--ghost">All Journeys</Link>
                 </div>
             </template>
             <template v-else>
-                <p class="text-[13px] text-text-secondary mb-3">No active journey.</p>
+                <p class="text-[13px] text-text-secondary mb-3">No voyage underway. Start a new journey to begin tracking.</p>
                 <div class="flex gap-2">
                     <Link href="/admin/journeys/create" class="btn btn--primary">Start Journey</Link>
                     <Link href="/admin/journeys/import" class="btn btn--ghost">Import from History</Link>
@@ -36,7 +36,10 @@
         <div class="panel p-4 mb-4">
             <div class="flex items-baseline justify-between mb-3">
                 <span class="panel-title">Boat Status</span>
-                <Link href="/admin/metrics" class="text-[12px] text-scarlet font-medium hover:underline">View Metrics →</Link>
+                <div class="flex items-center gap-3">
+                    <span v-if="props.timestamp" class="text-[11px] text-text-dim tabular-nums">{{ timeSinceUpdate }}</span>
+                    <Link href="/admin/metrics" class="text-[12px] text-scarlet font-medium hover:underline">View Metrics →</Link>
+                </div>
             </div>
             <div class="strip">
                 <div class="strip-cell"><div class="strip-label">SOG</div><div class="strip-value text-scarlet">{{ fmt(boat?.speed_sog) }}</div><div class="strip-unit">kn</div></div>
@@ -50,7 +53,7 @@
         </div>
 
         <!-- Tracker Status -->
-        <div class="panel p-4 mb-4">
+        <div class="panel p-4 mb-6">
             <div class="flex items-baseline justify-between mb-3">
                 <span class="panel-title">Tracker</span>
                 <Link href="/admin/tracker" class="text-[12px] text-scarlet font-medium hover:underline">View Tracker →</Link>
@@ -85,40 +88,61 @@
             </div>
         </div>
 
-        <!-- Quick Links -->
-        <div class="panel p-4">
-            <div class="panel-title mb-3">Quick Links</div>
-            <div class="flex flex-wrap gap-2">
-                <Link href="/admin/settings" class="btn btn--ghost">Settings</Link>
-                <Link href="/admin/stream" class="btn btn--ghost">Stream Monitor</Link>
-                <Link href="/admin/team" class="btn btn--ghost">Team</Link>
+        <!-- End Journey Confirm Modal -->
+        <Transition name="modal">
+        <div v-if="showEndModal" class="modal-overlay" @click.self="showEndModal = false">
+            <div class="modal-card" role="dialog" aria-modal="true" aria-label="Confirm end journey">
+                <h3 class="text-[16px] font-semibold mb-2">End this journey?</h3>
+                <p class="text-[13px] text-text-secondary mb-5">This will mark <strong>{{ activeJourney?.title }}</strong> as completed. You can still edit it afterwards.</p>
+                <div class="flex items-center justify-end gap-3">
+                    <button @click="showEndModal = false" class="btn btn--ghost">Cancel</button>
+                    <button @click="endJourney" :disabled="endingJourney" class="btn btn--danger">End Journey</button>
+                </div>
             </div>
         </div>
+        </Transition>
     </AdminLayout>
 </template>
 
 <script setup>
-import { Head, Link } from '@inertiajs/vue3';
+import { ref, computed, onMounted, onUnmounted } from 'vue';
+import { Head, Link, router } from '@inertiajs/vue3';
 import AdminLayout from '@/Layouts/AdminLayout.vue';
+import { fmt, fmtDuration } from '@/composables/useFormatters.js';
 
-defineProps({
+const props = defineProps({
     boat: Object,
     gps: Object,
     tracker: Object,
     activeJourney: Object,
     recentJourneys: Array,
+    timestamp: String,
 });
 
-function fmt(val, decimals = 1) {
-    if (val == null || isNaN(val)) return '—';
-    return Number(val).toFixed(decimals);
-}
+const now = ref(Date.now());
+let ticker;
+onMounted(() => { ticker = setInterval(() => { now.value = Date.now(); }, 1000); });
+onUnmounted(() => { clearInterval(ticker); });
 
-function fmtDuration(seconds) {
-    if (seconds == null) return '—';
-    const h = Math.floor(seconds / 3600);
-    const m = Math.floor((seconds % 3600) / 60);
-    return h > 0 ? `${h}h ${m}m` : `${m}m`;
+const timeSinceUpdate = computed(() => {
+    if (!props.timestamp) return '';
+    const diff = Math.floor((now.value - new Date(props.timestamp).getTime()) / 1000);
+    if (diff < 5) return 'just now';
+    if (diff < 60) return `${diff}s ago`;
+    return `${Math.floor(diff / 60)}m ago`;
+});
+
+const showEndModal = ref(false);
+const endingJourney = ref(false);
+
+function endJourney() {
+    endingJourney.value = true;
+    router.post(`/admin/journeys/${props.activeJourney.id}/end`, {}, {
+        onFinish: () => {
+            endingJourney.value = false;
+            showEndModal.value = false;
+        },
+    });
 }
 
 function fmtDate(iso) {
@@ -175,4 +199,18 @@ function fmtCoord(lat, lon) {
 .strip-label { font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em; color: var(--color-text-dim); margin-bottom: 2px; }
 .strip-value { font-size: 20px; font-weight: 700; font-variant-numeric: tabular-nums; line-height: 1; }
 .strip-unit { font-size: 10px; color: var(--color-text-dim); margin-top: 2px; }
+
+.modal-overlay {
+    position: fixed; inset: 0;
+    background: oklch(0.05 0.008 40 / 0.45);
+    display: flex; align-items: center; justify-content: center;
+    z-index: 50; padding: 24px;
+}
+.modal-card {
+    background: var(--color-surface);
+    border-radius: 12px;
+    padding: 28px 28px 24px;
+    width: 100%; max-width: 400px;
+    box-shadow: 0 8px 40px oklch(0.05 0.008 40 / 0.14);
+}
 </style>
