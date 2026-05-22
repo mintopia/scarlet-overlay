@@ -61,7 +61,7 @@ return [
 
                 // Tanks
                 'fuel_level' => 'scarlet_boat_fuel_tank_percent',
-                'water_level' => 'scarlet_mqtt_percent{topic="watertank"}',
+                'water_level' => 'scarlet_boat_water_tank_percent',
 
                 // Cabin environment (Zigbee sensors via MQTT)
                 'cabin_temp_quarterberth' => 'scarlet_mqtt_temperature{topic="zigbee2mqtt/Quarterberth"}',
