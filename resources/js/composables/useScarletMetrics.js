@@ -29,20 +29,17 @@ export function useScarletMetrics(options = {}) {
     const statusText = computed(() => {
         if (isOffline.value) return 'Offline';
         const sog = boat.value?.speed_sog;
-        const rpm = boat.value?.engine_rpm;
         if ((sog == null || sog < 0.5) && portName) return 'In Port';
-        if (rpm != null && rpm > 0) return 'Under Power';
-        return 'Under Sail';
+        return 'Underway';
     });
 
     const statusClass = computed(() => {
         const map = {
             'Offline': 'status-offline',
             'In Port': 'status-port',
-            'Under Power': 'status-power',
-            'Under Sail': 'status-sail',
+            'Underway': 'status-underway',
         };
-        return map[statusText.value] ?? 'status-sail';
+        return map[statusText.value] ?? 'status-underway';
     });
 
     const lastUpdateText = computed(() => {

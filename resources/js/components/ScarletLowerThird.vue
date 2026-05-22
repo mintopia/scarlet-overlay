@@ -162,14 +162,9 @@ function fmtHeading(anim, raw) {
     flex-shrink: 0;
 }
 
-.status-sail {
+.status-underway {
     color: oklch(0.78 0.12 155);
     background: oklch(0.78 0.12 155 / 0.12);
-}
-
-.status-power {
-    color: oklch(0.78 0.16 80);
-    background: oklch(0.78 0.16 80 / 0.12);
 }
 
 .status-port {
