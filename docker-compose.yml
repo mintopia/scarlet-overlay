@@ -24,6 +24,18 @@ services:
     networks:
       - scarlet
 
+  horizon:
+    build:
+      context: .
+      dockerfile: docker/production/Dockerfile
+    command: php artisan horizon
+    env_file: .env
+    depends_on:
+      - redis
+      - reverb
+    networks:
+      - scarlet
+
   metrics:
     build:
       context: .
