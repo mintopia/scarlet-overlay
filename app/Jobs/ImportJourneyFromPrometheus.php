@@ -25,7 +25,8 @@ class ImportJourneyFromPrometheus implements ShouldQueue
     public function handle(PrometheusService $prometheus): void
     {
         $journey = Journey::findOrFail($this->journeyId);
-        $duration = $this->computeDuration();
+        $start = \Carbon\Carbon::parse($this->startTime)->timestamp;
+        $end = \Carbon\Carbon::parse($this->endTime)->timestamp;
         $step = '30s';
 
         $metrics = [
@@ -47,7 +48,7 @@ class ImportJourneyFromPrometheus implements ShouldQueue
 
         $data = [];
         foreach ($metrics as $key => $query) {
-            $results = $prometheus->queryRange($query, $duration, $step);
+            $results = $prometheus->queryRange($query, '', $step, $start, $end);
             foreach ($results as $point) {
                 $ts = $point['timestamp'];
                 if (!isset($data[$ts])) {
@@ -81,11 +82,4 @@ class ImportJourneyFromPrometheus implements ShouldQueue
         Log::info("Imported {$pointCount} track points for journey #{$journey->id}");
     }
 
-    protected function computeDuration(): string
-    {
-        $start = \Carbon\Carbon::parse($this->startTime);
-        $end = \Carbon\Carbon::parse($this->endTime);
-        $seconds = $end->diffInSeconds($start);
-        return $seconds . 's';
-    }
 }

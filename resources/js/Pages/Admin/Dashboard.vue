@@ -44,6 +44,9 @@
                 <div class="strip-cell"><div class="strip-label">Depth</div><div class="strip-value" style="color: oklch(0.55 0.15 240)">{{ fmt(boat?.depth) }}</div><div class="strip-unit">m</div></div>
                 <div class="strip-cell"><div class="strip-label">Battery</div><div class="strip-value text-green">{{ fmt(boat?.house_battery_voltage, 2) }}</div><div class="strip-unit">V</div></div>
             </div>
+            <div v-if="gps?.latitude != null" class="text-[12px] text-text-secondary mt-2 tabular-nums">
+                {{ fmtCoord(gps.latitude, gps.longitude) }}
+            </div>
         </div>
 
         <!-- Tracker Status -->
@@ -55,11 +58,11 @@
             <div class="space-y-2 text-[13px]">
                 <div class="data-row">
                     <span>Connection</span>
-                    <span>{{ tracker?.lte_connected ? 'LTE' : tracker?.wifi_connected ? 'WiFi' : 'Disconnected' }}</span>
+                    <span>{{ tracker?.wifi_rssi != null ? 'WiFi' : tracker?.lte_rssi != null ? 'LTE' : 'Disconnected' }}</span>
                 </div>
                 <div class="data-row">
                     <span>Signal</span>
-                    <span>{{ tracker?.lte_connected ? fmt(tracker.lte_rssi, 0) + ' dBm' : tracker?.wifi_connected ? fmt(tracker.wifi_rssi, 0) + ' dBm' : '—' }}</span>
+                    <span>{{ tracker?.wifi_rssi != null ? fmt(tracker.wifi_rssi, 0) + ' dBm' : tracker?.lte_rssi != null ? fmt(tracker.lte_rssi, 0) + ' dBm' : '—' }}</span>
                 </div>
                 <div class="data-row">
                     <span>Battery</span>
@@ -100,6 +103,7 @@ import AdminLayout from '@/Layouts/AdminLayout.vue';
 
 defineProps({
     boat: Object,
+    gps: Object,
     tracker: Object,
     activeJourney: Object,
     recentJourneys: Array,
@@ -121,6 +125,13 @@ function fmtDate(iso) {
     if (!iso) return '';
     const d = new Date(iso);
     return d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' });
+}
+
+function fmtCoord(lat, lon) {
+    if (lat == null || lon == null) return '';
+    const latDir = lat >= 0 ? 'N' : 'S';
+    const lonDir = lon >= 0 ? 'E' : 'W';
+    return `${Math.abs(lat).toFixed(4)}°${latDir}  ${Math.abs(lon).toFixed(4)}°${lonDir}`;
 }
 </script>
 

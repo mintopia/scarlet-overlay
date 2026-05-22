@@ -28,6 +28,7 @@ class AdminDashboardController extends Controller
 
         return Inertia::render('Admin/Dashboard', [
             'boat' => $metrics->getBoatMetrics(),
+            'gps' => $metrics->getGpsMetrics(),
             'tracker' => $metrics->getTrackerMetrics(),
             'activeJourney' => $activeJourney ? [
                 'id' => $activeJourney->id,
