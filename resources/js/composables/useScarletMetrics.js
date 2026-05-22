@@ -2,7 +2,7 @@
 import { ref, computed, unref, onUnmounted } from 'vue';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
-import { speedToColor, makeBoatIcon, formatCoord, getWeatherIcon, getWeatherLabel } from '../scarlet';
+import { speedToColor, makeBoatIcon, formatCoord, getWeatherIcon, getWeatherLabel, addRouteLayer } from '../scarlet';
 
 export function useScarletMetrics(options = {}) {
     const {
@@ -12,6 +12,7 @@ export function useScarletMetrics(options = {}) {
         passageTo: initialPassageTo = '',
         boatName: initialBoatName = '',
         gpsTrack = [],
+        routeWaypoints = [],
     } = options;
 
     // ── Reactive state ──────────────────────────────────────────────────
@@ -136,6 +137,10 @@ export function useScarletMetrics(options = {}) {
             }
         } else if (gps.value?.latitude && !trackPoints.length) {
             trackPoints.push({ pos: [gps.value.latitude, gps.value.longitude], speed: boat.value?.speed_sog ?? 0 });
+        }
+
+        if (routeWaypoints.length) {
+            addRouteLayer(target.map, routeWaypoints);
         }
 
         if (gps.value?.latitude) {

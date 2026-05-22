@@ -77,3 +77,31 @@ export function getWeatherIcon(summary) {
 export function getWeatherLabel(summary) {
     return weatherLabels[summary] ?? 'Unknown';
 }
+
+export function addRouteLayer(map, waypoints) {
+    if (!waypoints?.length) return { polyline: null, markers: [] };
+
+    const latlngs = waypoints.map(w => [w.lat, w.lng]);
+    const polyline = L.polyline(latlngs, {
+        color: 'oklch(0.65 0.10 240 / 0.5)',
+        weight: 2.5,
+        dashArray: '8, 6',
+        opacity: 0.8,
+    }).addTo(map);
+
+    const markers = waypoints
+        .filter(w => w.name)
+        .map(w => {
+            return L.circleMarker([w.lat, w.lng], {
+                radius: 4,
+                color: 'oklch(0.65 0.10 240 / 0.6)',
+                fillColor: 'oklch(0.65 0.10 240 / 0.3)',
+                fillOpacity: 1,
+                weight: 1.5,
+            })
+            .bindTooltip(w.name, { direction: 'top', offset: [0, -6], className: 'route-tooltip' })
+            .addTo(map);
+        });
+
+    return { polyline, markers };
+}
