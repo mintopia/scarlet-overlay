@@ -3,6 +3,7 @@ import { ref, computed, watch, onMounted, onUnmounted, nextTick } from 'vue';
 import { Head } from '@inertiajs/vue3';
 import { useScarletMetrics } from '../../composables/useScarletMetrics';
 import { useVideoFeed } from '../../composables/useVideoFeed';
+import { useSpringValue } from '../../composables/useSpringValue';
 import ScarletWeather from '../../components/ScarletWeather.vue';
 import ScarletLiveBadge from '../../components/ScarletLiveBadge.vue';
 import ScarletBottomBadges from '../../components/ScarletBottomBadges.vue';
@@ -80,6 +81,19 @@ const compassWind = computed(() => {
     return dir != null ? Number(dir) : null;
 });
 
+const animHeel = useSpringValue(() => Math.abs(boat.value?.heel ?? 0), { tension: 80, friction: 12 });
+
+const heelSide = computed(() => {
+    const heel = boat.value?.heel;
+    if (heel == null) return '';
+    return heel < 0 ? 'port' : 'starboard';
+});
+
+function fmtSpring(anim, raw, decimals = 1) {
+    if (raw == null) return '--';
+    return Number(anim).toFixed(decimals);
+}
+
 const offlineLastUpdate = computed(() => {
     if (!lastUpdate.value) return 'Last update received —';
     const ago = lastUpdate.value;
@@ -143,6 +157,13 @@ onUnmounted(() => {
         <div class="bl-cluster">
             <ScarletCompass :heading="compassHeading" :wind-direction="compassWind" :size="110" />
             <ScarletBottomBadges :coord-text="coordText" />
+        </div>
+
+        <!-- BOTTOM-RIGHT: Heel angle pill -->
+        <div class="heel-pill">
+            <div class="heel-lbl">HEEL</div>
+            <div class="heel-val">{{ fmtSpring(animHeel, boat?.heel, 0) }}°</div>
+            <div class="heel-sub">{{ heelSide }}</div>
         </div>
 
         <!-- Offline card -->
@@ -321,12 +342,65 @@ onUnmounted(() => {
     color: oklch(0.75 0.008 70);
 }
 
+/* ── Heel pill ─────────────────────────── */
+.heel-pill {
+    position: absolute;
+    bottom: 88px;
+    right: 16px;
+    z-index: 10;
+    background: oklch(0.08 0.008 40 / 0.72);
+    backdrop-filter: blur(24px);
+    -webkit-backdrop-filter: blur(24px);
+    border-radius: 10px;
+    border: 1.5px solid oklch(0.32 0.01 40 / 0.18);
+    padding: 10px 16px;
+    text-align: center;
+    min-width: 72px;
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(6px);
+    transition: opacity 0.4s cubic-bezier(0.16, 1, 0.3, 1),
+                visibility 0.4s,
+                transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+[data-state="video-live"] .heel-pill,
+[data-state="no-video"] .heel-pill,
+[data-state="port"] .heel-pill {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+}
+
+.heel-lbl {
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    color: oklch(0.62 0.008 70);
+    margin-bottom: 2px;
+}
+
+.heel-val {
+    font-size: 21px;
+    font-weight: 500;
+    color: oklch(0.96 0.005 70);
+    line-height: 1.1;
+}
+
+.heel-sub {
+    font-size: 14px;
+    color: oklch(0.62 0.008 70);
+    margin-top: 2px;
+}
+
 /* ── State-dependent opacity ────────────── */
 [data-state="offline"] .wx-cluster { opacity: 0.5; }
+[data-state="offline"] .heel-pill { opacity: 0.5; visibility: visible; transform: translateY(0); }
 
 [data-state="loading"] .tl-cluster,
 [data-state="loading"] .wx-cluster,
 [data-state="loading"] .bl-cluster,
+[data-state="loading"] .heel-pill,
 [data-state="loading"] .lt-position {
     opacity: 0;
     transform: translateY(6px);
