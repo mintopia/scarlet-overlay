@@ -59,7 +59,7 @@ return [
                 'engine_battery_voltage' => 'scarlet_signalk_electrical_batteries_1_voltage',
 
                 // Tanks
-                'fuel_level' => 'scarlet_boat_fuel_tank_percent',
+                'fuel_level' => 'scarlet_signalk_tanks_diesel_currentLevel * 100',
                 'water_level' => 'scarlet_mqtt_percent{topic="watertank"}',
 
                 // Cabin environment (Zigbee sensors via MQTT)

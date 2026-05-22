@@ -54,6 +54,11 @@ class MetricsService
             $gps['longitude'] = $signalk['longitude'];
         }
 
+        if ($this->isNullIsland($gps['latitude'], $gps['longitude'])) {
+            $gps['latitude'] = null;
+            $gps['longitude'] = null;
+        }
+
         return $gps;
     }
 
@@ -103,6 +108,8 @@ class MetricsService
             $lng = $lngByTs->get($ts);
             if (!$lng) continue;
 
+            if ($this->isNullIsland($point['value'], $lng['value'])) continue;
+
             $sog = $sogByTs->get($ts);
 
             $track[] = [
@@ -113,6 +120,12 @@ class MetricsService
         }
 
         return $track;
+    }
+
+    private function isNullIsland(?float $lat, ?float $lng): bool
+    {
+        return $lat === null || $lng === null
+            || (abs($lat) < 0.1 && abs($lng) < 0.1);
     }
 
     private function voltageToPct(?float $voltage): ?float

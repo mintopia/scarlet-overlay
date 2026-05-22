@@ -21,8 +21,6 @@ const speedOptions = [1, 2, 5, 10];
 let map = null;
 let marker = null;
 let playInterval = null;
-const REDUCED_MOTION = typeof window !== 'undefined' &&
-    window.matchMedia?.('(prefers-reduced-motion: reduce)')?.matches;
 
 const currentPoint = computed(() => props.trackPoints[scrubIndex.value] ?? null);
 const totalPoints = computed(() => props.trackPoints.length);
@@ -108,26 +106,15 @@ watch(scrubIndex, (idx) => {
     } else {
         marker = L.marker(pos, { icon }).addTo(map);
     }
-    if (playing.value && !REDUCED_MOTION) {
-        const headingRad = (heading * Math.PI) / 180;
-        const zoom = map.getZoom();
-        const point = map.project(pos, zoom);
-        point.x += Math.sin(headingRad) * 60;
-        point.y -= Math.cos(headingRad) * 60;
-        const leadPos = map.unproject(point, zoom);
-        map.panTo(leadPos, { animate: true, duration: 0.5, easeLinearity: 0.25 });
-    } else {
-        map.panTo(pos, { animate: true, duration: 0.3 });
-    }
+    map.panTo(pos, { animate: true, duration: 0.3 });
 });
 
 onMounted(() => {
     if (!mapEl.value || !props.gpsTrack.length) return;
 
     const firstPt = props.gpsTrack[0];
-    const entryZoom = REDUCED_MOTION ? 14 : 5;
     map = L.map(mapEl.value, { zoomControl: false, attributionControl: false })
-        .setView([firstPt[0], firstPt[1]], entryZoom);
+        .setView([firstPt[0], firstPt[1]], 14);
     L.tileLayer('/openseamap/{z}/{x}/{y}', { maxZoom: 18 }).addTo(map);
 
     for (let i = 1; i < props.gpsTrack.length; i++) {
@@ -138,13 +125,7 @@ onMounted(() => {
     }
 
     const bounds = L.latLngBounds(props.gpsTrack.map(p => [p[0], p[1]]));
-    if (REDUCED_MOTION) {
-        map.fitBounds(bounds, { padding: [60, 60] });
-    } else {
-        setTimeout(() => {
-            map.flyToBounds(bounds, { padding: [60, 60], duration: 2.2 });
-        }, 250);
-    }
+    map.fitBounds(bounds, { padding: [60, 60] });
 
     if (props.routeWaypoints.length) {
         addRouteLayer(map, props.routeWaypoints);
@@ -432,41 +413,8 @@ onUnmounted(() => {
     box-shadow: 0 0 0 2px oklch(0.54 0.22 27);
 }
 
-@keyframes chrome-enter {
-    from { opacity: 0; transform: translateY(-8px); }
-    to { opacity: 1; transform: translateY(0); }
-}
-
-@keyframes chrome-enter-up {
-    from { opacity: 0; transform: translateY(8px); }
-    to { opacity: 1; transform: translateY(0); }
-}
-
-.title-overlay {
-    animation: chrome-enter 0.5s cubic-bezier(0.16, 1, 0.3, 1) 0.3s both;
-}
-
-.scrub-time {
-    animation: chrome-enter-up 0.4s cubic-bezier(0.16, 1, 0.3, 1) 0.8s both;
-}
-
-.metric-pill {
-    animation: chrome-enter-up 0.4s cubic-bezier(0.16, 1, 0.3, 1) both;
-}
-
-.metric-pill:nth-child(1) { animation-delay: 0.6s; }
-.metric-pill:nth-child(2) { animation-delay: 0.68s; }
-.metric-pill:nth-child(3) { animation-delay: 0.76s; }
-.metric-pill:nth-child(4) { animation-delay: 0.84s; }
-.metric-pill:nth-child(5) { animation-delay: 0.92s; }
-
-.timeline {
-    animation: chrome-enter-up 0.5s cubic-bezier(0.16, 1, 0.3, 1) 0.5s both;
-}
-
 @media (prefers-reduced-motion: reduce) {
     .tl-btn { transition: none; }
-    .title-overlay, .scrub-time, .metric-pill, .timeline { animation: none; }
 }
 </style>
 

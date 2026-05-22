@@ -180,7 +180,8 @@ export function useScarletMetrics(options = {}) {
     }
 
     function updateAllMaps(newGps, newBoat) {
-        if (!newGps?.latitude || !newGps?.longitude) return;
+        if (newGps?.latitude == null || newGps?.longitude == null) return;
+        if (Math.abs(newGps.latitude) < 0.1 && Math.abs(newGps.longitude) < 0.1) return;
         const speed = newBoat?.speed_sog ?? 0;
         trackPoints.push({ pos: [newGps.latitude, newGps.longitude], speed });
         mapTargets.forEach(t => updateSingleMap(t, newGps, newBoat));
