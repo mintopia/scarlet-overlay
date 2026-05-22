@@ -89,19 +89,19 @@ return [
             ],
 
             'gps' => [
-                'latitude' => 'scarlet_signalk_navigation_position_latitude',
-                'longitude' => 'scarlet_signalk_navigation_position_longitude',
+                'latitude' => 'scarlet_gps_latitude_deg',
+                'longitude' => 'scarlet_gps_longitude_deg',
                 'altitude' => 'scarlet_gps_altitude_meters',
                 'satellites' => 'scarlet_gps_satellites',
                 'hdop' => 'scarlet_gps_hdop',
-                'speed' => 'scarlet_signalk_navigation_speedOverGround * 1.94384',
-                'heading' => 'scarlet_signalk_navigation_headingMagnetic * 180 / 3.14159265359',
+                'speed' => 'scarlet_gps_speed_kn',
+                'heading' => 'scarlet_gps_heading_deg',
             ],
 
             'history' => [
-                'track_latitude' => 'scarlet_signalk_navigation_position_latitude',
-                'track_longitude' => 'scarlet_signalk_navigation_position_longitude',
-                'track_sog' => 'scarlet_signalk_navigation_speedOverGround * 1.94384',
+                'track_latitude' => 'scarlet_gps_latitude_deg',
+                'track_longitude' => 'scarlet_gps_longitude_deg',
+                'track_sog' => 'scarlet_gps_speed_kn',
                 'battery' => 'scarlet_signalk_electrical_batteries_0_voltage',
                 'speed' => 'scarlet_signalk_navigation_speedOverGround * 1.94384',
                 'temp_forepeak' => 'scarlet_environment_temperature_celsius',
