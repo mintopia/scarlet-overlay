@@ -89,8 +89,8 @@ return [
             ],
 
             'gps' => [
-                'latitude' => 'scarlet_gps_latitude_deg',
-                'longitude' => 'scarlet_gps_longitude_deg',
+                'latitude' => 'scarlet_signalk_navigation_position_latitude',
+                'longitude' => 'scarlet_signalk_navigation_position_longitude',
                 'altitude' => 'scarlet_gps_altitude_meters',
                 'satellites' => 'scarlet_gps_satellites',
                 'hdop' => 'scarlet_gps_hdop',
