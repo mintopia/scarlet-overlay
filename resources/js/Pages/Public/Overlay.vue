@@ -16,6 +16,7 @@ const props = defineProps({
     passageTo: String,
     portName: String,
     gpsTrack: { type: Array, default: () => [] },
+    routeWaypoints: { type: Array, default: () => [] },
 });
 
 const {
@@ -32,6 +33,7 @@ const {
     passageTo: props.passageTo,
     boatName: props.boatName,
     gpsTrack: props.gpsTrack,
+    routeWaypoints: props.routeWaypoints,
 });
 
 const videoRef = ref(null);

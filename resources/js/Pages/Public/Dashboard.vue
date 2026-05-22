@@ -20,6 +20,7 @@ const props = defineProps({
     reverbKey: String,
     tripOffset: { type: Number, default: 0 },
     gpsTrack: { type: Array, default: () => [] },
+    routeWaypoints: { type: Array, default: () => [] },
 });
 
 const mapContainer = ref(null);
@@ -40,6 +41,7 @@ const {
     passageTo: props.passageTo,
     boatName: props.boatName,
     gpsTrack: props.gpsTrack,
+    routeWaypoints: props.routeWaypoints,
 });
 
 const windAngleSide = computed(() => {
