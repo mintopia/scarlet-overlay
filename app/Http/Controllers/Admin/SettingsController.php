@@ -35,10 +35,12 @@ class SettingsController extends Controller
         $validated = $request->validate([
             'passage_from' => ['nullable', 'string', 'max:100'],
             'passage_to' => ['nullable', 'string', 'max:100'],
+            'trip_offset' => ['nullable', 'numeric', 'min:0'],
         ]);
 
         BoatSetting::setValue('passage_from', $validated['passage_from'] ?? '');
         BoatSetting::setValue('passage_to', $validated['passage_to'] ?? '');
+        BoatSetting::setValue('trip_offset', $validated['trip_offset'] ?? 0);
 
         return back()->with('success', 'Passage updated.');
     }

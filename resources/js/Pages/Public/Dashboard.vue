@@ -18,6 +18,7 @@ const props = defineProps({
     tileUrl: String,
     reverb: Object,
     reverbKey: String,
+    tripOffset: { type: Number, default: 0 },
 });
 
 const mapContainer = ref(null);
@@ -72,7 +73,12 @@ const compassWind = computed(() => {
 const animAppWind = useSpringValue(() => boat.value?.wind_speed_apparent, { tension: 80, friction: 12 });
 const animWindAngle = useAngleSpring(() => Math.abs(boat.value?.wind_angle_apparent ?? 0));
 const animHeel = useSpringValue(() => Math.abs(boat.value?.heel ?? 0), { tension: 80, friction: 12 });
-const animTrip = useSpringValue(() => boat.value?.trip_log, { tension: 60, friction: 10 });
+const adjustedTrip = computed(() => {
+    const raw = boat.value?.trip_log;
+    if (raw == null) return null;
+    return Math.max(0, raw - props.tripOffset);
+});
+const animTrip = useSpringValue(() => adjustedTrip.value, { tension: 60, friction: 10 });
 
 function fmtSpring(anim, raw, decimals = 1) {
     if (raw == null) return '--';
@@ -158,7 +164,7 @@ onUnmounted(() => {
             </div>
             <div class="pill">
                 <div class="pill-lbl">TRIP</div>
-                <div class="pill-val">{{ fmtSpring(animTrip, boat?.trip_log) }} nm</div>
+                <div class="pill-val">{{ fmtSpring(animTrip, adjustedTrip) }} nm</div>
             </div>
         </div>
 

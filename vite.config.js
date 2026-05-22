@@ -23,6 +23,9 @@ export default defineConfig({
             },
         }),
     ],
+    server: {
+        allowedHosts: true,
+    },
     resolve: {
         alias: {
             '@': '/resources/js',

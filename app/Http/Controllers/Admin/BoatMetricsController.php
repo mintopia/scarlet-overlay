@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\BoatSetting;
 use App\Services\MetricsService;
 use App\Services\PrometheusService;
 use Inertia\Inertia;
@@ -23,6 +24,7 @@ class BoatMetricsController extends Controller
             'humidityHistoryForepeak' => $prometheus->queryRange($history['humidity_forepeak'], '24h', '300s'),
             'humidityHistoryQuarterberth' => $prometheus->queryRange($history['humidity_quarterberth'], '24h', '300s'),
             'humidityHistoryMainCabin' => $prometheus->queryRange($history['humidity_main_cabin'], '24h', '300s'),
+            'tripOffset' => (float) BoatSetting::getValue('trip_offset', 0),
         ]);
     }
 }

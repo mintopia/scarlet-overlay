@@ -19,6 +19,7 @@ class DashboardController extends Controller
             'tileUrl' => '/openseamap/{z}/{x}/{y}',
             'reverb' => config('scarlet.reverb'),
             'reverbKey' => config('broadcasting.connections.reverb.key'),
+            'tripOffset' => (float) BoatSetting::getValue('trip_offset', 0),
         ]);
     }
 }

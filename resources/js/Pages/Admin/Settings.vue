@@ -66,6 +66,19 @@
                     <p v-if="passageForm.errors.passage_to" class="mt-1 text-xs text-error">{{ passageForm.errors.passage_to }}</p>
                 </div>
             </div>
+            <div class="mt-4">
+                <label class="block text-[13px] font-medium text-text-secondary mb-1.5">Trip Offset (nm)</label>
+                <input
+                    v-model.number="passageForm.trip_offset"
+                    type="number"
+                    step="0.1"
+                    min="0"
+                    placeholder="0"
+                    class="w-full h-[42px] px-3.5 text-sm bg-bg border border-border rounded-[7px] font-sans focus:border-scarlet focus:ring-1 focus:ring-scarlet/20 outline-none tabular-nums sm:max-w-[200px]"
+                />
+                <p class="mt-1 text-[12px] text-text-secondary">Subtracted from the trip log when displayed on the dashboard and stream.</p>
+                <p v-if="passageForm.errors.trip_offset" class="mt-1 text-xs text-error">{{ passageForm.errors.trip_offset }}</p>
+            </div>
             <div class="flex items-center gap-3 mt-5">
                 <button
                     type="submit"
@@ -157,6 +170,7 @@ const identityForm = useForm({
 const passageForm = useForm({
     passage_from: props.settings?.passage_from ?? '',
     passage_to: props.settings?.passage_to ?? '',
+    trip_offset: props.settings?.trip_offset ?? 0,
 });
 
 const portForm = useForm({
