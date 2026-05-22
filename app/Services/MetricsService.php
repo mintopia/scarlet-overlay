@@ -11,10 +11,12 @@ class MetricsService
 
     public function getSettings(): array
     {
+        $journey = \App\Models\Journey::current();
+
         return [
             'boat_name' => \App\Models\BoatSetting::getValue('boat_name', config('scarlet.name')),
-            'passage_from' => \App\Models\BoatSetting::getValue('passage_from', ''),
-            'passage_to' => \App\Models\BoatSetting::getValue('passage_to', ''),
+            'passage_from' => $journey?->from_port ?? '',
+            'passage_to' => $journey?->to_port ?? '',
             'port_name' => \App\Models\BoatSetting::getValue('port_name', ''),
         ];
     }

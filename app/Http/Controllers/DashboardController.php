@@ -10,17 +10,20 @@ class DashboardController extends Controller
 {
     public function index(MetricsService $metrics)
     {
+        $journey = \App\Models\Journey::current();
+
         return Inertia::render('Public/Dashboard', [
             'initialMetrics' => $metrics->getAllMetrics(),
             'gpsTrack' => $metrics->getGpsTrack(),
             'boatName' => BoatSetting::getValue('boat_name', config('scarlet.name')),
-            'passageFrom' => BoatSetting::getValue('passage_from', ''),
-            'passageTo' => BoatSetting::getValue('passage_to', ''),
+            'passageFrom' => $journey?->from_port ?? '',
+            'passageTo' => $journey?->to_port ?? '',
             'portName' => BoatSetting::getValue('port_name', ''),
             'tileUrl' => '/openseamap/{z}/{x}/{y}',
             'reverb' => config('scarlet.reverb'),
             'reverbKey' => config('broadcasting.connections.reverb.key'),
             'tripOffset' => (float) BoatSetting::getValue('trip_offset', 0),
+            'routeWaypoints' => $journey?->route_waypoints ?? [],
         ]);
     }
 }

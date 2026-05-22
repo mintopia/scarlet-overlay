@@ -12,7 +12,7 @@ class MetricsPushCommand extends Command
     protected $signature = 'metrics:push';
     protected $description = 'Query Prometheus and broadcast metrics via Reverb every 15 seconds';
 
-    public function handle(MetricsService $metricsService): int
+    public function handle(MetricsService $metricsService, \App\Services\JourneyService $journeyService): int
     {
         $interval = config('scarlet.metrics.push_interval');
         $this->info("Starting metrics push loop (every {$interval}s)");
@@ -29,6 +29,11 @@ class MetricsPushCommand extends Command
                     $all['timestamp'],
                 );
                 $this->line('Pushed metrics at ' . $all['timestamp']);
+
+                $journey = \App\Models\Journey::current();
+                if ($journey) {
+                    $journeyService->recordTrackPoint($journey, $all);
+                }
             } catch (\Throwable $e) {
                 Log::error("Metrics push failed: {$e->getMessage()}");
                 $this->error("Error: {$e->getMessage()}");
