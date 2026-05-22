@@ -15,6 +15,7 @@ const props = defineProps({
     passageFrom: String,
     passageTo: String,
     portName: String,
+    gpsTrack: { type: Array, default: () => [] },
 });
 
 const {
@@ -26,6 +27,7 @@ const {
 } = useScarletMetrics({
     initialMetrics: props.initialMetrics,
     portName: props.portName,
+    gpsTrack: props.gpsTrack,
 });
 
 const videoRef = ref(null);

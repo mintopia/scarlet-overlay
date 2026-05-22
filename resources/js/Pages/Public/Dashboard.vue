@@ -19,6 +19,7 @@ const props = defineProps({
     reverb: Object,
     reverbKey: String,
     tripOffset: { type: Number, default: 0 },
+    gpsTrack: { type: Array, default: () => [] },
 });
 
 const mapContainer = ref(null);
@@ -34,6 +35,7 @@ const {
 } = useScarletMetrics({
     initialMetrics: props.initialMetrics,
     portName: props.portName,
+    gpsTrack: props.gpsTrack,
 });
 
 const windAngleSide = computed(() => {

@@ -8,6 +8,7 @@ export function useScarletMetrics(options = {}) {
     const {
         initialMetrics = null,
         portName = '',
+        gpsTrack = [],
     } = options;
 
     // ── Reactive state ──────────────────────────────────────────────────
@@ -107,10 +108,25 @@ export function useScarletMetrics(options = {}) {
             autoCenter: opts.autoCenter ?? true,
         };
         mapTargets.push(target);
-        if (gps.value?.latitude) {
-            if (!trackPoints.length) {
-                trackPoints.push({ pos: [gps.value.latitude, gps.value.longitude], speed: boat.value?.speed_sog ?? 0 });
+
+        if (!trackPoints.length && gpsTrack.length) {
+            gpsTrack.forEach(p => trackPoints.push({ pos: [p[0], p[1]], speed: p[2] ?? 0 }));
+        }
+
+        if (trackPoints.length > 1) {
+            for (let i = 1; i < trackPoints.length; i++) {
+                const seg = L.polyline([trackPoints[i - 1].pos, trackPoints[i].pos], {
+                    color: speedToColor(trackPoints[i].speed),
+                    weight: 3,
+                    opacity: 0.85,
+                }).addTo(target.map);
+                target.segments.push(seg);
             }
+        } else if (gps.value?.latitude && !trackPoints.length) {
+            trackPoints.push({ pos: [gps.value.latitude, gps.value.longitude], speed: boat.value?.speed_sog ?? 0 });
+        }
+
+        if (gps.value?.latitude) {
             updateSingleMap(target, gps.value, boat.value);
         }
     }

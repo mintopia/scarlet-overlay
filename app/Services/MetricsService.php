@@ -56,6 +56,35 @@ class MetricsService
         ];
     }
 
+    public function getGpsTrack(string $duration = '12h', string $step = '30s'): array
+    {
+        $mappings = config('scarlet.metrics.mappings');
+
+        $latData = $this->prometheus->queryRange($mappings['gps']['latitude'], $duration, $step);
+        $lngData = $this->prometheus->queryRange($mappings['gps']['longitude'], $duration, $step);
+        $sogData = $this->prometheus->queryRange($mappings['boat']['speed_sog'], $duration, $step);
+
+        $lngByTs = collect($lngData)->keyBy('timestamp');
+        $sogByTs = collect($sogData)->keyBy('timestamp');
+
+        $track = [];
+        foreach ($latData as $point) {
+            $ts = $point['timestamp'];
+            $lng = $lngByTs->get($ts);
+            if (!$lng) continue;
+
+            $sog = $sogByTs->get($ts);
+
+            $track[] = [
+                $point['value'],
+                $lng['value'],
+                $sog['value'] ?? 0,
+            ];
+        }
+
+        return $track;
+    }
+
     private function voltageToPct(?float $voltage): ?float
     {
         if ($voltage === null) {
