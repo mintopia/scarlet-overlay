@@ -100,76 +100,54 @@
             </div>
         </div>
 
-        <!-- 3 & 4. Temperature + Battery Voltage charts -->
+        <!-- 3. Temperature + Humidity charts -->
         <div class="grid grid-cols-2 gap-4 mb-4">
-            <!-- Temperature -->
+            <!-- Temperature (3-zone) -->
             <div class="bg-surface border border-border rounded-[10px] p-4">
                 <div class="text-[15px] font-semibold mb-0.5">Cabin Temperature</div>
-                <div class="text-[12px] text-text-dim mb-3 tabular-nums">
-                    <span class="text-amber font-medium">
-                        {{ live?.air_temp != null ? live.air_temp.toFixed(1) + '°C' : (props.boat?.air_temp != null ? props.boat.air_temp.toFixed(1) + '°C' : '—') }}
-                    </span>
-                    &nbsp;current
+                <div class="text-[12px] text-text-dim mb-3 tabular-nums flex gap-4">
+                    <span><span class="font-medium" style="color: oklch(0.70 0.14 70)">&#9679;</span> Forepeak {{ live?.cabin_temp_forepeak != null ? Number(live.cabin_temp_forepeak).toFixed(1) + '°C' : '—' }}</span>
+                    <span><span class="font-medium" style="color: oklch(0.60 0.16 240)">&#9679;</span> Quarterberth {{ live?.cabin_temp_quarterberth != null ? Number(live.cabin_temp_quarterberth).toFixed(1) + '°C' : '—' }}</span>
+                    <span><span class="font-medium" style="color: oklch(0.65 0.18 330)">&#9679;</span> Main Cabin {{ live?.cabin_temp_main != null ? Number(live.cabin_temp_main).toFixed(1) + '°C' : '—' }}</span>
                 </div>
                 <svg viewBox="0 0 400 120" class="w-full" preserveAspectRatio="none">
                     <defs>
-                        <linearGradient id="tempGrad" x1="0" y1="0" x2="0" y2="1">
-                            <stop offset="0%" stop-color="oklch(0.70 0.14 70)" stop-opacity="0.20"/>
-                            <stop offset="100%" stop-color="oklch(0.70 0.14 70)" stop-opacity="0.02"/>
+                        <linearGradient id="tempGradFp" x1="0" y1="0" x2="0" y2="1">
+                            <stop offset="0%" stop-color="oklch(0.70 0.14 70)" stop-opacity="0.10"/>
+                            <stop offset="100%" stop-color="oklch(0.70 0.14 70)" stop-opacity="0.01"/>
                         </linearGradient>
                     </defs>
-                    <polygon
-                        v-if="props.tempHistory?.length"
-                        :points="toAreaPolygon(props.tempHistory, 400, 120, tempMin, tempMax)"
-                        fill="url(#tempGrad)"
-                    />
-                    <polyline
-                        v-if="props.tempHistory?.length"
-                        :points="toPolyline(props.tempHistory, 400, 120, tempMin, tempMax)"
-                        fill="none"
-                        stroke="oklch(0.70 0.14 70)"
-                        stroke-width="1.5"
-                        stroke-linejoin="round"
-                        stroke-linecap="round"
-                    />
-                    <text v-if="!props.tempHistory?.length" x="200" y="65" text-anchor="middle" font-size="12" fill="oklch(0.70 0.005 40)">No data</text>
+                    <polygon v-if="props.tempHistoryForepeak?.length" :points="toAreaPolygon(props.tempHistoryForepeak, 400, 120, tempMin, tempMax)" fill="url(#tempGradFp)"/>
+                    <polyline v-if="props.tempHistoryForepeak?.length" :points="toPolyline(props.tempHistoryForepeak, 400, 120, tempMin, tempMax)" fill="none" stroke="oklch(0.70 0.14 70)" stroke-width="1.5" stroke-linejoin="round" stroke-linecap="round"/>
+                    <polyline v-if="props.tempHistoryQuarterberth?.length" :points="toPolyline(props.tempHistoryQuarterberth, 400, 120, tempMin, tempMax)" fill="none" stroke="oklch(0.60 0.16 240)" stroke-width="1.5" stroke-linejoin="round" stroke-linecap="round"/>
+                    <polyline v-if="props.tempHistoryMainCabin?.length" :points="toPolyline(props.tempHistoryMainCabin, 400, 120, tempMin, tempMax)" fill="none" stroke="oklch(0.65 0.18 330)" stroke-width="1.5" stroke-linejoin="round" stroke-linecap="round"/>
+                    <text v-if="!hasTempData" x="200" y="65" text-anchor="middle" font-size="12" fill="oklch(0.70 0.005 40)">No data</text>
                 </svg>
                 <div class="flex justify-between text-[10px] text-text-dim mt-1">
                     <span>24h ago</span><span>now</span>
                 </div>
             </div>
 
-            <!-- Battery Voltage -->
+            <!-- Humidity (3-zone) -->
             <div class="bg-surface border border-border rounded-[10px] p-4">
-                <div class="text-[15px] font-semibold mb-0.5">Battery Voltage</div>
-                <div class="text-[12px] text-text-dim mb-3 tabular-nums">
-                    <span class="text-green font-medium">
-                        {{ batteryVal }}
-                    </span>
-                    &nbsp;current
+                <div class="text-[15px] font-semibold mb-0.5">Cabin Humidity</div>
+                <div class="text-[12px] text-text-dim mb-3 tabular-nums flex gap-4">
+                    <span><span class="font-medium" style="color: oklch(0.70 0.14 70)">&#9679;</span> Forepeak {{ live?.cabin_humidity_forepeak != null ? Number(live.cabin_humidity_forepeak).toFixed(0) + '%' : '—' }}</span>
+                    <span><span class="font-medium" style="color: oklch(0.60 0.16 240)">&#9679;</span> Quarterberth {{ live?.cabin_humidity_quarterberth != null ? Number(live.cabin_humidity_quarterberth).toFixed(0) + '%' : '—' }}</span>
+                    <span><span class="font-medium" style="color: oklch(0.65 0.18 330)">&#9679;</span> Main Cabin {{ live?.cabin_humidity_main != null ? Number(live.cabin_humidity_main).toFixed(0) + '%' : '—' }}</span>
                 </div>
                 <svg viewBox="0 0 400 120" class="w-full" preserveAspectRatio="none">
                     <defs>
-                        <linearGradient id="batteryGrad" x1="0" y1="0" x2="0" y2="1">
-                            <stop offset="0%" stop-color="oklch(0.62 0.15 155)" stop-opacity="0.20"/>
-                            <stop offset="100%" stop-color="oklch(0.62 0.15 155)" stop-opacity="0.02"/>
+                        <linearGradient id="humidGradFp" x1="0" y1="0" x2="0" y2="1">
+                            <stop offset="0%" stop-color="oklch(0.70 0.14 70)" stop-opacity="0.10"/>
+                            <stop offset="100%" stop-color="oklch(0.70 0.14 70)" stop-opacity="0.01"/>
                         </linearGradient>
                     </defs>
-                    <polygon
-                        v-if="props.batteryHistory?.length"
-                        :points="toAreaPolygon(props.batteryHistory, 400, 120, batteryMin, batteryMax)"
-                        fill="url(#batteryGrad)"
-                    />
-                    <polyline
-                        v-if="props.batteryHistory?.length"
-                        :points="toPolyline(props.batteryHistory, 400, 120, batteryMin, batteryMax)"
-                        fill="none"
-                        stroke="oklch(0.62 0.15 155)"
-                        stroke-width="1.5"
-                        stroke-linejoin="round"
-                        stroke-linecap="round"
-                    />
-                    <text v-if="!props.batteryHistory?.length" x="200" y="65" text-anchor="middle" font-size="12" fill="oklch(0.70 0.005 40)">No data</text>
+                    <polygon v-if="props.humidityHistoryForepeak?.length" :points="toAreaPolygon(props.humidityHistoryForepeak, 400, 120, humidityMin, humidityMax)" fill="url(#humidGradFp)"/>
+                    <polyline v-if="props.humidityHistoryForepeak?.length" :points="toPolyline(props.humidityHistoryForepeak, 400, 120, humidityMin, humidityMax)" fill="none" stroke="oklch(0.70 0.14 70)" stroke-width="1.5" stroke-linejoin="round" stroke-linecap="round"/>
+                    <polyline v-if="props.humidityHistoryQuarterberth?.length" :points="toPolyline(props.humidityHistoryQuarterberth, 400, 120, humidityMin, humidityMax)" fill="none" stroke="oklch(0.60 0.16 240)" stroke-width="1.5" stroke-linejoin="round" stroke-linecap="round"/>
+                    <polyline v-if="props.humidityHistoryMainCabin?.length" :points="toPolyline(props.humidityHistoryMainCabin, 400, 120, humidityMin, humidityMax)" fill="none" stroke="oklch(0.65 0.18 330)" stroke-width="1.5" stroke-linejoin="round" stroke-linecap="round"/>
+                    <text v-if="!hasHumidityData" x="200" y="65" text-anchor="middle" font-size="12" fill="oklch(0.70 0.005 40)">No data</text>
                 </svg>
                 <div class="flex justify-between text-[10px] text-text-dim mt-1">
                     <span>24h ago</span><span>now</span>
@@ -215,7 +193,90 @@
             </div>
         </div>
 
-        <!-- 6 & 7. Wind compass + Navigation compass -->
+        <!-- 5. Battery Voltage + Speed charts -->
+        <div class="grid grid-cols-2 gap-4 mb-4">
+            <!-- Battery Voltage -->
+            <div class="bg-surface border border-border rounded-[10px] p-4">
+                <div class="text-[15px] font-semibold mb-0.5">Battery Voltage</div>
+                <div class="text-[12px] text-text-dim mb-3 tabular-nums">
+                    <span class="text-green font-medium">{{ batteryVal }}</span>
+                    &nbsp;current
+                </div>
+                <svg viewBox="0 0 400 120" class="w-full" preserveAspectRatio="none">
+                    <defs>
+                        <linearGradient id="batteryGrad" x1="0" y1="0" x2="0" y2="1">
+                            <stop offset="0%" stop-color="oklch(0.62 0.15 155)" stop-opacity="0.20"/>
+                            <stop offset="100%" stop-color="oklch(0.62 0.15 155)" stop-opacity="0.02"/>
+                        </linearGradient>
+                    </defs>
+                    <polygon v-if="props.batteryHistory?.length" :points="toAreaPolygon(props.batteryHistory, 400, 120, batteryMin, batteryMax)" fill="url(#batteryGrad)"/>
+                    <polyline v-if="props.batteryHistory?.length" :points="toPolyline(props.batteryHistory, 400, 120, batteryMin, batteryMax)" fill="none" stroke="oklch(0.62 0.15 155)" stroke-width="1.5" stroke-linejoin="round" stroke-linecap="round"/>
+                    <text v-if="!props.batteryHistory?.length" x="200" y="65" text-anchor="middle" font-size="12" fill="oklch(0.70 0.005 40)">No data</text>
+                </svg>
+                <div class="flex justify-between text-[10px] text-text-dim mt-1">
+                    <span>24h ago</span><span>now</span>
+                </div>
+            </div>
+            <!-- Speed -->
+            <div class="bg-surface border border-border rounded-[10px] p-4">
+                <div class="text-[15px] font-semibold mb-0.5">Speed</div>
+                <div class="text-[12px] text-text-dim mb-3 tabular-nums">
+                    <span class="text-scarlet font-medium">
+                        {{ live?.speed_sog != null ? live.speed_sog.toFixed(1) + ' kn' : '—' }}
+                    </span>
+                    &nbsp;current
+                </div>
+                <svg viewBox="0 0 400 120" class="w-full" preserveAspectRatio="none">
+                    <defs>
+                        <linearGradient id="speedGrad" x1="0" y1="0" x2="0" y2="1">
+                            <stop offset="0%" stop-color="oklch(0.54 0.22 27)" stop-opacity="0.20"/>
+                            <stop offset="100%" stop-color="oklch(0.54 0.22 27)" stop-opacity="0.02"/>
+                        </linearGradient>
+                    </defs>
+                    <polygon v-if="props.speedHistory?.length" :points="toAreaPolygon(props.speedHistory, 400, 120, 0, speedMax)" fill="url(#speedGrad)"/>
+                    <polyline v-if="props.speedHistory?.length" :points="toPolyline(props.speedHistory, 400, 120, 0, speedMax)" fill="none" stroke="oklch(0.54 0.22 27)" stroke-width="1.5" stroke-linejoin="round" stroke-linecap="round"/>
+                    <text v-if="!props.speedHistory?.length" x="200" y="65" text-anchor="middle" font-size="12" fill="oklch(0.70 0.005 40)">No data</text>
+                </svg>
+                <div class="flex justify-between text-[10px] text-text-dim mt-1">
+                    <span>24h ago</span><span>now</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- 6. Batteries -->
+        <div class="bg-surface border border-border rounded-[10px] p-4 mb-4">
+            <div class="text-[15px] font-semibold mb-4">Batteries</div>
+            <div class="grid grid-cols-2 gap-6">
+                <div class="space-y-2.5 text-[13px]">
+                    <div class="text-[12px] font-semibold text-text-dim uppercase tracking-wide mb-3">House Battery</div>
+                    <div class="flex justify-between">
+                        <span class="text-text-secondary">Voltage</span>
+                        <span class="tabular-nums font-semibold">{{ live?.house_battery_voltage != null ? Number(live.house_battery_voltage).toFixed(2) + ' V' : '—' }}</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-text-secondary">State of Charge</span>
+                        <span class="tabular-nums font-semibold text-green">{{ live?.house_battery_soc != null ? Number(live.house_battery_soc).toFixed(0) + '%' : '—' }}</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-text-secondary">Current</span>
+                        <span class="tabular-nums font-semibold" :class="live?.house_battery_current != null && live.house_battery_current > 0 ? 'text-green' : 'text-amber'">{{ live?.house_battery_current != null ? Number(live.house_battery_current).toFixed(1) + ' A' : '—' }}</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-text-secondary">Time Remaining</span>
+                        <span class="tabular-nums font-semibold">{{ live?.house_battery_time_remaining != null ? Number(live.house_battery_time_remaining).toFixed(0) + ' h' : '—' }}</span>
+                    </div>
+                </div>
+                <div class="space-y-2.5 text-[13px]">
+                    <div class="text-[12px] font-semibold text-text-dim uppercase tracking-wide mb-3">Engine Battery</div>
+                    <div class="flex justify-between">
+                        <span class="text-text-secondary">Voltage</span>
+                        <span class="tabular-nums font-semibold">{{ live?.engine_battery_voltage != null ? Number(live.engine_battery_voltage).toFixed(2) + ' V' : '—' }}</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 7. Wind compass + Navigation compass -->
         <div class="grid grid-cols-2 gap-4 mb-4">
             <!-- Wind compass rose -->
             <div class="bg-surface border border-border rounded-[10px] p-4">
@@ -320,143 +381,49 @@
             </div>
         </div>
 
-        <!-- 8. Power Balance -->
-        <div class="bg-surface border border-border rounded-[10px] p-4 mb-4">
-            <div class="flex items-center justify-between mb-4">
-                <div class="text-[15px] font-semibold">Power Balance</div>
-                <span
-                    class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[12px] font-semibold"
-                    :class="isCharging ? 'bg-green-bg text-green' : 'bg-amber-bg text-amber'"
-                >
-                    <span class="w-1.5 h-1.5 rounded-full inline-block" :class="isCharging ? 'bg-green' : 'bg-amber'"></span>
-                    {{ isCharging ? 'Charging' : 'Discharging' }}
-                </span>
-            </div>
-
-            <!-- Power bars -->
-            <div class="space-y-3 mb-4">
+        <!-- 8. Environment -->
+        <div class="bg-surface border border-border rounded-[10px] p-4 mb-6">
+            <div class="text-[15px] font-semibold mb-4">Environment</div>
+            <div class="space-y-4">
                 <div>
-                    <div class="flex justify-between text-[12px] mb-1.5">
-                        <span class="text-text-secondary">Solar Generation</span>
-                        <span class="tabular-nums font-semibold text-green">{{ solarWatts != null ? solarWatts.toFixed(0) + ' W' : '—' }}</span>
-                    </div>
-                    <div class="h-3 rounded-full bg-bg overflow-hidden">
-                        <div
-                            class="h-full rounded-full bg-green transition-all duration-500"
-                            :style="`width: ${powerBarWidth(solarWatts)}%`"
-                        ></div>
+                    <div class="text-[12px] font-semibold text-text-dim uppercase tracking-wide mb-2">Forepeak</div>
+                    <div class="grid grid-cols-2 gap-4 text-[13px]">
+                        <div class="flex justify-between">
+                            <span class="text-text-secondary">Temperature</span>
+                            <span class="tabular-nums font-semibold" style="color: oklch(0.70 0.14 70)">{{ live?.cabin_temp_forepeak != null ? Number(live.cabin_temp_forepeak).toFixed(1) + '°C' : '—' }}</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-text-secondary">Humidity</span>
+                            <span class="tabular-nums font-semibold" style="color: oklch(0.70 0.14 70)">{{ live?.cabin_humidity_forepeak != null ? Number(live.cabin_humidity_forepeak).toFixed(0) + '%' : '—' }}</span>
+                        </div>
                     </div>
                 </div>
+                <div class="border-t border-border"></div>
                 <div>
-                    <div class="flex justify-between text-[12px] mb-1.5">
-                        <span class="text-text-secondary">Load Consumption</span>
-                        <span class="tabular-nums font-semibold text-amber">{{ loadWatts != null ? loadWatts.toFixed(0) + ' W' : '—' }}</span>
-                    </div>
-                    <div class="h-3 rounded-full bg-bg overflow-hidden">
-                        <div
-                            class="h-full rounded-full bg-amber transition-all duration-500"
-                            :style="`width: ${powerBarWidth(loadWatts)}%`"
-                        ></div>
+                    <div class="text-[12px] font-semibold text-text-dim uppercase tracking-wide mb-2">Quarterberth</div>
+                    <div class="grid grid-cols-2 gap-4 text-[13px]">
+                        <div class="flex justify-between">
+                            <span class="text-text-secondary">Temperature</span>
+                            <span class="tabular-nums font-semibold" style="color: oklch(0.60 0.16 240)">{{ live?.cabin_temp_quarterberth != null ? Number(live.cabin_temp_quarterberth).toFixed(1) + '°C' : '—' }}</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-text-secondary">Humidity</span>
+                            <span class="tabular-nums font-semibold" style="color: oklch(0.60 0.16 240)">{{ live?.cabin_humidity_quarterberth != null ? Number(live.cabin_humidity_quarterberth).toFixed(0) + '%' : '—' }}</span>
+                        </div>
                     </div>
                 </div>
-            </div>
-
-            <!-- Details grid -->
-            <div class="grid grid-cols-4 gap-4 pt-3 border-t border-border text-[13px]">
+                <div class="border-t border-border"></div>
                 <div>
-                    <div class="text-[11px] text-text-dim uppercase tracking-wide mb-1">House Battery</div>
-                    <div class="tabular-nums font-semibold">{{ live?.house_battery_voltage != null ? live.house_battery_voltage.toFixed(2) + ' V' : (props.boat?.house_battery_voltage != null ? props.boat.house_battery_voltage.toFixed(2) + ' V' : '—') }}</div>
-                </div>
-                <div>
-                    <div class="text-[11px] text-text-dim uppercase tracking-wide mb-1">Engine Battery</div>
-                    <div class="tabular-nums font-semibold">{{ live?.engine_battery_voltage != null ? live.engine_battery_voltage.toFixed(2) + ' V' : (props.boat?.engine_battery_voltage != null ? props.boat.engine_battery_voltage.toFixed(2) + ' V' : '—') }}</div>
-                </div>
-                <div>
-                    <div class="text-[11px] text-text-dim uppercase tracking-wide mb-1">Solar Current</div>
-                    <div class="tabular-nums font-semibold text-green">{{ live?.solar_current != null ? live.solar_current.toFixed(1) + ' A' : (props.boat?.solar_current != null ? props.boat.solar_current.toFixed(1) + ' A' : '—') }}</div>
-                </div>
-                <div>
-                    <div class="text-[11px] text-text-dim uppercase tracking-wide mb-1">Load Current</div>
-                    <div class="tabular-nums font-semibold text-amber">{{ live?.load_current != null ? live.load_current.toFixed(1) + ' A' : (props.boat?.load_current != null ? props.boat.load_current.toFixed(1) + ' A' : '—') }}</div>
-                </div>
-            </div>
-        </div>
-
-        <!-- 9 & 10. Speed + Humidity charts + Engine panel -->
-        <div class="grid grid-cols-2 gap-4 mb-6">
-            <!-- Speed chart -->
-            <div class="bg-surface border border-border rounded-[10px] p-4">
-                <div class="text-[15px] font-semibold mb-0.5">Speed</div>
-                <div class="text-[12px] text-text-dim mb-3 tabular-nums">
-                    <span class="text-scarlet font-medium">
-                        {{ live?.speed_sog != null ? live.speed_sog.toFixed(1) + ' kn' : (props.boat?.speed_sog != null ? props.boat.speed_sog.toFixed(1) + ' kn' : '—') }}
-                    </span>
-                    &nbsp;current
-                </div>
-                <svg viewBox="0 0 400 120" class="w-full" preserveAspectRatio="none">
-                    <defs>
-                        <linearGradient id="speedGrad" x1="0" y1="0" x2="0" y2="1">
-                            <stop offset="0%" stop-color="oklch(0.54 0.22 27)" stop-opacity="0.20"/>
-                            <stop offset="100%" stop-color="oklch(0.54 0.22 27)" stop-opacity="0.02"/>
-                        </linearGradient>
-                    </defs>
-                    <polygon
-                        v-if="props.speedHistory?.length"
-                        :points="toAreaPolygon(props.speedHistory, 400, 120, 0, speedMax)"
-                        fill="url(#speedGrad)"
-                    />
-                    <polyline
-                        v-if="props.speedHistory?.length"
-                        :points="toPolyline(props.speedHistory, 400, 120, 0, speedMax)"
-                        fill="none"
-                        stroke="oklch(0.54 0.22 27)"
-                        stroke-width="1.5"
-                        stroke-linejoin="round"
-                        stroke-linecap="round"
-                    />
-                    <text v-if="!props.speedHistory?.length" x="200" y="65" text-anchor="middle" font-size="12" fill="oklch(0.70 0.005 40)">No data</text>
-                </svg>
-                <div class="flex justify-between text-[10px] text-text-dim mt-1">
-                    <span>24h ago</span><span>now</span>
-                </div>
-            </div>
-
-            <!-- Engine panel -->
-            <div class="bg-surface border border-border rounded-[10px] p-4">
-                <div class="flex items-center justify-between mb-4">
-                    <div class="text-[15px] font-semibold">Engine</div>
-                    <span
-                        class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[12px] font-semibold"
-                        :class="engineRunning ? 'bg-green-bg text-green' : 'bg-bg text-text-dim'"
-                    >
-                        <span class="w-1.5 h-1.5 rounded-full inline-block" :class="engineRunning ? 'bg-green' : 'bg-text-dim'"></span>
-                        {{ engineRunning ? 'Running' : 'Off' }}
-                    </span>
-                </div>
-                <div class="space-y-2.5 text-[13px]">
-                    <div class="flex justify-between">
-                        <span class="text-text-secondary">RPM</span>
-                        <span class="tabular-nums font-semibold" :class="engineRunning ? 'text-green' : 'text-text-dim'">
-                            {{ engineRunning ? (live?.engine_rpm ?? props.boat?.engine_rpm)?.toFixed(0) : '—' }}
-                        </span>
-                    </div>
-                    <div class="flex justify-between">
-                        <span class="text-text-secondary">Coolant Temp</span>
-                        <span class="tabular-nums font-semibold">
-                            {{ engineRunning && (live?.engine_coolant_temp ?? props.boat?.engine_coolant_temp) != null ? (live?.engine_coolant_temp ?? props.boat?.engine_coolant_temp).toFixed(0) + '°C' : '—' }}
-                        </span>
-                    </div>
-                    <div class="flex justify-between">
-                        <span class="text-text-secondary">Engine Hours</span>
-                        <span class="tabular-nums font-semibold">{{ (live?.engine_hours ?? props.boat?.engine_hours) != null ? (live?.engine_hours ?? props.boat?.engine_hours).toFixed(1) + ' h' : '—' }}</span>
-                    </div>
-                    <div class="flex justify-between">
-                        <span class="text-text-secondary">Rudder Angle</span>
-                        <span class="tabular-nums font-semibold">{{ (live?.rudder ?? props.boat?.rudder) != null ? (live?.rudder ?? props.boat?.rudder).toFixed(1) + '°' : '—' }}</span>
-                    </div>
-                    <div class="flex justify-between">
-                        <span class="text-text-secondary">Rate of Turn</span>
-                        <span class="tabular-nums font-semibold">{{ (live?.rate_of_turn ?? props.boat?.rate_of_turn) != null ? (live?.rate_of_turn ?? props.boat?.rate_of_turn).toFixed(1) + '°/min' : '—' }}</span>
+                    <div class="text-[12px] font-semibold text-text-dim uppercase tracking-wide mb-2">Main Cabin</div>
+                    <div class="grid grid-cols-2 gap-4 text-[13px]">
+                        <div class="flex justify-between">
+                            <span class="text-text-secondary">Temperature</span>
+                            <span class="tabular-nums font-semibold" style="color: oklch(0.65 0.18 330)">{{ live?.cabin_temp_main != null ? Number(live.cabin_temp_main).toFixed(1) + '°C' : '—' }}</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-text-secondary">Humidity</span>
+                            <span class="tabular-nums font-semibold" style="color: oklch(0.65 0.18 330)">{{ live?.cabin_humidity_main != null ? Number(live.cabin_humidity_main).toFixed(0) + '%' : '—' }}</span>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -472,9 +439,13 @@ import { computed, ref, onMounted, onUnmounted } from 'vue';
 const props = defineProps({
     boat: Object,
     batteryHistory: Array,
-    tempHistory: Array,
-    humidityHistory: Array,
     speedHistory: Array,
+    tempHistoryForepeak: Array,
+    tempHistoryQuarterberth: Array,
+    tempHistoryMainCabin: Array,
+    humidityHistoryForepeak: Array,
+    humidityHistoryQuarterberth: Array,
+    humidityHistoryMainCabin: Array,
 });
 
 const metrics = ref(null);
@@ -507,41 +478,39 @@ const timeSinceUpdate = computed(() => {
 // Compass tick marks at 30° intervals
 const compassTicks = [0, 30, 60, 90, 120, 150, 180, 210, 240, 270, 300, 330];
 
-// Engine running check: RPM > 0 and not null
-const engineRunning = computed(() => {
-    const rpm = live.value?.engine_rpm ?? props.boat?.engine_rpm;
-    return rpm != null && rpm > 0;
+// Temperature chart range (3-zone)
+const allTempValues = computed(() => {
+    const fp = (props.tempHistoryForepeak ?? []).map(d => d.value);
+    const qb = (props.tempHistoryQuarterberth ?? []).map(d => d.value);
+    const mc = (props.tempHistoryMainCabin ?? []).map(d => d.value);
+    return [...fp, ...qb, ...mc];
 });
-
-// Power calculations
-const solarWatts = computed(() => live.value?.solar_power ?? props.boat?.solar_power ?? null);
-const loadWatts = computed(() => {
-    const current = live.value?.load_current ?? props.boat?.load_current;
-    const voltage = live.value?.house_battery_voltage ?? props.boat?.house_battery_voltage;
-    if (current != null && voltage != null) return Math.abs(current) * voltage;
-    return null;
-});
-const isCharging = computed(() => {
-    const s = solarWatts.value ?? 0;
-    const l = loadWatts.value ?? 0;
-    return s > l;
-});
-
-// Power bar width (max 500W = 100%)
-function powerBarWidth(watts) {
-    if (watts == null) return 0;
-    return Math.min(100, (Math.abs(watts) / 500) * 100);
-}
-
-// Temperature chart range
 const tempMin = computed(() => {
-    const vals = (props.tempHistory ?? []).map(d => d.value);
+    const vals = allTempValues.value;
     return vals.length ? Math.min(...vals) - 2 : 0;
 });
 const tempMax = computed(() => {
-    const vals = (props.tempHistory ?? []).map(d => d.value);
+    const vals = allTempValues.value;
     return vals.length ? Math.max(...vals) + 2 : 40;
 });
+const hasTempData = computed(() => allTempValues.value.length > 0);
+
+// Humidity chart range (3-zone)
+const allHumidityValues = computed(() => {
+    const fp = (props.humidityHistoryForepeak ?? []).map(d => d.value);
+    const qb = (props.humidityHistoryQuarterberth ?? []).map(d => d.value);
+    const mc = (props.humidityHistoryMainCabin ?? []).map(d => d.value);
+    return [...fp, ...qb, ...mc];
+});
+const humidityMin = computed(() => {
+    const vals = allHumidityValues.value;
+    return vals.length ? Math.min(...vals) - 5 : 0;
+});
+const humidityMax = computed(() => {
+    const vals = allHumidityValues.value;
+    return vals.length ? Math.max(...vals) + 5 : 100;
+});
+const hasHumidityData = computed(() => allHumidityValues.value.length > 0);
 
 // Battery voltage chart range
 const batteryMin = computed(() => {
