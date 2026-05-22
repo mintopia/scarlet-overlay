@@ -99,6 +99,9 @@ return [
             ],
 
             'history' => [
+                'track_latitude' => 'scarlet_signalk_navigation_position_latitude',
+                'track_longitude' => 'scarlet_signalk_navigation_position_longitude',
+                'track_sog' => 'scarlet_signalk_navigation_speedOverGround * 1.94384',
                 'battery' => 'scarlet_signalk_electrical_batteries_0_voltage',
                 'speed' => 'scarlet_signalk_navigation_speedOverGround * 1.94384',
                 'temp_forepeak' => 'scarlet_environment_temperature_celsius',

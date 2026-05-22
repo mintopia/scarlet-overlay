@@ -58,11 +58,11 @@ class MetricsService
 
     public function getGpsTrack(string $duration = '12h', string $step = '30s'): array
     {
-        $mappings = config('scarlet.metrics.mappings');
+        $history = config('scarlet.metrics.mappings.history');
 
-        $latData = $this->prometheus->queryRange($mappings['gps']['latitude'], $duration, $step);
-        $lngData = $this->prometheus->queryRange($mappings['gps']['longitude'], $duration, $step);
-        $sogData = $this->prometheus->queryRange($mappings['boat']['speed_sog'], $duration, $step);
+        $latData = $this->prometheus->queryRange($history['track_latitude'], $duration, $step);
+        $lngData = $this->prometheus->queryRange($history['track_longitude'], $duration, $step);
+        $sogData = $this->prometheus->queryRange($history['track_sog'], $duration, $step);
 
         $lngByTs = collect($lngData)->keyBy('timestamp');
         $sogByTs = collect($sogData)->keyBy('timestamp');
