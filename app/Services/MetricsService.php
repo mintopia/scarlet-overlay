@@ -9,6 +9,16 @@ class MetricsService
         protected WeatherService $weather,
     ) {}
 
+    public function getSettings(): array
+    {
+        return [
+            'boat_name' => \App\Models\BoatSetting::getValue('boat_name', config('scarlet.name')),
+            'passage_from' => \App\Models\BoatSetting::getValue('passage_from', ''),
+            'passage_to' => \App\Models\BoatSetting::getValue('passage_to', ''),
+            'port_name' => \App\Models\BoatSetting::getValue('port_name', ''),
+        ];
+    }
+
     public function getBoatMetrics(): array
     {
         return $this->prometheus->queryMultiple(
@@ -52,6 +62,7 @@ class MetricsService
             'tracker' => $this->getTrackerMetrics(),
             'gps' => $this->getGpsMetrics(),
             'weather' => $this->getWeatherData(),
+            'settings' => $this->getSettings(),
             'timestamp' => now()->toIso8601String(),
         ];
     }

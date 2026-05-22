@@ -17,6 +17,7 @@ class BoatMetricsController extends Controller
         return Inertia::render('Admin/BoatMetrics', [
             'boat' => $metrics->getBoatMetrics(),
             'batteryHistory' => $prometheus->queryRange($history['battery'], '24h', '300s'),
+            'batteryPowerHistory' => $prometheus->queryRange($history['battery_power'], '24h', '300s'),
             'speedHistory' => $prometheus->queryRange($history['speed'], '24h', '300s'),
             'tempHistoryForepeak' => $prometheus->queryRange($history['temp_forepeak'], '24h', '300s'),
             'tempHistoryQuarterberth' => $prometheus->queryRange($history['temp_quarterberth'], '24h', '300s'),

@@ -15,6 +15,7 @@ class MetricsUpdated implements ShouldBroadcastNow
         public array $tracker,
         public array $gps,
         public ?array $weather,
+        public array $settings,
         public string $timestamp,
     ) {}
 

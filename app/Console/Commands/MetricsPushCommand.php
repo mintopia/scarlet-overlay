@@ -25,6 +25,7 @@ class MetricsPushCommand extends Command
                     $all['tracker'],
                     $all['gps'],
                     $all['weather'],
+                    $all['settings'],
                     $all['timestamp'],
                 );
                 $this->line('Pushed metrics at ' . $all['timestamp']);

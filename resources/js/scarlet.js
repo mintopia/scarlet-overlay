@@ -29,17 +29,17 @@ export const weatherLabels = {
 };
 
 export function speedToColor(speed) {
-    const ratio = Math.min(Math.max(speed ?? 0, 0) / 10, 1);
+    const ratio = Math.min(Math.max(speed ?? 0, 0) / 7, 1);
     if (ratio <= 0.5) {
         const t = ratio * 2;
-        const l = 0.52 + t * 0.10;
-        const c = 0.10 + t * 0.04;
-        const h = 260 - t * 105;
+        const l = 0.50 + t * 0.14;
+        const c = 0.14 + t * 0.06;
+        const h = 265 - t * 110;
         return `oklch(${l} ${c} ${h})`;
     }
     const t = (ratio - 0.5) * 2;
-    const l = 0.62 - t * 0.06;
-    const c = 0.14 + t * 0.06;
+    const l = 0.64 - t * 0.10;
+    const c = 0.20 + t * 0.04;
     const h = 155 - t * 128;
     return `oklch(${l} ${c} ${h})`;
 }

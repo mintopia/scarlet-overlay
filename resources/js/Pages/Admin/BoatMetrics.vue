@@ -80,6 +80,43 @@
             </div>
         </div>
 
+        <!-- Battery Power (charge/discharge in watts) -->
+        <div class="panel mb-4">
+            <div class="panel-head">
+                <span class="panel-title">Battery Power</span>
+                <span class="tabular-nums text-[12px] font-medium" :class="livePower != null && livePower >= 0 ? 'text-green' : 'text-amber'">{{ livePowerLabel }}</span>
+            </div>
+            <div class="chart-legend">
+                <span><span class="legend-dot" style="color: oklch(0.62 0.15 155)">&#9679;</span> Charging</span>
+                <span><span class="legend-dot" style="color: oklch(0.65 0.18 40)">&#9679;</span> Discharging</span>
+            </div>
+            <svg viewBox="0 0 400 120" class="w-full" preserveAspectRatio="none">
+                <defs>
+                    <linearGradient id="chargeGrad" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="0%" stop-color="oklch(0.62 0.15 155)" stop-opacity="0.22"/>
+                        <stop offset="100%" stop-color="oklch(0.62 0.15 155)" stop-opacity="0.02"/>
+                    </linearGradient>
+                    <linearGradient id="dischargeGrad" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="0%" stop-color="oklch(0.65 0.18 40)" stop-opacity="0.02"/>
+                        <stop offset="100%" stop-color="oklch(0.65 0.18 40)" stop-opacity="0.22"/>
+                    </linearGradient>
+                    <clipPath id="clipCharge"><rect x="0" y="0" width="400" height="60"/></clipPath>
+                    <clipPath id="clipDischarge"><rect x="0" y="60" width="400" height="60"/></clipPath>
+                </defs>
+                <line x1="0" y1="60" x2="400" y2="60" stroke="oklch(0.50 0.005 40)" stroke-width="0.5" stroke-dasharray="4,3" v-if="batteryPowerHistory?.length"/>
+                <polygon v-if="batteryPowerHistory?.length" :points="toPowerArea(batteryPowerHistory, 400, 120, powerAbsMax, true)" fill="url(#chargeGrad)"/>
+                <polygon v-if="batteryPowerHistory?.length" :points="toPowerArea(batteryPowerHistory, 400, 120, powerAbsMax, false)" fill="url(#dischargeGrad)"/>
+                <polyline v-if="batteryPowerHistory?.length" :points="toPowerLine(batteryPowerHistory, 400, 120, powerAbsMax)" fill="none" stroke="oklch(0.62 0.15 155)" stroke-width="1.5" stroke-linejoin="round" stroke-linecap="round" clip-path="url(#clipCharge)"/>
+                <polyline v-if="batteryPowerHistory?.length" :points="toPowerLine(batteryPowerHistory, 400, 120, powerAbsMax)" fill="none" stroke="oklch(0.65 0.18 40)" stroke-width="1.5" stroke-linejoin="round" stroke-linecap="round" clip-path="url(#clipDischarge)"/>
+                <text v-if="!batteryPowerHistory?.length" x="200" y="65" text-anchor="middle" font-size="12" fill="oklch(0.70 0.005 40)">No data</text>
+            </svg>
+            <div class="chart-axis">
+                <span>24h ago</span>
+                <span class="text-center" style="color: oklch(0.50 0.005 40)">0 W</span>
+                <span>now</span>
+            </div>
+        </div>
+
         <!-- Temperature + Humidity history -->
         <div class="grid grid-cols-2 gap-4 mb-4">
             <div class="panel">
@@ -264,6 +301,7 @@ import { computed, ref, onMounted, onUnmounted } from 'vue';
 const props = defineProps({
     boat: Object,
     batteryHistory: Array,
+    batteryPowerHistory: Array,
     speedHistory: Array,
     tempHistoryForepeak: Array,
     tempHistoryQuarterberth: Array,
@@ -344,6 +382,47 @@ const speedMax = computed(() => {
     const vals = (props.speedHistory ?? []).map(d => d.value);
     return vals.length ? Math.max(...vals, 1) * 1.15 : 10;
 });
+
+const powerVals = computed(() => (props.batteryPowerHistory ?? []).map(d => d.value));
+const powerAbsMax = computed(() => {
+    if (!powerVals.value.length) return 300;
+    const absMax = Math.max(Math.abs(Math.min(...powerVals.value)), Math.abs(Math.max(...powerVals.value)));
+    return Math.max(absMax * 1.15, 50);
+});
+const livePower = computed(() => {
+    const v = live.value?.house_battery_voltage;
+    const a = live.value?.house_battery_current;
+    if (v == null || a == null) return null;
+    return v * a;
+});
+const livePowerLabel = computed(() => {
+    if (livePower.value == null) return '—';
+    const w = livePower.value;
+    const sign = w >= 0 ? '+' : '';
+    return `${sign}${Math.round(w)} W`;
+});
+
+function toPowerLine(data, w, h, absMax) {
+    if (!data?.length) return '';
+    const mid = h / 2;
+    return data.map((d, i) => {
+        const x = (i / (data.length - 1)) * w;
+        const y = mid - (d.value / absMax) * (mid - 5);
+        return `${x},${y}`;
+    }).join(' ');
+}
+
+function toPowerArea(data, w, h, absMax, positive) {
+    if (!data?.length) return '';
+    const mid = h / 2;
+    const filtered = data.map((d, i) => {
+        const clamped = positive ? Math.max(0, d.value) : Math.min(0, d.value);
+        const x = (i / (data.length - 1)) * w;
+        const y = mid - (clamped / absMax) * (mid - 5);
+        return `${x},${y}`;
+    }).join(' ');
+    return `0,${mid} ${filtered} ${w},${mid}`;
+}
 
 function fmt(val, decimals = 1) {
     if (val == null || isNaN(val)) return '—';

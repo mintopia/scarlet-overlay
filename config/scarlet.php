@@ -94,8 +94,8 @@ return [
                 'altitude' => 'scarlet_gps_altitude_meters',
                 'satellites' => 'scarlet_gps_satellites',
                 'hdop' => 'scarlet_gps_hdop',
-                'speed' => 'scarlet_gps_speed_kn',
-                'heading' => 'scarlet_gps_heading_deg',
+                'speed' => 'scarlet_signalk_navigation_speedOverGround * 1.94384',
+                'heading' => 'scarlet_signalk_navigation_headingMagnetic * 180 / 3.14159265359',
             ],
 
             'history' => [
@@ -110,6 +110,8 @@ return [
                 'humidity_forepeak' => 'scarlet_environment_humidity_percent',
                 'humidity_quarterberth' => 'scarlet_mqtt_humidity{topic="zigbee2mqtt/Quarterberth"}',
                 'humidity_main_cabin' => 'scarlet_mqtt_humidity{topic="zigbee2mqtt/Main Cabin"}',
+                'battery_current' => 'scarlet_signalk_electrical_batteries_0_current',
+                'battery_power' => 'scarlet_signalk_electrical_batteries_0_current * scarlet_signalk_electrical_batteries_0_voltage',
             ],
         ],
     ],

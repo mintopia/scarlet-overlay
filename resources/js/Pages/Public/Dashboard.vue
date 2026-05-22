@@ -31,10 +31,14 @@ const {
     clock, clockDate,
     coordText, statusText, statusClass, lastUpdateText,
     wxTemp, wxCondition, wxIcon, wxSeaTemp, wxWindSpeed, wxWindDir, wxWaveHeight, wxWavePeriod,
+    portName, passageFrom, passageTo, boatName,
     initMap, addMapTarget,
 } = useScarletMetrics({
     initialMetrics: props.initialMetrics,
     portName: props.portName,
+    passageFrom: props.passageFrom,
+    passageTo: props.passageTo,
+    boatName: props.boatName,
     gpsTrack: props.gpsTrack,
 });
 

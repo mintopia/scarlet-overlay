@@ -7,7 +7,10 @@ import { speedToColor, makeBoatIcon, formatCoord, getWeatherIcon, getWeatherLabe
 export function useScarletMetrics(options = {}) {
     const {
         initialMetrics = null,
-        portName = '',
+        portName: initialPortName = '',
+        passageFrom: initialPassageFrom = '',
+        passageTo: initialPassageTo = '',
+        boatName: initialBoatName = '',
         gpsTrack = [],
     } = options;
 
@@ -18,6 +21,12 @@ export function useScarletMetrics(options = {}) {
     const lastUpdate = ref(initialMetrics ? new Date() : null);
     const clock = ref('--:--');
     const clockDate = ref('');
+
+    // ── Settings (auto-updated via WebSocket) ───────────────────────────
+    const portName = ref(initialMetrics?.settings?.port_name ?? initialPortName);
+    const passageFrom = ref(initialMetrics?.settings?.passage_from ?? initialPassageFrom);
+    const passageTo = ref(initialMetrics?.settings?.passage_to ?? initialPassageTo);
+    const boatName = ref(initialMetrics?.settings?.boat_name ?? initialBoatName);
 
     // ── Computed ─────────────────────────────────────────────────────────
     const coordText = computed(() => formatCoord(gps.value?.latitude, gps.value?.longitude));
@@ -30,17 +39,20 @@ export function useScarletMetrics(options = {}) {
     const statusText = computed(() => {
         if (isOffline.value) return 'Offline';
         const sog = boat.value?.speed_sog;
-        if ((sog == null || sog < 0.5) && portName) return 'In Port';
-        return 'Underway';
+        if ((sog == null || sog < 0.5) && portName.value) return 'In Port';
+        const current = boat.value?.house_battery_current;
+        if (current != null && current > 2) return 'Under Power';
+        return 'Under Sail';
     });
 
     const statusClass = computed(() => {
         const map = {
             'Offline': 'status-offline',
             'In Port': 'status-port',
-            'Underway': 'status-underway',
+            'Under Sail': 'status-sail',
+            'Under Power': 'status-power',
         };
-        return map[statusText.value] ?? 'status-underway';
+        return map[statusText.value] ?? 'status-sail';
     });
 
     const lastUpdateText = computed(() => {
@@ -177,6 +189,12 @@ export function useScarletMetrics(options = {}) {
             boat.value = data.boat;
             gps.value = data.gps;
             if (data.weather) weather.value = data.weather;
+            if (data.settings) {
+                portName.value = data.settings.port_name ?? '';
+                passageFrom.value = data.settings.passage_from ?? '';
+                passageTo.value = data.settings.passage_to ?? '';
+                boatName.value = data.settings.boat_name ?? boatName.value;
+            }
             lastUpdate.value = new Date();
             updateAllMaps(data.gps, data.boat);
         });
@@ -198,6 +216,7 @@ export function useScarletMetrics(options = {}) {
         clock, clockDate,
         coordText, isOffline, statusText, statusClass, lastUpdateText,
         wxTemp, wxCondition, wxIcon, wxSeaTemp, wxWindSpeed, wxWindDir, wxWaveHeight, wxWavePeriod,
+        portName, passageFrom, passageTo, boatName,
         initMap, addMapTarget, removeMapTarget,
         cleanup,
     };
