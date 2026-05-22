@@ -72,7 +72,6 @@ const compassWind = computed(() => {
 const animAppWind = useSpringValue(() => boat.value?.wind_speed_apparent, { tension: 80, friction: 12 });
 const animWindAngle = useAngleSpring(() => Math.abs(boat.value?.wind_angle_apparent ?? 0));
 const animHeel = useSpringValue(() => Math.abs(boat.value?.heel ?? 0), { tension: 80, friction: 12 });
-const animPressure = useSpringValue(() => boat.value?.pressure, { tension: 60, friction: 10 });
 const animTrip = useSpringValue(() => boat.value?.trip_log, { tension: 60, friction: 10 });
 
 function fmtSpring(anim, raw, decimals = 1) {
@@ -156,11 +155,6 @@ onUnmounted(() => {
                 <div class="pill-lbl">HEEL</div>
                 <div class="pill-val">{{ fmtSpring(animHeel, boat?.heel, 0) }}°</div>
                 <div class="pill-sub">{{ heelSide }}</div>
-            </div>
-            <div class="pill">
-                <div class="pill-lbl">PRESSURE</div>
-                <div class="pill-val">{{ fmtSpring(animPressure, boat?.pressure, 0) }}</div>
-                <div class="pill-sub">hPa</div>
             </div>
             <div class="pill">
                 <div class="pill-lbl">TRIP</div>
