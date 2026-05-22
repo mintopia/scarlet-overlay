@@ -108,6 +108,9 @@ export function useScarletMetrics(options = {}) {
         };
         mapTargets.push(target);
         if (gps.value?.latitude) {
+            if (!trackPoints.length) {
+                trackPoints.push({ pos: [gps.value.latitude, gps.value.longitude], speed: boat.value?.speed_sog ?? 0 });
+            }
             updateSingleMap(target, gps.value, boat.value);
         }
     }
