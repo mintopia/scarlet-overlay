@@ -207,27 +207,44 @@ onUnmounted(() => {
 
 .title-overlay {
     position: absolute;
-    top: 16px;
-    left: 16px;
+    top: 10px;
+    left: 10px;
+    right: 10px;
     z-index: 10;
     background: oklch(0.08 0.008 40 / 0.72);
     backdrop-filter: blur(24px);
     -webkit-backdrop-filter: blur(24px);
     border-radius: 10px;
-    padding: 12px 18px;
+    padding: 10px 14px;
     border: 1px solid oklch(0.32 0.01 40 / 0.18);
 }
 
-.title-name { font-size: 18px; font-weight: 600; }
-.title-meta { font-size: 12px; color: oklch(0.62 0.008 70); margin-top: 3px; }
+@media (min-width: 640px) {
+    .title-overlay { top: 16px; left: 16px; right: auto; padding: 12px 18px; }
+}
+
+.title-name { font-size: 16px; font-weight: 600; }
+.title-meta { font-size: 11px; color: oklch(0.62 0.008 70); margin-top: 3px; }
+
+@media (min-width: 640px) {
+    .title-name { font-size: 18px; }
+    .title-meta { font-size: 12px; }
+}
 
 .metrics-overlay {
     position: absolute;
-    bottom: 70px;
-    right: 16px;
+    bottom: 60px;
+    right: 10px;
     z-index: 10;
     display: flex;
-    gap: 5px;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    gap: 4px;
+    max-width: 60vw;
+}
+
+@media (min-width: 640px) {
+    .metrics-overlay { bottom: 70px; right: 16px; gap: 5px; flex-wrap: nowrap; max-width: none; }
 }
 
 .metric-pill {
@@ -258,17 +275,21 @@ onUnmounted(() => {
 
 .scrub-time {
     position: absolute;
-    bottom: 70px;
-    left: 16px;
+    bottom: 60px;
+    left: 10px;
     z-index: 10;
     background: oklch(0.08 0.008 40 / 0.72);
     backdrop-filter: blur(24px);
     -webkit-backdrop-filter: blur(24px);
     border-radius: 7px;
-    padding: 7px 12px;
+    padding: 6px 10px;
     border: 1px solid oklch(0.32 0.01 40 / 0.18);
-    font-size: 14px;
+    font-size: 13px;
     font-weight: 500;
+}
+
+@media (min-width: 640px) {
+    .scrub-time { bottom: 70px; left: 16px; padding: 7px 12px; font-size: 14px; }
 }
 
 .timeline {
@@ -279,28 +300,40 @@ onUnmounted(() => {
     z-index: 10;
     display: flex;
     align-items: center;
-    gap: 12px;
-    padding: 12px 16px;
+    gap: 8px;
+    padding: 10px 10px;
     background: oklch(0.06 0.008 40 / 0.85);
     backdrop-filter: blur(24px);
     -webkit-backdrop-filter: blur(24px);
     border-top: 1px solid oklch(0.20 0.01 40 / 0.3);
 }
 
+@media (min-width: 640px) {
+    .timeline { gap: 12px; padding: 12px 16px; }
+}
+
 .timeline-time {
-    font-size: 12px;
+    font-size: 11px;
     color: oklch(0.62 0.008 70);
     white-space: nowrap;
-    min-width: 40px;
+    min-width: 36px;
+}
+
+@media (min-width: 640px) {
+    .timeline-time { font-size: 12px; min-width: 40px; }
 }
 
 .timeline-track {
     flex: 1;
     position: relative;
-    height: 6px;
+    height: 10px;
     background: oklch(0.25 0.005 40);
-    border-radius: 3px;
+    border-radius: 5px;
     overflow: hidden;
+}
+
+@media (min-width: 640px) {
+    .timeline-track { height: 6px; border-radius: 3px; }
 }
 
 .timeline-fill {
@@ -332,8 +365,8 @@ onUnmounted(() => {
 }
 
 .tl-btn {
-    width: 30px;
-    height: 30px;
+    width: 36px;
+    height: 36px;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -344,6 +377,10 @@ onUnmounted(() => {
     font-size: 13px;
     cursor: pointer;
     transition: background 0.12s;
+}
+
+@media (min-width: 640px) {
+    .tl-btn { width: 30px; height: 30px; }
 }
 
 .tl-btn:hover { background: oklch(0.28 0.005 40 / 0.7); }

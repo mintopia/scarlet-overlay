@@ -72,6 +72,10 @@ const weatherProps = computed(() => ({
     rawWavePeriod: weather.value?.waves?.period != null ? Number(weather.value.waves.period) : null,
 }));
 
+const isMobile = ref(window.innerWidth < 640);
+function onResize() { isMobile.value = window.innerWidth < 640; }
+
+const compassSize = computed(() => isMobile.value ? 56 : 76);
 const compassHeading = computed(() => boat.value?.heading ?? boat.value?.cog ?? 0);
 const compassWind = computed(() => {
     const dir = weather.value?.wind?.direction;
@@ -106,10 +110,12 @@ onMounted(() => {
     map = initMap(mapContainer.value);
     map.on('dragstart', () => { autoCenter.value = false; });
     addMapTarget(map, { autoCenter });
+    window.addEventListener('resize', onResize);
 });
 
 onUnmounted(() => {
     map?.remove();
+    window.removeEventListener('resize', onResize);
 });
 </script>
 
@@ -148,7 +154,7 @@ onUnmounted(() => {
 
         <!-- BOTTOM-LEFT: Compass + coords + speed legend -->
         <div class="bl-cluster">
-            <ScarletCompass :heading="compassHeading" :wind-direction="compassWind" :size="76" />
+            <ScarletCompass :heading="compassHeading" :wind-direction="compassWind" :size="compassSize" />
             <ScarletBottomBadges :coord-text="coordText" />
         </div>
 
@@ -213,12 +219,16 @@ onUnmounted(() => {
 /* TOP-LEFT */
 .tl-cluster {
     position: absolute;
-    top: 16px;
-    left: 16px;
+    top: 10px;
+    left: 10px;
     z-index: 10;
     display: flex;
     flex-direction: column;
     gap: 6px;
+}
+
+@media (min-width: 640px) {
+    .tl-cluster { top: 16px; left: 16px; }
 }
 
 /* Map controls */
@@ -228,8 +238,8 @@ onUnmounted(() => {
 }
 
 .map-ctrl {
-    width: 36px;
-    height: 36px;
+    width: 40px;
+    height: 40px;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -245,6 +255,10 @@ onUnmounted(() => {
     user-select: none;
     -webkit-user-select: none;
     font-family: 'Outfit', system-ui, sans-serif;
+}
+
+@media (min-width: 640px) {
+    .map-ctrl { width: 36px; height: 36px; }
 }
 
 .map-ctrl:hover {
@@ -275,32 +289,53 @@ onUnmounted(() => {
 /* TOP-RIGHT */
 .wx-cluster {
     position: absolute;
-    top: 16px;
-    right: 16px;
+    top: 10px;
+    right: 10px;
     z-index: 10;
+}
+
+@media (min-width: 640px) {
+    .wx-cluster { top: 16px; right: 16px; }
 }
 
 /* BOTTOM-LEFT */
 .bl-cluster {
     position: absolute;
-    bottom: 68px;
-    left: 16px;
+    bottom: 56px;
+    left: 10px;
     z-index: 10;
     display: flex;
     flex-direction: column;
     align-items: flex-start;
-    gap: 8px;
+    gap: 6px;
+}
+
+@media (min-width: 640px) {
+    .bl-cluster { bottom: 68px; left: 16px; gap: 8px; }
 }
 
 /* BOTTOM-RIGHT: instruments */
 .instruments {
     position: absolute;
-    bottom: 68px;
-    right: 16px;
+    bottom: 56px;
+    right: 10px;
     z-index: 10;
     display: flex;
-    gap: 5px;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    gap: 4px;
     align-items: stretch;
+    max-width: 50vw;
+}
+
+@media (min-width: 640px) {
+    .instruments {
+        bottom: 68px;
+        right: 16px;
+        gap: 5px;
+        flex-wrap: nowrap;
+        max-width: none;
+    }
 }
 
 /* Pill styles for instruments (dashboard-only) */
@@ -309,31 +344,47 @@ onUnmounted(() => {
     backdrop-filter: blur(24px);
     -webkit-backdrop-filter: blur(24px);
     border-radius: 7px;
-    padding: 7px 12px;
+    padding: 5px 8px;
     text-align: center;
     border: 1px solid oklch(0.32 0.01 40 / 0.18);
-    min-width: 52px;
+    min-width: 44px;
+}
+
+@media (min-width: 640px) {
+    .pill { padding: 7px 12px; min-width: 52px; }
 }
 
 .pill-lbl {
-    font-size: 8px;
+    font-size: 7px;
     font-weight: 600;
     letter-spacing: 0.04em;
     color: oklch(0.62 0.008 70);
     margin-bottom: 2px;
 }
 
+@media (min-width: 640px) {
+    .pill-lbl { font-size: 8px; }
+}
+
 .pill-val {
-    font-size: 14px;
+    font-size: 12px;
     font-weight: 500;
     color: oklch(0.96 0.005 70);
     line-height: 1.1;
 }
 
+@media (min-width: 640px) {
+    .pill-val { font-size: 14px; }
+}
+
 .pill-sub {
-    font-size: 9px;
+    font-size: 8px;
     color: oklch(0.62 0.008 70);
     margin-top: 2px;
+}
+
+@media (min-width: 640px) {
+    .pill-sub { font-size: 9px; }
 }
 
 .pill--compound {
@@ -356,10 +407,14 @@ onUnmounted(() => {
 /* LOWER THIRD positioning */
 .lt-position {
     position: absolute;
-    bottom: 12px;
-    left: 12px;
-    right: 12px;
+    bottom: 8px;
+    left: 8px;
+    right: 8px;
     z-index: 10;
+}
+
+@media (min-width: 640px) {
+    .lt-position { bottom: 12px; left: 12px; right: 12px; }
 }
 </style>
 

@@ -16,7 +16,7 @@
 
         <template v-else>
             <!-- Publisher status strip -->
-            <div class="grid grid-cols-4 gap-4 mb-6">
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4 mb-6">
                 <div class="bg-surface border border-border rounded-[10px] p-4">
                     <div class="text-[11px] font-semibold text-text-dim uppercase tracking-wide mb-2">Publisher</div>
                     <div class="mb-1">
@@ -84,7 +84,7 @@
             </div>
 
             <!-- RTT + Dropped charts side by side -->
-            <div class="grid grid-cols-2 gap-4 mb-4">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4 mb-4">
                 <div class="bg-surface border border-border rounded-[10px] p-4">
                     <div class="text-[15px] font-semibold mb-0.5">Round Trip Time</div>
                     <div class="text-[12px] text-text-dim mb-3 tabular-nums">
@@ -131,7 +131,7 @@
             </div>
 
             <!-- Publisher detail -->
-            <div class="grid grid-cols-2 gap-4 mb-6">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4 mb-6">
                 <div class="bg-surface border border-border rounded-[10px] p-4">
                     <div class="text-[11px] font-semibold text-text-dim uppercase tracking-wide mb-2">Latency</div>
                     <div class="text-[20px] font-bold tabular-nums leading-none mb-1">

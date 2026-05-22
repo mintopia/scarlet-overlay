@@ -51,7 +51,7 @@ function fmtHeading(anim, raw) {
             <div class="lt-sep"></div>
             <span class="lt-status" :class="statusClass">{{ statusText }}</span>
             <template v-if="statusText === 'In Port' && portName">
-                <div class="lt-sep"></div>
+                <div class="lt-sep lt-passage-sep"></div>
                 <div class="lt-passage-wrap">
                     <div class="lt-passage">
                         <span class="lt-port-label">Currently at</span> <strong>{{ portName }}</strong>
@@ -59,7 +59,7 @@ function fmtHeading(anim, raw) {
                 </div>
             </template>
             <template v-else-if="passageFrom || passageTo">
-                <div class="lt-sep"></div>
+                <div class="lt-sep lt-passage-sep"></div>
                 <div class="lt-passage-wrap">
                     <div class="lt-passage">
                         <strong>{{ passageFrom }}</strong>
@@ -87,7 +87,7 @@ function fmtHeading(anim, raw) {
 
 .lt-brand {
     background: oklch(0.54 0.22 27);
-    padding: 0 22px;
+    padding: 0 14px;
     display: flex;
     align-items: center;
     position: relative;
@@ -98,20 +98,29 @@ function fmtHeading(anim, raw) {
 .lt-brand::after {
     content: '';
     position: absolute;
-    right: -16.5px;
+    right: -12px;
     top: -0.5px;
-    width: 18px;
+    width: 14px;
     height: calc(100% + 1px);
     background: oklch(0.54 0.22 27);
     clip-path: polygon(0 0, 0 100%, 100% 100%);
 }
 
+@media (min-width: 640px) {
+    .lt-brand { padding: 0 22px; }
+    .lt-brand::after { right: -16.5px; width: 18px; }
+}
+
 .lt-name {
-    font-size: 18px;
+    font-size: 14px;
     font-weight: 700;
     letter-spacing: 0.03em;
     color: oklch(0.96 0.005 70);
     white-space: nowrap;
+}
+
+@media (min-width: 640px) {
+    .lt-name { font-size: 18px; }
 }
 
 .lt-body {
@@ -121,10 +130,14 @@ function fmtHeading(anim, raw) {
     background: oklch(0.08 0.008 40 / 0.72);
     backdrop-filter: blur(24px);
     -webkit-backdrop-filter: blur(24px);
-    padding: 10px 18px 10px 30px;
-    margin-left: -12px;
-    gap: 10px;
+    padding: 8px 12px 8px 22px;
+    margin-left: -8px;
+    gap: 8px;
     overflow: hidden;
+}
+
+@media (min-width: 640px) {
+    .lt-body { padding: 10px 18px 10px 30px; margin-left: -12px; gap: 10px; }
 }
 
 .lt-metric {
@@ -133,7 +146,7 @@ function fmtHeading(anim, raw) {
 }
 
 .lt-label {
-    font-size: 8px;
+    font-size: 7px;
     font-weight: 600;
     letter-spacing: 0.06em;
     color: oklch(0.62 0.008 70);
@@ -141,19 +154,31 @@ function fmtHeading(anim, raw) {
     white-space: nowrap;
 }
 
+@media (min-width: 640px) {
+    .lt-label { font-size: 8px; }
+}
+
 .lt-val {
-    font-size: 16px;
+    font-size: 13px;
     font-weight: 600;
     color: oklch(0.96 0.005 70);
     line-height: 1.2;
     white-space: nowrap;
 }
 
+@media (min-width: 640px) {
+    .lt-val { font-size: 16px; }
+}
+
 .lt-sep {
     width: 1px;
-    height: 24px;
+    height: 20px;
     background: oklch(0.32 0.01 40 / 0.18);
     flex-shrink: 0;
+}
+
+@media (min-width: 640px) {
+    .lt-sep { height: 24px; }
 }
 
 .lt-status {
@@ -188,9 +213,13 @@ function fmtHeading(anim, raw) {
 
 .lt-passage-wrap {
     flex: 1;
-    display: flex;
+    display: none;
     justify-content: center;
     overflow: hidden;
+}
+
+@media (min-width: 640px) {
+    .lt-passage-wrap { display: flex; }
 }
 
 .lt-passage {
@@ -203,6 +232,14 @@ function fmtHeading(anim, raw) {
 .lt-passage strong {
     color: oklch(0.96 0.005 70);
     font-weight: 600;
+}
+
+.lt-passage-sep {
+    display: none;
+}
+
+@media (min-width: 640px) {
+    .lt-passage-sep { display: block; }
 }
 
 .lt-port-label {
@@ -219,10 +256,14 @@ function fmtHeading(anim, raw) {
 }
 
 .lt-time {
-    font-size: 16px;
+    font-size: 13px;
     font-weight: 600;
     color: oklch(0.96 0.005 70);
     line-height: 1;
+}
+
+@media (min-width: 640px) {
+    .lt-time { font-size: 16px; }
 }
 
 .lt-date {

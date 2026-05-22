@@ -1,20 +1,33 @@
 <template>
     <div class="flex h-screen overflow-hidden bg-bg font-sans text-text-primary">
+        <!-- Mobile backdrop -->
+        <Transition name="backdrop-fade">
+            <div v-if="sidebarOpen" class="fixed inset-0 z-30 bg-black/30 md:hidden" @click="sidebarOpen = false"></div>
+        </Transition>
+
         <!-- Sidebar -->
-        <aside class="w-[220px] bg-surface border-r border-border flex flex-col shrink-0">
-            <div class="px-5 pt-5 pb-4 border-b border-border-light">
-                <div class="text-[22px] font-bold text-scarlet tracking-wide">Scarlet</div>
-                <div class="text-[11px] font-medium text-text-dim mt-0.5">Admin</div>
+        <aside
+            class="sidebar"
+            :class="{ 'sidebar--open': sidebarOpen }"
+        >
+            <div class="px-5 pt-5 pb-4 border-b border-border-light flex items-center justify-between">
+                <div>
+                    <div class="text-[22px] font-bold text-scarlet tracking-wide">Scarlet</div>
+                    <div class="text-[11px] font-medium text-text-dim mt-0.5">Admin</div>
+                </div>
+                <button class="md:hidden w-8 h-8 flex items-center justify-center rounded-lg text-text-dim" @click="sidebarOpen = false">
+                    <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" fill="none" stroke-width="2" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                </button>
             </div>
 
-            <nav class="px-2.5 py-3 flex-1 flex flex-col gap-0.5">
+            <nav class="px-2.5 py-3 flex-1 flex flex-col gap-0.5 overflow-y-auto">
                 <div class="nav-label first:pt-1">Boat</div>
-                <NavLink href="/admin" icon="home" :active="currentPage === 'Admin/Dashboard'">Dashboard</NavLink>
-                <NavLink href="/admin/settings" icon="settings" :active="currentPage === 'Admin/Settings'">Settings</NavLink>
-                <NavLink href="/admin/journeys" icon="compass" :active="currentPage?.startsWith('Admin/Journey')">Journeys</NavLink>
-                <NavLink href="/admin/tracker" icon="activity" :active="currentPage === 'Admin/Tracker'">Tracker</NavLink>
-                <NavLink href="/admin/metrics" icon="chart" :active="currentPage === 'Admin/BoatMetrics'">Boat Metrics</NavLink>
-                <NavLink href="/admin/stream" icon="radio" :active="currentPage === 'Admin/StreamMonitor'">Stream Monitor</NavLink>
+                <NavLink href="/admin" icon="home" :active="currentPage === 'Admin/Dashboard'" @click="sidebarOpen = false">Dashboard</NavLink>
+                <NavLink href="/admin/settings" icon="settings" :active="currentPage === 'Admin/Settings'" @click="sidebarOpen = false">Settings</NavLink>
+                <NavLink href="/admin/journeys" icon="compass" :active="currentPage?.startsWith('Admin/Journey')" @click="sidebarOpen = false">Journeys</NavLink>
+                <NavLink href="/admin/tracker" icon="activity" :active="currentPage === 'Admin/Tracker'" @click="sidebarOpen = false">Tracker</NavLink>
+                <NavLink href="/admin/metrics" icon="chart" :active="currentPage === 'Admin/BoatMetrics'" @click="sidebarOpen = false">Boat Metrics</NavLink>
+                <NavLink href="/admin/stream" icon="radio" :active="currentPage === 'Admin/StreamMonitor'" @click="sidebarOpen = false">Stream Monitor</NavLink>
 
                 <div class="nav-label">Links</div>
                 <a href="/overlay" target="_blank" class="nav-link">
@@ -27,8 +40,8 @@
                 </a>
 
                 <div class="nav-label">Account</div>
-                <NavLink href="/admin/profile" icon="user" :active="currentPage === 'Admin/Profile'">Profile</NavLink>
-                <NavLink href="/admin/team" icon="users" :active="currentPage === 'Admin/Team'">Team</NavLink>
+                <NavLink href="/admin/profile" icon="user" :active="currentPage === 'Admin/Profile'" @click="sidebarOpen = false">Profile</NavLink>
+                <NavLink href="/admin/team" icon="users" :active="currentPage === 'Admin/Team'" @click="sidebarOpen = false">Team</NavLink>
             </nav>
 
             <div class="px-2.5 py-3.5 border-t border-border-light">
@@ -49,7 +62,14 @@
         </aside>
 
         <!-- Main content -->
-        <main class="flex-1 overflow-y-auto px-10 py-8">
+        <main class="flex-1 overflow-y-auto px-4 py-5 md:px-10 md:py-8">
+            <!-- Mobile header -->
+            <div class="flex items-center gap-3 mb-4 md:hidden">
+                <button @click="sidebarOpen = true" class="w-9 h-9 flex items-center justify-center rounded-lg border border-border text-text-secondary">
+                    <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" fill="none" stroke-width="2" stroke-linecap="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+                </button>
+                <span class="text-[18px] font-bold text-scarlet tracking-wide">Scarlet</span>
+            </div>
             <div class="max-w-[820px]">
                 <slot />
             </div>
@@ -58,13 +78,50 @@
 </template>
 
 <script setup>
-import { Link, usePage } from '@inertiajs/vue3';
+import { ref } from 'vue';
+import { Link, usePage, router } from '@inertiajs/vue3';
 import NavLink from './NavLink.vue';
 
 const currentPage = usePage().component;
+const sidebarOpen = ref(false);
+
+router.on('navigate', () => { sidebarOpen.value = false; });
 </script>
 
 <style scoped>
+.sidebar {
+    position: fixed;
+    inset-block: 0;
+    left: 0;
+    z-index: 40;
+    width: 220px;
+    background: var(--color-surface);
+    border-right: 1px solid var(--color-border);
+    display: flex;
+    flex-direction: column;
+    flex-shrink: 0;
+    transform: translateX(-100%);
+    transition: transform 0.2s ease-out;
+}
+
+.sidebar--open { transform: translateX(0); }
+
+@media (min-width: 768px) {
+    .sidebar {
+        position: relative;
+        transform: none;
+    }
+}
+
+.backdrop-fade-enter-active,
+.backdrop-fade-leave-active {
+    transition: opacity 0.2s ease-out;
+}
+.backdrop-fade-enter-from,
+.backdrop-fade-leave-to {
+    opacity: 0;
+}
+
 .nav-label {
     font-size: 10px;
     font-weight: 700;
@@ -100,5 +157,11 @@ const currentPage = usePage().component;
     stroke-width: 2;
     stroke-linecap: round;
     stroke-linejoin: round;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .sidebar,
+    .backdrop-fade-enter-active,
+    .backdrop-fade-leave-active { transition: none; }
 }
 </style>

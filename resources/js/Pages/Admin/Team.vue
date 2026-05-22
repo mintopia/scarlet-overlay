@@ -3,8 +3,8 @@
         <Head title="Team" />
 
         <!-- Members -->
-        <div class="bg-surface border border-border rounded-[10px] mb-6">
-            <div class="flex items-center justify-between px-6 py-4 border-b border-border">
+        <div class="bg-surface border border-border rounded-[10px] mb-6 overflow-x-auto">
+            <div class="flex items-center justify-between px-4 md:px-6 py-4 border-b border-border">
                 <h2 class="text-[15px] font-semibold">Members</h2>
                 <button
                     v-if="isOwner"
@@ -15,12 +15,12 @@
                 </button>
             </div>
 
-            <table class="w-full">
+            <table class="w-full min-w-[480px]">
                 <thead>
                     <tr class="border-b border-border">
-                        <th class="px-6 py-3 text-left text-[12px] font-semibold text-text-secondary uppercase tracking-wide">User</th>
-                        <th class="px-6 py-3 text-left text-[12px] font-semibold text-text-secondary uppercase tracking-wide">Role</th>
-                        <th class="px-6 py-3 text-left text-[12px] font-semibold text-text-secondary uppercase tracking-wide">Last Active</th>
+                        <th class="px-4 md:px-6 py-3 text-left text-[12px] font-semibold text-text-secondary uppercase tracking-wide">User</th>
+                        <th class="px-4 md:px-6 py-3 text-left text-[12px] font-semibold text-text-secondary uppercase tracking-wide">Role</th>
+                        <th class="px-4 md:px-6 py-3 text-left text-[12px] font-semibold text-text-secondary uppercase tracking-wide">Last Active</th>
                         <th class="px-6 py-3"></th>
                     </tr>
                 </thead>
@@ -64,17 +64,17 @@
         </div>
 
         <!-- Pending Invites -->
-        <div v-if="isOwner && invites.length > 0" class="bg-surface border border-border rounded-[10px]">
-            <div class="px-6 py-4 border-b border-border">
+        <div v-if="isOwner && invites.length > 0" class="bg-surface border border-border rounded-[10px] overflow-x-auto">
+            <div class="px-4 md:px-6 py-4 border-b border-border">
                 <h2 class="text-[15px] font-semibold">Pending Invites</h2>
             </div>
 
-            <table class="w-full">
+            <table class="w-full min-w-[400px]">
                 <thead>
                     <tr class="border-b border-border">
-                        <th class="px-6 py-3 text-left text-[12px] font-semibold text-text-secondary uppercase tracking-wide">Email</th>
-                        <th class="px-6 py-3 text-left text-[12px] font-semibold text-text-secondary uppercase tracking-wide">Sent</th>
-                        <th class="px-6 py-3"></th>
+                        <th class="px-4 md:px-6 py-3 text-left text-[12px] font-semibold text-text-secondary uppercase tracking-wide">Email</th>
+                        <th class="px-4 md:px-6 py-3 text-left text-[12px] font-semibold text-text-secondary uppercase tracking-wide">Sent</th>
+                        <th class="px-4 md:px-6 py-3"></th>
                     </tr>
                 </thead>
                 <tbody>

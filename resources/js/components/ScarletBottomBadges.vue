@@ -24,16 +24,20 @@ defineProps({
 }
 
 .coord-badge {
-    font-size: 13px;
+    font-size: 11px;
     font-weight: 500;
     color: oklch(0.96 0.005 70);
     background: oklch(0.08 0.008 40 / 0.72);
     backdrop-filter: blur(24px);
     -webkit-backdrop-filter: blur(24px);
-    padding: 6px 14px;
+    padding: 5px 10px;
     border-radius: 7px;
     border: 1px solid oklch(0.32 0.01 40 / 0.18);
     letter-spacing: 0.02em;
+}
+
+@media (min-width: 640px) {
+    .coord-badge { font-size: 13px; padding: 6px 14px; }
 }
 
 .speed-legend {

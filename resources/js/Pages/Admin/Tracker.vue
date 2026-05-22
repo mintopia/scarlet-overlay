@@ -11,7 +11,7 @@
         </div>
 
         <!-- Device status strip -->
-        <div class="grid grid-cols-4 gap-4 mb-6">
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4 mb-6">
             <!-- Status -->
             <div class="bg-surface border border-border rounded-[10px] p-4">
                 <div class="text-[11px] font-semibold text-text-dim uppercase tracking-wide mb-2">Status</div>
@@ -83,7 +83,7 @@
         </div>
 
         <!-- Signal + GPS charts -->
-        <div class="grid grid-cols-2 gap-4 mb-4">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4 mb-4">
             <!-- Signal Strength chart -->
             <div class="bg-surface border border-border rounded-[10px] p-4">
                 <div class="text-[15px] font-semibold mb-0.5">Signal Strength</div>
@@ -183,7 +183,7 @@
         </div>
 
         <!-- Temp + Humidity charts -->
-        <div class="grid grid-cols-2 gap-4 mb-6">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4 mb-6">
             <!-- Cabin Temperature chart -->
             <div class="bg-surface border border-border rounded-[10px] p-4">
                 <div class="text-[15px] font-semibold mb-0.5">Cabin Temperature</div>

@@ -90,7 +90,7 @@
         </form>
 
         <!-- Passkeys -->
-        <div class="bg-surface border border-border rounded-[10px] p-6 mb-6">
+        <div class="bg-surface border border-border rounded-[10px] p-4 md:p-6 mb-6 overflow-x-auto">
             <div class="flex items-center justify-between mb-4">
                 <h2 class="text-[15px] font-semibold">Passkeys</h2>
                 <button
@@ -104,7 +104,7 @@
             </div>
             <p v-if="passkeyError" class="mb-3 text-[13px] text-error">{{ passkeyError }}</p>
             <p v-if="passkeySuccess" class="mb-3 text-[13px] text-green">{{ passkeySuccess }}</p>
-            <table class="w-full text-sm">
+            <table class="w-full text-sm min-w-[440px]">
                 <thead>
                     <tr class="border-b border-border">
                         <th class="text-left text-[13px] font-medium text-text-secondary pb-2">Name</th>

@@ -151,15 +151,27 @@ function fmtCoord(lat, lon) {
 .data-row span:last-child { font-variant-numeric: tabular-nums; font-weight: 600; }
 
 .strip {
-    display: flex;
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
     background: var(--color-bg);
     border: 1px solid var(--color-border-light);
     border-radius: 8px;
     overflow: hidden;
 }
 
-.strip-cell { flex: 1; padding: 10px 12px; text-align: center; }
-.strip-cell + .strip-cell { border-left: 1px solid var(--color-border-light); }
+@media (min-width: 640px) {
+    .strip { grid-template-columns: repeat(4, 1fr); }
+}
+
+.strip-cell { padding: 10px 12px; text-align: center; }
+.strip-cell { border-bottom: 1px solid var(--color-border-light); border-right: 1px solid var(--color-border-light); }
+.strip-cell:nth-child(even) { border-right: none; }
+.strip-cell:nth-last-child(-n+2) { border-bottom: none; }
+
+@media (min-width: 640px) {
+    .strip-cell { border-bottom: none; border-right: none; }
+    .strip-cell + .strip-cell { border-left: 1px solid var(--color-border-light); }
+}
 .strip-label { font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em; color: var(--color-text-dim); margin-bottom: 2px; }
 .strip-value { font-size: 20px; font-weight: 700; font-variant-numeric: tabular-nums; line-height: 1; }
 .strip-unit { font-size: 10px; color: var(--color-text-dim); margin-top: 2px; }

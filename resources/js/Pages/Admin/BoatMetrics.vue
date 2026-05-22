@@ -40,7 +40,7 @@
         </div>
 
         <!-- Battery + Speed history -->
-        <div class="grid grid-cols-2 gap-4 mb-4">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4 mb-4">
             <div class="panel">
                 <div class="panel-head">
                     <span class="panel-title">Battery Voltage</span>
@@ -118,7 +118,7 @@
         </div>
 
         <!-- Temperature + Humidity history -->
-        <div class="grid grid-cols-2 gap-4 mb-4">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4 mb-4">
             <div class="panel">
                 <div class="panel-title mb-0.5">Cabin Temperature</div>
                 <div class="chart-legend">
@@ -167,11 +167,11 @@
         </div>
 
         <!-- Compass + Power & Tanks -->
-        <div class="grid grid-cols-2 gap-4">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4">
             <div class="panel">
                 <div class="panel-title mb-3">Compass</div>
-                <div class="flex items-start gap-5">
-                    <svg viewBox="0 0 140 140" class="w-[140px] h-[140px] shrink-0">
+                <div class="compass-layout">
+                    <svg viewBox="0 0 140 140" class="compass-svg">
                         <circle cx="70" cy="70" r="64" fill="none" stroke="oklch(0.90 0.005 70)" stroke-width="1.5"/>
                         <g v-for="tick in compassTicks" :key="tick">
                             <line
@@ -452,7 +452,8 @@ function toArea(data, w, h, min, max) {
 
 <style scoped>
 .strip {
-    display: flex;
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
     background: var(--color-surface);
     border: 1px solid var(--color-border);
     border-radius: 10px;
@@ -460,14 +461,25 @@ function toArea(data, w, h, min, max) {
     overflow: hidden;
 }
 
-.strip-cell {
-    flex: 1;
-    padding: 14px 16px;
-    text-align: center;
+@media (min-width: 640px) {
+    .strip { grid-template-columns: repeat(5, 1fr); }
 }
 
-.strip-cell + .strip-cell {
-    border-left: 1px solid var(--color-border-light);
+.strip-cell {
+    padding: 14px 16px;
+    text-align: center;
+    border-bottom: 1px solid var(--color-border-light);
+    border-right: 1px solid var(--color-border-light);
+}
+
+.strip-cell:nth-child(even) { border-right: none; }
+.strip-cell:nth-last-child(-n+2) { border-bottom: none; }
+.strip-cell:last-child { grid-column: 1 / -1; border-right: none; }
+
+@media (min-width: 640px) {
+    .strip-cell { border-bottom: none; border-right: none; }
+    .strip-cell + .strip-cell { border-left: 1px solid var(--color-border-light); }
+    .strip-cell:last-child { grid-column: auto; }
 }
 
 .strip-label {
@@ -572,5 +584,26 @@ function toArea(data, w, h, min, max) {
     height: 100%;
     border-radius: 9999px;
     transition: width 0.5s ease-out;
+}
+
+.compass-layout {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 16px;
+}
+
+.compass-svg {
+    width: 140px;
+    height: 140px;
+    flex-shrink: 0;
+}
+
+@media (min-width: 480px) {
+    .compass-layout {
+        flex-direction: row;
+        align-items: flex-start;
+        gap: 20px;
+    }
 }
 </style>

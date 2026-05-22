@@ -14,8 +14,8 @@
             <p class="text-text-secondary text-[14px]">No journeys yet.</p>
         </div>
 
-        <div v-else class="panel overflow-hidden">
-            <table class="w-full text-[13px]">
+        <div v-else class="panel overflow-x-auto">
+            <table class="w-full text-[13px] min-w-[540px]">
                 <thead>
                     <tr class="border-b border-border-light text-left text-text-dim text-[11px] uppercase tracking-wide">
                         <th class="px-4 py-3 font-semibold">Journey</th>

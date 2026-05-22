@@ -60,8 +60,14 @@ const dispWaveP = computed(() => props.rawWavePeriod != null ? `${Math.round(ani
 <style scoped>
 .wx-strip {
     display: flex;
-    gap: 5px;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    gap: 4px;
     align-items: stretch;
+}
+
+@media (min-width: 640px) {
+    .wx-strip { flex-wrap: nowrap; gap: 5px; }
 }
 
 .pill {
