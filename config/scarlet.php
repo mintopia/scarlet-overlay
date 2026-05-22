@@ -97,6 +97,12 @@ return [
                 'heading' => 'scarlet_gps_heading_deg',
             ],
 
+            // Signal K position (float64 precision, smooth updates)
+            'signalk_position' => [
+                'latitude' => 'scarlet_signalk_navigation_position_latitude',
+                'longitude' => 'scarlet_signalk_navigation_position_longitude',
+            ],
+
             'history' => [
                 'track_latitude' => 'scarlet_gps_latitude_deg',
                 'track_longitude' => 'scarlet_gps_longitude_deg',

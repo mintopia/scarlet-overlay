@@ -41,9 +41,20 @@ class MetricsService
 
     public function getGpsMetrics(): array
     {
-        return $this->prometheus->queryMultiple(
+        $gps = $this->prometheus->queryMultiple(
             config('scarlet.metrics.mappings.gps')
         );
+
+        $signalk = $this->prometheus->queryMultiple(
+            config('scarlet.metrics.mappings.signalk_position')
+        );
+
+        if ($signalk['latitude'] !== null && $signalk['longitude'] !== null) {
+            $gps['latitude'] = $signalk['latitude'];
+            $gps['longitude'] = $signalk['longitude'];
+        }
+
+        return $gps;
     }
 
     public function getWeatherData(): ?array
@@ -72,9 +83,15 @@ class MetricsService
     public function getGpsTrack(string $duration = '12h', string $step = '30s'): array
     {
         $history = config('scarlet.metrics.mappings.history');
+        $signalk = config('scarlet.metrics.mappings.signalk_position');
 
-        $latData = $this->prometheus->queryRange($history['track_latitude'], $duration, $step);
-        $lngData = $this->prometheus->queryRange($history['track_longitude'], $duration, $step);
+        $latData = $this->prometheus->queryRange($signalk['latitude'], $duration, $step);
+        $lngData = $this->prometheus->queryRange($signalk['longitude'], $duration, $step);
+
+        if (empty($latData) || empty($lngData)) {
+            $latData = $this->prometheus->queryRange($history['track_latitude'], $duration, $step);
+            $lngData = $this->prometheus->queryRange($history['track_longitude'], $duration, $step);
+        }
         $sogData = $this->prometheus->queryRange($history['track_sog'], $duration, $step);
 
         $lngByTs = collect($lngData)->keyBy('timestamp');

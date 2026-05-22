@@ -29,9 +29,12 @@ class ImportJourneyFromPrometheus implements ShouldQueue
         $end = \Carbon\Carbon::parse($this->endTime)->timestamp;
         $step = '30s';
 
+        $signalk = config('scarlet.metrics.mappings.signalk_position');
+        $skLat = $prometheus->queryRange($signalk['latitude'], '', $step, $start, $end);
+        $skLng = $prometheus->queryRange($signalk['longitude'], '', $step, $start, $end);
+        $useSignalK = !empty($skLat) && !empty($skLng);
+
         $metrics = [
-            'latitude' => 'scarlet_gps_latitude_deg',
-            'longitude' => 'scarlet_gps_longitude_deg',
             'speed_sog' => 'scarlet_gps_speed_kn',
             'heading' => 'scarlet_gps_heading_deg',
             'depth' => 'scarlet_boat_depth_meters',
@@ -46,7 +49,26 @@ class ImportJourneyFromPrometheus implements ShouldQueue
             'heel' => 'scarlet_signalk_navigation_attitude_roll * 180 / 3.14159265359',
         ];
 
+        if (!$useSignalK) {
+            $metrics['latitude'] = 'scarlet_gps_latitude_deg';
+            $metrics['longitude'] = 'scarlet_gps_longitude_deg';
+        }
+
         $data = [];
+
+        if ($useSignalK) {
+            foreach ($skLat as $point) {
+                $ts = $point['timestamp'];
+                $data[$ts] = ['recorded_at' => date('Y-m-d H:i:s', $ts), 'latitude' => $point['value']];
+            }
+            foreach ($skLng as $point) {
+                $ts = $point['timestamp'];
+                if (isset($data[$ts])) {
+                    $data[$ts]['longitude'] = $point['value'];
+                }
+            }
+        }
+
         foreach ($metrics as $key => $query) {
             $results = $prometheus->queryRange($query, '', $step, $start, $end);
             foreach ($results as $point) {
