@@ -9,7 +9,9 @@
 
             <nav class="px-2.5 py-3 flex-1 flex flex-col gap-0.5">
                 <div class="nav-label first:pt-1">Boat</div>
+                <NavLink href="/admin" icon="home" :active="currentPage === 'Admin/Dashboard'">Dashboard</NavLink>
                 <NavLink href="/admin/settings" icon="settings" :active="currentPage === 'Admin/Settings'">Settings</NavLink>
+                <NavLink href="/admin/journeys" icon="compass" :active="currentPage?.startsWith('Admin/Journey')">Journeys</NavLink>
                 <NavLink href="/admin/tracker" icon="activity" :active="currentPage === 'Admin/Tracker'">Tracker</NavLink>
                 <NavLink href="/admin/metrics" icon="chart" :active="currentPage === 'Admin/BoatMetrics'">Boat Metrics</NavLink>
                 <NavLink href="/admin/stream" icon="radio" :active="currentPage === 'Admin/StreamMonitor'">Stream Monitor</NavLink>

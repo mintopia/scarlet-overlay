@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Admin\AdminDashboardController;
 use App\Http\Controllers\Admin\BoatMetricsController;
 use App\Http\Controllers\Admin\JourneyController;
 use App\Http\Controllers\Admin\ProfileController;
@@ -46,6 +47,7 @@ Route::middleware('auth')->group(function () {
 });
 
 Route::middleware('auth')->prefix('admin')->group(function () {
+    Route::get('/', [AdminDashboardController::class, 'index'])->name('admin.dashboard');
     Route::get('/settings', [SettingsController::class, 'index'])->name('admin.settings');
     Route::put('/settings/identity', [SettingsController::class, 'updateIdentity'])->name('admin.settings.identity');
     Route::put('/settings/passage', [SettingsController::class, 'updatePassage'])->name('admin.settings.passage');
