@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<gpx version="1.1" creator="test">
+  <rte>
+    <name>Test Route</name>
+    <rtept lat="50.7572" lon="-1.5435">
+      <name>Lymington</name>
+    </rtept>
+    <rtept lat="50.7105" lon="-1.4990">
+      <name>Hurst Point</name>
+    </rtept>
+    <rtept lat="50.7076" lon="-1.4993">
+    </rtept>
+    <rtept lat="50.7113" lon="-1.5005">
+      <name>Yarmouth</name>
+    </rtept>
+  </rte>
+</gpx>
