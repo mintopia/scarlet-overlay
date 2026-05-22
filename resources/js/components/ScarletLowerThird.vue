@@ -94,10 +94,10 @@ function fmtHeading(anim, raw) {
 .lt-brand::after {
     content: '';
     position: absolute;
-    right: -17px;
-    top: 0;
-    width: 17px;
-    height: 100%;
+    right: -16.5px;
+    top: -0.5px;
+    width: 18px;
+    height: calc(100% + 1px);
     background: oklch(0.54 0.22 27);
     clip-path: polygon(0 0, 0 100%, 100% 100%);
 }
