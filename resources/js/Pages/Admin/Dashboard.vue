@@ -4,7 +4,7 @@
         <h1 class="text-[22px] font-bold mb-6">Dashboard</h1>
 
         <!-- Active Journey / Start Journey -->
-        <div class="panel mb-4">
+        <div class="panel p-4 mb-4">
             <div class="panel-title mb-3">Journey</div>
             <template v-if="activeJourney">
                 <div class="flex items-baseline justify-between mb-2">
@@ -33,7 +33,7 @@
         </div>
 
         <!-- Boat Status -->
-        <div class="panel mb-4">
+        <div class="panel p-4 mb-4">
             <div class="flex items-baseline justify-between mb-3">
                 <span class="panel-title">Boat Status</span>
                 <Link href="/admin/metrics" class="text-[12px] text-scarlet font-medium hover:underline">View Metrics →</Link>
@@ -50,7 +50,7 @@
         </div>
 
         <!-- Tracker Status -->
-        <div class="panel mb-4">
+        <div class="panel p-4 mb-4">
             <div class="flex items-baseline justify-between mb-3">
                 <span class="panel-title">Tracker</span>
                 <Link href="/admin/tracker" class="text-[12px] text-scarlet font-medium hover:underline">View Tracker →</Link>
@@ -72,7 +72,7 @@
         </div>
 
         <!-- Recent Journeys -->
-        <div class="panel mb-4" v-if="recentJourneys.length">
+        <div class="panel p-4 mb-4" v-if="recentJourneys.length">
             <div class="flex items-baseline justify-between mb-3">
                 <span class="panel-title">Recent Journeys</span>
                 <Link href="/admin/journeys" class="text-[12px] text-scarlet font-medium hover:underline">View All →</Link>
@@ -86,7 +86,7 @@
         </div>
 
         <!-- Quick Links -->
-        <div class="panel">
+        <div class="panel p-4">
             <div class="panel-title mb-3">Quick Links</div>
             <div class="flex flex-wrap gap-2">
                 <Link href="/admin/settings" class="btn btn--ghost">Settings</Link>
@@ -136,13 +136,6 @@ function fmtCoord(lat, lon) {
 </script>
 
 <style scoped>
-.panel {
-    background: var(--color-surface);
-    border: 1px solid var(--color-border);
-    border-radius: 10px;
-    padding: 16px;
-}
-
 .panel-title {
     font-size: 15px;
     font-weight: 600;
@@ -170,23 +163,4 @@ function fmtCoord(lat, lon) {
 .strip-label { font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em; color: var(--color-text-dim); margin-bottom: 2px; }
 .strip-value { font-size: 20px; font-weight: 700; font-variant-numeric: tabular-nums; line-height: 1; }
 .strip-unit { font-size: 10px; color: var(--color-text-dim); margin-top: 2px; }
-
-.btn {
-    display: inline-flex;
-    align-items: center;
-    height: 36px;
-    padding: 0 14px;
-    border-radius: 7px;
-    font-size: 13px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.12s ease-out;
-}
-
-.btn--primary { background: oklch(0.54 0.22 27); color: white; }
-.btn--primary:hover { background: oklch(0.48 0.22 27); }
-.btn--ghost { background: var(--color-bg); border: 1px solid var(--color-border); color: var(--color-text-secondary); }
-.btn--ghost:hover { border-color: var(--color-text-dim); color: var(--color-text-primary); }
-.btn--danger { background: oklch(0.55 0.20 25); color: white; }
-.btn--danger:hover { background: oklch(0.48 0.20 25); }
 </style>

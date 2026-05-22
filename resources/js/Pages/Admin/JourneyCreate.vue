@@ -51,17 +51,3 @@ const form = useForm({
 });
 </script>
 
-<style scoped>
-.panel { background: var(--color-surface); border: 1px solid var(--color-border); border-radius: 10px; }
-.field-label { display: block; font-size: 13px; font-weight: 500; color: var(--color-text-secondary); margin-bottom: 6px; }
-.field-input { width: 100%; height: 42px; padding: 0 14px; font-size: 14px; background: var(--color-bg); border: 1px solid var(--color-border); border-radius: 7px; font-family: inherit; outline: none; }
-.field-input:focus { border-color: oklch(0.54 0.22 27); box-shadow: 0 0 0 2px oklch(0.54 0.22 27 / 0.1); }
-textarea.field-input { height: auto; padding: 10px 14px; resize: vertical; }
-.field-error { margin-top: 4px; font-size: 12px; color: var(--color-error); }
-.btn { display: inline-flex; align-items: center; height: 36px; padding: 0 14px; border-radius: 7px; font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.12s ease-out; }
-.btn--primary { background: oklch(0.54 0.22 27); color: white; }
-.btn--primary:hover { background: oklch(0.48 0.22 27); }
-.btn--primary:disabled { opacity: 0.5; cursor: not-allowed; }
-.btn--ghost { background: var(--color-bg); border: 1px solid var(--color-border); color: var(--color-text-secondary); }
-.btn--ghost:hover { border-color: var(--color-text-dim); color: var(--color-text-primary); }
-</style>

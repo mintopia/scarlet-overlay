@@ -347,6 +347,15 @@ onUnmounted(() => {
 }
 
 .tl-btn:hover { background: oklch(0.28 0.005 40 / 0.7); }
+.tl-btn:focus-visible { outline: 2px solid oklch(0.54 0.22 27); outline-offset: 2px; }
+
+.timeline-slider:focus-visible + .timeline-fill {
+    box-shadow: 0 0 0 2px oklch(0.54 0.22 27);
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .tl-btn { transition: none; }
+}
 </style>
 
 <style>

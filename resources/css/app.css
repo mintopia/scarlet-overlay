@@ -22,4 +22,120 @@
     --color-amber-bg: oklch(0.70 0.14 70 / 0.08);
     --color-error: oklch(0.58 0.20 27);
     --color-error-bg: oklch(0.58 0.20 27 / 0.08);
+
+    --color-surface: oklch(0.995 0.003 70);
+}
+
+/* ── Admin shared components ─────────────────────────────── */
+
+.panel {
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: 10px;
+}
+
+.field-label {
+    display: block;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--color-text-secondary);
+    margin-bottom: 6px;
+}
+
+.field-input {
+    width: 100%;
+    height: 42px;
+    padding: 0 14px;
+    font-size: 14px;
+    background: var(--color-bg);
+    border: 1px solid var(--color-border);
+    border-radius: 7px;
+    font-family: inherit;
+    outline: none;
+    color: var(--color-text-primary);
+}
+
+.field-input:focus {
+    border-color: var(--color-scarlet);
+    box-shadow: 0 0 0 2px oklch(0.54 0.22 27 / 0.1);
+}
+
+textarea.field-input {
+    height: auto;
+    padding: 10px 14px;
+    resize: vertical;
+}
+
+.field-error {
+    margin-top: 4px;
+    font-size: 12px;
+    color: var(--color-error);
+}
+
+.btn {
+    display: inline-flex;
+    align-items: center;
+    height: 36px;
+    padding: 0 14px;
+    border-radius: 7px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.12s ease-out, border-color 0.12s ease-out, color 0.12s ease-out;
+}
+
+.btn--primary {
+    background: var(--color-scarlet);
+    color: white;
+}
+
+.btn--primary:hover {
+    background: var(--color-scarlet-hover);
+}
+
+.btn--primary:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.btn--ghost {
+    background: var(--color-bg);
+    border: 1px solid var(--color-border);
+    color: var(--color-text-secondary);
+}
+
+.btn--ghost:hover {
+    border-color: var(--color-text-dim);
+    color: var(--color-text-primary);
+}
+
+.btn--danger {
+    background: oklch(0.55 0.20 25);
+    color: white;
+}
+
+.btn--danger:hover {
+    background: oklch(0.48 0.20 25);
+}
+
+.saved-fade-enter-active {
+    transition: opacity 0.3s cubic-bezier(0.16, 1, 0.3, 1),
+                transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.saved-fade-enter-from {
+    opacity: 0;
+    transform: translateX(-4px);
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .saved-fade-enter-active { transition: none; }
+}
+
+/* ── Focus states ────────────────────────────────────────── */
+
+.btn:focus-visible,
+.field-input:focus-visible {
+    outline: 2px solid var(--color-scarlet);
+    outline-offset: 2px;
 }

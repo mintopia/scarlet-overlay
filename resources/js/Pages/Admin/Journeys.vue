@@ -70,14 +70,8 @@ function fmtDate(iso) {
 </script>
 
 <style scoped>
-.panel { background: var(--color-surface); border: 1px solid var(--color-border); border-radius: 10px; padding: 0; }
-.btn { display: inline-flex; align-items: center; height: 36px; padding: 0 14px; border-radius: 7px; font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.12s ease-out; }
-.btn--primary { background: oklch(0.54 0.22 27); color: white; }
-.btn--primary:hover { background: oklch(0.48 0.22 27); }
-.btn--ghost { background: var(--color-surface); border: 1px solid var(--color-border); color: var(--color-text-secondary); }
-.btn--ghost:hover { border-color: var(--color-text-dim); color: var(--color-text-primary); }
 .status-badge { font-size: 10px; font-weight: 600; letter-spacing: 0.03em; padding: 3px 8px; border-radius: 4px; text-transform: capitalize; }
-.status-badge--active { color: oklch(0.62 0.15 155); background: oklch(0.62 0.15 155 / 0.10); }
+.status-badge--active { color: var(--color-green); background: var(--color-green-bg); }
 .status-badge--completed { color: oklch(0.55 0.15 240); background: oklch(0.55 0.15 240 / 0.10); }
-.status-badge--abandoned { color: oklch(0.60 0.06 55); background: oklch(0.60 0.06 55 / 0.10); }
+.status-badge--abandoned { color: var(--color-text-dim); background: oklch(0.60 0.005 40 / 0.08); }
 </style>

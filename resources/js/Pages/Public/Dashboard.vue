@@ -251,6 +251,11 @@ onUnmounted(() => {
     background: oklch(0.14 0.008 40 / 0.82);
 }
 
+.map-ctrl:focus-visible {
+    outline: 2px solid oklch(0.54 0.22 27);
+    outline-offset: -2px;
+}
+
 .map-ctrl--top {
     border-radius: 7px 7px 0 0;
     border-bottom: none;

@@ -4,114 +4,64 @@
         <h1 class="text-[22px] font-bold mb-6">Settings</h1>
 
         <!-- Boat Identity -->
-        <form @submit.prevent="identityForm.put(route('admin.settings.identity'))" class="bg-surface border border-border rounded-[10px] p-6 mb-6">
+        <form @submit.prevent="identityForm.put(route('admin.settings.identity'))" class="panel p-6 mb-6">
             <h2 class="text-[15px] font-semibold mb-4">Boat Identity</h2>
             <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
                 <div>
-                    <label class="block text-[13px] font-medium text-text-secondary mb-1.5">Boat Name</label>
-                    <input
-                        v-model="identityForm.boat_name"
-                        type="text"
-                        required
-                        class="w-full h-[42px] px-3.5 text-sm bg-bg border border-border rounded-[7px] font-sans focus:border-scarlet focus:ring-1 focus:ring-scarlet/20 outline-none"
-                    />
-                    <p v-if="identityForm.errors.boat_name" class="mt-1 text-xs text-error">{{ identityForm.errors.boat_name }}</p>
+                    <label class="field-label">Boat Name</label>
+                    <input v-model="identityForm.boat_name" type="text" required class="field-input" />
+                    <p v-if="identityForm.errors.boat_name" class="field-error">{{ identityForm.errors.boat_name }}</p>
                 </div>
                 <div>
-                    <label class="block text-[13px] font-medium text-text-secondary mb-1.5">MMSI (9 digits)</label>
-                    <input
-                        v-model="identityForm.mmsi"
-                        type="text"
-                        maxlength="9"
-                        placeholder="e.g. 235117890"
-                        class="w-full h-[42px] px-3.5 text-sm bg-bg border border-border rounded-[7px] font-sans focus:border-scarlet focus:ring-1 focus:ring-scarlet/20 outline-none"
-                    />
-                    <p v-if="identityForm.errors.mmsi" class="mt-1 text-xs text-error">{{ identityForm.errors.mmsi }}</p>
+                    <label class="field-label">MMSI (9 digits)</label>
+                    <input v-model="identityForm.mmsi" type="text" maxlength="9" placeholder="e.g. 235117890" class="field-input" />
+                    <p v-if="identityForm.errors.mmsi" class="field-error">{{ identityForm.errors.mmsi }}</p>
                 </div>
             </div>
             <div class="flex items-center gap-3 mt-5">
-                <button
-                    type="submit"
-                    :disabled="identityForm.processing"
-                    class="px-4 h-9 bg-scarlet text-white text-[13px] font-semibold rounded-[7px] hover:bg-scarlet-hover disabled:opacity-50"
-                >
-                    Save
-                </button>
+                <button type="submit" :disabled="identityForm.processing" class="btn btn--primary">Save</button>
                 <Transition name="saved-fade"><span v-if="identityForm.wasSuccessful" class="text-[13px] text-green">Saved.</span></Transition>
             </div>
         </form>
 
         <!-- Port Settings -->
-        <form @submit.prevent="portForm.put(route('admin.settings.port'))" class="bg-surface border border-border rounded-[10px] p-6 mb-6">
+        <form @submit.prevent="portForm.put(route('admin.settings.port'))" class="panel p-6 mb-6">
             <h2 class="text-[15px] font-semibold mb-4">Port Settings</h2>
             <div>
-                <label class="block text-[13px] font-medium text-text-secondary mb-1.5">Port Name</label>
-                <input
-                    v-model="portForm.port_name"
-                    type="text"
-                    placeholder="e.g. Lymington Marina"
-                    class="w-full h-[42px] px-3.5 text-sm bg-bg border border-border rounded-[7px] font-sans focus:border-scarlet focus:ring-1 focus:ring-scarlet/20 outline-none sm:max-w-sm"
-                />
-                <p v-if="portForm.errors.port_name" class="mt-1 text-xs text-error">{{ portForm.errors.port_name }}</p>
+                <label class="field-label">Port Name</label>
+                <input v-model="portForm.port_name" type="text" placeholder="e.g. Lymington Marina" class="field-input sm:max-w-sm" />
+                <p v-if="portForm.errors.port_name" class="field-error">{{ portForm.errors.port_name }}</p>
             </div>
             <div class="mt-4">
-                <label class="block text-[13px] font-medium text-text-secondary mb-1.5">Trip Offset (nm)</label>
-                <input
-                    v-model.number="portForm.trip_offset"
-                    type="number"
-                    step="0.1"
-                    min="0"
-                    placeholder="0"
-                    class="w-full h-[42px] px-3.5 text-sm bg-bg border border-border rounded-[7px] font-sans focus:border-scarlet focus:ring-1 focus:ring-scarlet/20 outline-none tabular-nums sm:max-w-[200px]"
-                />
+                <label class="field-label">Trip Offset (nm)</label>
+                <input v-model.number="portForm.trip_offset" type="number" step="0.1" min="0" placeholder="0" class="field-input tabular-nums sm:max-w-[200px]" />
                 <p class="mt-1 text-[12px] text-text-secondary">Subtracted from the trip log when displayed on the dashboard and stream.</p>
             </div>
             <div class="flex items-center gap-3 mt-5">
-                <button
-                    type="submit"
-                    :disabled="portForm.processing"
-                    class="px-4 h-9 bg-scarlet text-white text-[13px] font-semibold rounded-[7px] hover:bg-scarlet-hover disabled:opacity-50"
-                >
-                    Save
-                </button>
+                <button type="submit" :disabled="portForm.processing" class="btn btn--primary">Save</button>
                 <Transition name="saved-fade"><span v-if="portForm.wasSuccessful" class="text-[13px] text-green">Saved.</span></Transition>
             </div>
         </form>
+
         <!-- Stream -->
-        <form @submit.prevent="streamForm.put(route('admin.settings.stream'))" class="bg-surface border border-border rounded-[10px] p-6 mb-6">
+        <form @submit.prevent="streamForm.put(route('admin.settings.stream'))" class="panel p-6 mb-6">
             <h2 class="text-[15px] font-semibold mb-4">Stream</h2>
             <div class="grid grid-cols-1 gap-4">
                 <div>
-                    <label class="block text-[13px] font-medium text-text-secondary mb-1.5">SRT URL</label>
-                    <input
-                        v-model="streamForm.srt_url"
-                        type="text"
-                        placeholder="e.g. srt://host:port?streamid=..."
-                        class="w-full h-[42px] px-3.5 text-sm bg-bg border border-border rounded-[7px] font-sans focus:border-scarlet focus:ring-1 focus:ring-scarlet/20 outline-none"
-                    />
+                    <label class="field-label">SRT URL</label>
+                    <input v-model="streamForm.srt_url" type="text" placeholder="e.g. srt://host:port?streamid=..." class="field-input" />
                     <p class="mt-1 text-[12px] text-text-secondary">The SRT ingest URL for the video feed on the broadcast overlay.</p>
-                    <p v-if="streamForm.errors.srt_url" class="mt-1 text-xs text-error">{{ streamForm.errors.srt_url }}</p>
+                    <p v-if="streamForm.errors.srt_url" class="field-error">{{ streamForm.errors.srt_url }}</p>
                 </div>
                 <div>
-                    <label class="block text-[13px] font-medium text-text-secondary mb-1.5">SRT Stats URL</label>
-                    <input
-                        v-model="streamForm.srt_stats_url"
-                        type="text"
-                        placeholder="e.g. https://stats.srt.belabox.net/..."
-                        class="w-full h-[42px] px-3.5 text-sm bg-bg border border-border rounded-[7px] font-sans focus:border-scarlet focus:ring-1 focus:ring-scarlet/20 outline-none"
-                    />
+                    <label class="field-label">SRT Stats URL</label>
+                    <input v-model="streamForm.srt_stats_url" type="text" placeholder="e.g. https://stats.srt.belabox.net/..." class="field-input" />
                     <p class="mt-1 text-[12px] text-text-secondary">BELABOX SRT stats endpoint for the Stream Monitor page.</p>
-                    <p v-if="streamForm.errors.srt_stats_url" class="mt-1 text-xs text-error">{{ streamForm.errors.srt_stats_url }}</p>
+                    <p v-if="streamForm.errors.srt_stats_url" class="field-error">{{ streamForm.errors.srt_stats_url }}</p>
                 </div>
             </div>
             <div class="flex items-center gap-3 mt-5">
-                <button
-                    type="submit"
-                    :disabled="streamForm.processing"
-                    class="px-4 h-9 bg-scarlet text-white text-[13px] font-semibold rounded-[7px] hover:bg-scarlet-hover disabled:opacity-50"
-                >
-                    Save
-                </button>
+                <button type="submit" :disabled="streamForm.processing" class="btn btn--primary">Save</button>
                 <Transition name="saved-fade"><span v-if="streamForm.wasSuccessful" class="text-[13px] text-green">Saved.</span></Transition>
             </div>
         </form>
@@ -140,16 +90,3 @@ const streamForm = useForm({
 });
 </script>
 
-<style scoped>
-.saved-fade-enter-active {
-    transition: opacity 0.3s cubic-bezier(0.16, 1, 0.3, 1),
-                transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-}
-.saved-fade-enter-from {
-    opacity: 0;
-    transform: translateX(-4px);
-}
-@media (prefers-reduced-motion: reduce) {
-    .saved-fade-enter-active { transition: none; }
-}
-</style>
