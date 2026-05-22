@@ -149,9 +149,9 @@
                 <div class="text-[15px] font-semibold mb-0.5">GPS Quality</div>
                 <div class="text-[12px] text-text-dim mb-3 tabular-nums">
                     Satellites
-                    <span class="text-green font-medium">{{ live?.satellites ?? gps?.satellites ?? '—' }}</span>
+                    <span class="text-green font-medium">{{ liveGps?.satellites ?? '—' }}</span>
                     &nbsp;·&nbsp;HDOP
-                    <span class="font-medium">{{ gps?.hdop != null ? gps.hdop.toFixed(1) : '—' }}</span>
+                    <span class="font-medium">{{ liveGps?.hdop != null ? liveGps.hdop.toFixed(1) : '—' }}</span>
                 </div>
                 <svg viewBox="0 0 400 120" class="w-full" preserveAspectRatio="none">
                     <defs>
@@ -273,19 +273,19 @@
                     <tr>
                         <td class="py-2.5 text-text-secondary">GPS Position</td>
                         <td class="py-2.5 font-medium tabular-nums">
-                            <span v-if="gps?.latitude != null && gps?.longitude != null">
-                                {{ gps.latitude.toFixed(5) }}, {{ gps.longitude.toFixed(5) }}
+                            <span v-if="liveGps?.latitude != null && liveGps?.longitude != null">
+                                {{ liveGps.latitude.toFixed(5) }}, {{ liveGps.longitude.toFixed(5) }}
                             </span>
                             <span v-else>—</span>
                         </td>
                     </tr>
                     <tr>
                         <td class="py-2.5 text-text-secondary">GPS Satellites</td>
-                        <td class="py-2.5 font-medium tabular-nums">{{ gps?.satellites ?? '—' }}</td>
+                        <td class="py-2.5 font-medium tabular-nums">{{ liveGps?.satellites ?? '—' }}</td>
                     </tr>
                     <tr>
                         <td class="py-2.5 text-text-secondary">HDOP</td>
-                        <td class="py-2.5 font-medium tabular-nums">{{ gps?.hdop != null ? gps.hdop.toFixed(1) : '—' }}</td>
+                        <td class="py-2.5 font-medium tabular-nums">{{ liveGps?.hdop != null ? liveGps.hdop.toFixed(1) : '—' }}</td>
                     </tr>
                     <tr>
                         <td class="py-2.5 text-text-secondary">Power Source</td>
@@ -334,6 +334,7 @@ if (window.Echo) {
 }
 
 const live = computed(() => metrics.value?.tracker ?? props.tracker);
+const liveGps = computed(() => metrics.value?.gps ?? props.gps);
 
 // Tick every second to refresh "Xs ago"
 const now = ref(Date.now());
