@@ -112,7 +112,14 @@ class JourneyController extends Controller
     public function edit(Journey $journey)
     {
         return Inertia::render('Admin/JourneyEdit', [
-            'journey' => $journey->only('id', 'slug', 'title', 'from_port', 'to_port', 'is_public', 'notes', 'status', 'gpx_route_path'),
+            'journey' => array_merge(
+                $journey->only('id', 'slug', 'title', 'from_port', 'to_port', 'is_public', 'notes', 'status', 'gpx_route_path'),
+                [
+                    'started_at' => $journey->started_at?->toIso8601String(),
+                    'ended_at' => $journey->ended_at?->toIso8601String(),
+                    'track_point_count' => $journey->trackPoints()->count(),
+                ],
+            ),
         ]);
     }
 
@@ -144,6 +151,23 @@ class JourneyController extends Controller
         $journeyService->endJourney($journey);
 
         return redirect()->route('admin.journeys')->with('success', 'Journey ended.');
+    }
+
+    public function reimport(Journey $journey)
+    {
+        if (!$journey->started_at || !$journey->ended_at) {
+            return back()->withErrors(['reimport' => 'Journey must have start and end times to import track data.']);
+        }
+
+        $journey->trackPoints()->delete();
+
+        ImportJourneyFromPrometheus::dispatch(
+            $journey->id,
+            $journey->started_at->toIso8601String(),
+            $journey->ended_at->toIso8601String(),
+        );
+
+        return back()->with('success', 'Re-import started. Track data will appear shortly.');
     }
 
     public function uploadGpx(Request $request, Journey $journey, GpxService $gpxService)

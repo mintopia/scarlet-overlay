@@ -80,4 +80,5 @@ Route::middleware('auth')->prefix('admin')->group(function () {
     Route::delete('/journeys/{journey}', [JourneyController::class, 'destroy'])->name('admin.journeys.destroy');
     Route::post('/journeys/{journey}/end', [JourneyController::class, 'end'])->name('admin.journeys.end');
     Route::post('/journeys/{journey}/gpx', [JourneyController::class, 'uploadGpx'])->name('admin.journeys.gpx');
+    Route::post('/journeys/{journey}/reimport', [JourneyController::class, 'reimport'])->name('admin.journeys.reimport');
 });

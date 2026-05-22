@@ -57,6 +57,17 @@
             </div>
         </form>
 
+        <!-- Reimport Track Data -->
+        <div v-if="journey.started_at && journey.ended_at" class="panel p-6 mb-6">
+            <h2 class="text-[15px] font-semibold mb-2">Track Data</h2>
+            <p class="text-[13px] text-text-secondary mb-3">{{ journey.track_point_count }} track points recorded.</p>
+            <p v-if="reimportForm.errors.reimport" class="text-[12px] text-red-600 mb-3">{{ reimportForm.errors.reimport }}</p>
+            <div class="flex items-center gap-3">
+                <button @click="reimport" :disabled="reimportForm.processing" class="btn btn--ghost">Re-import from Prometheus</button>
+                <Transition name="saved-fade"><span v-if="reimportForm.wasSuccessful" class="text-[13px] text-green">Import started.</span></Transition>
+            </div>
+        </div>
+
         <!-- Danger Zone -->
         <div class="panel p-6 border-red-200">
             <h2 class="text-[15px] font-semibold mb-3 text-red-600">Danger Zone</h2>
@@ -86,6 +97,12 @@ const form = useForm({
 const gpxForm = useForm({
     gpx_file: null,
 });
+
+const reimportForm = useForm({});
+function reimport() {
+    if (!confirm('This will delete existing track points and re-import from Prometheus. Continue?')) return;
+    reimportForm.post(`/admin/journeys/${props.journey.id}/reimport`);
+}
 </script>
 
 <style scoped>
