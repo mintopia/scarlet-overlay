@@ -49,7 +49,6 @@ return [
                 'wind_direction_true' => 'scarlet_boat_wind_direction_deg',
 
                 // Environment
-                'air_temp' => 'scarlet_environment_temperature_celsius',
                 'water_temp' => 'scarlet_signalk_environment_water_temperature - 273.15',
 
                 // Batteries (Signal K: bank 0 = house, bank 1 = engine)
@@ -61,7 +60,7 @@ return [
 
                 // Tanks
                 'fuel_level' => 'scarlet_boat_fuel_tank_percent',
-                'water_level' => 'scarlet_boat_water_tank_percent',
+                'water_level' => 'scarlet_mqtt_percent{topic="watertank"}',
 
                 // Cabin environment (Zigbee sensors via MQTT)
                 'cabin_temp_quarterberth' => 'scarlet_mqtt_temperature{topic="zigbee2mqtt/Quarterberth"}',
