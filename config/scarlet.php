@@ -33,12 +33,12 @@ return [
 
         'mappings' => [
             'boat' => [
-                // Navigation (Signal K — more accurate than tracker GPS)
-                'speed_sog' => 'scarlet_signalk_navigation_speedOverGround * 1.94384',
+                // Navigation (merged by tracker — uses Signal K when available, GPS fallback)
+                'speed_sog' => 'scarlet_boat_speed_kn',
                 'speed_stw' => 'scarlet_signalk_navigation_speedThroughWater * 1.94384',
-                'heading' => 'scarlet_signalk_navigation_headingMagnetic * 180 / 3.14159265359',
+                'heading' => 'scarlet_boat_heading_deg',
                 'cog' => 'scarlet_signalk_navigation_courseOverGroundTrue * 180 / 3.14159265359',
-                'depth' => 'scarlet_signalk_environment_depth_belowSurface',
+                'depth' => 'scarlet_boat_depth_meters',
                 'heel' => 'scarlet_signalk_navigation_attitude_roll * 180 / 3.14159265359',
                 'trip_log' => 'scarlet_signalk_navigation_trip_log / 1852',
 
