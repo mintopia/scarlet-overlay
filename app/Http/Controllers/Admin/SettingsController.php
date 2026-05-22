@@ -30,28 +30,15 @@ class SettingsController extends Controller
         return back()->with('success', 'Boat identity updated.');
     }
 
-    public function updatePassage(Request $request)
-    {
-        $validated = $request->validate([
-            'passage_from' => ['nullable', 'string', 'max:100'],
-            'passage_to' => ['nullable', 'string', 'max:100'],
-            'trip_offset' => ['nullable', 'numeric', 'min:0'],
-        ]);
-
-        BoatSetting::setValue('passage_from', $validated['passage_from'] ?? '');
-        BoatSetting::setValue('passage_to', $validated['passage_to'] ?? '');
-        BoatSetting::setValue('trip_offset', $validated['trip_offset'] ?? 0);
-
-        return back()->with('success', 'Passage updated.');
-    }
-
     public function updatePort(Request $request)
     {
         $validated = $request->validate([
             'port_name' => ['nullable', 'string', 'max:100'],
+            'trip_offset' => ['nullable', 'numeric', 'min:0'],
         ]);
 
         BoatSetting::setValue('port_name', $validated['port_name'] ?? '');
+        BoatSetting::setValue('trip_offset', $validated['trip_offset'] ?? 0);
 
         return back()->with('success', 'Port settings updated.');
     }

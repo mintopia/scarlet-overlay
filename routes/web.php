@@ -50,7 +50,6 @@ Route::middleware('auth')->prefix('admin')->group(function () {
     Route::get('/', [AdminDashboardController::class, 'index'])->name('admin.dashboard');
     Route::get('/settings', [SettingsController::class, 'index'])->name('admin.settings');
     Route::put('/settings/identity', [SettingsController::class, 'updateIdentity'])->name('admin.settings.identity');
-    Route::put('/settings/passage', [SettingsController::class, 'updatePassage'])->name('admin.settings.passage');
     Route::put('/settings/port', [SettingsController::class, 'updatePort'])->name('admin.settings.port');
     Route::put('/settings/stream', [SettingsController::class, 'updateStream'])->name('admin.settings.stream');
     Route::get('/stream', [StreamMonitorController::class, 'index'])->name('admin.stream');
