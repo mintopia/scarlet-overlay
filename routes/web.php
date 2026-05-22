@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Admin\BoatMetricsController;
+use App\Http\Controllers\Admin\JourneyController;
 use App\Http\Controllers\Admin\ProfileController;
 use App\Http\Controllers\Admin\SettingsController;
 use App\Http\Controllers\Admin\TeamController;
@@ -61,4 +62,16 @@ Route::middleware('auth')->prefix('admin')->group(function () {
     Route::post('/team/invite/{invite}/resend', [TeamController::class, 'resend'])->name('admin.team.resend');
     Route::delete('/team/{user}', [TeamController::class, 'destroy'])->name('admin.team.destroy');
     Route::delete('/team/invite/{invite}', [TeamController::class, 'destroyInvite'])->name('admin.team.destroy-invite');
+
+    // Journey management
+    Route::get('/journeys', [JourneyController::class, 'index'])->name('admin.journeys');
+    Route::get('/journeys/create', [JourneyController::class, 'create'])->name('admin.journeys.create');
+    Route::get('/journeys/import', [JourneyController::class, 'importForm'])->name('admin.journeys.import');
+    Route::post('/journeys', [JourneyController::class, 'store'])->name('admin.journeys.store');
+    Route::post('/journeys/import', [JourneyController::class, 'import'])->name('admin.journeys.import.store');
+    Route::get('/journeys/{journey}/edit', [JourneyController::class, 'edit'])->name('admin.journeys.edit');
+    Route::put('/journeys/{journey}', [JourneyController::class, 'update'])->name('admin.journeys.update');
+    Route::delete('/journeys/{journey}', [JourneyController::class, 'destroy'])->name('admin.journeys.destroy');
+    Route::post('/journeys/{journey}/end', [JourneyController::class, 'end'])->name('admin.journeys.end');
+    Route::post('/journeys/{journey}/gpx', [JourneyController::class, 'uploadGpx'])->name('admin.journeys.gpx');
 });
