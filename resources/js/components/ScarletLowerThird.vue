@@ -50,20 +50,24 @@ function fmtHeading(anim, raw) {
             </div>
             <div class="lt-sep"></div>
             <span class="lt-status" :class="statusClass">{{ statusText }}</span>
-            <div v-if="statusText === 'In Port' && portName" class="lt-sep"></div>
-            <div v-if="statusText === 'In Port' && portName" class="lt-passage-wrap">
-                <div class="lt-passage">
-                    <span class="lt-port-label">Currently at</span> <strong>{{ portName }}</strong>
+            <template v-if="statusText === 'In Port' && portName">
+                <div class="lt-sep"></div>
+                <div class="lt-passage-wrap">
+                    <div class="lt-passage">
+                        <span class="lt-port-label">Currently at</span> <strong>{{ portName }}</strong>
+                    </div>
                 </div>
-            </div>
-            <div v-else-if="passageFrom || passageTo" class="lt-sep"></div>
-            <div v-else-if="passageFrom || passageTo" class="lt-passage-wrap">
-                <div class="lt-passage">
-                    <strong>{{ passageFrom }}</strong>
-                    <span v-if="passageFrom && passageTo"> &rarr; </span>
-                    <strong>{{ passageTo }}</strong>
+            </template>
+            <template v-else-if="passageFrom || passageTo">
+                <div class="lt-sep"></div>
+                <div class="lt-passage-wrap">
+                    <div class="lt-passage">
+                        <strong>{{ passageFrom }}</strong>
+                        <span v-if="passageFrom && passageTo"> &rarr; </span>
+                        <strong>{{ passageTo }}</strong>
+                    </div>
                 </div>
-            </div>
+            </template>
             <div class="lt-clock">
                 <div class="lt-time">{{ clock }}</div>
                 <div class="lt-date">{{ clockDate }}</div>
