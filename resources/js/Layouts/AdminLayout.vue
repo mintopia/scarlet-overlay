@@ -66,12 +66,37 @@
 
         <!-- Main content -->
         <main class="flex-1 overflow-y-auto px-4 py-5 md:px-10 md:py-8">
+            <!-- Theme toggle -->
+            <button
+                class="theme-toggle hidden md:flex"
+                :title="autoMode ? `Auto: ${theme}` : theme.charAt(0).toUpperCase() + theme.slice(1) + ' mode'"
+                @pointerdown.prevent="onPointerDown"
+                @pointerup="onPointerUp"
+                @pointerleave="onPointerUp"
+            >
+                <svg v-if="theme === 'light'" viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+                <svg v-else-if="theme === 'dark'" viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+                <svg v-else viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                <span v-if="autoMode" class="theme-toggle__dot"></span>
+            </button>
             <!-- Mobile header -->
             <div class="flex items-center gap-3 mb-4 md:hidden">
                 <button @click="sidebarOpen = true" class="w-11 h-11 flex items-center justify-center rounded-lg border border-border text-text-secondary" aria-label="Open menu">
                     <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" fill="none" stroke-width="2" stroke-linecap="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
                 </button>
                 <span class="text-[18px] font-bold text-scarlet tracking-wide">Scarlet</span>
+                <button
+                    class="theme-toggle ml-auto md:hidden"
+                    :title="autoMode ? `Auto: ${theme}` : theme.charAt(0).toUpperCase() + theme.slice(1) + ' mode'"
+                    @pointerdown.prevent="onPointerDown"
+                    @pointerup="onPointerUp"
+                    @pointerleave="onPointerUp"
+                >
+                    <svg v-if="theme === 'light'" viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+                    <svg v-else-if="theme === 'dark'" viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+                    <svg v-else viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                    <span v-if="autoMode" class="theme-toggle__dot"></span>
+                </button>
             </div>
             <div :class="wide ? '' : 'max-w-[820px]'">
                 <slot />
@@ -84,6 +109,7 @@
 import { ref, onUnmounted } from 'vue';
 import { Link, usePage, router } from '@inertiajs/vue3';
 import NavLink from './NavLink.vue';
+import { useTheme } from '../composables/useTheme.js';
 
 defineProps({
     wide: { type: Boolean, default: false },
@@ -91,6 +117,23 @@ defineProps({
 
 const currentPage = usePage().component;
 const sidebarOpen = ref(false);
+const { theme, autoMode, cycleTheme, enableAuto } = useTheme();
+let longPressTimer = null;
+
+function onPointerDown() {
+    longPressTimer = setTimeout(() => {
+        enableAuto();
+        longPressTimer = null;
+    }, 800);
+}
+
+function onPointerUp() {
+    if (longPressTimer) {
+        clearTimeout(longPressTimer);
+        longPressTimer = null;
+        cycleTheme();
+    }
+}
 
 const removeListener = router.on('navigate', () => { sidebarOpen.value = false; });
 
@@ -137,7 +180,7 @@ onUnmounted(() => {
 .nav-label {
     font-size: 10px;
     font-weight: 700;
-    color: oklch(0.60 0.005 40);
+    color: var(--color-text-dim);
     letter-spacing: 0.04em;
     text-transform: uppercase;
     padding: 16px 12px 6px;
@@ -151,13 +194,13 @@ onUnmounted(() => {
     border-radius: 7px;
     font-size: 14px;
     font-weight: 500;
-    color: oklch(0.45 0.005 40);
+    color: var(--color-text-secondary);
     cursor: pointer;
     transition: background 0.12s ease-out, color 0.12s ease-out;
     text-decoration: none;
 }
 
-.nav-link:hover { background: oklch(0.98 0.003 70); color: oklch(0.18 0.005 40); }
+.nav-link:hover { background: var(--color-bg); color: var(--color-text-primary); }
 .nav-link:focus-visible { outline: 2px solid var(--color-scarlet); outline-offset: -2px; border-radius: 7px; }
 
 .nav-icon {
@@ -175,5 +218,52 @@ onUnmounted(() => {
     .sidebar,
     .backdrop-fade-enter-active,
     .backdrop-fade-leave-active { transition: none; }
+}
+
+.theme-toggle {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    z-index: 20;
+    width: 36px;
+    height: 36px;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    color: var(--color-text-secondary);
+    cursor: pointer;
+    transition: border-color 0.12s ease-out, color 0.12s ease-out;
+    -webkit-user-select: none;
+    user-select: none;
+}
+
+.theme-toggle:hover {
+    border-color: var(--color-text-dim);
+    color: var(--color-text-primary);
+}
+
+.theme-toggle:focus-visible {
+    outline: 2px solid var(--color-scarlet);
+    outline-offset: 2px;
+}
+
+.theme-toggle__dot {
+    position: absolute;
+    top: 2px;
+    right: 2px;
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: var(--color-green);
+}
+
+@media (max-width: 767px) {
+    .theme-toggle {
+        position: relative;
+        top: auto;
+        right: auto;
+    }
 }
 </style>
