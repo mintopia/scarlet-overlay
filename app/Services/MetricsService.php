@@ -180,7 +180,6 @@ class MetricsService
             if ($i === 0) {
                 $rows[$i]['dist'] = null;
                 $rows[$i]['dmg'] = null;
-                $rows[$i]['total_dist'] = 0;
                 $rows[$i]['diff'] = null;
                 $rows[$i]['cum_diff'] = 0;
                 continue;
@@ -201,7 +200,6 @@ class MetricsService
 
             $rows[$i]['dist'] = $dist;
             $rows[$i]['dmg'] = $dmg;
-            $rows[$i]['total_dist'] = round($cumDist, 1);
             $rows[$i]['diff'] = ($dist !== null && $dmg !== null) ? $dmg - $dist : null;
             $rows[$i]['cum_diff'] = round($cumDmg - $cumDist, 1);
         }

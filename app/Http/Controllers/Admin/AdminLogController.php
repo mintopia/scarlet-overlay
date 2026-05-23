@@ -28,6 +28,7 @@ class AdminLogController extends Controller
             );
             $tripOffset = $rows[0]['trip_log'] ?? 0;
             foreach ($rows as &$row) {
+                $row['total_log'] = $row['trip_log'];
                 if ($row['trip_log'] !== null) {
                     $row['trip_log'] -= $tripOffset;
                 }
@@ -38,6 +39,10 @@ class AdminLogController extends Controller
                 $period = '24h';
             }
             $rows = $metrics->getLogData($period, '3600');
+            foreach ($rows as &$row) {
+                $row['total_log'] = $row['trip_log'];
+            }
+            unset($row);
         }
 
         return Inertia::render('Admin/Log', [

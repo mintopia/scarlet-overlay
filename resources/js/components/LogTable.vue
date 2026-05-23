@@ -30,7 +30,7 @@
                     <td class="col-num">{{ fmtCourse(row.course) }}</td>
                     <td class="col-num">{{ fmtVal(row.trip_log, 1) }}</td>
                     <td class="col-num">{{ fmtVal(row.dist, 1) }}</td>
-                    <td class="col-num">{{ fmtVal(row.total_dist, 1) }}</td>
+                    <td class="col-num">{{ fmtVal(row.total_log, 1) }}</td>
                     <td class="col-num">{{ degreesToCompass(row.wind_direction) }}</td>
                     <td class="col-num">{{ knotsToBeaufort(row.wind_speed) }}</td>
                     <td class="col-num col-baro">{{ fmtBaro(row.pressure) }}</td>
