@@ -41,6 +41,8 @@ return [
                 'depth' => 'scarlet_boat_depth_meters',
                 'heel' => 'scarlet_signalk_navigation_attitude_roll * 180 / 3.14159265359',
                 'trip_log' => 'scarlet_signalk_navigation_trip_log / 1852',
+                'nav_wp_distance' => 'scarlet_signalk_navigation_courseRhumbline_nextPoint_distance / 1852',
+                'nav_wp_ttg' => 'scarlet_signalk_navigation_courseRhumbline_nextPoint_timeToGo',
 
                 // Wind (apparent from Signal K, true from tracker)
                 'wind_speed_apparent' => 'scarlet_signalk_environment_wind_speedApparent * 1.94384',
@@ -59,7 +61,7 @@ return [
                 'engine_battery_voltage' => 'scarlet_signalk_electrical_batteries_1_voltage',
 
                 // Tanks
-                'fuel_level' => 'scarlet_signalk_tanks_diesel_currentLevel * 100',
+                'fuel_level' => 'clamp_max(scarlet_signalk_tanks_fuel_currentLevel / 0.91, 1) * 100',
                 'water_level' => 'scarlet_mqtt_percent{topic="watertank"}',
 
                 // Cabin environment (Zigbee sensors via MQTT)
@@ -118,7 +120,7 @@ return [
                 'humidity_main_cabin' => 'scarlet_mqtt_humidity{topic="zigbee2mqtt/Main Cabin"}',
                 'battery_current' => 'scarlet_signalk_electrical_batteries_0_current',
                 'battery_power' => 'scarlet_signalk_electrical_batteries_0_current * scarlet_signalk_electrical_batteries_0_voltage',
-                'fuel_level' => 'scarlet_signalk_tanks_diesel_currentLevel * 100',
+                'fuel_level' => 'clamp_max(scarlet_signalk_tanks_fuel_currentLevel / 0.91, 1) * 100',
                 'water_level' => 'scarlet_mqtt_percent{topic="watertank"}',
                 'cpu_usage' => 'scarlet_system_cpu_usage_percent',
             ],
@@ -152,6 +154,20 @@ return [
                     'unit' => '°',
                     'color' => 'oklch(0.55 0.15 240)',
                     'query' => 'scarlet_signalk_navigation_courseOverGroundTrue * 180 / 3.14159265359',
+                    'group' => 'navigation',
+                ],
+                'nav_wp_distance' => [
+                    'label' => 'Distance to Waypoint',
+                    'unit' => 'nm',
+                    'color' => 'oklch(0.55 0.15 240)',
+                    'query' => 'scarlet_signalk_navigation_courseRhumbline_nextPoint_distance / 1852',
+                    'group' => 'navigation',
+                ],
+                'nav_wp_ttg' => [
+                    'label' => 'Time to Waypoint',
+                    'unit' => 's',
+                    'color' => 'oklch(0.60 0.16 240)',
+                    'query' => 'scarlet_signalk_navigation_courseRhumbline_nextPoint_timeToGo',
                     'group' => 'navigation',
                 ],
 
@@ -272,7 +288,7 @@ return [
                     'label' => 'Diesel Level',
                     'unit' => '%',
                     'color' => 'oklch(0.70 0.14 70)',
-                    'query' => 'scarlet_signalk_tanks_diesel_currentLevel * 100',
+                    'query' => 'clamp_max(scarlet_signalk_tanks_fuel_currentLevel / 0.91, 1) * 100',
                     'group' => 'tanks',
                 ],
                 'water_level' => [
