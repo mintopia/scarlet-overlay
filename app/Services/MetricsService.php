@@ -195,8 +195,10 @@ class MetricsService
                 ? $prev['wp_distance'] - $curr['wp_distance']
                 : null;
 
-            if ($dist !== null) $cumDist += $dist;
-            if ($dmg !== null) $cumDmg += $dmg;
+            if ($dist !== null && $dmg !== null) {
+                $cumDist += $dist;
+                $cumDmg += $dmg;
+            }
 
             $rows[$i]['dist'] = $dist;
             $rows[$i]['dmg'] = $dmg;
