@@ -122,6 +122,196 @@ return [
                 'water_level' => 'scarlet_mqtt_percent{topic="watertank"}',
                 'cpu_usage' => 'scarlet_system_cpu_usage_percent',
             ],
+
+            'explore' => [
+                // Navigation
+                'speed' => [
+                    'label' => 'Speed (SOG)',
+                    'unit' => 'kn',
+                    'color' => 'oklch(0.54 0.22 27)',
+                    'query' => 'scarlet_signalk_navigation_speedOverGround * 1.94384',
+                    'group' => 'navigation',
+                ],
+                'depth' => [
+                    'label' => 'Depth',
+                    'unit' => 'm',
+                    'color' => 'oklch(0.55 0.15 240)',
+                    'query' => 'scarlet_boat_depth_meters',
+                    'group' => 'navigation',
+                ],
+                'heading' => [
+                    'label' => 'Heading',
+                    'unit' => '°',
+                    'color' => 'oklch(0.45 0.005 40)',
+                    'query' => 'scarlet_boat_heading_deg',
+                    'group' => 'navigation',
+                ],
+                'cog' => [
+                    'label' => 'Course Over Ground',
+                    'unit' => '°',
+                    'color' => 'oklch(0.55 0.15 240)',
+                    'query' => 'scarlet_signalk_navigation_courseOverGroundTrue * 180 / 3.14159265359',
+                    'group' => 'navigation',
+                ],
+
+                // Wind
+                'wind_speed_true' => [
+                    'label' => 'True Wind Speed',
+                    'unit' => 'kn',
+                    'color' => 'oklch(0.54 0.22 27)',
+                    'query' => 'scarlet_boat_wind_speed_kn',
+                    'group' => 'wind',
+                ],
+                'wind_direction_true' => [
+                    'label' => 'True Wind Direction',
+                    'unit' => '°',
+                    'color' => 'oklch(0.65 0.18 40)',
+                    'query' => 'scarlet_boat_wind_direction_deg',
+                    'group' => 'wind',
+                ],
+                'wind_speed_apparent' => [
+                    'label' => 'Apparent Wind Speed',
+                    'unit' => 'kn',
+                    'color' => 'oklch(0.60 0.16 330)',
+                    'query' => 'scarlet_signalk_environment_wind_speedApparent * 1.94384',
+                    'group' => 'wind',
+                ],
+                'wind_angle_apparent' => [
+                    'label' => 'Apparent Wind Angle',
+                    'unit' => '°',
+                    'color' => 'oklch(0.60 0.16 330)',
+                    'query' => 'scarlet_signalk_environment_wind_angleApparent * 180 / 3.14159265359',
+                    'group' => 'wind',
+                ],
+
+                // Power
+                'battery_voltage' => [
+                    'label' => 'Battery Voltage',
+                    'unit' => 'V',
+                    'color' => 'oklch(0.62 0.15 155)',
+                    'query' => 'scarlet_signalk_electrical_batteries_0_voltage',
+                    'group' => 'power',
+                ],
+                'battery_current' => [
+                    'label' => 'Battery Current',
+                    'unit' => 'A',
+                    'color' => 'oklch(0.65 0.18 40)',
+                    'query' => 'scarlet_signalk_electrical_batteries_0_current',
+                    'group' => 'power',
+                ],
+                'battery_power' => [
+                    'label' => 'Battery Power',
+                    'unit' => 'W',
+                    'color' => 'oklch(0.62 0.15 155)',
+                    'query' => 'scarlet_signalk_electrical_batteries_0_current * scarlet_signalk_electrical_batteries_0_voltage',
+                    'group' => 'power',
+                    'signed' => true,
+                ],
+                'battery_soc' => [
+                    'label' => 'Battery SOC',
+                    'unit' => '%',
+                    'color' => 'oklch(0.62 0.15 155)',
+                    'query' => 'scarlet_signalk_electrical_batteries_0_capacity_stateOfCharge * 100',
+                    'group' => 'power',
+                ],
+                'engine_battery_voltage' => [
+                    'label' => 'Engine Battery',
+                    'unit' => 'V',
+                    'color' => 'oklch(0.65 0.18 40)',
+                    'query' => 'scarlet_signalk_electrical_batteries_1_voltage',
+                    'group' => 'power',
+                ],
+
+                // Cabin
+                'temp_forepeak' => [
+                    'label' => 'Temp: Forepeak',
+                    'unit' => '°C',
+                    'color' => 'oklch(0.70 0.14 70)',
+                    'query' => 'scarlet_environment_temperature_celsius',
+                    'group' => 'cabin',
+                ],
+                'temp_quarterberth' => [
+                    'label' => 'Temp: Quarterberth',
+                    'unit' => '°C',
+                    'color' => 'oklch(0.60 0.16 240)',
+                    'query' => 'scarlet_mqtt_temperature{topic="zigbee2mqtt/Quarterberth"}',
+                    'group' => 'cabin',
+                ],
+                'temp_main_cabin' => [
+                    'label' => 'Temp: Main Cabin',
+                    'unit' => '°C',
+                    'color' => 'oklch(0.65 0.18 330)',
+                    'query' => 'scarlet_mqtt_temperature{topic="zigbee2mqtt/Main Cabin"}',
+                    'group' => 'cabin',
+                ],
+                'humidity_forepeak' => [
+                    'label' => 'Humidity: Forepeak',
+                    'unit' => '%',
+                    'color' => 'oklch(0.70 0.14 70)',
+                    'query' => 'scarlet_environment_humidity_percent',
+                    'group' => 'cabin',
+                ],
+                'humidity_quarterberth' => [
+                    'label' => 'Humidity: Quarterberth',
+                    'unit' => '%',
+                    'color' => 'oklch(0.60 0.16 240)',
+                    'query' => 'scarlet_mqtt_humidity{topic="zigbee2mqtt/Quarterberth"}',
+                    'group' => 'cabin',
+                ],
+                'humidity_main_cabin' => [
+                    'label' => 'Humidity: Main Cabin',
+                    'unit' => '%',
+                    'color' => 'oklch(0.65 0.18 330)',
+                    'query' => 'scarlet_mqtt_humidity{topic="zigbee2mqtt/Main Cabin"}',
+                    'group' => 'cabin',
+                ],
+
+                // Tanks
+                'fuel_level' => [
+                    'label' => 'Diesel Level',
+                    'unit' => '%',
+                    'color' => 'oklch(0.70 0.14 70)',
+                    'query' => 'scarlet_signalk_tanks_diesel_currentLevel * 100',
+                    'group' => 'tanks',
+                ],
+                'water_level' => [
+                    'label' => 'Fresh Water Level',
+                    'unit' => '%',
+                    'color' => 'oklch(0.55 0.15 240)',
+                    'query' => 'scarlet_mqtt_percent{topic="watertank"}',
+                    'group' => 'tanks',
+                ],
+
+                // Tracker
+                'lte_rssi' => [
+                    'label' => 'LTE Signal',
+                    'unit' => 'dBm',
+                    'color' => 'oklch(0.54 0.22 27)',
+                    'query' => 'scarlet_system_lte_rssi_dBm',
+                    'group' => 'tracker',
+                ],
+                'wifi_rssi' => [
+                    'label' => 'WiFi Signal',
+                    'unit' => 'dBm',
+                    'color' => 'oklch(0.55 0.15 240)',
+                    'query' => 'scarlet_system_wifi_rssi_dBm',
+                    'group' => 'tracker',
+                ],
+                'gps_satellites' => [
+                    'label' => 'GPS Satellites',
+                    'unit' => '',
+                    'color' => 'oklch(0.62 0.15 155)',
+                    'query' => 'scarlet_gps_satellites',
+                    'group' => 'tracker',
+                ],
+                'cpu_usage' => [
+                    'label' => 'CPU Usage',
+                    'unit' => '%',
+                    'color' => 'oklch(0.60 0.16 330)',
+                    'query' => 'scarlet_system_cpu_usage_percent',
+                    'group' => 'tracker',
+                ],
+            ],
         ],
     ],
 ];
