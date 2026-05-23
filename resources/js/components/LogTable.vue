@@ -82,6 +82,10 @@ const tzLabel = computed(() => {
     return props.timezone.split('/').pop().replace(/_/g, ' ');
 });
 
+function cssVar(name) {
+    return getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+}
+
 const chartEl = ref(null);
 let chart = null;
 
@@ -120,7 +124,7 @@ function initChart() {
                     const zeroY = u.valToPos(0, 'y');
                     if (zeroY >= u.bbox.top && zeroY <= u.bbox.top + u.bbox.height) {
                         ctx.save();
-                        ctx.strokeStyle = 'oklch(0.50 0.005 40)';
+                        ctx.strokeStyle = cssVar('--color-text-dim');
                         ctx.lineWidth = 1;
                         ctx.setLineDash([4, 3]);
                         ctx.beginPath();
@@ -134,8 +138,8 @@ function initChart() {
         },
         axes: [
             {
-                stroke: 'oklch(0.65 0.005 40)',
-                grid: { stroke: 'oklch(0.94 0.003 70)', width: 1 },
+                stroke: cssVar('--color-text-dim'),
+                grid: { stroke: cssVar('--color-border-light'), width: 1 },
                 font: '10px system-ui',
                 values: (u, vals) => vals.map(v => {
                     const d = new Date(v * 1000);
@@ -144,8 +148,8 @@ function initChart() {
                 }),
             },
             {
-                stroke: 'oklch(0.65 0.005 40)',
-                grid: { stroke: 'oklch(0.94 0.003 70)', width: 1 },
+                stroke: cssVar('--color-text-dim'),
+                grid: { stroke: cssVar('--color-border-light'), width: 1 },
                 font: '10px system-ui',
                 size: 45,
                 values: (u, vals) => vals.map(v => (v > 0 ? '+' : '') + v.toFixed(1)),
@@ -156,11 +160,11 @@ function initChart() {
             {
                 stroke: (u) => {
                     const last = u.data[1][u.data[1].length - 1];
-                    return last >= 0 ? 'oklch(0.55 0.16 155)' : 'oklch(0.55 0.18 27)';
+                    return last >= 0 ? cssVar('--color-green') : cssVar('--color-scarlet');
                 },
                 fill: (u) => {
                     const last = u.data[1][u.data[1].length - 1];
-                    return last >= 0 ? 'oklch(0.55 0.16 155 / 0.08)' : 'oklch(0.55 0.18 27 / 0.08)';
+                    return last >= 0 ? cssVar('--color-green-bg') : cssVar('--color-error-bg');
                 },
                 width: 2,
             },
@@ -359,7 +363,7 @@ function knotsToBeaufort(kn) {
 }
 
 .log-table tbody tr:hover {
-    background: oklch(0.96 0.006 70);
+    background: var(--color-scarlet-light);
 }
 
 .empty-state {
@@ -370,12 +374,12 @@ function knotsToBeaufort(kn) {
 }
 
 .diff-good {
-    color: oklch(0.55 0.16 155);
+    color: var(--color-green);
     font-weight: 600;
 }
 
 .diff-bad {
-    color: oklch(0.55 0.18 27);
+    color: var(--color-scarlet);
     font-weight: 600;
 }
 
@@ -401,8 +405,8 @@ function knotsToBeaufort(kn) {
     font-variant-numeric: tabular-nums;
 }
 
-.progress-good { color: oklch(0.55 0.16 155); }
-.progress-bad { color: oklch(0.55 0.18 27); }
+.progress-good { color: var(--color-green); }
+.progress-bad { color: var(--color-scarlet); }
 
 .progress-canvas {
     margin: 0 -16px;
