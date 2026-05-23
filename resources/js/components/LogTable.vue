@@ -1,43 +1,47 @@
 <template>
-    <div class="panel p-0 overflow-x-auto">
+    <div class="log-wrap">
         <table class="log-table">
             <thead>
                 <tr>
-                    <th>Date / Time</th>
-                    <th>Trip Log</th>
-                    <th>Wind Dir</th>
-                    <th>Wind (Bft)</th>
-                    <th>Baro</th>
-                    <th>Position</th>
-                    <th>WP Dist</th>
-                    <th>WP TTG</th>
-                    <th>Batt %</th>
-                    <th>Water %</th>
-                    <th>Fuel %</th>
+                    <th class="col-time">Date<br>Time</th>
+                    <th class="col-num">Log<br><span class="th-unit">nm</span></th>
+                    <th class="col-num">SOW<br><span class="th-unit">kn</span></th>
+                    <th class="col-num">Wind<br><span class="th-unit">dir</span></th>
+                    <th class="col-num">Wind<br><span class="th-unit">bft</span></th>
+                    <th class="col-num">Baro<br><span class="th-unit">hPa</span></th>
+                    <th class="col-pos">Lat<br>Long</th>
+                    <th class="col-num">WP<br><span class="th-unit">nm</span></th>
+                    <th class="col-num">TTG</th>
+                    <th class="col-num">VMG<br><span class="th-unit">kn</span></th>
+                    <th class="col-num">Batt<br><span class="th-unit">%</span></th>
+                    <th class="col-num">H₂O<br><span class="th-unit">%</span></th>
+                    <th class="col-num">Fuel<br><span class="th-unit">%</span></th>
                 </tr>
             </thead>
             <tbody>
                 <tr v-for="row in rows" :key="row.timestamp">
-                    <td class="whitespace-nowrap">
+                    <td class="col-time">
                         <div class="cell-date">{{ fmtDate(row.timestamp) }}</div>
                         <div class="cell-time">{{ fmtTime(row.timestamp) }}</div>
                     </td>
-                    <td>{{ fmtVal(row.trip_log, 1) }}</td>
-                    <td>{{ degreesToCompass(row.wind_direction) }}</td>
-                    <td>{{ knotsToBeaufort(row.wind_speed) }}</td>
-                    <td>—</td>
-                    <td class="whitespace-nowrap">
+                    <td class="col-num">{{ fmtVal(row.trip_log, 1) }}</td>
+                    <td class="col-num">{{ fmtVal(row.sow, 1) }}</td>
+                    <td class="col-num">{{ degreesToCompass(row.wind_direction) }}</td>
+                    <td class="col-num">{{ knotsToBeaufort(row.wind_speed) }}</td>
+                    <td class="col-num">—</td>
+                    <td class="col-pos">
                         <div>{{ fmtLat(row.latitude) }}</div>
                         <div>{{ fmtLon(row.longitude) }}</div>
                     </td>
-                    <td>{{ fmtVal(row.wp_distance, 1) }}</td>
-                    <td class="whitespace-nowrap">{{ fmtTtg(row.wp_ttg) }}</td>
-                    <td>{{ fmtPct(row.battery_soc) }}</td>
-                    <td>{{ fmtPct(row.water_level) }}</td>
-                    <td>{{ fmtPct(row.fuel_level) }}</td>
+                    <td class="col-num">{{ fmtVal(row.wp_distance, 1) }}</td>
+                    <td class="col-num">{{ fmtTtg(row.wp_ttg) }}</td>
+                    <td class="col-num" :class="vmgClass(row.vmg)">{{ fmtVmg(row.vmg) }}</td>
+                    <td class="col-num">{{ fmtPct(row.battery_soc) }}</td>
+                    <td class="col-num">{{ fmtPct(row.water_level) }}</td>
+                    <td class="col-num">{{ fmtPct(row.fuel_level) }}</td>
                 </tr>
                 <tr v-if="!rows.length">
-                    <td colspan="11" class="text-center text-text-dim py-6">No log data for this period.</td>
+                    <td colspan="13" class="text-center text-text-dim py-6">No log data for this period.</td>
                 </tr>
             </tbody>
         </table>
@@ -51,7 +55,7 @@ defineProps({
 
 function fmtDate(ts) {
     const d = new Date(ts * 1000);
-    return d.toLocaleDateString('en-GB', { day: '2-digit', month: '2-digit', year: 'numeric' });
+    return d.toLocaleDateString('en-GB', { day: '2-digit', month: '2-digit', year: '2-digit' });
 }
 
 function fmtTime(ts) {
@@ -64,13 +68,20 @@ function fmtVal(v, decimals = 1) {
 }
 
 function fmtPct(v) {
-    return v != null ? Math.round(v) + '%' : '—';
+    return v != null ? Math.round(v) + '' : '—';
 }
 
-function degreesToCompass(deg) {
-    if (deg == null) return '—';
-    const dirs = ['N','NNE','NE','ENE','E','ESE','SE','SSE','S','SSW','SW','WSW','W','WNW','NW','NNW'];
-    return dirs[Math.round(((deg % 360) + 360) % 360 / 22.5) % 16];
+function fmtVmg(v) {
+    if (v == null) return '—';
+    const sign = v >= 0 ? '+' : '';
+    return sign + v.toFixed(1);
+}
+
+function vmgClass(v) {
+    if (v == null) return '';
+    if (v > 0.1) return 'vmg-positive';
+    if (v < -0.1) return 'vmg-negative';
+    return '';
 }
 
 function fmtLat(lat) {
@@ -102,6 +113,12 @@ function fmtTtg(seconds) {
     return `${m}m`;
 }
 
+function degreesToCompass(deg) {
+    if (deg == null) return '—';
+    const dirs = ['N','NNE','NE','ENE','E','ESE','SE','SSE','S','SSW','SW','WSW','W','WNW','NW','NNW'];
+    return dirs[Math.round(((deg % 360) + 360) % 360 / 22.5) % 16];
+}
+
 function knotsToBeaufort(kn) {
     if (kn == null) return '—';
     if (kn < 1) return '0';
@@ -121,32 +138,60 @@ function knotsToBeaufort(kn) {
 </script>
 
 <style scoped>
+.log-wrap {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+}
+
 .log-table {
     width: 100%;
-    font-size: 13px;
+    font-size: 12px;
     font-variant-numeric: tabular-nums;
     border-collapse: collapse;
+    white-space: nowrap;
 }
 
 .log-table th {
     font-size: 10px;
     font-weight: 700;
     text-transform: uppercase;
-    letter-spacing: 0.04em;
+    letter-spacing: 0.03em;
     color: var(--color-text-dim);
-    padding: 10px 8px;
-    text-align: left;
-    white-space: nowrap;
-    border-bottom: 1px solid var(--color-border);
+    padding: 6px 6px;
+    text-align: right;
+    border-bottom: 2px solid var(--color-border);
     position: sticky;
     top: 0;
     background: var(--color-surface);
     z-index: 1;
+    line-height: 1.3;
+}
+
+.th-unit {
+    font-weight: 500;
+    text-transform: none;
+    letter-spacing: 0;
+    opacity: 0.6;
 }
 
 .log-table td {
-    padding: 6px 8px;
+    padding: 4px 6px;
     border-bottom: 1px solid var(--color-border-light);
+}
+
+.col-time { text-align: left !important; }
+.col-num { text-align: right; }
+.col-pos { text-align: right; font-size: 11px; }
+
+.cell-date {
+    font-size: 10px;
+    color: var(--color-text-dim);
+    line-height: 1.2;
+}
+
+.cell-time {
+    font-weight: 600;
+    line-height: 1.2;
 }
 
 .log-table tbody tr:nth-child(even) {
@@ -157,12 +202,13 @@ function knotsToBeaufort(kn) {
     background: oklch(0.96 0.006 70);
 }
 
-.cell-date {
-    font-size: 11px;
-    color: var(--color-text-dim);
+.vmg-positive {
+    color: oklch(0.55 0.16 155);
+    font-weight: 600;
 }
 
-.cell-time {
+.vmg-negative {
+    color: oklch(0.55 0.18 27);
     font-weight: 600;
 }
 </style>
