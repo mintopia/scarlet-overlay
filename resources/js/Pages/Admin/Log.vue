@@ -3,7 +3,7 @@
         <Head title="Ship's Log" />
         <div class="flex items-baseline justify-between mb-6">
             <h1 class="text-[22px] font-bold">Ship's Log</h1>
-            <select v-model="selectedPeriod" @change="changePeriod" class="field-input w-auto text-[13px] py-1.5 px-3">
+            <select v-model="selectedPeriod" @change="changePeriod" class="field-input text-[13px] py-1.5 px-3" style="width: auto; height: auto">
                 <option value="6h">Last 6 hours</option>
                 <option value="12h">Last 12 hours</option>
                 <option value="24h">Last 24 hours</option>
