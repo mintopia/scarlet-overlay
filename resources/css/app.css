@@ -194,3 +194,28 @@ textarea.field-input {
     outline: 2px solid var(--color-scarlet);
     outline-offset: 2px;
 }
+
+.explore-link {
+    display: block;
+    text-decoration: none;
+    color: inherit;
+    position: relative;
+    transition: border-color 0.12s ease-out;
+}
+
+.explore-link:hover {
+    border-color: var(--color-text-dim);
+}
+
+.explore-link .explore-icon {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    opacity: 0;
+    transition: opacity 0.12s ease-out;
+    color: var(--color-text-dim);
+}
+
+.explore-link:hover .explore-icon {
+    opacity: 1;
+}

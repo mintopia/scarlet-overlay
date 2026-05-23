@@ -94,7 +94,8 @@
         <!-- Signal + GPS + CPU charts -->
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-4 mb-4">
             <!-- Signal Strength chart -->
-            <div class="bg-surface border border-border rounded-[10px] p-4">
+            <Link href="/admin/explore?metric=lte_rssi&range=1h" class="bg-surface border border-border rounded-[10px] p-4 explore-link">
+                <svg class="explore-icon" viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M6 2H2v4M14 10v4h-4M2 6l4-4M10 14l4-4"/></svg>
                 <div class="text-[15px] font-semibold mb-0.5">Signal Strength</div>
                 <div class="text-[12px] text-text-dim mb-3 tabular-nums">
                     LTE
@@ -151,10 +152,11 @@
                 <div class="flex justify-between text-[10px] text-text-dim mt-1">
                     <span>1h ago</span><span>now</span>
                 </div>
-            </div>
+            </Link>
 
             <!-- GPS Quality chart -->
-            <div class="bg-surface border border-border rounded-[10px] p-4">
+            <Link href="/admin/explore?metric=gps_satellites&range=1h" class="bg-surface border border-border rounded-[10px] p-4 explore-link">
+                <svg class="explore-icon" viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M6 2H2v4M14 10v4h-4M2 6l4-4M10 14l4-4"/></svg>
                 <div class="text-[15px] font-semibold mb-0.5">GPS Quality</div>
                 <div class="text-[12px] text-text-dim mb-3 tabular-nums">
                     Satellites
@@ -188,10 +190,11 @@
                 <div class="flex justify-between text-[10px] text-text-dim mt-1">
                     <span>1h ago</span><span>now</span>
                 </div>
-            </div>
+            </Link>
 
             <!-- CPU Usage chart -->
-            <div class="bg-surface border border-border rounded-[10px] p-4">
+            <Link href="/admin/explore?metric=cpu_usage&range=1h" class="bg-surface border border-border rounded-[10px] p-4 explore-link">
+                <svg class="explore-icon" viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M6 2H2v4M14 10v4h-4M2 6l4-4M10 14l4-4"/></svg>
                 <div class="text-[15px] font-semibold mb-0.5">CPU Usage</div>
                 <div class="text-[12px] text-text-dim mb-3 tabular-nums">
                     <span class="font-medium" style="color: oklch(0.60 0.16 330)">{{ live?.cpu_usage != null ? live.cpu_usage.toFixed(0) + '%' : '—' }}</span>
@@ -222,13 +225,14 @@
                 <div class="flex justify-between text-[10px] text-text-dim mt-1">
                     <span>1h ago</span><span>now</span>
                 </div>
-            </div>
+            </Link>
         </div>
 
         <!-- Temp + Humidity charts -->
         <div class="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4 mb-6">
             <!-- Cabin Temperature chart -->
-            <div class="bg-surface border border-border rounded-[10px] p-4">
+            <Link href="/admin/explore?metric=temp_forepeak&range=6h" class="bg-surface border border-border rounded-[10px] p-4 explore-link">
+                <svg class="explore-icon" viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M6 2H2v4M14 10v4h-4M2 6l4-4M10 14l4-4"/></svg>
                 <div class="text-[15px] font-semibold mb-0.5">Cabin Temperature</div>
                 <div class="text-[12px] text-text-dim mb-3 tabular-nums">
                     <span class="text-amber font-medium">
@@ -261,10 +265,11 @@
                 <div class="flex justify-between text-[10px] text-text-dim mt-1">
                     <span>6h ago</span><span>now</span>
                 </div>
-            </div>
+            </Link>
 
             <!-- Humidity chart -->
-            <div class="bg-surface border border-border rounded-[10px] p-4">
+            <Link href="/admin/explore?metric=humidity_forepeak&range=6h" class="bg-surface border border-border rounded-[10px] p-4 explore-link">
+                <svg class="explore-icon" viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M6 2H2v4M14 10v4h-4M2 6l4-4M10 14l4-4"/></svg>
                 <div class="text-[15px] font-semibold mb-0.5">Humidity</div>
                 <div class="text-[12px] text-text-dim mb-3 tabular-nums">
                     <span class="font-medium" style="color: oklch(0.55 0.15 240)">
@@ -297,7 +302,7 @@
                 <div class="flex justify-between text-[10px] text-text-dim mt-1">
                     <span>6h ago</span><span>now</span>
                 </div>
-            </div>
+            </Link>
         </div>
 
         <!-- Device Details table -->
@@ -356,7 +361,7 @@
 </template>
 
 <script setup>
-import { Head } from '@inertiajs/vue3';
+import { Head, Link } from '@inertiajs/vue3';
 import AdminLayout from '@/Layouts/AdminLayout.vue';
 import { computed, ref, onMounted, onUnmounted } from 'vue';
 
