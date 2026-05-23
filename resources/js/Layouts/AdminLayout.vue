@@ -73,7 +73,7 @@
                 </button>
                 <span class="text-[18px] font-bold text-scarlet tracking-wide">Scarlet</span>
             </div>
-            <div class="max-w-[820px]">
+            <div :class="wide ? '' : 'max-w-[820px]'">
                 <slot />
             </div>
         </main>
@@ -84,6 +84,10 @@
 import { ref, onUnmounted } from 'vue';
 import { Link, usePage, router } from '@inertiajs/vue3';
 import NavLink from './NavLink.vue';
+
+defineProps({
+    wide: { type: Boolean, default: false },
+});
 
 const currentPage = usePage().component;
 const sidebarOpen = ref(false);

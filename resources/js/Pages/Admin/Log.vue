@@ -1,5 +1,5 @@
 <template>
-    <AdminLayout>
+    <AdminLayout :wide="true">
         <Head title="Ship's Log" />
         <div class="flex items-baseline justify-between mb-6">
             <h1 class="text-[22px] font-bold">Ship's Log</h1>
