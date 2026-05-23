@@ -70,10 +70,10 @@
         <div class="panel mt-4">
             <div class="panel-head">
                 <div class="chart-legend">
-                    <span class="legend-dot" :style="{ background: metric.color }"></span>
+                    <span class="legend-dot" :style="{ background: signedCurrentColor }"></span>
                     <span class="panel-title">{{ metric.label }}</span>
                     <span v-if="stats.current != null" class="chart-stats">
-                        <span class="chart-stat-current" :style="{ color: metric.color }">{{ fmtVal(stats.current) }} {{ metric.unit }}</span>
+                        <span class="chart-stat-current" :style="{ color: signedCurrentColor }">{{ metric.signed && stats.current > 0 ? '+' : '' }}{{ fmtVal(stats.current) }} {{ metric.unit }}</span>
                         <span class="chart-stat-sep">&middot;</span>
                         <span>{{ fmtVal(stats.min) }} – {{ fmtVal(stats.max) }} {{ metric.unit }}</span>
                         <span class="chart-stat-sep">&middot;</span>
@@ -141,7 +141,7 @@
 <script setup>
 import { Head, Link, router } from '@inertiajs/vue3';
 import AdminLayout from '@/Layouts/AdminLayout.vue';
-import { ref, nextTick, onMounted, onUnmounted } from 'vue';
+import { ref, computed, nextTick, onMounted, onUnmounted } from 'vue';
 import uPlot from 'uplot';
 import 'uplot/dist/uPlot.min.css';
 
@@ -178,6 +178,12 @@ const showOverlayPicker = ref(false);
 const activeOverlays = ref(props.overlays?.map(o => o.metric.slug) || []);
 const overlayData = ref(props.overlays || []);
 const maxOverlays = 3;
+
+const signedCurrentColor = computed(() => {
+    if (!props.metric.signed) return props.metric.color;
+    if (stats.value.current == null) return props.metric.color;
+    return stats.value.current >= 0 ? 'oklch(0.62 0.15 155)' : 'oklch(0.65 0.18 40)';
+});
 
 const fetchError = ref(false);
 const retryCountdown = ref(0);
@@ -271,15 +277,63 @@ function computeStats() {
 function prepareData() {
     const timestamps = chartData.value.map(d => d.timestamp);
     const values = chartData.value.map(d => d.value);
-    const series = [timestamps, values];
 
+    if (props.metric.signed) {
+        const pos = values.map(v => v != null && v >= 0 ? v : null);
+        const neg = values.map(v => v != null && v < 0 ? v : null);
+        const series = [timestamps, pos, neg];
+        for (const ov of overlayData.value) {
+            series.push(ov.data.map(d => d.value));
+        }
+        return series;
+    }
+
+    const series = [timestamps, values];
     for (const ov of overlayData.value) {
-        const ovTimestamps = new Set(timestamps);
-        series.push(ov.data.map((d, i) => {
-            return d.value;
-        }));
+        series.push(ov.data.map(d => d.value));
     }
     return series;
+}
+
+function drawSignedPath(u, seriesIdx, idx0, idx1) {
+    const s = u.series[seriesIdx];
+    const xdata = u.data[0];
+    const ydata = u.data[seriesIdx];
+    const stroke = new Path2D();
+    const fill = new Path2D();
+    const zeroY = u.valToPos(0, 'y', true);
+    let started = false;
+    let lastX;
+
+    for (let i = idx0; i <= idx1; i++) {
+        const val = ydata[i];
+        if (val == null) {
+            if (started) {
+                fill.lineTo(lastX, zeroY);
+                fill.closePath();
+                started = false;
+            }
+            continue;
+        }
+        const x = u.valToPos(xdata[i], 'x', true);
+        const y = u.valToPos(val, 'y', true);
+        if (!started) {
+            stroke.moveTo(x, y);
+            fill.moveTo(x, zeroY);
+            fill.lineTo(x, y);
+            started = true;
+        } else {
+            stroke.lineTo(x, y);
+            fill.lineTo(x, y);
+        }
+        lastX = x;
+    }
+    if (started) {
+        fill.lineTo(lastX, zeroY);
+        fill.closePath();
+    }
+
+    return { stroke, fill, clip: null, band: null, gaps: null, flags: 0 };
 }
 
 function buildChartOpts(width) {
@@ -297,6 +351,21 @@ function buildChartOpts(width) {
             over: true,
         },
         hooks: {
+            draw: isSigned ? [
+                (u) => {
+                    const ctx = u.ctx;
+                    const zeroY = u.valToPos(0, 'y');
+                    ctx.save();
+                    ctx.strokeStyle = 'oklch(0.50 0.005 40)';
+                    ctx.lineWidth = 1;
+                    ctx.setLineDash([4, 3]);
+                    ctx.beginPath();
+                    ctx.moveTo(u.bbox.left, zeroY);
+                    ctx.lineTo(u.bbox.left + u.bbox.width, zeroY);
+                    ctx.stroke();
+                    ctx.restore();
+                },
+            ] : [],
             setSelect: [
                 (u) => {
                     const min = u.posToVal(u.select.left, 'x');
@@ -357,7 +426,25 @@ function buildChartOpts(width) {
                 }),
             },
         ],
-        series: [
+        series: isSigned ? [
+            {},
+            {
+                label: 'Charging',
+                stroke: 'oklch(0.62 0.15 155)',
+                fill: 'oklch(0.62 0.15 155 / 0.08)',
+                width: 1.5,
+                _unit: props.metric.unit,
+                paths: drawSignedPath,
+            },
+            {
+                label: 'Discharging',
+                stroke: 'oklch(0.65 0.18 40)',
+                fill: 'oklch(0.65 0.18 40 / 0.08)',
+                width: 1.5,
+                _unit: props.metric.unit,
+                paths: drawSignedPath,
+            },
+        ] : [
             {},
             {
                 label: props.metric.label,
@@ -369,7 +456,12 @@ function buildChartOpts(width) {
         ],
         scales: {
             x: { time: true },
-            y: isSigned ? {} : {
+            y: isSigned ? {
+                range: (u, min, max) => {
+                    const absMax = Math.max(Math.abs(min), Math.abs(max)) * 1.15 || 50;
+                    return [-absMax, absMax];
+                },
+            } : {
                 range: (u, min, max) => {
                     const pad = (max - min) * 0.1 || 1;
                     return [min - pad, max + pad];
