@@ -217,6 +217,36 @@ class MetricsService
         ];
     }
 
+    public function getTrueWindSeries(string $field, ?string $duration, string $step, ?int $start = null, ?int $end = null): array
+    {
+        $aws = $this->prometheus->queryRange('scarlet_signalk_environment_wind_speedApparent', $duration, $step, $start, $end);
+        $awa = $this->prometheus->queryRange('scarlet_signalk_environment_wind_angleApparent', $duration, $step, $start, $end);
+        $sog = $this->prometheus->queryRange('scarlet_signalk_navigation_speedOverGround', $duration, $step, $start, $end);
+        $hdg = $this->prometheus->queryRange('scarlet_signalk_navigation_headingTrue', $duration, $step, $start, $end);
+
+        $awaByTs = collect($awa)->keyBy('timestamp');
+        $sogByTs = collect($sog)->keyBy('timestamp');
+        $hdgByTs = collect($hdg)->keyBy('timestamp');
+
+        $result = [];
+        foreach ($aws as $point) {
+            $ts = $point['timestamp'];
+            $awaPoint = $awaByTs->get($ts);
+            $sogPoint = $sogByTs->get($ts);
+            $hdgPoint = $hdgByTs->get($ts);
+
+            if (!$awaPoint || !$sogPoint || !$hdgPoint) continue;
+
+            $tw = $this->calculateTrueWind($point['value'], $awaPoint['value'], $sogPoint['value'], $hdgPoint['value']);
+
+            if ($tw[$field] !== null) {
+                $result[] = ['timestamp' => $ts, 'value' => $tw[$field]];
+            }
+        }
+
+        return $result;
+    }
+
     private function isNullIsland(?float $lat, ?float $lng): bool
     {
         return $lat === null || $lng === null

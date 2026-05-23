@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Journey;
+use App\Services\MetricsService;
 use App\Services\PrometheusService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -26,7 +27,7 @@ class ExploreController extends Controller
         '3d' => 0, '7d' => 0, '30d' => 0,
     ];
 
-    public function index(Request $request, PrometheusService $prometheus)
+    public function index(Request $request, PrometheusService $prometheus, MetricsService $metrics)
     {
         $slug = $request->query('metric');
         $allMetrics = config('scarlet.metrics.mappings.explore');
@@ -41,7 +42,7 @@ class ExploreController extends Controller
         $range = $request->query('range', '24h');
         [$start, $end, $step] = $this->resolveTimeRange($request, $range);
 
-        $data = $this->queryMetricRange($prometheus, $metric, null, $step, $start, $end);
+        $data = $this->queryMetricRange($prometheus, $metric, null, $step, $start, $end, $metrics);
 
         $overlays = [];
         $overlayParam = $request->query('overlay', '');
@@ -51,7 +52,7 @@ class ExploreController extends Controller
                 if (isset($allMetrics[$os]) && $os !== $slug) {
                     $overlays[] = [
                         'metric' => array_merge($allMetrics[$os], ['slug' => $os]),
-                        'data' => $this->queryMetricRange($prometheus, $allMetrics[$os], null, $step, $start, $end),
+                        'data' => $this->queryMetricRange($prometheus, $allMetrics[$os], null, $step, $start, $end, $metrics),
                     ];
                 }
             }
@@ -80,7 +81,7 @@ class ExploreController extends Controller
         ]);
     }
 
-    public function series(Request $request, PrometheusService $prometheus): JsonResponse
+    public function series(Request $request, PrometheusService $prometheus, MetricsService $metrics): JsonResponse
     {
         $allMetrics = config('scarlet.metrics.mappings.explore');
         $start = (int) $request->query('start');
@@ -99,7 +100,7 @@ class ExploreController extends Controller
             if (!isset($allMetrics[$slug])) {
                 return response()->json(['error' => "Unknown metric: {$slug}"], 422);
             }
-            $data = $this->queryMetricRange($prometheus, $allMetrics[$slug], null, $step, $start, $end);
+            $data = $this->queryMetricRange($prometheus, $allMetrics[$slug], null, $step, $start, $end, $metrics);
             $values = array_column($data, 'value');
 
             $results[] = [
@@ -163,12 +164,22 @@ class ExploreController extends Controller
         return $step . 's';
     }
 
-    private function queryMetricRange(PrometheusService $prometheus, array $metric, ?string $duration, string $step, int $start, int $end): array
+    private function queryMetricRange(PrometheusService $prometheus, array $metric, ?string $duration, string $step, int $start, int $end, ?MetricsService $metrics = null): array
     {
+        if (!empty($metric['computed']) && $metrics) {
+            $field = match ($metric['computed']) {
+                'true_wind_speed' => 'speed',
+                'true_wind_direction' => 'direction',
+                default => null,
+            };
+            if ($field) {
+                return $metrics->getTrueWindSeries($field, $duration, $step, $start, $end);
+            }
+        }
         if (!empty($metric['fallback'])) {
             return $prometheus->queryRangeWithFallback($metric['query'], $metric['fallback'], $duration, $step, $start, $end);
         }
-        return $prometheus->queryRange($metric['query'], $duration, $step, $start, $end);
+        return $prometheus->queryRange($metric['query'] ?? '', $duration, $step, $start, $end);
     }
 
     private function getPassageData(): array

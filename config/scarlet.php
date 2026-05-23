@@ -178,14 +178,14 @@ return [
                     'label' => 'True Wind Speed',
                     'unit' => 'kn',
                     'color' => 'oklch(0.54 0.22 27)',
-                    'query' => 'scarlet_boat_wind_speed_kn',
+                    'computed' => 'true_wind_speed',
                     'group' => 'wind',
                 ],
                 'wind_direction_true' => [
                     'label' => 'True Wind Direction',
                     'unit' => '°',
                     'color' => 'oklch(0.65 0.18 40)',
-                    'query' => 'scarlet_boat_wind_direction_deg',
+                    'computed' => 'true_wind_direction',
                     'group' => 'wind',
                 ],
                 'wind_speed_apparent' => [
