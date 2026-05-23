@@ -66,37 +66,65 @@
 
         <!-- Main content -->
         <main class="flex-1 overflow-y-auto px-4 py-5 md:px-10 md:py-8">
-            <!-- Theme toggle -->
-            <button
-                class="theme-toggle hidden md:flex"
-                :title="autoMode ? `Auto: ${theme}` : theme.charAt(0).toUpperCase() + theme.slice(1) + ' mode'"
-                @pointerdown.prevent="onPointerDown"
-                @pointerup="onPointerUp"
-                @pointerleave="onPointerUp"
-            >
-                <svg v-if="theme === 'light'" viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
-                <svg v-else-if="theme === 'dark'" viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
-                <svg v-else viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
-                <span v-if="autoMode" class="theme-toggle__dot"></span>
-            </button>
+            <!-- Theme menu (desktop) -->
+            <div class="theme-menu-wrap hidden md:block">
+                <button class="theme-toggle" @click="themeMenuOpen = !themeMenuOpen" :title="autoMode ? `Auto: ${theme}` : theme.charAt(0).toUpperCase() + theme.slice(1) + ' mode'">
+                    <svg v-if="theme === 'light'" viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+                    <svg v-else-if="theme === 'dark'" viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+                    <svg v-else viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                    <span v-if="autoMode" class="theme-toggle__dot"></span>
+                </button>
+                <div v-if="themeMenuOpen" class="theme-menu">
+                    <button class="theme-menu__item" :class="{ 'theme-menu__item--active': autoMode }" @click="selectAuto">
+                        <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                        Auto
+                    </button>
+                    <button class="theme-menu__item" :class="{ 'theme-menu__item--active': !autoMode && theme === 'light' }" @click="selectTheme('light')">
+                        <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+                        Light
+                    </button>
+                    <button class="theme-menu__item" :class="{ 'theme-menu__item--active': !autoMode && theme === 'dark' }" @click="selectTheme('dark')">
+                        <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+                        Dark
+                    </button>
+                    <button class="theme-menu__item" :class="{ 'theme-menu__item--active': !autoMode && theme === 'night' }" @click="selectTheme('night')">
+                        <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                        Night Watch
+                    </button>
+                </div>
+            </div>
             <!-- Mobile header -->
             <div class="flex items-center gap-3 mb-4 md:hidden">
                 <button @click="sidebarOpen = true" class="w-11 h-11 flex items-center justify-center rounded-lg border border-border text-text-secondary" aria-label="Open menu">
                     <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" fill="none" stroke-width="2" stroke-linecap="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
                 </button>
                 <span class="text-[18px] font-bold text-scarlet tracking-wide">Scarlet</span>
-                <button
-                    class="theme-toggle ml-auto md:hidden"
-                    :title="autoMode ? `Auto: ${theme}` : theme.charAt(0).toUpperCase() + theme.slice(1) + ' mode'"
-                    @pointerdown.prevent="onPointerDown"
-                    @pointerup="onPointerUp"
-                    @pointerleave="onPointerUp"
-                >
-                    <svg v-if="theme === 'light'" viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
-                    <svg v-else-if="theme === 'dark'" viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
-                    <svg v-else viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
-                    <span v-if="autoMode" class="theme-toggle__dot"></span>
-                </button>
+                <div class="theme-menu-wrap ml-auto md:hidden">
+                    <button class="theme-toggle" @click="themeMenuOpen = !themeMenuOpen">
+                        <svg v-if="theme === 'light'" viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+                        <svg v-else-if="theme === 'dark'" viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+                        <svg v-else viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                        <span v-if="autoMode" class="theme-toggle__dot"></span>
+                    </button>
+                    <div v-if="themeMenuOpen" class="theme-menu">
+                        <button class="theme-menu__item" :class="{ 'theme-menu__item--active': autoMode }" @click="selectAuto">
+                            <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                            Auto
+                        </button>
+                        <button class="theme-menu__item" :class="{ 'theme-menu__item--active': !autoMode && theme === 'light' }" @click="selectTheme('light')">
+                            <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+                            Light
+                        </button>
+                        <button class="theme-menu__item" :class="{ 'theme-menu__item--active': !autoMode && theme === 'dark' }" @click="selectTheme('dark')">
+                            <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+                            Dark
+                        </button>
+                        <button class="theme-menu__item" :class="{ 'theme-menu__item--active': !autoMode && theme === 'night' }" @click="selectTheme('night')">
+                            <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                            Night Watch
+                        </button>
+                    </div>
+                </div>
             </div>
             <div :class="wide ? '' : 'max-w-[820px]'">
                 <slot />
@@ -106,7 +134,7 @@
 </template>
 
 <script setup>
-import { ref, onUnmounted } from 'vue';
+import { ref, onMounted, onUnmounted } from 'vue';
 import { Link, usePage, router } from '@inertiajs/vue3';
 import NavLink from './NavLink.vue';
 import { useTheme } from '../composables/useTheme.js';
@@ -117,28 +145,34 @@ defineProps({
 
 const currentPage = usePage().component;
 const sidebarOpen = ref(false);
-const { theme, autoMode, cycleTheme, enableAuto } = useTheme();
-let longPressTimer = null;
+const { theme, autoMode, setTheme, enableAuto } = useTheme();
+const themeMenuOpen = ref(false);
 
-function onPointerDown() {
-    longPressTimer = setTimeout(() => {
-        enableAuto();
-        longPressTimer = null;
-    }, 800);
+function selectTheme(t) {
+    setTheme(t);
+    themeMenuOpen.value = false;
 }
 
-function onPointerUp() {
-    if (longPressTimer) {
-        clearTimeout(longPressTimer);
-        longPressTimer = null;
-        cycleTheme();
+function selectAuto() {
+    enableAuto();
+    themeMenuOpen.value = false;
+}
+
+function closeThemeMenu(e) {
+    if (!e.target.closest('.theme-menu-wrap')) {
+        themeMenuOpen.value = false;
     }
 }
 
 const removeListener = router.on('navigate', () => { sidebarOpen.value = false; });
 
+onMounted(() => {
+    document.addEventListener('click', closeThemeMenu);
+});
+
 onUnmounted(() => {
     removeListener();
+    document.removeEventListener('click', closeThemeMenu);
 });
 </script>
 
@@ -220,13 +254,17 @@ onUnmounted(() => {
     .backdrop-fade-leave-active { transition: none; }
 }
 
-.theme-toggle {
+.theme-menu-wrap {
     position: fixed;
     top: 20px;
     right: 20px;
     z-index: 20;
+}
+
+.theme-toggle {
     width: 36px;
     height: 36px;
+    display: flex;
     align-items: center;
     justify-content: center;
     border-radius: 50%;
@@ -237,6 +275,7 @@ onUnmounted(() => {
     transition: border-color 0.12s ease-out, color 0.12s ease-out;
     -webkit-user-select: none;
     user-select: none;
+    position: relative;
 }
 
 .theme-toggle:hover {
@@ -259,11 +298,58 @@ onUnmounted(() => {
     background: var(--color-green);
 }
 
+.theme-menu {
+    position: absolute;
+    top: calc(100% + 6px);
+    right: 0;
+    min-width: 150px;
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: 8px;
+    padding: 4px;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+}
+
+.theme-menu__item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    width: 100%;
+    padding: 8px 10px;
+    border-radius: 5px;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--color-text-secondary);
+    cursor: pointer;
+    border: none;
+    background: none;
+    transition: background 0.1s ease-out, color 0.1s ease-out;
+}
+
+.theme-menu__item:hover {
+    background: var(--color-bg);
+    color: var(--color-text-primary);
+}
+
+.theme-menu__item--active {
+    color: var(--color-scarlet);
+    font-weight: 600;
+}
+
+.theme-menu__item svg {
+    flex-shrink: 0;
+}
+
 @media (max-width: 767px) {
-    .theme-toggle {
+    .theme-menu-wrap {
         position: relative;
         top: auto;
         right: auto;
+    }
+
+    .theme-menu {
+        right: auto;
+        left: 0;
     }
 }
 </style>

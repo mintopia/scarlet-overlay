@@ -62,17 +62,17 @@ export function useTheme() {
 
     const effectiveTheme = computed(() => theme.value);
 
-    function cycleTheme() {
-        const idx = THEMES.indexOf(theme.value);
-        const next = THEMES[(idx + 1) % THEMES.length];
+    function setTheme(t) {
+        if (!THEMES.includes(t)) return;
         autoMode.value = false;
         localStorage.setItem(LS_AUTO, 'false');
-        applyTheme(next);
+        applyTheme(t);
     }
 
     function enableAuto() {
         autoMode.value = true;
         localStorage.setItem(LS_AUTO, 'true');
+        localStorage.removeItem(LS_THEME);
         checkAuto();
     }
 
@@ -142,7 +142,7 @@ export function useTheme() {
         theme,
         autoMode,
         effectiveTheme,
-        cycleTheme,
+        setTheme,
         enableAuto,
     };
 }
