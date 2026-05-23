@@ -159,10 +159,32 @@ class MetricsService
                 $point = $seriesByKey[$key]->get($ts);
                 $row[$key] = $point ? $point['value'] : null;
             }
+
+            $tw = $this->calculateTrueWind($row['aws'], $row['awa'], $row['sog'], $row['heading']);
+            $row['wind_speed'] = $tw['speed'];
+            $row['wind_direction'] = $tw['direction'];
+            unset($row['aws'], $row['awa'], $row['sog'], $row['heading']);
+
             $rows[] = $row;
         }
 
         return $rows;
+    }
+
+    private function calculateTrueWind(?float $aws, ?float $awa, ?float $sog, ?float $heading): array
+    {
+        if ($aws === null || $awa === null || $sog === null || $heading === null) {
+            return ['speed' => null, 'direction' => null];
+        }
+
+        $twsMs = sqrt($aws ** 2 + $sog ** 2 - 2 * $aws * $sog * cos($awa));
+        $twa = atan2($aws * sin($awa), $aws * cos($awa) - $sog);
+        $twdRad = fmod($heading + $twa + 2 * M_PI, 2 * M_PI);
+
+        return [
+            'speed' => $twsMs * 1.94384,
+            'direction' => rad2deg($twdRad),
+        ];
     }
 
     private function isNullIsland(?float $lat, ?float $lng): bool

@@ -5,8 +5,8 @@
                 <tr>
                     <th>Date / Time</th>
                     <th>Trip Log</th>
+                    <th>Wind Dir</th>
                     <th>Wind (Bft)</th>
-                    <th>Wind Angle</th>
                     <th>Baro</th>
                     <th>Position</th>
                     <th>WP Dist</th>
@@ -23,8 +23,8 @@
                         <div class="cell-time">{{ fmtTime(row.timestamp) }}</div>
                     </td>
                     <td>{{ fmtVal(row.trip_log, 1) }}</td>
+                    <td>{{ degreesToCompass(row.wind_direction) }}</td>
                     <td>{{ knotsToBeaufort(row.wind_speed) }}</td>
-                    <td>{{ fmtAngle(row.wind_angle) }}</td>
                     <td>—</td>
                     <td class="whitespace-nowrap">
                         <div>{{ fmtLat(row.latitude) }}</div>
@@ -67,9 +67,10 @@ function fmtPct(v) {
     return v != null ? Math.round(v) + '%' : '—';
 }
 
-function fmtAngle(deg) {
+function degreesToCompass(deg) {
     if (deg == null) return '—';
-    return Math.round(deg) + '°';
+    const dirs = ['N','NNE','NE','ENE','E','ESE','SE','SSE','S','SSW','SW','WSW','W','WNW','NW','NNW'];
+    return dirs[Math.round(((deg % 360) + 360) % 360 / 22.5) % 16];
 }
 
 function fmtLat(lat) {
