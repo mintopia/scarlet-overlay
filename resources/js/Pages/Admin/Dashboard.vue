@@ -73,6 +73,25 @@
             </div>
         </div>
 
+        <!-- Navigation (autopilot waypoint) -->
+        <div v-if="boat?.nav_wp_distance > 0 && boat?.nav_wp_ttg > 0" class="bg-surface border border-border rounded-[10px] p-4 mb-4">
+            <div class="text-[11px] font-semibold text-text-dim uppercase tracking-wide mb-3">Navigation</div>
+            <div class="space-y-2 text-[13px]">
+                <div class="flex justify-between">
+                    <span class="text-text-secondary">Next Waypoint</span>
+                    <span class="font-semibold tabular-nums" style="color: oklch(0.55 0.15 240)">{{ fmtNav(boat.nav_wp_distance) }} nm</span>
+                </div>
+                <div class="flex justify-between">
+                    <span class="text-text-secondary">Time to Go</span>
+                    <span class="font-semibold tabular-nums">{{ formatTtg(boat.nav_wp_ttg) }}</span>
+                </div>
+                <div class="flex justify-between">
+                    <span class="text-text-secondary">ETA</span>
+                    <span class="font-semibold tabular-nums">{{ formatEta(boat.nav_wp_ttg) }}</span>
+                </div>
+            </div>
+        </div>
+
         <!-- Tracker Status -->
         <div class="panel p-4 mb-6">
             <div class="flex items-baseline justify-between mb-3">
@@ -226,6 +245,27 @@ function fmtCoord(lat, lon) {
     const latDir = lat >= 0 ? 'N' : 'S';
     const lonDir = lon >= 0 ? 'E' : 'W';
     return `${Math.abs(lat).toFixed(4)}°${latDir}  ${Math.abs(lon).toFixed(4)}°${lonDir}`;
+}
+
+function fmtNav(v) {
+    return v != null ? v.toFixed(1) : '—';
+}
+
+function formatTtg(seconds) {
+    if (seconds == null || seconds <= 0) return '—';
+    const s = Math.floor(seconds);
+    const d = Math.floor(s / 86400);
+    const h = Math.floor((s % 86400) / 3600);
+    const m = Math.floor((s % 3600) / 60);
+    if (d > 0) return `${d}d ${h}h`;
+    if (h > 0) return `${h}h ${m}m`;
+    return `${m}m`;
+}
+
+function formatEta(seconds) {
+    if (seconds == null || seconds <= 0) return '—';
+    const eta = new Date(Date.now() + seconds * 1000);
+    return eta.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
 }
 </script>
 

@@ -97,6 +97,16 @@ function fmtSpring(anim, raw, decimals = 1) {
     return Number(anim).toFixed(decimals);
 }
 
+function fmtNav(v) {
+    return v != null ? v.toFixed(1) : '—';
+}
+
+function formatEta(seconds) {
+    if (seconds == null || seconds <= 0) return '—';
+    const eta = new Date(Date.now() + seconds * 1000);
+    return eta.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
+}
+
 function zoomIn() { map?.zoomIn(); }
 function zoomOut() { map?.zoomOut(); }
 
@@ -160,6 +170,16 @@ onUnmounted(() => {
 
         <!-- BOTTOM-RIGHT: Sailing instrument pills -->
         <div class="instruments">
+            <div v-if="boat?.nav_wp_distance > 0 && boat?.nav_wp_ttg > 0" class="pill pill--compound">
+                <div class="pill-cell">
+                    <div class="pill-lbl">NEXT WP</div>
+                    <div class="pill-val" style="color: oklch(0.72 0.12 240)">{{ fmtNav(boat.nav_wp_distance) }} nm</div>
+                </div>
+                <div class="pill-cell">
+                    <div class="pill-lbl">ETA</div>
+                    <div class="pill-val">{{ formatEta(boat.nav_wp_ttg) }}</div>
+                </div>
+            </div>
             <div class="pill pill--compound">
                 <div class="pill-cell">
                     <div class="pill-lbl">APP. WIND</div>

@@ -239,6 +239,20 @@
                             <span>Trip</span>
                             <span>{{ fmt(adjustedTrip) }} nm</span>
                         </div>
+                        <template v-if="live?.nav_wp_distance > 0 && live?.nav_wp_ttg > 0">
+                            <div class="data-row">
+                                <span>Next WP</span>
+                                <span style="color: oklch(0.55 0.15 240)">{{ fmt(live.nav_wp_distance) }} nm</span>
+                            </div>
+                            <div class="data-row">
+                                <span>TTG</span>
+                                <span>{{ formatTtg(live.nav_wp_ttg) }}</span>
+                            </div>
+                            <div class="data-row">
+                                <span>ETA</span>
+                                <span>{{ formatEta(live.nav_wp_ttg) }}</span>
+                            </div>
+                        </template>
                     </div>
                 </div>
             </div>
@@ -495,6 +509,23 @@ function toLine(data, w, h, min, max) {
 function toArea(data, w, h, min, max) {
     if (!data?.length) return '';
     return `0,${h} ${toLine(data, w, h, min, max)} ${w},${h}`;
+}
+
+function formatTtg(seconds) {
+    if (seconds == null || seconds <= 0) return '—';
+    const s = Math.floor(seconds);
+    const d = Math.floor(s / 86400);
+    const h = Math.floor((s % 86400) / 3600);
+    const m = Math.floor((s % 3600) / 60);
+    if (d > 0) return `${d}d ${h}h`;
+    if (h > 0) return `${h}h ${m}m`;
+    return `${m}m`;
+}
+
+function formatEta(seconds) {
+    if (seconds == null || seconds <= 0) return '—';
+    const eta = new Date(Date.now() + seconds * 1000);
+    return eta.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
 }
 </script>
 
