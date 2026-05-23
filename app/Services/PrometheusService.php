@@ -26,13 +26,46 @@ class PrometheusService
             }
 
             $result = $response->json('data.result');
+            if (!empty($result)) {
+                return (float) $result[0]['value'][1];
+            }
+
+            return $this->queryLastOverTime($promql);
+        } catch (\Throwable $e) {
+            Log::warning("Prometheus query failed [{$promql}]: {$e->getMessage()}");
+            return null;
+        }
+    }
+
+    protected function queryLastOverTime(string $promql, string $lookback = '24h'): ?float
+    {
+        $wrapped = preg_replace_callback(
+            '/([a-zA-Z_:][a-zA-Z0-9_:]*)(\{[^}]*\})?/',
+            fn ($m) => "last_over_time({$m[0]}[{$lookback}])",
+            $promql,
+        );
+
+        if ($wrapped === $promql) {
+            return null;
+        }
+
+        try {
+            $response = Http::timeout(5)->get("{$this->baseUrl}/api/v1/query", [
+                'query' => $wrapped,
+            ]);
+
+            if (!$response->ok()) {
+                return null;
+            }
+
+            $result = $response->json('data.result');
             if (empty($result)) {
                 return null;
             }
 
             return (float) $result[0]['value'][1];
         } catch (\Throwable $e) {
-            Log::warning("Prometheus query failed [{$promql}]: {$e->getMessage()}");
+            Log::warning("Prometheus last_over_time query failed [{$promql}]: {$e->getMessage()}");
             return null;
         }
     }
@@ -99,7 +132,11 @@ class PrometheusService
                 }
 
                 $result = $response->json('data.result');
-                $results[$key] = empty($result) ? null : (float) $result[0]['value'][1];
+                if (!empty($result)) {
+                    $results[$key] = (float) $result[0]['value'][1];
+                } else {
+                    $results[$key] = $this->queryLastOverTime($promql);
+                }
             } catch (\Throwable $e) {
                 Log::warning("Prometheus query failed [{$promql}]: {$e->getMessage()}");
                 $fetchError = true;
