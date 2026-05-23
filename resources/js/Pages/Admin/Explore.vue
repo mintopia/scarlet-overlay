@@ -5,7 +5,7 @@
         <!-- Page header / toolbar -->
         <div class="toolbar">
             <div class="toolbar-left">
-                <Link href="/admin/metrics" class="back-link">&larr; Metrics</Link>
+                <Link href="/admin/explore" class="back-link">&larr; Explore</Link>
                 <span class="toolbar-sep">/</span>
                 <div class="metric-select-wrap">
                     <select
@@ -218,6 +218,7 @@ function switchMetric(slug) {
 function switchRange(range) {
     zoomed.value = false;
     showCustomPicker.value = false;
+    localStorage.setItem('scarlet_explore_range', range);
     router.get(buildUrl({ metric: props.metric.slug, range }));
 }
 

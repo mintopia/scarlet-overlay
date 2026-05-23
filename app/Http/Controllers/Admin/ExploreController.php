@@ -33,13 +33,14 @@ class ExploreController extends Controller
         $allMetrics = config('scarlet.metrics.mappings.explore');
 
         if (!$slug || !isset($allMetrics[$slug])) {
-            return redirect()->route('admin.metrics');
+            return $this->dashboard($request, $prometheus, $metrics);
         }
 
         $metric = $allMetrics[$slug];
         $metric['slug'] = $slug;
 
-        $range = $request->query('range', '24h');
+        $passage = $this->getPassageData();
+        $range = $request->query('range', $passage['available'] ? 'passage' : '24h');
         [$start, $end, $step] = $this->resolveTimeRange($request, $range);
 
         $data = $this->queryMetricRange($prometheus, $metric, null, $step, $start, $end, $metrics);
@@ -62,8 +63,6 @@ class ExploreController extends Controller
         foreach ($allMetrics as $s => $m) {
             $grouped[$m['group']][$s] = $m;
         }
-
-        $passage = $this->getPassageData();
 
         $refresh = (int) $request->query('refresh', self::DEFAULT_REFRESH[$range] ?? 0);
 
@@ -162,6 +161,50 @@ class ExploreController extends Controller
     {
         $step = max(15, (int) floor($durationSeconds / 300));
         return $step . 's';
+    }
+
+    private function dashboard(Request $request, PrometheusService $prometheus, MetricsService $metrics)
+    {
+        $allMetrics = config('scarlet.metrics.mappings.explore');
+        $passage = $this->getPassageData();
+
+        $range = $request->query('range', $passage['available'] ? 'passage' : '24h');
+        [$start, $end, $step] = $this->resolveTimeRange($request, $range);
+
+        $dashboardSlugs = ['speed', 'depth', 'wind_speed_true', 'wind_direction_true', 'battery_voltage', 'battery_soc', 'fuel_level', 'water_level'];
+
+        $charts = [];
+        foreach ($dashboardSlugs as $slug) {
+            if (!isset($allMetrics[$slug])) continue;
+            $metric = $allMetrics[$slug];
+            $metric['slug'] = $slug;
+            $data = $this->queryMetricRange($prometheus, $metric, null, $step, $start, $end, $metrics);
+            $values = array_column($data, 'value');
+            $charts[] = [
+                'metric' => $metric,
+                'data' => $data,
+                'stats' => [
+                    'current' => !empty($values) ? end($values) : null,
+                    'min' => !empty($values) ? min($values) : null,
+                    'max' => !empty($values) ? max($values) : null,
+                ],
+            ];
+        }
+
+        $grouped = [];
+        foreach ($allMetrics as $s => $m) {
+            $grouped[$m['group']][$s] = $m;
+        }
+
+        return Inertia::render('Admin/ExploreDashboard', [
+            'charts' => $charts,
+            'metrics' => $grouped,
+            'range' => $range,
+            'start' => $start,
+            'end' => $end,
+            'step' => $step,
+            'passage' => $passage,
+        ]);
     }
 
     private function queryMetricRange(PrometheusService $prometheus, array $metric, ?string $duration, string $step, int $start, int $end, ?MetricsService $metrics = null): array
