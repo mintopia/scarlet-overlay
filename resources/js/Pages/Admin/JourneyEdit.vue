@@ -80,7 +80,7 @@
             <div class="px-6 pt-5 pb-3">
                 <h2 class="text-[15px] font-semibold">Ship's Log</h2>
             </div>
-            <LogTable :rows="logRows" :show-date="true" />
+            <LogTable :rows="logRows" />
         </div>
 
         <!-- Danger Zone -->

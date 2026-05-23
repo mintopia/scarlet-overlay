@@ -332,8 +332,8 @@ return [
 
             'log' => [
                 'trip_log' => 'scarlet_signalk_navigation_trip_log / 1852',
-                'wind_direction' => 'scarlet_boat_wind_direction_deg',
-                'wind_speed' => 'scarlet_boat_wind_speed_kn',
+                'wind_speed' => 'scarlet_signalk_environment_wind_speedApparent * 1.94384',
+                'wind_angle' => 'scarlet_signalk_environment_wind_angleApparent * 180 / 3.14159265359',
                 'latitude' => 'scarlet_signalk_navigation_position_latitude',
                 'longitude' => 'scarlet_signalk_navigation_position_longitude',
                 'wp_distance' => 'scarlet_signalk_navigation_courseGreatCircle_nextPoint_distance / 1852',

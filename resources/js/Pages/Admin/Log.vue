@@ -12,12 +12,12 @@
             </select>
         </div>
 
-        <LogTable :rows="rows" :show-date="showDate" />
+        <LogTable :rows="rows" />
     </AdminLayout>
 </template>
 
 <script setup>
-import { ref, computed } from 'vue';
+import { ref } from 'vue';
 import { Head, router } from '@inertiajs/vue3';
 import AdminLayout from '@/Layouts/AdminLayout.vue';
 import LogTable from '@/components/LogTable.vue';
@@ -27,7 +27,6 @@ const props = defineProps({
     period: String,
 });
 
-const showDate = computed(() => ['48h', '168h'].includes(props.period));
 const selectedPeriod = ref(props.period);
 
 function changePeriod() {

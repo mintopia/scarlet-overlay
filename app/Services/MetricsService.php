@@ -132,22 +132,28 @@ class MetricsService
 
     public function getLogData(?string $duration = '24h', string $step = '3600', ?int $start = null, ?int $end = null): array
     {
+        $stepSeconds = (int) $step;
+
+        if ($start !== null && $end !== null) {
+            $alignedStart = (int) ceil($start / $stepSeconds) * $stepSeconds;
+            $alignedEnd = (int) floor($end / $stepSeconds) * $stepSeconds;
+        } else {
+            $alignedEnd = (int) floor(now()->timestamp / $stepSeconds) * $stepSeconds;
+            $seconds = \Carbon\CarbonInterval::fromString($duration ?? '24h')->totalSeconds;
+            $alignedStart = $alignedEnd - (int) $seconds;
+            $alignedStart = (int) ceil($alignedStart / $stepSeconds) * $stepSeconds;
+        }
+
         $queries = config('scarlet.metrics.mappings.log');
         $seriesByKey = [];
 
         foreach ($queries as $key => $promql) {
-            $data = $this->prometheus->queryRange($promql, $duration, $step . 's', $start, $end);
+            $data = $this->prometheus->queryRange($promql, null, $step . 's', $alignedStart, $alignedEnd);
             $seriesByKey[$key] = collect($data)->keyBy('timestamp');
         }
 
-        $allTimestamps = collect($seriesByKey)
-            ->flatMap(fn ($series) => $series->keys())
-            ->unique()
-            ->sort()
-            ->values();
-
         $rows = [];
-        foreach ($allTimestamps as $ts) {
+        for ($ts = $alignedStart; $ts <= $alignedEnd; $ts += $stepSeconds) {
             $row = ['timestamp' => $ts];
             foreach ($queries as $key => $promql) {
                 $point = $seriesByKey[$key]->get($ts);

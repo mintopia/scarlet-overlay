@@ -3,12 +3,12 @@
         <table class="log-table">
             <thead>
                 <tr>
-                    <th>Time</th>
+                    <th>Date / Time</th>
                     <th>Trip Log</th>
-                    <th>Wind Dir</th>
                     <th>Wind (Bft)</th>
+                    <th>Wind Angle</th>
                     <th>Baro</th>
-                    <th>Lat/Long</th>
+                    <th>Position</th>
                     <th>WP Dist</th>
                     <th>WP TTG</th>
                     <th>Batt %</th>
@@ -18,12 +18,18 @@
             </thead>
             <tbody>
                 <tr v-for="row in rows" :key="row.timestamp">
-                    <td class="whitespace-nowrap">{{ fmtTime(row.timestamp) }}</td>
+                    <td class="whitespace-nowrap">
+                        <div class="cell-date">{{ fmtDate(row.timestamp) }}</div>
+                        <div class="cell-time">{{ fmtTime(row.timestamp) }}</div>
+                    </td>
                     <td>{{ fmtVal(row.trip_log, 1) }}</td>
-                    <td>{{ degreesToCompass(row.wind_direction) }}</td>
                     <td>{{ knotsToBeaufort(row.wind_speed) }}</td>
+                    <td>{{ fmtAngle(row.wind_angle) }}</td>
                     <td>—</td>
-                    <td class="whitespace-nowrap">{{ fmtCoord(row.latitude, row.longitude) }}</td>
+                    <td class="whitespace-nowrap">
+                        <div>{{ fmtLat(row.latitude) }}</div>
+                        <div>{{ fmtLon(row.longitude) }}</div>
+                    </td>
                     <td>{{ fmtVal(row.wp_distance, 1) }}</td>
                     <td class="whitespace-nowrap">{{ fmtTtg(row.wp_ttg) }}</td>
                     <td>{{ fmtPct(row.battery_soc) }}</td>
@@ -39,17 +45,17 @@
 </template>
 
 <script setup>
-const props = defineProps({
+defineProps({
     rows: { type: Array, default: () => [] },
-    showDate: { type: Boolean, default: false },
 });
+
+function fmtDate(ts) {
+    const d = new Date(ts * 1000);
+    return d.toLocaleDateString('en-GB', { day: '2-digit', month: '2-digit', year: 'numeric' });
+}
 
 function fmtTime(ts) {
     const d = new Date(ts * 1000);
-    if (props.showDate) {
-        return d.toLocaleDateString('en-GB', { day: '2-digit', month: '2-digit' }) + ' ' +
-               d.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
-    }
     return d.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
 }
 
@@ -61,9 +67,19 @@ function fmtPct(v) {
     return v != null ? Math.round(v) + '%' : '—';
 }
 
-function fmtCoord(lat, lon) {
-    if (lat == null || lon == null) return '—';
-    return formatDM(lat, 'N', 'S') + ' ' + formatDM(lon, 'E', 'W');
+function fmtAngle(deg) {
+    if (deg == null) return '—';
+    return Math.round(deg) + '°';
+}
+
+function fmtLat(lat) {
+    if (lat == null) return '—';
+    return formatDM(lat, 'N', 'S');
+}
+
+function fmtLon(lon) {
+    if (lon == null) return '';
+    return formatDM(lon, 'E', 'W');
 }
 
 function formatDM(decimal, pos, neg) {
@@ -83,12 +99,6 @@ function fmtTtg(seconds) {
     if (d > 0) return `${d}d ${h}h`;
     if (h > 0) return `${h}h ${m}m`;
     return `${m}m`;
-}
-
-function degreesToCompass(deg) {
-    if (deg == null) return '—';
-    const dirs = ['N','NNE','NE','ENE','E','ESE','SE','SSE','S','SSW','SW','WSW','W','WNW','NW','NNW'];
-    return dirs[Math.round(((deg % 360) + 360) % 360 / 22.5) % 16];
 }
 
 function knotsToBeaufort(kn) {
@@ -144,5 +154,14 @@ function knotsToBeaufort(kn) {
 
 .log-table tbody tr:hover {
     background: oklch(0.96 0.006 70);
+}
+
+.cell-date {
+    font-size: 11px;
+    color: var(--color-text-dim);
+}
+
+.cell-time {
+    font-weight: 600;
 }
 </style>
