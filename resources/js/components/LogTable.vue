@@ -127,14 +127,22 @@ function knotsToBeaufort(kn) {
     text-align: left;
     white-space: nowrap;
     border-bottom: 1px solid var(--color-border);
+    position: sticky;
+    top: 0;
+    background: var(--color-surface);
+    z-index: 1;
 }
 
 .log-table td {
-    padding: 8px;
+    padding: 6px 8px;
     border-bottom: 1px solid var(--color-border-light);
 }
 
+.log-table tbody tr:nth-child(even) {
+    background: var(--color-bg);
+}
+
 .log-table tbody tr:hover {
-    background: oklch(0.98 0.003 70);
+    background: oklch(0.96 0.006 70);
 }
 </style>

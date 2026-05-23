@@ -8,14 +8,14 @@
             <div class="panel p-4 mb-4">
                 <div class="panel-title mb-3">Conditions</div>
                 <div class="space-y-2 text-[13px]">
-                    <div class="data-row"><span>Conditions</span><span>{{ weather.conditionText }}</span></div>
+                    <div class="data-row"><span>Sky</span><span>{{ weather.conditionText }}</span></div>
                     <div class="data-row"><span>Air Temperature</span><span>{{ fmt(weather.temp) }}°C</span></div>
                     <div class="data-row"><span>Time of Day</span><span>{{ weather.daytime ? 'Day' : 'Night' }}</span></div>
                 </div>
             </div>
 
             <!-- Wind Comparison -->
-            <div class="panel p-4 mb-4">
+            <div class="panel p-4 mb-6">
                 <div class="panel-title mb-3">Wind</div>
                 <table class="w-full text-[13px]">
                     <thead>
@@ -46,7 +46,7 @@
             </div>
 
             <!-- Sea State -->
-            <div class="panel p-4 mb-4">
+            <div class="panel p-4 mb-6">
                 <div class="panel-title mb-3">Sea State</div>
                 <div class="space-y-2 text-[13px]">
                     <div class="data-row"><span>Wave Height</span><span>{{ fmt(weather.waves?.height) }} m</span></div>
