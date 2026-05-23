@@ -46,7 +46,7 @@
 
                 <div class="bg-surface border border-border rounded-[10px] p-4">
                     <div class="text-[11px] font-semibold text-text-dim uppercase tracking-wide mb-2">RTT</div>
-                    <div class="text-[24px] font-bold tabular-nums leading-none mb-1" style="color: oklch(0.55 0.15 240)">
+                    <div class="text-[24px] font-bold tabular-nums leading-none mb-1 text-blue">
                         {{ publisher?.rtt != null ? Number(publisher.rtt).toFixed(1) : '—' }}
                     </div>
                     <div class="text-[11px] text-text-dim">ms</div>
@@ -77,12 +77,12 @@
                     <svg viewBox="0 0 400 120" class="w-full" preserveAspectRatio="none">
                         <defs>
                             <linearGradient id="bitrateGrad" x1="0" y1="0" x2="0" y2="1">
-                                <stop offset="0%" stop-color="oklch(0.54 0.22 27)" stop-opacity="0.20"/>
-                                <stop offset="100%" stop-color="oklch(0.54 0.22 27)" stop-opacity="0.02"/>
+                                <stop offset="0%" stop-color="var(--color-scarlet)" stop-opacity="0.20"/>
+                                <stop offset="100%" stop-color="var(--color-scarlet)" stop-opacity="0.02"/>
                             </linearGradient>
                         </defs>
                         <polygon v-if="bitrateHistory.length > 1" :points="toArea(bitrateValues, bitrateMax)" fill="url(#bitrateGrad)" />
-                        <polyline v-if="bitrateHistory.length > 1" :points="toLine(bitrateValues, bitrateMax)" fill="none" stroke="oklch(0.54 0.22 27)" stroke-width="1.5" stroke-linejoin="round" stroke-linecap="round" />
+                        <polyline v-if="bitrateHistory.length > 1" :points="toLine(bitrateValues, bitrateMax)" fill="none" stroke="var(--color-scarlet)" stroke-width="1.5" stroke-linejoin="round" stroke-linecap="round" />
                     </svg>
                     <div v-if="bitrateHistory.length < 2" class="absolute inset-0 flex items-center justify-center gap-2 text-[12px] text-text-dim">
                         <span class="w-1.5 h-1.5 rounded-full bg-text-dim opacity-60 animate-pulse inline-block"></span>
@@ -99,19 +99,19 @@
                 <div class="bg-surface border border-border rounded-[10px] p-4">
                     <div class="text-[15px] font-semibold mb-0.5">Round Trip Time</div>
                     <div class="text-[12px] text-text-dim mb-3 tabular-nums">
-                        <span style="color: oklch(0.55 0.15 240)" class="font-medium">{{ publisher?.rtt != null ? Number(publisher.rtt).toFixed(1) + ' ms' : '—' }}</span>
+                        <span class="font-medium text-blue">{{ publisher?.rtt != null ? Number(publisher.rtt).toFixed(1) + ' ms' : '—' }}</span>
                         &nbsp;current
                     </div>
                     <div class="relative">
                         <svg viewBox="0 0 400 120" class="w-full" preserveAspectRatio="none">
                             <defs>
                                 <linearGradient id="rttGrad" x1="0" y1="0" x2="0" y2="1">
-                                    <stop offset="0%" stop-color="oklch(0.55 0.15 240)" stop-opacity="0.20"/>
-                                    <stop offset="100%" stop-color="oklch(0.55 0.15 240)" stop-opacity="0.02"/>
+                                    <stop offset="0%" stop-color="var(--color-blue)" stop-opacity="0.20"/>
+                                    <stop offset="100%" stop-color="var(--color-blue)" stop-opacity="0.02"/>
                                 </linearGradient>
                             </defs>
                             <polygon v-if="rttHistory.length > 1" :points="toArea(rttValues, rttMax)" fill="url(#rttGrad)" />
-                            <polyline v-if="rttHistory.length > 1" :points="toLine(rttValues, rttMax)" fill="none" stroke="oklch(0.55 0.15 240)" stroke-width="1.5" stroke-linejoin="round" stroke-linecap="round" />
+                            <polyline v-if="rttHistory.length > 1" :points="toLine(rttValues, rttMax)" fill="none" stroke="var(--color-blue)" stroke-width="1.5" stroke-linejoin="round" stroke-linecap="round" />
                         </svg>
                         <div v-if="rttHistory.length < 2" class="absolute inset-0 flex items-center justify-center gap-2 text-[12px] text-text-dim">
                             <span class="w-1.5 h-1.5 rounded-full bg-text-dim opacity-60 animate-pulse inline-block"></span>
@@ -133,12 +133,12 @@
                         <svg viewBox="0 0 400 120" class="w-full" preserveAspectRatio="none">
                             <defs>
                                 <linearGradient id="dropGrad" x1="0" y1="0" x2="0" y2="1">
-                                    <stop offset="0%" stop-color="oklch(0.75 0.15 65)" stop-opacity="0.20"/>
-                                    <stop offset="100%" stop-color="oklch(0.75 0.15 65)" stop-opacity="0.02"/>
+                                    <stop offset="0%" stop-color="var(--color-amber)" stop-opacity="0.20"/>
+                                    <stop offset="100%" stop-color="var(--color-amber)" stop-opacity="0.02"/>
                                 </linearGradient>
                             </defs>
                             <polygon v-if="droppedHistory.length > 1" :points="toArea(droppedValues, droppedMax)" fill="url(#dropGrad)" />
-                            <polyline v-if="droppedHistory.length > 1" :points="toLine(droppedValues, droppedMax)" fill="none" stroke="oklch(0.75 0.15 65)" stroke-width="1.5" stroke-linejoin="round" stroke-linecap="round" />
+                            <polyline v-if="droppedHistory.length > 1" :points="toLine(droppedValues, droppedMax)" fill="none" stroke="var(--color-amber)" stroke-width="1.5" stroke-linejoin="round" stroke-linecap="round" />
                         </svg>
                         <div v-if="droppedHistory.length < 2" class="absolute inset-0 flex items-center justify-center gap-2 text-[12px] text-text-dim">
                             <span class="w-1.5 h-1.5 rounded-full bg-text-dim opacity-60 animate-pulse inline-block"></span>
