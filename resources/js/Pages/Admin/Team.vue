@@ -238,12 +238,12 @@ function trapFocus(event) {
     flex-shrink: 0;
 }
 .member-avatar--owner {
-    background: oklch(0.54 0.22 27 / 0.12);
-    color: oklch(0.54 0.22 27);
+    background: var(--color-scarlet-light);
+    color: var(--color-scarlet);
 }
 .member-avatar--crew {
-    background: oklch(0.88 0.005 70);
-    color: oklch(0.45 0.005 40);
+    background: var(--color-bg);
+    color: var(--color-text-secondary);
 }
 
 .role-badge {
@@ -253,17 +253,17 @@ function trapFocus(event) {
     font-size: 12px; font-weight: 600;
 }
 .role-badge--owner {
-    background: oklch(0.54 0.22 27 / 0.10);
-    color: oklch(0.54 0.22 27);
+    background: var(--color-scarlet-light);
+    color: var(--color-scarlet);
 }
 .role-badge--crew {
-    background: oklch(0.92 0.003 70);
-    color: oklch(0.45 0.005 40);
+    background: var(--color-bg);
+    color: var(--color-text-secondary);
 }
 
 .modal-overlay {
     position: fixed; inset: 0;
-    background: oklch(0.05 0.008 40 / 0.45);
+    background: rgba(0, 0, 0, 0.45);
     display: flex; align-items: center; justify-content: center;
     z-index: 100; padding: 24px;
 }
@@ -272,6 +272,6 @@ function trapFocus(event) {
     border-radius: 12px;
     padding: 28px 28px 24px;
     width: 100%; max-width: 400px;
-    box-shadow: 0 8px 40px oklch(0.05 0.008 40 / 0.14);
+    box-shadow: 0 8px 40px rgba(0, 0, 0, 0.14);
 }
 </style>
