@@ -339,6 +339,7 @@ return [
                 'stw' => 'scarlet_signalk_navigation_speedThroughWater',
                 'heading' => 'scarlet_signalk_navigation_headingTrue',
                 'cog' => 'scarlet_signalk_navigation_courseOverGroundTrue',
+                'pressure' => 'scarlet_weather_pressure_hpa',
                 'latitude' => 'scarlet_signalk_navigation_position_latitude',
                 'longitude' => 'scarlet_signalk_navigation_position_longitude',
                 'wp_distance' => 'scarlet_signalk_navigation_courseGreatCircle_nextPoint_distance / 1852',

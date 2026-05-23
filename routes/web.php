@@ -20,6 +20,7 @@ use App\Http\Controllers\MapTileController;
 use App\Http\Controllers\OverlayController;
 use App\Http\Controllers\JourneyViewController;
 use App\Http\Controllers\SrtMetricsController;
+use App\Http\Controllers\WeatherMetricsController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
@@ -30,6 +31,7 @@ Route::get('/overlay', [OverlayController::class, 'index'])->name('overlay');
 Route::get('/snow', [HomeController::class, 'snow'])->name('snow');
 Route::get('/openseamap/{z}/{x}/{y}', [MapTileController::class, 'seamap'])->name('openseamap');
 Route::get('/metrics/srt', SrtMetricsController::class)->name('metrics.srt');
+Route::get('/metrics/weather', WeatherMetricsController::class)->name('metrics.weather');
 
 Route::get('/journey', [JourneyViewController::class, 'index'])->name('journey.index');
 Route::get('/journey/{slug}', [JourneyViewController::class, 'show'])->name('journey.show');
