@@ -70,12 +70,12 @@ class PrometheusService
         }
     }
 
-    public function queryRange(string $promql, string $duration, string $step = '15s', ?int $start = null, ?int $end = null): array
+    public function queryRange(string $promql, ?string $duration, string $step = '15s', ?int $start = null, ?int $end = null): array
     {
         try {
             $response = Http::timeout(10)->get("{$this->baseUrl}/api/v1/query_range", [
                 'query' => $promql,
-                'start' => $start ?? now()->sub(\Carbon\CarbonInterval::fromString($duration))->timestamp,
+                'start' => $start ?? ($duration ? now()->sub(\Carbon\CarbonInterval::fromString($duration))->timestamp : now()->subDay()->timestamp),
                 'end' => $end ?? now()->timestamp,
                 'step' => $step,
             ]);
