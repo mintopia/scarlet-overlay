@@ -23,10 +23,26 @@
                     <Link href="/admin/journeys" class="btn btn--ghost">All Journeys</Link>
                 </div>
             </template>
-            <template v-else>
-                <p class="text-[13px] text-text-secondary mb-3">No voyage underway. Start a new journey to begin tracking.</p>
+            <template v-else-if="plannedJourney">
+                <div class="flex items-baseline justify-between mb-2">
+                    <div>
+                        <span class="text-[16px] font-semibold">{{ plannedJourney.title }}</span>
+                        <span class="ml-2 text-[10px] font-semibold tracking-wide px-2 py-0.5 rounded bg-amber-100 text-amber-700">PLANNED</span>
+                    </div>
+                </div>
+                <div class="space-y-2 text-[13px] mb-4">
+                    <div class="data-row"><span>Route</span><span>{{ plannedJourney.from_port }} → {{ plannedJourney.to_port }}</span></div>
+                    <div class="data-row"><span>GPX</span><span>{{ plannedJourney.has_gpx ? 'Uploaded' : 'None' }}</span></div>
+                </div>
                 <div class="flex gap-2">
-                    <Link href="/admin/journeys/create" class="btn btn--primary">Start Journey</Link>
+                    <button @click="showStartModal = true" class="btn btn--primary">Start Recording</button>
+                    <Link :href="`/admin/journeys/${plannedJourney.id}/edit`" class="btn btn--ghost">Edit</Link>
+                </div>
+            </template>
+            <template v-else>
+                <p class="text-[13px] text-text-secondary mb-3">No voyage underway. Plan a new journey to get started.</p>
+                <div class="flex gap-2">
+                    <Link href="/admin/journeys/create" class="btn btn--primary">Plan Journey</Link>
                     <Link href="/admin/journeys/import" class="btn btn--ghost">Import from History</Link>
                 </div>
             </template>
@@ -88,6 +104,20 @@
             </div>
         </div>
 
+        <!-- Start Journey Confirm Modal -->
+        <Transition name="modal">
+        <div v-if="showStartModal" class="modal-overlay" @click.self="showStartModal = false">
+            <div class="modal-card" role="dialog" aria-modal="true" aria-label="Confirm start journey">
+                <h3 class="text-[16px] font-semibold mb-2">Start recording?</h3>
+                <p class="text-[13px] text-text-secondary mb-5">This will begin track recording for <strong>{{ plannedJourney?.title }}</strong>. GPS position and boat data will be logged from now.</p>
+                <div class="flex items-center justify-end gap-3">
+                    <button @click="showStartModal = false" class="btn btn--ghost">Cancel</button>
+                    <button @click="startJourney" :disabled="startingJourney" class="btn btn--primary">Start Recording</button>
+                </div>
+            </div>
+        </div>
+        </Transition>
+
         <!-- End Journey Confirm Modal -->
         <Transition name="modal">
         <div v-if="showEndModal" class="modal-overlay" @click.self="showEndModal = false">
@@ -115,6 +145,7 @@ const props = defineProps({
     gps: Object,
     tracker: Object,
     activeJourney: Object,
+    plannedJourney: Object,
     recentJourneys: Array,
     timestamp: String,
 });
@@ -132,8 +163,20 @@ const timeSinceUpdate = computed(() => {
     return `${Math.floor(diff / 60)}m ago`;
 });
 
+const showStartModal = ref(false);
+const startingJourney = ref(false);
 const showEndModal = ref(false);
 const endingJourney = ref(false);
+
+function startJourney() {
+    startingJourney.value = true;
+    router.post(`/admin/journeys/${props.plannedJourney.id}/start`, {}, {
+        onFinish: () => {
+            startingJourney.value = false;
+            showStartModal.value = false;
+        },
+    });
+}
 
 function endJourney() {
     endingJourney.value = true;

@@ -12,6 +12,7 @@ class AdminDashboardController extends Controller
     public function index(MetricsService $metrics)
     {
         $activeJourney = Journey::current();
+        $plannedJourney = $activeJourney ? null : Journey::planned();
         $recentJourneys = Journey::completed()
             ->orderByDesc('ended_at')
             ->take(5)
@@ -38,6 +39,13 @@ class AdminDashboardController extends Controller
                 'started_at' => $activeJourney->started_at->toIso8601String(),
                 'distance' => $activeJourney->distance,
                 'duration' => $activeJourney->duration,
+            ] : null,
+            'plannedJourney' => $plannedJourney ? [
+                'id' => $plannedJourney->id,
+                'title' => $plannedJourney->title,
+                'from_port' => $plannedJourney->from_port,
+                'to_port' => $plannedJourney->to_port,
+                'has_gpx' => $plannedJourney->gpx_route_path !== null,
             ] : null,
             'recentJourneys' => $recentJourneys,
             'timestamp' => now()->toIso8601String(),

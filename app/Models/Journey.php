@@ -46,6 +46,11 @@ class Journey extends Model
         return $this->hasMany(JourneyTrackPoint::class)->orderBy('recorded_at');
     }
 
+    public function scopePlanned($query)
+    {
+        return $query->where('status', 'planned');
+    }
+
     public function scopeActive($query)
     {
         return $query->where('status', 'active');
@@ -68,20 +73,44 @@ class Journey extends Model
         });
     }
 
-    public static function startNew(string $fromPort, string $toPort, array $extra = []): self
+    public static function planned(): ?self
     {
-        if (static::active()->exists()) {
+        return static::query()->where('status', 'planned')->first();
+    }
+
+    public static function createPlanned(string $fromPort, string $toPort, array $extra = []): self
+    {
+        if (static::active()->exists() || static::query()->where('status', 'planned')->exists()) {
             throw ValidationException::withMessages([
-                'status' => 'A journey is already active. End it before starting a new one.',
+                'status' => 'A journey is already planned or active. End or delete it first.',
             ]);
         }
 
         return static::create(array_merge([
             'from_port' => $fromPort,
             'to_port' => $toPort,
-            'started_at' => now(),
-            'status' => 'active',
+            'status' => 'planned',
         ], $extra));
+    }
+
+    public function activate(): void
+    {
+        if ($this->status !== 'planned') {
+            throw ValidationException::withMessages([
+                'status' => 'Only planned journeys can be started.',
+            ]);
+        }
+
+        if (static::active()->exists()) {
+            throw ValidationException::withMessages([
+                'status' => 'Another journey is already active.',
+            ]);
+        }
+
+        $this->update([
+            'status' => 'active',
+            'started_at' => now(),
+        ]);
     }
 
     public function getDurationAttribute(): ?float

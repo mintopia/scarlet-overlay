@@ -16,13 +16,13 @@ class JourneyController extends Controller
     public function index()
     {
         return Inertia::render('Admin/Journeys', [
-            'journeys' => Journey::orderByDesc('started_at')->get()->map(fn (Journey $j) => [
+            'journeys' => Journey::orderByRaw('COALESCE(started_at, created_at) DESC')->get()->map(fn (Journey $j) => [
                 'id' => $j->id,
                 'slug' => $j->slug,
                 'title' => $j->title,
                 'from_port' => $j->from_port,
                 'to_port' => $j->to_port,
-                'started_at' => $j->started_at->toIso8601String(),
+                'started_at' => $j->started_at?->toIso8601String(),
                 'ended_at' => $j->ended_at?->toIso8601String(),
                 'status' => $j->status,
                 'is_public' => $j->is_public,
@@ -35,7 +35,7 @@ class JourneyController extends Controller
     public function create()
     {
         return Inertia::render('Admin/JourneyCreate', [
-            'hasActive' => Journey::active()->exists(),
+            'hasActiveOrPlanned' => Journey::active()->exists() || Journey::planned() !== null,
         ]);
     }
 
@@ -49,7 +49,7 @@ class JourneyController extends Controller
         ]);
 
         try {
-            $journey = Journey::startNew($validated['from_port'], $validated['to_port'], [
+            $journey = Journey::createPlanned($validated['from_port'], $validated['to_port'], [
                 'notes' => $validated['notes'] ?? null,
             ]);
         } catch (\Illuminate\Validation\ValidationException $e) {
@@ -64,7 +64,7 @@ class JourneyController extends Controller
             ]);
         }
 
-        return redirect()->route('admin.journeys')->with('success', 'Journey started.');
+        return redirect()->route('admin.journeys')->with('success', 'Journey planned. Start recording when ready.');
     }
 
     public function importForm()
@@ -144,6 +144,17 @@ class JourneyController extends Controller
         $journey->delete();
 
         return redirect()->route('admin.journeys')->with('success', 'Journey deleted.');
+    }
+
+    public function start(Journey $journey)
+    {
+        try {
+            $journey->activate();
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return back()->withErrors($e->errors());
+        }
+
+        return redirect()->route('admin.dashboard')->with('success', 'Journey started. Track recording is active.');
     }
 
     public function end(Journey $journey, JourneyService $journeyService)

@@ -43,6 +43,13 @@
             </div>
         </form>
 
+        <!-- Start Recording (planned journeys) -->
+        <div v-if="journey.status === 'planned'" class="panel p-6 mb-6">
+            <h2 class="text-[15px] font-semibold mb-2">Start Recording</h2>
+            <p class="text-[13px] text-text-secondary mb-4">This journey is planned but not yet recording. Start to begin logging GPS and boat data.</p>
+            <button @click="showStartModal = true" class="btn btn--primary">Start Recording</button>
+        </div>
+
         <!-- GPX Upload -->
         <form @submit.prevent="gpxForm.post(`/admin/journeys/${journey.id}/gpx`)" class="panel p-6 mb-6">
             <h2 class="text-[15px] font-semibold mb-4">GPX Route</h2>
@@ -76,6 +83,20 @@
                 <button @click="showDeleteModal = true" class="btn btn--danger">Delete Journey</button>
             </div>
         </div>
+
+        <!-- Start Confirmation Modal -->
+        <Transition name="modal">
+        <div v-if="showStartModal" class="modal-overlay" @click.self="showStartModal = false">
+            <div class="modal-card" role="dialog" aria-modal="true" aria-label="Confirm start recording">
+                <h3 class="text-[16px] font-semibold mb-2">Start recording?</h3>
+                <p class="text-[13px] text-text-secondary mb-5">This will begin track recording for <strong>{{ journey.title }}</strong>. GPS position and boat data will be logged from now.</p>
+                <div class="flex items-center justify-end gap-3">
+                    <button @click="showStartModal = false" class="btn btn--ghost">Cancel</button>
+                    <button @click="startRecording" class="btn btn--primary">Start Recording</button>
+                </div>
+            </div>
+        </div>
+        </Transition>
 
         <!-- Reimport Confirmation Modal -->
         <Transition name="modal">
@@ -127,6 +148,11 @@ const form = useForm({
 const gpxForm = useForm({
     gpx_file: null,
 });
+
+const showStartModal = ref(false);
+function startRecording() {
+    router.post(`/admin/journeys/${props.journey.id}/start`);
+}
 
 const reimportForm = useForm({});
 const showReimportModal = ref(false);

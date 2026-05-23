@@ -78,6 +78,7 @@ Route::middleware('auth')->prefix('admin')->group(function () {
     Route::get('/journeys/{journey}/edit', [JourneyController::class, 'edit'])->name('admin.journeys.edit');
     Route::put('/journeys/{journey}', [JourneyController::class, 'update'])->name('admin.journeys.update');
     Route::delete('/journeys/{journey}', [JourneyController::class, 'destroy'])->name('admin.journeys.destroy');
+    Route::post('/journeys/{journey}/start', [JourneyController::class, 'start'])->name('admin.journeys.start');
     Route::post('/journeys/{journey}/end', [JourneyController::class, 'end'])->name('admin.journeys.end');
     Route::post('/journeys/{journey}/gpx', [JourneyController::class, 'uploadGpx'])->name('admin.journeys.gpx');
     Route::post('/journeys/{journey}/reimport', [JourneyController::class, 'reimport'])->name('admin.journeys.reimport');

@@ -1,10 +1,10 @@
 <template>
     <AdminLayout>
-        <Head title="Start Journey" />
-        <h1 class="text-[22px] font-bold mb-6">Start Journey</h1>
+        <Head title="Plan Journey" />
+        <h1 class="text-[22px] font-bold mb-6">Plan Journey</h1>
 
-        <div v-if="hasActive" class="panel mb-6 border-amber-200 bg-amber-50">
-            <p class="text-[13px] text-amber-800">A journey is already active. End it before starting a new one.</p>
+        <div v-if="hasActiveOrPlanned" class="panel mb-6 border-amber-200 bg-amber-50">
+            <p class="text-[13px] text-amber-800">A journey is already planned or active. End or delete it first.</p>
         </div>
 
         <form @submit.prevent="form.post('/admin/journeys')" class="panel p-6">
@@ -30,7 +30,7 @@
                 <textarea v-model="form.notes" rows="3" class="field-input" placeholder="Any notes about this passage..."></textarea>
             </div>
             <div class="flex items-center gap-3 mt-5">
-                <button type="submit" :disabled="form.processing || hasActive" class="btn btn--primary">Start Journey</button>
+                <button type="submit" :disabled="form.processing || hasActiveOrPlanned" class="btn btn--primary">Plan Journey</button>
                 <Link href="/admin/journeys" class="btn btn--ghost">Cancel</Link>
             </div>
         </form>
@@ -41,7 +41,7 @@
 import { Head, Link, useForm } from '@inertiajs/vue3';
 import AdminLayout from '@/Layouts/AdminLayout.vue';
 
-defineProps({ hasActive: Boolean });
+defineProps({ hasActiveOrPlanned: Boolean });
 
 const form = useForm({
     from_port: '',
