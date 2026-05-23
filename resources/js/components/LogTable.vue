@@ -5,9 +5,9 @@
                 <tr>
                     <th class="col-time">Date<br>Time <span class="th-unit">({{ tzLabel }})</span></th>
                     <th class="col-num">Crs<br><span class="th-unit">°</span></th>
+                    <th class="col-num">Total<br><span class="th-unit">nm</span></th>
                     <th class="col-num">Log<br><span class="th-unit">nm</span></th>
                     <th class="col-num">Dist<br><span class="th-unit">nm</span></th>
-                    <th class="col-num">Total<br><span class="th-unit">nm</span></th>
                     <th class="col-num">Wind<br><span class="th-unit">dir</span></th>
                     <th class="col-num">Wind<br><span class="th-unit">bft</span></th>
                     <th class="col-num col-baro">Baro<br><span class="th-unit">hPa</span></th>
@@ -28,9 +28,9 @@
                         <div class="cell-time">{{ fmtTime(row.timestamp) }}</div>
                     </td>
                     <td class="col-num">{{ fmtCourse(row.course) }}</td>
+                    <td class="col-num">{{ fmtVal(row.total_log, 1) }}</td>
                     <td class="col-num">{{ fmtVal(row.trip_log, 1) }}</td>
                     <td class="col-num">{{ fmtVal(row.dist, 1) }}</td>
-                    <td class="col-num">{{ fmtVal(row.total_log, 1) }}</td>
                     <td class="col-num">{{ degreesToCompass(row.wind_direction) }}</td>
                     <td class="col-num">{{ knotsToBeaufort(row.wind_speed) }}</td>
                     <td class="col-num col-baro">{{ fmtBaro(row.pressure) }}</td>
