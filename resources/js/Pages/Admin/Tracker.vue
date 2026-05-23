@@ -197,13 +197,13 @@
                 <svg class="explore-icon" viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M6 2H2v4M14 10v4h-4M2 6l4-4M10 14l4-4"/></svg>
                 <div class="text-[15px] font-semibold mb-0.5">CPU Usage</div>
                 <div class="text-[12px] text-text-dim mb-3 tabular-nums">
-                    <span class="font-medium" style="color: oklch(0.60 0.16 330)">{{ live?.cpu_usage != null ? live.cpu_usage.toFixed(0) + '%' : '—' }}</span>
+                    <span class="font-medium text-pink">{{ live?.cpu_usage != null ? live.cpu_usage.toFixed(0) + '%' : '—' }}</span>
                 </div>
                 <svg viewBox="0 0 400 120" class="w-full" preserveAspectRatio="none">
                     <defs>
                         <linearGradient id="cpuGrad" x1="0" y1="0" x2="0" y2="1">
-                            <stop offset="0%" stop-color="oklch(0.60 0.16 330)" stop-opacity="0.18"/>
-                            <stop offset="100%" stop-color="oklch(0.60 0.16 330)" stop-opacity="0.02"/>
+                            <stop offset="0%" stop-color="var(--color-pink)" stop-opacity="0.18"/>
+                            <stop offset="100%" stop-color="var(--color-pink)" stop-opacity="0.02"/>
                         </linearGradient>
                     </defs>
                     <polygon
@@ -215,7 +215,7 @@
                         v-if="cpuHistory?.length"
                         :points="toPolyline(cpuHistory, 400, 120, 0, 100)"
                         fill="none"
-                        stroke="oklch(0.60 0.16 330)"
+                        stroke="var(--color-pink)"
                         stroke-width="1.5"
                         stroke-linejoin="round"
                         stroke-linecap="round"

@@ -23,6 +23,8 @@
     --color-error: oklch(0.58 0.20 27);
     --color-error-bg: oklch(0.58 0.20 27 / 0.08);
     --color-blue: oklch(0.55 0.15 240);
+    --color-blue-bg: oklch(0.55 0.15 240 / 0.08);
+    --color-pink: oklch(0.65 0.18 330);
 
     --color-surface: oklch(0.995 0.003 70);
 }
@@ -45,6 +47,8 @@ html[data-theme="dark"] {
     --color-error: oklch(0.62 0.20 27);
     --color-error-bg: oklch(0.58 0.20 27 / 0.15);
     --color-blue: oklch(0.60 0.15 240);
+    --color-blue-bg: oklch(0.60 0.15 240 / 0.15);
+    --color-pink: oklch(0.68 0.18 330);
     color-scheme: dark;
 }
 
@@ -68,6 +72,8 @@ html[data-theme="night"] {
     --color-error: oklch(0.35 0.12 27);
     --color-error-bg: oklch(0.35 0.12 27 / 0.15);
     --color-blue: oklch(0.35 0.10 27);
+    --color-blue-bg: oklch(0.35 0.10 27 / 0.15);
+    --color-pink: oklch(0.35 0.10 27);
     color-scheme: dark;
 }
 

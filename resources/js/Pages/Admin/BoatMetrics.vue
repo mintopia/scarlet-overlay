@@ -128,7 +128,7 @@
                 <div class="chart-legend">
                     <span><span class="legend-dot text-amber">&#9679;</span> Forepeak {{ live?.cabin_temp_forepeak != null ? fmt(live.cabin_temp_forepeak) + '°C' : '—' }}</span>
                     <span><span class="legend-dot text-blue">&#9679;</span> Quarterberth {{ live?.cabin_temp_quarterberth != null ? fmt(live.cabin_temp_quarterberth) + '°C' : '—' }}</span>
-                    <span><span class="legend-dot" style="color: oklch(0.65 0.18 330)">&#9679;</span> Main Cabin {{ live?.cabin_temp_main != null ? fmt(live.cabin_temp_main) + '°C' : '—' }}</span>
+                    <span><span class="legend-dot text-pink">&#9679;</span> Main Cabin {{ live?.cabin_temp_main != null ? fmt(live.cabin_temp_main) + '°C' : '—' }}</span>
                 </div>
                 <svg viewBox="0 0 400 100" class="w-full" preserveAspectRatio="none">
                     <defs>
@@ -139,8 +139,8 @@
                     </defs>
                     <polygon v-if="tempHistoryForepeak?.length" :points="toArea(tempHistoryForepeak, 400, 100, tempMin, tempMax)" fill="url(#tmpGrad)"/>
                     <polyline v-if="tempHistoryForepeak?.length" :points="toLine(tempHistoryForepeak, 400, 100, tempMin, tempMax)" fill="none" stroke="var(--color-amber)" stroke-width="1.5" stroke-linejoin="round" stroke-linecap="round"/>
-                    <polyline v-if="tempHistoryQuarterberth?.length" :points="toLine(tempHistoryQuarterberth, 400, 100, tempMin, tempMax)" fill="none" stroke="oklch(0.60 0.16 240)" stroke-width="1.5" stroke-linejoin="round" stroke-linecap="round"/>
-                    <polyline v-if="tempHistoryMainCabin?.length" :points="toLine(tempHistoryMainCabin, 400, 100, tempMin, tempMax)" fill="none" stroke="oklch(0.65 0.18 330)" stroke-width="1.5" stroke-linejoin="round" stroke-linecap="round"/>
+                    <polyline v-if="tempHistoryQuarterberth?.length" :points="toLine(tempHistoryQuarterberth, 400, 100, tempMin, tempMax)" fill="none" stroke="var(--color-blue)" stroke-width="1.5" stroke-linejoin="round" stroke-linecap="round"/>
+                    <polyline v-if="tempHistoryMainCabin?.length" :points="toLine(tempHistoryMainCabin, 400, 100, tempMin, tempMax)" fill="none" stroke="var(--color-pink)" stroke-width="1.5" stroke-linejoin="round" stroke-linecap="round"/>
                     <text v-if="!hasTempData" x="200" y="55" text-anchor="middle" font-size="12" fill="var(--color-text-dim)">No data</text>
                 </svg>
                 <div class="chart-axis"><span>24h ago</span><span>now</span></div>
@@ -152,7 +152,7 @@
                 <div class="chart-legend">
                     <span><span class="legend-dot text-amber">&#9679;</span> Forepeak {{ live?.cabin_humidity_forepeak != null ? fmt(live.cabin_humidity_forepeak, 0) + '%' : '—' }}</span>
                     <span><span class="legend-dot text-blue">&#9679;</span> Quarterberth {{ live?.cabin_humidity_quarterberth != null ? fmt(live.cabin_humidity_quarterberth, 0) + '%' : '—' }}</span>
-                    <span><span class="legend-dot" style="color: oklch(0.65 0.18 330)">&#9679;</span> Main Cabin {{ live?.cabin_humidity_main != null ? fmt(live.cabin_humidity_main, 0) + '%' : '—' }}</span>
+                    <span><span class="legend-dot text-pink">&#9679;</span> Main Cabin {{ live?.cabin_humidity_main != null ? fmt(live.cabin_humidity_main, 0) + '%' : '—' }}</span>
                 </div>
                 <svg viewBox="0 0 400 100" class="w-full" preserveAspectRatio="none">
                     <defs>
@@ -163,8 +163,8 @@
                     </defs>
                     <polygon v-if="humidityHistoryForepeak?.length" :points="toArea(humidityHistoryForepeak, 400, 100, humidityMin, humidityMax)" fill="url(#humGrad)"/>
                     <polyline v-if="humidityHistoryForepeak?.length" :points="toLine(humidityHistoryForepeak, 400, 100, humidityMin, humidityMax)" fill="none" stroke="var(--color-amber)" stroke-width="1.5" stroke-linejoin="round" stroke-linecap="round"/>
-                    <polyline v-if="humidityHistoryQuarterberth?.length" :points="toLine(humidityHistoryQuarterberth, 400, 100, humidityMin, humidityMax)" fill="none" stroke="oklch(0.60 0.16 240)" stroke-width="1.5" stroke-linejoin="round" stroke-linecap="round"/>
-                    <polyline v-if="humidityHistoryMainCabin?.length" :points="toLine(humidityHistoryMainCabin, 400, 100, humidityMin, humidityMax)" fill="none" stroke="oklch(0.65 0.18 330)" stroke-width="1.5" stroke-linejoin="round" stroke-linecap="round"/>
+                    <polyline v-if="humidityHistoryQuarterberth?.length" :points="toLine(humidityHistoryQuarterberth, 400, 100, humidityMin, humidityMax)" fill="none" stroke="var(--color-blue)" stroke-width="1.5" stroke-linejoin="round" stroke-linecap="round"/>
+                    <polyline v-if="humidityHistoryMainCabin?.length" :points="toLine(humidityHistoryMainCabin, 400, 100, humidityMin, humidityMax)" fill="none" stroke="var(--color-pink)" stroke-width="1.5" stroke-linejoin="round" stroke-linecap="round"/>
                     <text v-if="!hasHumidityData" x="200" y="55" text-anchor="middle" font-size="12" fill="var(--color-text-dim)">No data</text>
                 </svg>
                 <div class="chart-axis"><span>24h ago</span><span>now</span></div>
@@ -177,7 +177,7 @@
                 <div class="panel-title mb-3">Compass</div>
                 <div class="compass-layout">
                     <svg viewBox="0 0 140 140" class="compass-svg">
-                        <circle cx="70" cy="70" r="64" fill="none" stroke="oklch(0.90 0.005 70)" stroke-width="1.5"/>
+                        <circle cx="70" cy="70" r="64" fill="none" stroke="var(--color-border)" stroke-width="1.5"/>
                         <g v-once>
                             <line
                                 v-for="tick in compassTicks"
@@ -186,15 +186,15 @@
                                 :y1="70 - 58 * Math.cos(tick * Math.PI / 180)"
                                 :x2="70 + 64 * Math.sin(tick * Math.PI / 180)"
                                 :y2="70 - 64 * Math.cos(tick * Math.PI / 180)"
-                                stroke="oklch(0.80 0.005 40)"
+                                stroke="var(--color-text-dim)"
                                 stroke-width="1"
                             />
                         </g>
-                        <text x="70" y="13" text-anchor="middle" font-size="11" font-weight="600" fill="oklch(0.45 0.005 40)">N</text>
-                        <text x="127" y="74" text-anchor="middle" font-size="11" font-weight="600" fill="oklch(0.45 0.005 40)">E</text>
-                        <text x="70" y="135" text-anchor="middle" font-size="11" font-weight="600" fill="oklch(0.45 0.005 40)">S</text>
-                        <text x="13" y="74" text-anchor="middle" font-size="11" font-weight="600" fill="oklch(0.45 0.005 40)">W</text>
-                        <circle cx="70" cy="70" r="3" fill="oklch(0.82 0.005 40)"/>
+                        <text x="70" y="13" text-anchor="middle" font-size="11" font-weight="600" fill="var(--color-text-secondary)">N</text>
+                        <text x="127" y="74" text-anchor="middle" font-size="11" font-weight="600" fill="var(--color-text-secondary)">E</text>
+                        <text x="70" y="135" text-anchor="middle" font-size="11" font-weight="600" fill="var(--color-text-secondary)">S</text>
+                        <text x="13" y="74" text-anchor="middle" font-size="11" font-weight="600" fill="var(--color-text-secondary)">W</text>
+                        <circle cx="70" cy="70" r="3" fill="var(--color-text-dim)"/>
                         <!-- Heading (blue) -->
                         <g :style="`transform: rotate(${live?.heading ?? 0}deg)`" style="transform-origin: 70px 70px">
                             <polygon points="70,14 64,34 76,34" fill="var(--color-blue)"/>
