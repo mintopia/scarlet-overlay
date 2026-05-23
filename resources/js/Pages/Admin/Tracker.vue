@@ -11,7 +11,7 @@
         </div>
 
         <!-- Device status strip -->
-        <div class="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4 mb-6">
+        <div class="grid grid-cols-2 md:grid-cols-5 gap-3 md:gap-4 mb-6">
             <!-- Status -->
             <div class="bg-surface border border-border rounded-[10px] p-4">
                 <div class="text-[11px] font-semibold text-text-dim uppercase tracking-wide mb-2">Status</div>
@@ -80,10 +80,19 @@
                     {{ live?.battery_voltage != null ? Number(live.battery_voltage).toFixed(2) + ' V' : '' }}
                 </div>
             </div>
+
+            <!-- CPU -->
+            <div class="bg-surface border border-border rounded-[10px] p-4">
+                <div class="text-[11px] font-semibold text-text-dim uppercase tracking-wide mb-2">CPU</div>
+                <div class="text-[20px] font-bold tabular-nums" :class="cpuColor">
+                    {{ live?.cpu_usage != null ? live.cpu_usage.toFixed(0) + '%' : '—' }}
+                </div>
+                <div class="text-[12px] text-text-secondary mt-0.5">Usage</div>
+            </div>
         </div>
 
-        <!-- Signal + GPS charts -->
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4 mb-4">
+        <!-- Signal + GPS + CPU charts -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-4 mb-4">
             <!-- Signal Strength chart -->
             <div class="bg-surface border border-border rounded-[10px] p-4">
                 <div class="text-[15px] font-semibold mb-0.5">Signal Strength</div>
@@ -175,6 +184,40 @@
                         stroke-linecap="round"
                     />
                     <text v-if="!gpsHistory?.length" x="200" y="65" text-anchor="middle" font-size="12" fill="oklch(0.70 0.005 40)">No data</text>
+                </svg>
+                <div class="flex justify-between text-[10px] text-text-dim mt-1">
+                    <span>1h ago</span><span>now</span>
+                </div>
+            </div>
+
+            <!-- CPU Usage chart -->
+            <div class="bg-surface border border-border rounded-[10px] p-4">
+                <div class="text-[15px] font-semibold mb-0.5">CPU Usage</div>
+                <div class="text-[12px] text-text-dim mb-3 tabular-nums">
+                    <span class="font-medium" style="color: oklch(0.60 0.16 330)">{{ live?.cpu_usage != null ? live.cpu_usage.toFixed(0) + '%' : '—' }}</span>
+                </div>
+                <svg viewBox="0 0 400 120" class="w-full" preserveAspectRatio="none">
+                    <defs>
+                        <linearGradient id="cpuGrad" x1="0" y1="0" x2="0" y2="1">
+                            <stop offset="0%" stop-color="oklch(0.60 0.16 330)" stop-opacity="0.18"/>
+                            <stop offset="100%" stop-color="oklch(0.60 0.16 330)" stop-opacity="0.02"/>
+                        </linearGradient>
+                    </defs>
+                    <polygon
+                        v-if="cpuHistory?.length"
+                        :points="toAreaPolygon(cpuHistory, 400, 120, 0, 100)"
+                        fill="url(#cpuGrad)"
+                    />
+                    <polyline
+                        v-if="cpuHistory?.length"
+                        :points="toPolyline(cpuHistory, 400, 120, 0, 100)"
+                        fill="none"
+                        stroke="oklch(0.60 0.16 330)"
+                        stroke-width="1.5"
+                        stroke-linejoin="round"
+                        stroke-linecap="round"
+                    />
+                    <text v-if="!cpuHistory?.length" x="200" y="65" text-anchor="middle" font-size="12" fill="oklch(0.70 0.005 40)">No data</text>
                 </svg>
                 <div class="flex justify-between text-[10px] text-text-dim mt-1">
                     <span>1h ago</span><span>now</span>
@@ -295,6 +338,10 @@
                         </td>
                     </tr>
                     <tr>
+                        <td class="py-2.5 text-text-secondary">CPU Usage</td>
+                        <td class="py-2.5 font-medium tabular-nums">{{ live?.cpu_usage != null ? live.cpu_usage.toFixed(0) + '%' : '—' }}</td>
+                    </tr>
+                    <tr>
                         <td class="py-2.5 text-text-secondary">Heap Free</td>
                         <td class="py-2.5 font-medium tabular-nums">{{ live?.heap_free != null ? formatBytes(live.heap_free) : '—' }}</td>
                     </tr>
@@ -318,6 +365,7 @@ const props = defineProps({
     gps: Object,
     signalHistory: Object,
     gpsHistory: Array,
+    cpuHistory: Array,
     tempHistory: Array,
     humidityHistory: Array,
 });
@@ -371,6 +419,14 @@ const batteryColor = computed(() => {
     if (pct == null) return 'text-text-primary';
     if (pct > 50) return 'text-green';
     if (pct > 20) return 'text-amber';
+    return 'text-scarlet';
+});
+
+const cpuColor = computed(() => {
+    const pct = live.value?.cpu_usage;
+    if (pct == null) return 'text-text-primary';
+    if (pct < 50) return 'text-green';
+    if (pct < 80) return 'text-amber';
     return 'text-scarlet';
 });
 

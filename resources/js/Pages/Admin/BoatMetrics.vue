@@ -292,6 +292,47 @@
                 </div>
             </div>
         </div>
+
+        <!-- Tank Level History -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4 mt-3">
+            <div class="panel">
+                <div class="panel-head">
+                    <span class="panel-title">Diesel Level</span>
+                    <span class="tabular-nums text-[12px] font-medium text-amber">{{ live?.fuel_level != null ? fmt(live.fuel_level, 0) + '%' : '—' }}</span>
+                </div>
+                <svg viewBox="0 0 400 100" class="w-full" preserveAspectRatio="none">
+                    <defs>
+                        <linearGradient id="fuelGrad" x1="0" y1="0" x2="0" y2="1">
+                            <stop offset="0%" stop-color="oklch(0.70 0.14 70)" stop-opacity="0.18"/>
+                            <stop offset="100%" stop-color="oklch(0.70 0.14 70)" stop-opacity="0.02"/>
+                        </linearGradient>
+                    </defs>
+                    <polygon v-if="fuelHistory?.length" :points="toArea(fuelHistory, 400, 100, 0, 100)" fill="url(#fuelGrad)"/>
+                    <polyline v-if="fuelHistory?.length" :points="toLine(fuelHistory, 400, 100, 0, 100)" fill="none" stroke="oklch(0.70 0.14 70)" stroke-width="1.5" stroke-linejoin="round" stroke-linecap="round"/>
+                    <text v-if="!fuelHistory?.length" x="200" y="55" text-anchor="middle" font-size="12" fill="oklch(0.70 0.005 40)">No data</text>
+                </svg>
+                <div class="chart-axis"><span>24h ago</span><span>now</span></div>
+            </div>
+
+            <div class="panel">
+                <div class="panel-head">
+                    <span class="panel-title">Fresh Water Level</span>
+                    <span class="tabular-nums text-[12px] font-medium" style="color: oklch(0.55 0.15 240)">{{ live?.water_level != null ? fmt(live.water_level, 0) + '%' : '—' }}</span>
+                </div>
+                <svg viewBox="0 0 400 100" class="w-full" preserveAspectRatio="none">
+                    <defs>
+                        <linearGradient id="waterGrad" x1="0" y1="0" x2="0" y2="1">
+                            <stop offset="0%" stop-color="oklch(0.55 0.15 240)" stop-opacity="0.18"/>
+                            <stop offset="100%" stop-color="oklch(0.55 0.15 240)" stop-opacity="0.02"/>
+                        </linearGradient>
+                    </defs>
+                    <polygon v-if="waterHistory?.length" :points="toArea(waterHistory, 400, 100, 0, 100)" fill="url(#waterGrad)"/>
+                    <polyline v-if="waterHistory?.length" :points="toLine(waterHistory, 400, 100, 0, 100)" fill="none" stroke="oklch(0.55 0.15 240)" stroke-width="1.5" stroke-linejoin="round" stroke-linecap="round"/>
+                    <text v-if="!waterHistory?.length" x="200" y="55" text-anchor="middle" font-size="12" fill="oklch(0.70 0.005 40)">No data</text>
+                </svg>
+                <div class="chart-axis"><span>24h ago</span><span>now</span></div>
+            </div>
+        </div>
     </AdminLayout>
 </template>
 
@@ -312,6 +353,8 @@ const props = defineProps({
     humidityHistoryForepeak: Array,
     humidityHistoryQuarterberth: Array,
     humidityHistoryMainCabin: Array,
+    fuelHistory: Array,
+    waterHistory: Array,
     tripOffset: { type: Number, default: 0 },
 });
 

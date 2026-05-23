@@ -85,6 +85,7 @@ return [
                 'mode' => 'scarlet_system_mode',
                 'cabin_temp' => 'scarlet_environment_temperature_celsius',
                 'cabin_humidity' => 'scarlet_environment_humidity_percent',
+                'cpu_usage' => 'scarlet_system_cpu_usage_percent',
             ],
 
             'gps' => [
@@ -117,6 +118,9 @@ return [
                 'humidity_main_cabin' => 'scarlet_mqtt_humidity{topic="zigbee2mqtt/Main Cabin"}',
                 'battery_current' => 'scarlet_signalk_electrical_batteries_0_current',
                 'battery_power' => 'scarlet_signalk_electrical_batteries_0_current * scarlet_signalk_electrical_batteries_0_voltage',
+                'fuel_level' => 'scarlet_signalk_tanks_diesel_currentLevel * 100',
+                'water_level' => 'scarlet_mqtt_percent{topic="watertank"}',
+                'cpu_usage' => 'scarlet_system_cpu_usage_percent',
             ],
         ],
     ],

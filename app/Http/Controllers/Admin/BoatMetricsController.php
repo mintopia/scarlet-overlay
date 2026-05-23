@@ -25,6 +25,8 @@ class BoatMetricsController extends Controller
             'humidityHistoryForepeak' => $prometheus->queryRange($history['humidity_forepeak'], '24h', '300s'),
             'humidityHistoryQuarterberth' => $prometheus->queryRange($history['humidity_quarterberth'], '24h', '300s'),
             'humidityHistoryMainCabin' => $prometheus->queryRange($history['humidity_main_cabin'], '24h', '300s'),
+            'fuelHistory' => $prometheus->queryRange($history['fuel_level'], '24h', '300s'),
+            'waterHistory' => $prometheus->queryRange($history['water_level'], '24h', '300s'),
             'tripOffset' => (float) BoatSetting::getValue('trip_offset', 0),
         ]);
     }

@@ -21,6 +21,7 @@ class TrackerController extends Controller
                 'wifi' => $prometheus->queryRange($mappings['tracker']['wifi_rssi'], '1h', '60s'),
             ],
             'gpsHistory' => $prometheus->queryRange($mappings['gps']['satellites'], '1h', '60s'),
+            'cpuHistory' => $prometheus->queryRange($mappings['history']['cpu_usage'], '1h', '60s'),
             'tempHistory' => $prometheus->queryRange($mappings['tracker']['cabin_temp'], '6h', '120s'),
             'humidityHistory' => $prometheus->queryRange($mappings['tracker']['cabin_humidity'], '6h', '120s'),
         ]);
