@@ -32,7 +32,7 @@
                 <div class="text-[11px] font-semibold text-text-dim uppercase tracking-wide mb-2">Connection</div>
                 <div class="text-[13px] font-semibold mb-1">
                     <span v-if="primaryConnection === 'lte'" class="text-scarlet">LTE</span>
-                    <span v-else class="text-[oklch(0.55_0.15_240)]">WiFi</span>
+                    <span v-else class="text-blue">WiFi</span>
                 </div>
                 <div class="text-[13px] tabular-nums">
                     <div v-if="primaryConnection === 'lte'" class="text-text-secondary">
@@ -101,17 +101,17 @@
                     LTE
                     <span class="text-scarlet font-medium">{{ live?.lte_rssi != null ? live.lte_rssi.toFixed(0) + ' dBm' : '—' }}</span>
                     &nbsp;·&nbsp;WiFi
-                    <span class="font-medium" style="color: oklch(0.55 0.15 240)">{{ live?.wifi_rssi != null ? live.wifi_rssi.toFixed(0) + ' dBm' : '—' }}</span>
+                    <span class="font-medium text-blue">{{ live?.wifi_rssi != null ? live.wifi_rssi.toFixed(0) + ' dBm' : '—' }}</span>
                 </div>
                 <svg viewBox="0 0 400 120" class="w-full" preserveAspectRatio="none">
                     <defs>
                         <linearGradient id="lteGrad" x1="0" y1="0" x2="0" y2="1">
-                            <stop offset="0%" stop-color="oklch(0.54 0.22 27)" stop-opacity="0.20"/>
-                            <stop offset="100%" stop-color="oklch(0.54 0.22 27)" stop-opacity="0.02"/>
+                            <stop offset="0%" stop-color="var(--color-scarlet)" stop-opacity="0.20"/>
+                            <stop offset="100%" stop-color="var(--color-scarlet)" stop-opacity="0.02"/>
                         </linearGradient>
                         <linearGradient id="wifiGrad" x1="0" y1="0" x2="0" y2="1">
-                            <stop offset="0%" stop-color="oklch(0.55 0.15 240)" stop-opacity="0.15"/>
-                            <stop offset="100%" stop-color="oklch(0.55 0.15 240)" stop-opacity="0.02"/>
+                            <stop offset="0%" stop-color="var(--color-blue)" stop-opacity="0.15"/>
+                            <stop offset="100%" stop-color="var(--color-blue)" stop-opacity="0.02"/>
                         </linearGradient>
                     </defs>
                     <!-- LTE fill -->
@@ -131,7 +131,7 @@
                         v-if="signalHistory?.lte?.length"
                         :points="toPolyline(signalHistory.lte, 400, 120, signalMin, signalMax)"
                         fill="none"
-                        stroke="oklch(0.54 0.22 27)"
+                        stroke="var(--color-scarlet)"
                         stroke-width="1.5"
                         stroke-linejoin="round"
                         stroke-linecap="round"
@@ -141,13 +141,13 @@
                         v-if="signalHistory?.wifi?.length"
                         :points="toPolyline(signalHistory.wifi, 400, 120, signalMin, signalMax)"
                         fill="none"
-                        stroke="oklch(0.55 0.15 240)"
+                        stroke="var(--color-blue)"
                         stroke-width="1.5"
                         stroke-dasharray="4 3"
                         stroke-linejoin="round"
                         stroke-linecap="round"
                     />
-                    <text v-if="!signalHistory?.lte?.length && !signalHistory?.wifi?.length" x="200" y="65" text-anchor="middle" font-size="12" fill="oklch(0.70 0.005 40)">No data</text>
+                    <text v-if="!signalHistory?.lte?.length && !signalHistory?.wifi?.length" x="200" y="65" text-anchor="middle" font-size="12" fill="var(--color-text-dim)">No data</text>
                 </svg>
                 <div class="flex justify-between text-[10px] text-text-dim mt-1">
                     <span>1h ago</span><span>now</span>
@@ -167,8 +167,8 @@
                 <svg viewBox="0 0 400 120" class="w-full" preserveAspectRatio="none">
                     <defs>
                         <linearGradient id="gpsGrad" x1="0" y1="0" x2="0" y2="1">
-                            <stop offset="0%" stop-color="oklch(0.62 0.15 155)" stop-opacity="0.18"/>
-                            <stop offset="100%" stop-color="oklch(0.62 0.15 155)" stop-opacity="0.02"/>
+                            <stop offset="0%" stop-color="var(--color-green)" stop-opacity="0.18"/>
+                            <stop offset="100%" stop-color="var(--color-green)" stop-opacity="0.02"/>
                         </linearGradient>
                     </defs>
                     <polygon
@@ -180,12 +180,12 @@
                         v-if="gpsHistory?.length"
                         :points="toPolyline(gpsHistory, 400, 120, 0, gpsMax)"
                         fill="none"
-                        stroke="oklch(0.62 0.15 155)"
+                        stroke="var(--color-green)"
                         stroke-width="1.5"
                         stroke-linejoin="round"
                         stroke-linecap="round"
                     />
-                    <text v-if="!gpsHistory?.length" x="200" y="65" text-anchor="middle" font-size="12" fill="oklch(0.70 0.005 40)">No data</text>
+                    <text v-if="!gpsHistory?.length" x="200" y="65" text-anchor="middle" font-size="12" fill="var(--color-text-dim)">No data</text>
                 </svg>
                 <div class="flex justify-between text-[10px] text-text-dim mt-1">
                     <span>1h ago</span><span>now</span>
@@ -220,7 +220,7 @@
                         stroke-linejoin="round"
                         stroke-linecap="round"
                     />
-                    <text v-if="!cpuHistory?.length" x="200" y="65" text-anchor="middle" font-size="12" fill="oklch(0.70 0.005 40)">No data</text>
+                    <text v-if="!cpuHistory?.length" x="200" y="65" text-anchor="middle" font-size="12" fill="var(--color-text-dim)">No data</text>
                 </svg>
                 <div class="flex justify-between text-[10px] text-text-dim mt-1">
                     <span>1h ago</span><span>now</span>
@@ -242,8 +242,8 @@
                 <svg viewBox="0 0 400 120" class="w-full" preserveAspectRatio="none">
                     <defs>
                         <linearGradient id="tempGrad" x1="0" y1="0" x2="0" y2="1">
-                            <stop offset="0%" stop-color="oklch(0.70 0.14 70)" stop-opacity="0.20"/>
-                            <stop offset="100%" stop-color="oklch(0.70 0.14 70)" stop-opacity="0.02"/>
+                            <stop offset="0%" stop-color="var(--color-amber)" stop-opacity="0.20"/>
+                            <stop offset="100%" stop-color="var(--color-amber)" stop-opacity="0.02"/>
                         </linearGradient>
                     </defs>
                     <polygon
@@ -255,12 +255,12 @@
                         v-if="tempHistory?.length"
                         :points="toPolyline(tempHistory, 400, 120, tempMin, tempMax)"
                         fill="none"
-                        stroke="oklch(0.70 0.14 70)"
+                        stroke="var(--color-amber)"
                         stroke-width="1.5"
                         stroke-linejoin="round"
                         stroke-linecap="round"
                     />
-                    <text v-if="!tempHistory?.length" x="200" y="65" text-anchor="middle" font-size="12" fill="oklch(0.70 0.005 40)">No data</text>
+                    <text v-if="!tempHistory?.length" x="200" y="65" text-anchor="middle" font-size="12" fill="var(--color-text-dim)">No data</text>
                 </svg>
                 <div class="flex justify-between text-[10px] text-text-dim mt-1">
                     <span>6h ago</span><span>now</span>
@@ -272,15 +272,15 @@
                 <svg class="explore-icon" viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M6 2H2v4M14 10v4h-4M2 6l4-4M10 14l4-4"/></svg>
                 <div class="text-[15px] font-semibold mb-0.5">Humidity</div>
                 <div class="text-[12px] text-text-dim mb-3 tabular-nums">
-                    <span class="font-medium" style="color: oklch(0.55 0.15 240)">
+                    <span class="font-medium text-blue">
                         {{ live?.cabin_humidity != null ? live.cabin_humidity.toFixed(0) + '%' : (props.tracker?.cabin_humidity != null ? props.tracker.cabin_humidity.toFixed(0) + '%' : '—') }}
                     </span>
                 </div>
                 <svg viewBox="0 0 400 120" class="w-full" preserveAspectRatio="none">
                     <defs>
                         <linearGradient id="humGrad" x1="0" y1="0" x2="0" y2="1">
-                            <stop offset="0%" stop-color="oklch(0.55 0.15 240)" stop-opacity="0.18"/>
-                            <stop offset="100%" stop-color="oklch(0.55 0.15 240)" stop-opacity="0.02"/>
+                            <stop offset="0%" stop-color="var(--color-blue)" stop-opacity="0.18"/>
+                            <stop offset="100%" stop-color="var(--color-blue)" stop-opacity="0.02"/>
                         </linearGradient>
                     </defs>
                     <polygon
@@ -292,12 +292,12 @@
                         v-if="humidityHistory?.length"
                         :points="toPolyline(humidityHistory, 400, 120, 0, 100)"
                         fill="none"
-                        stroke="oklch(0.55 0.15 240)"
+                        stroke="var(--color-blue)"
                         stroke-width="1.5"
                         stroke-linejoin="round"
                         stroke-linecap="round"
                     />
-                    <text v-if="!humidityHistory?.length" x="200" y="65" text-anchor="middle" font-size="12" fill="oklch(0.70 0.005 40)">No data</text>
+                    <text v-if="!humidityHistory?.length" x="200" y="65" text-anchor="middle" font-size="12" fill="var(--color-text-dim)">No data</text>
                 </svg>
                 <div class="flex justify-between text-[10px] text-text-dim mt-1">
                     <span>6h ago</span><span>now</span>
