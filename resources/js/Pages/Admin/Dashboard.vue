@@ -48,6 +48,11 @@
             </template>
         </div>
 
+        <!-- Route Map -->
+        <div v-if="routeWaypoints.length" class="panel p-0 mb-6 overflow-hidden">
+            <div ref="mapEl" class="route-map"></div>
+        </div>
+
         <!-- Boat Status -->
         <div class="panel p-4 mb-4">
             <div class="flex items-baseline justify-between mb-3">
@@ -137,6 +142,9 @@
 <script setup>
 import { ref, computed, onMounted, onUnmounted } from 'vue';
 import { Head, Link, router } from '@inertiajs/vue3';
+import L from 'leaflet';
+import 'leaflet/dist/leaflet.css';
+import { addRouteLayer } from '../../scarlet';
 import AdminLayout from '@/Layouts/AdminLayout.vue';
 import { fmt, fmtDuration } from '@/composables/useFormatters.js';
 
@@ -146,14 +154,33 @@ const props = defineProps({
     tracker: Object,
     activeJourney: Object,
     plannedJourney: Object,
+    routeWaypoints: { type: Array, default: () => [] },
     recentJourneys: Array,
     timestamp: String,
 });
 
+const mapEl = ref(null);
+let map = null;
+
 const now = ref(Date.now());
 let ticker;
-onMounted(() => { ticker = setInterval(() => { now.value = Date.now(); }, 1000); });
-onUnmounted(() => { clearInterval(ticker); });
+onMounted(() => {
+    ticker = setInterval(() => { now.value = Date.now(); }, 1000);
+
+    if (mapEl.value && props.routeWaypoints.length) {
+        const first = props.routeWaypoints[0];
+        map = L.map(mapEl.value, { zoomControl: false, attributionControl: false })
+            .setView([first.lat, first.lng], 12);
+        L.tileLayer('/openseamap/{z}/{x}/{y}', { maxZoom: 18 }).addTo(map);
+        addRouteLayer(map, props.routeWaypoints);
+        const bounds = L.latLngBounds(props.routeWaypoints.map(w => [w.lat, w.lng]));
+        map.fitBounds(bounds, { padding: [30, 30] });
+    }
+});
+onUnmounted(() => {
+    clearInterval(ticker);
+    map?.remove();
+});
 
 const timeSinceUpdate = computed(() => {
     if (!props.timestamp) return '';
@@ -242,6 +269,14 @@ function fmtCoord(lat, lon) {
 .strip-label { font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em; color: var(--color-text-dim); margin-bottom: 2px; }
 .strip-value { font-size: 20px; font-weight: 700; font-variant-numeric: tabular-nums; line-height: 1; }
 .strip-unit { font-size: 10px; color: var(--color-text-dim); margin-top: 2px; }
+
+.route-map {
+    height: 220px;
+}
+
+@media (min-width: 640px) {
+    .route-map { height: 280px; }
+}
 
 .modal-overlay {
     position: fixed; inset: 0;

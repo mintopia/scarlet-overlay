@@ -27,6 +27,10 @@ class AdminDashboardController extends Controller
                 'duration' => $j->duration,
             ]);
 
+        $routeJourney = $activeJourney
+            ?? $plannedJourney
+            ?? Journey::completed()->whereNotNull('route_waypoints')->orderByDesc('ended_at')->first();
+
         return Inertia::render('Admin/Dashboard', [
             'boat' => $metrics->getBoatMetrics(),
             'gps' => $metrics->getGpsMetrics(),
@@ -47,6 +51,7 @@ class AdminDashboardController extends Controller
                 'to_port' => $plannedJourney->to_port,
                 'has_gpx' => $plannedJourney->gpx_route_path !== null,
             ] : null,
+            'routeWaypoints' => $routeJourney?->route_waypoints ?? [],
             'recentJourneys' => $recentJourneys,
             'timestamp' => now()->toIso8601String(),
         ]);
