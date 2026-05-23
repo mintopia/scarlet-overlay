@@ -54,7 +54,7 @@
         </div>
 
         <!-- Boat Status -->
-        <div class="panel p-4 mb-4">
+        <div class="panel p-4 mb-6">
             <div class="flex items-baseline justify-between mb-3">
                 <span class="panel-title">Boat Status</span>
                 <div class="flex items-center gap-3">
@@ -73,92 +73,91 @@
             </div>
         </div>
 
-        <!-- Navigation (autopilot waypoint) -->
-        <div v-if="boat?.nav_wp_distance > 0 && boat?.nav_wp_ttg > 0" class="bg-surface border border-border rounded-[10px] p-4 mb-4">
-            <div class="text-[11px] font-semibold text-text-dim uppercase tracking-wide mb-3">Navigation</div>
-            <div class="space-y-2 text-[13px]">
-                <div class="flex justify-between">
-                    <span class="text-text-secondary">Next Waypoint</span>
-                    <span class="font-semibold tabular-nums" style="color: oklch(0.55 0.15 240)">{{ fmtNav(boat.nav_wp_distance) }} nm</span>
+        <!-- Conditions: Navigation + Weather -->
+        <div class="conditions-grid mb-6">
+            <!-- Navigation (autopilot waypoint) -->
+            <div v-if="boat?.nav_wp_distance > 0 && boat?.nav_wp_ttg > 0" class="panel p-4">
+                <div class="panel-title mb-3">Navigation</div>
+                <div class="space-y-2 text-[13px]">
+                    <div class="data-row">
+                        <span>Next Waypoint</span>
+                        <span style="color: oklch(0.55 0.15 240)">{{ fmtNav(boat.nav_wp_distance) }} nm</span>
+                    </div>
+                    <div class="data-row">
+                        <span>Time to Go</span>
+                        <span>{{ formatTtg(boat.nav_wp_ttg) }}</span>
+                    </div>
+                    <div class="data-row">
+                        <span>ETA</span>
+                        <span>{{ formatEta(boat.nav_wp_ttg) }}</span>
+                    </div>
                 </div>
-                <div class="flex justify-between">
-                    <span class="text-text-secondary">Time to Go</span>
-                    <span class="font-semibold tabular-nums">{{ formatTtg(boat.nav_wp_ttg) }}</span>
+            </div>
+
+            <!-- Weather -->
+            <div v-if="weather" class="panel p-4">
+                <div class="flex items-baseline justify-between mb-3">
+                    <span class="panel-title">Weather</span>
+                    <Link href="/admin/weather" class="text-[12px] text-scarlet font-medium hover:underline">Details →</Link>
                 </div>
-                <div class="flex justify-between">
-                    <span class="text-text-secondary">ETA</span>
-                    <span class="font-semibold tabular-nums">{{ formatEta(boat.nav_wp_ttg) }}</span>
+                <div class="space-y-2 text-[13px]">
+                    <div class="data-row">
+                        <span>Conditions</span>
+                        <span>{{ weather.conditionText }}</span>
+                    </div>
+                    <div class="data-row">
+                        <span>Air / Sea Temp</span>
+                        <span>{{ fmt(weather.temp) }}° <span style="color: oklch(0.55 0.15 240)">/ {{ fmt(weather.seaTemp) }}°C</span></span>
+                    </div>
+                    <div class="data-row">
+                        <span>Wind</span>
+                        <span>{{ fmt(weather.wind?.speed) }} kn {{ degreesToCompass(weather.wind?.direction) }}</span>
+                    </div>
+                </div>
+                <div v-if="boat?.wind_speed_true != null || boat?.water_temp != null" class="text-[11px] text-text-dim mt-3 pt-3 border-t border-border-light">
+                    <span class="font-semibold">Boat sensors:</span>
+                    <span v-if="boat?.wind_speed_true != null"> Wind {{ fmt(boat.wind_speed_true) }} kn {{ degreesToCompass(boat.wind_direction_true) }}</span>
+                    <span v-if="boat?.water_temp != null"> · Water {{ fmt(boat.water_temp) }}°C</span>
                 </div>
             </div>
         </div>
 
-        <!-- Weather -->
-        <div v-if="weather" class="panel p-4 mb-4">
-            <div class="flex items-baseline justify-between mb-3">
-                <span class="panel-title">Weather</span>
-                <Link href="/admin/weather" class="text-[12px] text-scarlet font-medium hover:underline">View Weather →</Link>
-            </div>
-            <div class="strip">
-                <div class="strip-cell">
-                    <div class="strip-label">Conditions</div>
-                    <div class="strip-value text-[16px]">{{ weather.conditionText }}</div>
+        <!-- Secondary: Tracker + Recent Journeys -->
+        <div class="secondary-grid">
+            <!-- Tracker Status -->
+            <div class="panel p-4">
+                <div class="flex items-baseline justify-between mb-3">
+                    <span class="panel-title">Tracker</span>
+                    <Link href="/admin/tracker" class="text-[12px] text-scarlet font-medium hover:underline">Details →</Link>
                 </div>
-                <div class="strip-cell">
-                    <div class="strip-label">Air Temp</div>
-                    <div class="strip-value">{{ fmt(weather.temp) }}</div>
-                    <div class="strip-unit">°C</div>
-                </div>
-                <div class="strip-cell">
-                    <div class="strip-label">Wind</div>
-                    <div class="strip-value">{{ fmt(weather.wind?.speed) }}</div>
-                    <div class="strip-unit">kn {{ degreesToCompass(weather.wind?.direction) }}</div>
-                </div>
-                <div class="strip-cell">
-                    <div class="strip-label">Sea Temp</div>
-                    <div class="strip-value" style="color: oklch(0.55 0.15 240)">{{ fmt(weather.seaTemp) }}</div>
-                    <div class="strip-unit">°C</div>
+                <div class="space-y-2 text-[13px]">
+                    <div class="data-row">
+                        <span>Connection</span>
+                        <span>{{ tracker?.wifi_rssi != null ? 'WiFi' : tracker?.lte_rssi != null ? 'LTE' : 'Disconnected' }}</span>
+                    </div>
+                    <div class="data-row">
+                        <span>Signal</span>
+                        <span>{{ tracker?.wifi_rssi != null ? fmt(tracker.wifi_rssi, 0) + ' dBm' : tracker?.lte_rssi != null ? fmt(tracker.lte_rssi, 0) + ' dBm' : '—' }}</span>
+                    </div>
+                    <div class="data-row">
+                        <span>Battery</span>
+                        <span>{{ tracker?.battery_percent != null ? fmt(tracker.battery_percent, 0) + '%' : '—' }}</span>
+                    </div>
                 </div>
             </div>
-            <div v-if="boat?.wind_speed_true != null || boat?.water_temp != null" class="text-[11px] text-text-dim mt-2">
-                <span class="font-semibold">Boat sensors:</span>
-                <span v-if="boat?.wind_speed_true != null"> Wind {{ fmt(boat.wind_speed_true) }} kn {{ degreesToCompass(boat.wind_direction_true) }}</span>
-                <span v-if="boat?.water_temp != null"> · Water {{ fmt(boat.water_temp) }}°C</span>
-            </div>
-        </div>
 
-        <!-- Tracker Status -->
-        <div class="panel p-4 mb-6">
-            <div class="flex items-baseline justify-between mb-3">
-                <span class="panel-title">Tracker</span>
-                <Link href="/admin/tracker" class="text-[12px] text-scarlet font-medium hover:underline">View Tracker →</Link>
-            </div>
-            <div class="space-y-2 text-[13px]">
-                <div class="data-row">
-                    <span>Connection</span>
-                    <span>{{ tracker?.wifi_rssi != null ? 'WiFi' : tracker?.lte_rssi != null ? 'LTE' : 'Disconnected' }}</span>
+            <!-- Recent Journeys -->
+            <div class="panel p-4" v-if="recentJourneys.length">
+                <div class="flex items-baseline justify-between mb-3">
+                    <span class="panel-title">Recent Journeys</span>
+                    <Link href="/admin/journeys" class="text-[12px] text-scarlet font-medium hover:underline">View All →</Link>
                 </div>
-                <div class="data-row">
-                    <span>Signal</span>
-                    <span>{{ tracker?.wifi_rssi != null ? fmt(tracker.wifi_rssi, 0) + ' dBm' : tracker?.lte_rssi != null ? fmt(tracker.lte_rssi, 0) + ' dBm' : '—' }}</span>
+                <div class="space-y-2">
+                    <Link v-for="j in recentJourneys" :key="j.id" :href="`/journey/${j.slug}`" class="flex items-baseline justify-between text-[13px] py-1.5 hover:text-scarlet transition-colors">
+                        <span class="font-medium">{{ j.title }}</span>
+                        <span class="text-text-dim tabular-nums">{{ fmtDate(j.started_at) }} · {{ j.distance }} nm</span>
+                    </Link>
                 </div>
-                <div class="data-row">
-                    <span>Battery</span>
-                    <span>{{ tracker?.battery_percent != null ? fmt(tracker.battery_percent, 0) + '%' : '—' }}</span>
-                </div>
-            </div>
-        </div>
-
-        <!-- Recent Journeys -->
-        <div class="panel p-4 mb-4" v-if="recentJourneys.length">
-            <div class="flex items-baseline justify-between mb-3">
-                <span class="panel-title">Recent Journeys</span>
-                <Link href="/admin/journeys" class="text-[12px] text-scarlet font-medium hover:underline">View All →</Link>
-            </div>
-            <div class="space-y-2">
-                <Link v-for="j in recentJourneys" :key="j.id" :href="`/journey/${j.slug}`" class="flex items-baseline justify-between text-[13px] py-1.5 hover:text-scarlet transition-colors">
-                    <span class="font-medium">{{ j.title }}</span>
-                    <span class="text-text-dim tabular-nums">{{ fmtDate(j.started_at) }} · {{ j.distance }} nm</span>
-                </Link>
             </div>
         </div>
 
@@ -350,6 +349,21 @@ function degreesToCompass(deg) {
 .strip-label { font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em; color: var(--color-text-dim); margin-bottom: 2px; }
 .strip-value { font-size: 20px; font-weight: 700; font-variant-numeric: tabular-nums; line-height: 1; }
 .strip-unit { font-size: 10px; color: var(--color-text-dim); margin-top: 2px; }
+
+.conditions-grid {
+    display: grid;
+    gap: 12px;
+}
+
+.secondary-grid {
+    display: grid;
+    gap: 12px;
+}
+
+@media (min-width: 640px) {
+    .conditions-grid { grid-template-columns: repeat(2, 1fr); }
+    .secondary-grid { grid-template-columns: repeat(2, 1fr); }
+}
 
 .route-map {
     height: 220px;
