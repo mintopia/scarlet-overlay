@@ -8,6 +8,7 @@ use App\Http\Controllers\Admin\SettingsController;
 use App\Http\Controllers\Admin\TeamController;
 use App\Http\Controllers\Admin\StreamMonitorController;
 use App\Http\Controllers\Admin\AdminWeatherController;
+use App\Http\Controllers\Admin\AdminLogController;
 use App\Http\Controllers\Admin\ExploreController;
 use App\Http\Controllers\Admin\TrackerController;
 use App\Http\Controllers\Auth\LoginController;
@@ -66,6 +67,7 @@ Route::middleware('auth')->prefix('admin')->group(function () {
     Route::get('/explore', [ExploreController::class, 'index'])->name('admin.explore');
     Route::get('/explore/series', [ExploreController::class, 'series'])->name('admin.explore.series');
     Route::get('/weather', [AdminWeatherController::class, 'index'])->name('admin.weather');
+    Route::get('/log', [AdminLogController::class, 'index'])->name('admin.log');
     Route::get('/profile', [ProfileController::class, 'index'])->name('admin.profile');
     Route::put('/profile', [ProfileController::class, 'update'])->name('admin.profile.update');
     Route::put('/profile/password', [ProfileController::class, 'updatePassword'])->name('admin.profile.password');
