@@ -158,6 +158,10 @@ const props = defineProps({
     passage: Object,
 });
 
+function cssVar(name) {
+    return getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+}
+
 const recentPresets = ['1h', '6h', '24h'];
 const extendedPresets = ['3d', '7d', '30d'];
 
@@ -182,7 +186,7 @@ const maxOverlays = 3;
 const signedCurrentColor = computed(() => {
     if (!props.metric.signed) return props.metric.color;
     if (stats.value.current == null) return props.metric.color;
-    return stats.value.current >= 0 ? 'oklch(0.62 0.15 155)' : 'oklch(0.65 0.18 40)';
+    return stats.value.current >= 0 ? cssVar('--color-green') : cssVar('--color-amber');
 });
 
 const fetchError = ref(false);
@@ -357,7 +361,7 @@ function buildChartOpts(width) {
                     const ctx = u.ctx;
                     const zeroY = u.valToPos(0, 'y');
                     ctx.save();
-                    ctx.strokeStyle = 'oklch(0.50 0.005 40)';
+                    ctx.strokeStyle = cssVar('--color-text-dim');
                     ctx.lineWidth = 1;
                     ctx.setLineDash([4, 3]);
                     ctx.beginPath();
@@ -409,16 +413,16 @@ function buildChartOpts(width) {
         },
         axes: [
             {
-                stroke: 'oklch(0.65 0.005 40)',
-                grid: { stroke: 'oklch(0.94 0.003 70)', width: 1 },
-                ticks: { stroke: 'oklch(0.90 0.005 70)', width: 1 },
+                stroke: cssVar('--color-text-dim'),
+                grid: { stroke: cssVar('--color-border-light'), width: 1 },
+                ticks: { stroke: cssVar('--color-border'), width: 1 },
                 font: '10px system-ui',
                 values: (u, vals) => vals.map(v => formatTimestamp(v)),
             },
             {
-                stroke: 'oklch(0.65 0.005 40)',
-                grid: { stroke: 'oklch(0.94 0.003 70)', width: 1 },
-                ticks: { stroke: 'oklch(0.90 0.005 70)', width: 1 },
+                stroke: cssVar('--color-text-dim'),
+                grid: { stroke: cssVar('--color-border-light'), width: 1 },
+                ticks: { stroke: cssVar('--color-border'), width: 1 },
                 font: '10px system-ui',
                 size: 50,
                 values: (u, vals) => vals.map(v => {
@@ -431,16 +435,16 @@ function buildChartOpts(width) {
             {},
             {
                 label: 'Charging',
-                stroke: 'oklch(0.62 0.15 155)',
-                fill: 'oklch(0.62 0.15 155 / 0.08)',
+                stroke: cssVar('--color-green'),
+                fill: cssVar('--color-green-bg'),
                 width: 1.5,
                 _unit: props.metric.unit,
                 paths: drawSignedPath,
             },
             {
                 label: 'Discharging',
-                stroke: 'oklch(0.65 0.18 40)',
-                fill: 'oklch(0.65 0.18 40 / 0.08)',
+                stroke: cssVar('--color-amber'),
+                fill: cssVar('--color-amber-bg'),
                 width: 1.5,
                 _unit: props.metric.unit,
                 paths: drawSignedPath,
@@ -486,7 +490,7 @@ function buildChartOpts(width) {
         if (hasSecondAxis) {
             opts.axes.push({
                 side: 1,
-                stroke: 'oklch(0.65 0.005 40)',
+                stroke: cssVar('--color-text-dim'),
                 grid: { show: false },
                 font: '10px system-ui',
                 size: 50,
@@ -777,11 +781,11 @@ onUnmounted(() => {
 
 .error-banner {
     padding: 8px 16px;
-    background: oklch(0.70 0.14 70 / 0.1);
-    border: 1px solid oklch(0.70 0.14 70 / 0.3);
+    background: var(--color-amber-bg);
+    border: 1px solid var(--color-amber);
     border-radius: 8px;
     font-size: 12px;
-    color: oklch(0.50 0.14 70);
+    color: var(--color-amber);
     margin-bottom: 8px;
 }
 
@@ -854,7 +858,7 @@ onUnmounted(() => {
     position: absolute;
     top: 48px;
     transform: translateX(-50%);
-    background: oklch(0.18 0.005 40 / 0.92);
+    background: rgba(0, 0, 0, 0.92);
     color: white;
     padding: 8px 12px;
     border-radius: 8px;
@@ -866,7 +870,7 @@ onUnmounted(() => {
 }
 
 .chart-tooltip-time {
-    color: oklch(0.70 0.005 40);
+    color: var(--color-text-dim);
     font-size: 10px;
     margin-bottom: 4px;
 }
@@ -881,7 +885,7 @@ onUnmounted(() => {
 .chart-tooltip-val { font-weight: 700; font-size: 14px; }
 
 .chart-tooltip-hint {
-    color: oklch(0.50 0.005 40);
+    color: var(--color-text-secondary);
     font-size: 9px;
     margin-top: 4px;
 }
@@ -956,8 +960,8 @@ onUnmounted(() => {
 }
 
 :deep(.u-wrap) { position: relative !important; }
-:deep(.u-select) { background: oklch(0.54 0.22 27 / 0.1) !important; }
-:deep(.u-cursor-x) { border-right: 1px dashed oklch(0.54 0.22 27 / 0.4) !important; }
+:deep(.u-select) { background: var(--color-scarlet-light) !important; }
+:deep(.u-cursor-x) { border-right: 1px dashed var(--color-scarlet) !important; }
 
 @media (max-width: 767px) {
     .toolbar { flex-direction: column; align-items: stretch; }
