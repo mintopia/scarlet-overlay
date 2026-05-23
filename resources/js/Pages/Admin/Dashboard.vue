@@ -92,6 +92,40 @@
             </div>
         </div>
 
+        <!-- Weather -->
+        <div v-if="weather" class="panel p-4 mb-4">
+            <div class="flex items-baseline justify-between mb-3">
+                <span class="panel-title">Weather</span>
+                <Link href="/admin/weather" class="text-[12px] text-scarlet font-medium hover:underline">View Weather →</Link>
+            </div>
+            <div class="strip">
+                <div class="strip-cell">
+                    <div class="strip-label">Conditions</div>
+                    <div class="strip-value text-[16px]">{{ weather.conditionText }}</div>
+                </div>
+                <div class="strip-cell">
+                    <div class="strip-label">Air Temp</div>
+                    <div class="strip-value">{{ fmt(weather.temp) }}</div>
+                    <div class="strip-unit">°C</div>
+                </div>
+                <div class="strip-cell">
+                    <div class="strip-label">Wind</div>
+                    <div class="strip-value">{{ fmt(weather.wind?.speed) }}</div>
+                    <div class="strip-unit">kn {{ degreesToCompass(weather.wind?.direction) }}</div>
+                </div>
+                <div class="strip-cell">
+                    <div class="strip-label">Sea Temp</div>
+                    <div class="strip-value" style="color: oklch(0.55 0.15 240)">{{ fmt(weather.seaTemp) }}</div>
+                    <div class="strip-unit">°C</div>
+                </div>
+            </div>
+            <div v-if="boat?.wind_speed_true != null || boat?.water_temp != null" class="text-[11px] text-text-dim mt-2">
+                <span class="font-semibold">Boat sensors:</span>
+                <span v-if="boat?.wind_speed_true != null"> Wind {{ fmt(boat.wind_speed_true) }} kn {{ degreesToCompass(boat.wind_direction_true) }}</span>
+                <span v-if="boat?.water_temp != null"> · Water {{ fmt(boat.water_temp) }}°C</span>
+            </div>
+        </div>
+
         <!-- Tracker Status -->
         <div class="panel p-4 mb-6">
             <div class="flex items-baseline justify-between mb-3">
@@ -176,6 +210,7 @@ const props = defineProps({
     routeWaypoints: { type: Array, default: () => [] },
     recentJourneys: Array,
     timestamp: String,
+    weather: Object,
 });
 
 const mapEl = ref(null);
@@ -266,6 +301,12 @@ function formatEta(seconds) {
     if (seconds == null || seconds <= 0) return '—';
     const eta = new Date(Date.now() + seconds * 1000);
     return eta.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
+}
+
+function degreesToCompass(deg) {
+    if (deg == null) return '—';
+    const dirs = ['N','NNE','NE','ENE','E','ESE','SE','SSE','S','SSW','SW','WSW','W','WNW','NW','NNW'];
+    return dirs[Math.round(((deg % 360) + 360) % 360 / 22.5) % 16];
 }
 </script>
 
