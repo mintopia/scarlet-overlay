@@ -10,6 +10,8 @@
             <template v-else-if="icon === 'home'"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></template>
             <template v-else-if="icon === 'compass'"><circle cx="12" cy="12" r="10"/><polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"/></template>
             <template v-else-if="icon === 'search'"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></template>
+            <template v-else-if="icon === 'cloud'"><path d="M18 10h-1.26A8 8 0 1 0 9 20h9a5 5 0 0 0 0-10z"/></template>
+            <template v-else-if="icon === 'clipboard'"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1" ry="1"/></template>
         </svg>
         <slot />
     </Link>
