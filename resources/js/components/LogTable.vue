@@ -11,6 +11,8 @@
                     <th class="col-num">Baro<br><span class="th-unit">hPa</span></th>
                     <th class="col-pos">Lat<br>Long</th>
                     <th class="col-num">WP<br><span class="th-unit">nm</span></th>
+                    <th class="col-num">DMG<br><span class="th-unit">nm</span></th>
+                    <th class="col-num">+/−<br><span class="th-unit">nm</span></th>
                     <th class="col-num">TTG</th>
                     <th class="col-num">Batt<br><span class="th-unit">%</span></th>
                     <th class="col-num">H₂O<br><span class="th-unit">%</span></th>
@@ -24,7 +26,7 @@
                         <div class="cell-time">{{ fmtTime(row.timestamp) }}</div>
                     </td>
                     <td class="col-num">{{ fmtVal(row.trip_log, 1) }}</td>
-                    <td class="col-num">{{ fmtVal(row.sow, 1) }}</td>
+                    <td class="col-num">{{ fmtVal(row.dist, 1) }}</td>
                     <td class="col-num">{{ degreesToCompass(row.wind_direction) }}</td>
                     <td class="col-num">{{ knotsToBeaufort(row.wind_speed) }}</td>
                     <td class="col-num">—</td>
@@ -33,13 +35,15 @@
                         <div>{{ fmtLon(row.longitude) }}</div>
                     </td>
                     <td class="col-num">{{ fmtVal(row.wp_distance, 1) }}</td>
+                    <td class="col-num">{{ fmtVal(row.dmg, 1) }}</td>
+                    <td class="col-num" :class="diffClass(row.diff)">{{ fmtDiff(row.diff) }}</td>
                     <td class="col-num">{{ fmtTtg(row.wp_ttg) }}</td>
                     <td class="col-num">{{ fmtPct(row.battery_soc) }}</td>
                     <td class="col-num">{{ fmtPct(row.water_level) }}</td>
                     <td class="col-num">{{ fmtPct(row.fuel_level) }}</td>
                 </tr>
                 <tr v-if="!rows.length">
-                    <td colspan="12" class="text-center text-text-dim py-6">No log data for this period.</td>
+                    <td colspan="14" class="text-center text-text-dim py-6">No log data for this period.</td>
                 </tr>
             </tbody>
         </table>
@@ -67,6 +71,19 @@ function fmtVal(v, decimals = 1) {
 
 function fmtPct(v) {
     return v != null ? Math.round(v) + '' : '—';
+}
+
+function fmtDiff(v) {
+    if (v == null) return '—';
+    const sign = v > 0 ? '+' : '';
+    return sign + v.toFixed(1);
+}
+
+function diffClass(v) {
+    if (v == null) return '';
+    if (v > 0.05) return 'diff-good';
+    if (v < -0.05) return 'diff-bad';
+    return '';
 }
 
 function fmtLat(lat) {
@@ -187,4 +204,13 @@ function knotsToBeaufort(kn) {
     background: oklch(0.96 0.006 70);
 }
 
+.diff-good {
+    color: oklch(0.55 0.16 155);
+    font-weight: 600;
+}
+
+.diff-bad {
+    color: oklch(0.55 0.18 27);
+    font-weight: 600;
+}
 </style>
