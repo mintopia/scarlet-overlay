@@ -276,9 +276,15 @@ function fmtDate(iso) {
 
 function fmtCoord(lat, lon) {
     if (lat == null || lon == null) return '';
-    const latDir = lat >= 0 ? 'N' : 'S';
-    const lonDir = lon >= 0 ? 'E' : 'W';
-    return `${Math.abs(lat).toFixed(4)}°${latDir}  ${Math.abs(lon).toFixed(4)}°${lonDir}`;
+    return fmtDM(lat, 'N', 'S') + '  ' + fmtDM(lon, 'E', 'W');
+}
+
+function fmtDM(decimal, pos, neg) {
+    const dir = decimal >= 0 ? pos : neg;
+    const abs = Math.abs(decimal);
+    const deg = Math.floor(abs);
+    const min = ((abs - deg) * 60).toFixed(1).padStart(4, '0');
+    return `${deg}°${min}'${dir}`;
 }
 
 function fmtNav(v) {

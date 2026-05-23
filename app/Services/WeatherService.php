@@ -58,7 +58,7 @@ class WeatherService
         $forecastQuery = [
             'longitude' => $longitude,
             'latitude' => $latitude,
-            'current' => 'weather_code,temperature_2m,is_day,wind_speed_10m,wind_direction_10m',
+            'current' => 'weather_code,temperature_2m,is_day,wind_speed_10m,wind_gusts_10m,wind_direction_10m,surface_pressure',
             'wind_speed_unit' => 'kn',
             'timezone' => 'auto',
         ];
@@ -83,7 +83,9 @@ class WeatherService
         $weather->daytime = (bool)$forecast['current']['is_day'] ?? true;
         $weather->wmoCode = (float)$forecast['current']['weather_code'] ?? 0;
         $weather->windSpeed = (float)$forecast['current']['wind_speed_10m'] ?? 0;
+        $weather->windGusts = (float)($forecast['current']['wind_gusts_10m'] ?? 0);
         $weather->windDirection = (int)$forecast['current']['wind_direction_10m'] ?? 0;
+        $weather->pressure = isset($forecast['current']['surface_pressure']) ? (float)$forecast['current']['surface_pressure'] : null;
         $weather->seaTemp = (float)$marine['current']['sea_surface_temperature'] ?? null;
         $weather->current = (float)$marine['current']['ocean_current_velocity'] ?? 0;
         $weather->currentDirection = (int)$marine['current']['ocean_current_direction'] ?? 0;

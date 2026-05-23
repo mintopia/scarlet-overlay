@@ -38,8 +38,14 @@ class AdminLogController extends Controller
                 $period = '24h';
             }
             $rows = $metrics->getLogData($period, '3600');
-            $tripOffset = null;
         }
+
+        $weather = $metrics->getWeatherData();
+        $pressure = $weather['pressure'] ?? null;
+        foreach ($rows as &$row) {
+            $row['pressure'] = $pressure;
+        }
+        unset($row);
 
         return Inertia::render('Admin/Log', [
             'rows' => $rows,

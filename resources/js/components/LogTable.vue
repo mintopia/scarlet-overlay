@@ -4,11 +4,12 @@
             <thead>
                 <tr>
                     <th class="col-time">Date<br>Time</th>
+                    <th class="col-num">Crs<br><span class="th-unit">°</span></th>
                     <th class="col-num">Log<br><span class="th-unit">nm</span></th>
                     <th class="col-num">Dist<br><span class="th-unit">nm</span></th>
                     <th class="col-num">Wind<br><span class="th-unit">dir</span></th>
                     <th class="col-num">Wind<br><span class="th-unit">bft</span></th>
-                    <th class="col-num">Baro<br><span class="th-unit">hPa</span></th>
+                    <th class="col-num col-baro">Baro<br><span class="th-unit">hPa</span></th>
                     <th class="col-pos">Lat<br>Long</th>
                     <th class="col-num">WP<br><span class="th-unit">nm</span></th>
                     <th class="col-num">DMG<br><span class="th-unit">nm</span></th>
@@ -25,11 +26,12 @@
                         <div class="cell-date">{{ fmtDate(row.timestamp) }}</div>
                         <div class="cell-time">{{ fmtTime(row.timestamp) }}</div>
                     </td>
+                    <td class="col-num">{{ fmtCourse(row.course) }}</td>
                     <td class="col-num">{{ fmtVal(row.trip_log, 1) }}</td>
                     <td class="col-num">{{ fmtVal(row.dist, 1) }}</td>
                     <td class="col-num">{{ degreesToCompass(row.wind_direction) }}</td>
                     <td class="col-num">{{ knotsToBeaufort(row.wind_speed) }}</td>
-                    <td class="col-num">—</td>
+                    <td class="col-num col-baro">{{ fmtBaro(row.pressure) }}</td>
                     <td class="col-pos">
                         <div>{{ fmtLat(row.latitude) }}</div>
                         <div>{{ fmtLon(row.longitude) }}</div>
@@ -43,7 +45,7 @@
                     <td class="col-num">{{ fmtPct(row.fuel_level) }}</td>
                 </tr>
                 <tr v-if="!rows.length">
-                    <td colspan="14" class="text-center text-text-dim py-6">No log data for this period.</td>
+                    <td colspan="15" class="text-center text-text-dim py-6">No log data for this period.</td>
                 </tr>
             </tbody>
         </table>
@@ -73,6 +75,16 @@ function fmtPct(v) {
     return v != null ? Math.round(v) + '' : '—';
 }
 
+function fmtCourse(v) {
+    if (v == null) return '—';
+    return Math.round(v) + '°';
+}
+
+function fmtBaro(v) {
+    if (v == null) return '—';
+    return Math.round(v);
+}
+
 function fmtDiff(v) {
     if (v == null) return '—';
     const sign = v > 0 ? '+' : '';
@@ -100,7 +112,7 @@ function formatDM(decimal, pos, neg) {
     const dir = decimal >= 0 ? pos : neg;
     const abs = Math.abs(decimal);
     const deg = Math.floor(abs);
-    const min = ((abs - deg) * 60).toFixed(1);
+    const min = ((abs - deg) * 60).toFixed(1).padStart(4, '0');
     return `${deg}°${min}'${dir}`;
 }
 
@@ -184,6 +196,7 @@ function knotsToBeaufort(kn) {
 .col-time { text-align: left !important; }
 .col-num { text-align: right; }
 .col-pos { text-align: right; font-size: 11px; }
+.col-baro { font-style: italic; opacity: 0.6; }
 
 .cell-date {
     font-size: 10px;

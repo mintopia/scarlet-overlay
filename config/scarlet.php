@@ -44,12 +44,12 @@ return [
                 'nav_wp_distance' => 'scarlet_signalk_navigation_courseGreatCircle_nextPoint_distance / 1852',
                 'nav_wp_ttg' => 'scarlet_signalk_navigation_courseGreatCircle_nextPoint_timeToGo',
 
-                // Wind (apparent from Signal K, true computed from apparent + SOG + heading)
+                // Wind (apparent from Signal K, true computed from apparent + STW + heading)
                 'wind_speed_apparent' => 'scarlet_signalk_environment_wind_speedApparent * 1.94384',
                 'wind_angle_apparent' => 'scarlet_signalk_environment_wind_angleApparent * 180 / 3.14159265359',
                 '_aws' => 'scarlet_signalk_environment_wind_speedApparent',
                 '_awa' => 'scarlet_signalk_environment_wind_angleApparent',
-                '_sog' => 'scarlet_signalk_navigation_speedOverGround',
+                '_stw' => 'scarlet_signalk_navigation_speedThroughWater',
                 '_heading' => 'scarlet_signalk_navigation_headingTrue',
 
                 // Environment
@@ -63,7 +63,7 @@ return [
                 'engine_battery_voltage' => 'scarlet_signalk_electrical_batteries_1_voltage',
 
                 // Tanks
-                'fuel_level' => 'clamp_max(scarlet_signalk_tanks_fuel_currentLevel / 0.91, 1) * 100',
+                'fuel_level' => 'scarlet_signalk_tanks_fuel_currentLevel * 100',
                 'water_level' => 'scarlet_mqtt_percent{topic="watertank"}',
 
                 // Cabin environment (Zigbee sensors via MQTT)
@@ -122,7 +122,7 @@ return [
                 'humidity_main_cabin' => 'scarlet_mqtt_humidity{topic="zigbee2mqtt/Main Cabin"}',
                 'battery_current' => 'scarlet_signalk_electrical_batteries_0_current',
                 'battery_power' => 'scarlet_signalk_electrical_batteries_0_current * scarlet_signalk_electrical_batteries_0_voltage',
-                'fuel_level' => 'clamp_max(scarlet_signalk_tanks_fuel_currentLevel / 0.91, 1) * 100',
+                'fuel_level' => 'scarlet_signalk_tanks_fuel_currentLevel * 100',
                 'water_level' => 'scarlet_mqtt_percent{topic="watertank"}',
                 'cpu_usage' => 'scarlet_system_cpu_usage_percent',
             ],
@@ -290,7 +290,7 @@ return [
                     'label' => 'Diesel Level',
                     'unit' => '%',
                     'color' => 'oklch(0.70 0.14 70)',
-                    'query' => 'clamp_max(scarlet_signalk_tanks_fuel_currentLevel / 0.91, 1) * 100',
+                    'query' => 'scarlet_signalk_tanks_fuel_currentLevel * 100',
                     'group' => 'tanks',
                 ],
                 'water_level' => [
@@ -336,8 +336,9 @@ return [
                 'trip_log' => 'scarlet_signalk_navigation_trip_log / 1852',
                 'aws' => 'scarlet_signalk_environment_wind_speedApparent',
                 'awa' => 'scarlet_signalk_environment_wind_angleApparent',
-                'sog' => 'scarlet_signalk_navigation_speedOverGround',
+                'stw' => 'scarlet_signalk_navigation_speedThroughWater',
                 'heading' => 'scarlet_signalk_navigation_headingTrue',
+                'cog' => 'scarlet_signalk_navigation_courseOverGroundTrue',
                 'latitude' => 'scarlet_signalk_navigation_position_latitude',
                 'longitude' => 'scarlet_signalk_navigation_position_longitude',
                 'wp_distance' => 'scarlet_signalk_navigation_courseGreatCircle_nextPoint_distance / 1852',

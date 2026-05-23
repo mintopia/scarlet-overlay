@@ -10,6 +10,7 @@
                 <div class="space-y-2 text-[13px]">
                     <div class="data-row"><span>Sky</span><span>{{ weather.conditionText }}</span></div>
                     <div class="data-row"><span>Air Temperature</span><span>{{ fmt(weather.temp) }}°C</span></div>
+                    <div class="data-row"><span>Pressure</span><span>{{ weather.pressure != null ? Math.round(weather.pressure) + ' hPa' : '—' }}</span></div>
                     <div class="data-row"><span>Time of Day</span><span>{{ weather.daytime ? 'Day' : 'Night' }}</span></div>
                 </div>
             </div>
@@ -28,7 +29,7 @@
                     <tbody class="tabular-nums">
                         <tr class="border-t border-border-light">
                             <td class="py-2 text-text-secondary">Forecast</td>
-                            <td class="py-2 font-semibold">{{ fmt(weather.wind?.speed) }} kn</td>
+                            <td class="py-2 font-semibold">{{ fmt(weather.wind?.speed) }} kn (G{{ fmt(weather.wind?.gusts) }})</td>
                             <td class="py-2 font-semibold">{{ degreesToCompass(weather.wind?.direction) }} ({{ fmt(weather.wind?.direction, 0) }}°)</td>
                         </tr>
                         <tr class="border-t border-border-light">

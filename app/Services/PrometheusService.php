@@ -40,7 +40,7 @@ class PrometheusService
     protected function queryLastOverTime(string $promql, string $lookback = '24h'): ?float
     {
         $wrapped = preg_replace_callback(
-            '/([a-zA-Z_:][a-zA-Z0-9_:]*)(\{[^}]*\})?/',
+            '/\b(scarlet_[a-zA-Z0-9_:]*)(\{[^}]*\})?/',
             fn ($m) => "last_over_time({$m[0]}[{$lookback}])",
             $promql,
         );

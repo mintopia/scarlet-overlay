@@ -33,10 +33,10 @@ class MetricsService
             );
         }
 
-        $tw = $this->calculateTrueWind($metrics['_aws'], $metrics['_awa'], $metrics['_sog'], $metrics['_heading']);
+        $tw = $this->calculateTrueWind($metrics['_aws'], $metrics['_awa'], $metrics['_stw'], $metrics['_heading']);
         $metrics['wind_speed_true'] = $tw['speed'];
         $metrics['wind_direction_true'] = $tw['direction'];
-        unset($metrics['_aws'], $metrics['_awa'], $metrics['_sog'], $metrics['_heading']);
+        unset($metrics['_aws'], $metrics['_awa'], $metrics['_stw'], $metrics['_heading']);
 
         return $metrics;
     }
@@ -165,10 +165,11 @@ class MetricsService
                 $row[$key] = $point ? $point['value'] : null;
             }
 
-            $tw = $this->calculateTrueWind($row['aws'], $row['awa'], $row['sog'], $row['heading']);
+            $tw = $this->calculateTrueWind($row['aws'], $row['awa'], $row['stw'], $row['heading']);
             $row['wind_speed'] = $tw['speed'];
             $row['wind_direction'] = $tw['direction'];
-            unset($row['aws'], $row['awa'], $row['sog'], $row['heading']);
+            $row['course'] = $row['cog'] !== null ? rad2deg($row['cog']) : ($row['heading'] !== null ? rad2deg($row['heading']) : null);
+            unset($row['aws'], $row['awa'], $row['stw'], $row['heading'], $row['cog']);
 
             $rows[] = $row;
         }
@@ -221,23 +222,23 @@ class MetricsService
     {
         $aws = $this->prometheus->queryRange('scarlet_signalk_environment_wind_speedApparent', $duration, $step, $start, $end);
         $awa = $this->prometheus->queryRange('scarlet_signalk_environment_wind_angleApparent', $duration, $step, $start, $end);
-        $sog = $this->prometheus->queryRange('scarlet_signalk_navigation_speedOverGround', $duration, $step, $start, $end);
+        $stw = $this->prometheus->queryRange('scarlet_signalk_navigation_speedThroughWater', $duration, $step, $start, $end);
         $hdg = $this->prometheus->queryRange('scarlet_signalk_navigation_headingTrue', $duration, $step, $start, $end);
 
         $awaByTs = collect($awa)->keyBy('timestamp');
-        $sogByTs = collect($sog)->keyBy('timestamp');
+        $stwByTs = collect($stw)->keyBy('timestamp');
         $hdgByTs = collect($hdg)->keyBy('timestamp');
 
         $result = [];
         foreach ($aws as $point) {
             $ts = $point['timestamp'];
             $awaPoint = $awaByTs->get($ts);
-            $sogPoint = $sogByTs->get($ts);
+            $stwPoint = $stwByTs->get($ts);
             $hdgPoint = $hdgByTs->get($ts);
 
-            if (!$awaPoint || !$sogPoint || !$hdgPoint) continue;
+            if (!$awaPoint || !$stwPoint || !$hdgPoint) continue;
 
-            $tw = $this->calculateTrueWind($point['value'], $awaPoint['value'], $sogPoint['value'], $hdgPoint['value']);
+            $tw = $this->calculateTrueWind($point['value'], $awaPoint['value'], $stwPoint['value'], $hdgPoint['value']);
 
             if ($tw[$field] !== null) {
                 $result[] = ['timestamp' => $ts, 'value' => $tw[$field]];
