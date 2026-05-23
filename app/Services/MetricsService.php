@@ -130,6 +130,35 @@ class MetricsService
         return $track;
     }
 
+    public function getLogData(?string $duration = '24h', string $step = '3600', ?int $start = null, ?int $end = null): array
+    {
+        $queries = config('scarlet.metrics.mappings.log');
+        $seriesByKey = [];
+
+        foreach ($queries as $key => $promql) {
+            $data = $this->prometheus->queryRange($promql, $duration, $step . 's', $start, $end);
+            $seriesByKey[$key] = collect($data)->keyBy('timestamp');
+        }
+
+        $allTimestamps = collect($seriesByKey)
+            ->flatMap(fn ($series) => $series->keys())
+            ->unique()
+            ->sort()
+            ->values();
+
+        $rows = [];
+        foreach ($allTimestamps as $ts) {
+            $row = ['timestamp' => $ts];
+            foreach ($queries as $key => $promql) {
+                $point = $seriesByKey[$key]->get($ts);
+                $row[$key] = $point ? $point['value'] : null;
+            }
+            $rows[] = $row;
+        }
+
+        return $rows;
+    }
+
     private function isNullIsland(?float $lat, ?float $lng): bool
     {
         return $lat === null || $lng === null

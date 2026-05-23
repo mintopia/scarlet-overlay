@@ -329,6 +329,19 @@ return [
                     'group' => 'tracker',
                 ],
             ],
+
+            'log' => [
+                'trip_log' => 'scarlet_signalk_navigation_trip_log / 1852',
+                'wind_direction' => 'scarlet_boat_wind_direction_deg',
+                'wind_speed' => 'scarlet_boat_wind_speed_kn',
+                'latitude' => 'scarlet_signalk_navigation_position_latitude',
+                'longitude' => 'scarlet_signalk_navigation_position_longitude',
+                'wp_distance' => 'scarlet_signalk_navigation_courseGreatCircle_nextPoint_distance / 1852',
+                'wp_ttg' => 'scarlet_signalk_navigation_courseGreatCircle_nextPoint_timeToGo',
+                'battery_soc' => 'scarlet_signalk_electrical_batteries_0_capacity_stateOfCharge * 100',
+                'water_level' => 'scarlet_mqtt_percent{topic="watertank"}',
+                'fuel_level' => 'clamp_max(scarlet_signalk_tanks_fuel_currentLevel / 0.91, 1) * 100',
+            ],
         ],
     ],
 ];
