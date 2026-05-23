@@ -100,7 +100,7 @@ function formatDM(decimal, pos, neg) {
     const dir = decimal >= 0 ? pos : neg;
     const abs = Math.abs(decimal);
     const deg = Math.floor(abs);
-    const min = ((abs - deg) * 60).toFixed(3);
+    const min = ((abs - deg) * 60).toFixed(1);
     return `${deg}°${min}'${dir}`;
 }
 

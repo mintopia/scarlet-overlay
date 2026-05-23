@@ -4,6 +4,7 @@
         <div class="flex items-baseline justify-between mb-6">
             <h1 class="text-[22px] font-bold">Ship's Log</h1>
             <select v-model="selectedPeriod" @change="changePeriod" class="field-input text-[13px] py-1.5 px-3" style="width: auto; height: auto">
+                <option v-if="hasActiveJourney" value="journey">{{ journeyTitle || 'Current Journey' }}</option>
                 <option value="6h">Last 6 hours</option>
                 <option value="12h">Last 12 hours</option>
                 <option value="24h">Last 24 hours</option>
@@ -25,6 +26,8 @@ import LogTable from '@/components/LogTable.vue';
 const props = defineProps({
     rows: Array,
     period: String,
+    hasActiveJourney: Boolean,
+    journeyTitle: String,
 });
 
 const selectedPeriod = ref(props.period);
