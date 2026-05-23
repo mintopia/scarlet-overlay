@@ -58,4 +58,10 @@ class SettingsController extends Controller
 
         return back()->with('success', 'Stream settings updated.');
     }
+
+    public function forceReload()
+    {
+        event(new \App\Events\ForceReload());
+        return back()->with('success', 'Reload signal sent.');
+    }
 }

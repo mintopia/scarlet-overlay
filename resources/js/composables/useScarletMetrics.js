@@ -204,6 +204,9 @@ export function useScarletMetrics(options = {}) {
             lastUpdate.value = new Date();
             updateAllMaps(data.gps, data.boat);
         });
+        echoChannel.listen('.force-reload', () => {
+            window.location.reload();
+        });
     }
 
     // ── Cleanup ──────────────────────────────────────────────────────────

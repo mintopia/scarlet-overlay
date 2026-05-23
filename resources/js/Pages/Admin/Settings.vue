@@ -65,11 +65,34 @@
                 <Transition name="saved-fade"><SavedCheck v-if="streamForm.wasSuccessful" /></Transition>
             </div>
         </form>
+
+        <!-- Force Reload -->
+        <div class="panel p-6 mb-6">
+            <h2 class="text-[15px] font-semibold mb-1">Force Reload Clients</h2>
+            <p class="text-[12px] text-text-secondary mb-4">Sends a reload signal to all connected overlay and public dashboard browser windows.</p>
+            <button type="button" @click="showReloadModal = true" class="btn btn--danger">Force Reload Clients</button>
+        </div>
+
+        <!-- Force Reload Confirmation Modal -->
+        <div v-if="showReloadModal" style="position: fixed; inset: 0; z-index: 100; display: flex; align-items: center; justify-content: center;">
+            <div style="position: absolute; inset: 0; background: rgba(0,0,0,0.5);" @click="showReloadModal = false"></div>
+            <div style="position: relative; background: white; border-radius: 12px; padding: 28px 32px; max-width: 420px; width: 100%; margin: 0 16px; box-shadow: 0 20px 60px rgba(0,0,0,0.25);">
+                <h3 style="font-size: 16px; font-weight: 700; margin: 0 0 10px;">Force Reload Clients</h3>
+                <p style="font-size: 14px; color: #6b7280; margin: 0 0 24px; line-height: 1.5;">This will reload all overlay and dashboard browser windows. Continue?</p>
+                <div style="display: flex; gap: 10px; justify-content: flex-end;">
+                    <button type="button" @click="showReloadModal = false" class="btn btn--secondary">Cancel</button>
+                    <button type="button" @click="confirmForceReload" :disabled="reloading" class="btn btn--danger">
+                        {{ reloading ? 'Sending…' : 'Reload All Clients' }}
+                    </button>
+                </div>
+            </div>
+        </div>
     </AdminLayout>
 </template>
 
 <script setup>
-import { Head, useForm } from '@inertiajs/vue3';
+import { ref } from 'vue';
+import { Head, useForm, router } from '@inertiajs/vue3';
 import AdminLayout from '@/Layouts/AdminLayout.vue';
 import SavedCheck from '@/components/SavedCheck.vue';
 
@@ -89,5 +112,17 @@ const streamForm = useForm({
     srt_url: props.settings?.srt_url ?? '',
     srt_stats_url: props.settings?.srt_stats_url ?? '',
 });
-</script>
 
+const showReloadModal = ref(false);
+const reloading = ref(false);
+
+function confirmForceReload() {
+    reloading.value = true;
+    router.post(route('admin.settings.force-reload'), {}, {
+        onFinish: () => {
+            reloading.value = false;
+            showReloadModal.value = false;
+        },
+    });
+}
+</script>

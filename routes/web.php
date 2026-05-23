@@ -58,6 +58,7 @@ Route::middleware('auth')->prefix('admin')->group(function () {
     Route::put('/settings/identity', [SettingsController::class, 'updateIdentity'])->name('admin.settings.identity');
     Route::put('/settings/port', [SettingsController::class, 'updatePort'])->name('admin.settings.port');
     Route::put('/settings/stream', [SettingsController::class, 'updateStream'])->name('admin.settings.stream');
+    Route::post('/settings/force-reload', [SettingsController::class, 'forceReload'])->name('admin.settings.force-reload');
     Route::get('/stream', [StreamMonitorController::class, 'index'])->name('admin.stream');
     Route::get('/tracker', [TrackerController::class, 'index'])->name('admin.tracker');
     Route::get('/metrics', [BoatMetricsController::class, 'index'])->name('admin.metrics');
