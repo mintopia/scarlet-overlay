@@ -53,7 +53,7 @@ class JourneyModelTest extends TestCase
 
         $this->expectException(\Illuminate\Validation\ValidationException::class);
 
-        Journey::startNew('Cowes', 'Portsmouth');
+        Journey::createPlanned('Cowes', 'Portsmouth');
     }
 
     public function test_current_returns_active_journey(): void

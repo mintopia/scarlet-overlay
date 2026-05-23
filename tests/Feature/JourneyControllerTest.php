@@ -38,7 +38,7 @@ class JourneyControllerTest extends TestCase
         $this->assertDatabaseHas('journeys', [
             'from_port' => 'Lymington',
             'to_port' => 'Yarmouth',
-            'status' => 'active',
+            'status' => 'planned',
         ]);
     }
 
