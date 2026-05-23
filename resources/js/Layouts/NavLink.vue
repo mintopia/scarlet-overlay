@@ -36,18 +36,18 @@ defineProps({
     border-radius: 7px;
     font-size: 14px;
     font-weight: 500;
-    color: oklch(0.45 0.005 40);
+    color: var(--color-text-secondary);
     cursor: pointer;
     transition: background 0.12s ease-out, color 0.12s ease-out;
     text-decoration: none;
 }
 
-.nav-link:hover { background: oklch(0.98 0.003 70); color: oklch(0.18 0.005 40); }
+.nav-link:hover { background: var(--color-bg); color: var(--color-text-primary); }
 .nav-link:focus-visible { outline: 2px solid var(--color-scarlet); outline-offset: -2px; border-radius: 7px; }
 
 .nav-link--active {
-    background: oklch(0.54 0.22 27 / 0.06);
-    color: oklch(0.54 0.22 27);
+    background: var(--color-scarlet-light);
+    color: var(--color-scarlet);
     font-weight: 600;
 }
 
