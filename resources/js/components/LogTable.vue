@@ -3,7 +3,7 @@
         <table class="log-table">
             <thead>
                 <tr>
-                    <th class="col-time">Date<br>Time</th>
+                    <th class="col-time">Date<br>Time <span class="th-unit">({{ tzLabel }})</span></th>
                     <th class="col-num">Crs<br><span class="th-unit">°</span></th>
                     <th class="col-num">Log<br><span class="th-unit">nm</span></th>
                     <th class="col-num">Dist<br><span class="th-unit">nm</span></th>
@@ -65,12 +65,19 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, onUnmounted, nextTick } from 'vue';
+import { ref, computed, onMounted, onUnmounted, nextTick, watch } from 'vue';
 import uPlot from 'uplot';
 import 'uplot/dist/uPlot.min.css';
 
 const props = defineProps({
     rows: { type: Array, default: () => [] },
+    timezone: { type: String, default: undefined },
+});
+
+const tzLabel = computed(() => {
+    if (!props.timezone) return Intl.DateTimeFormat().resolvedOptions().timeZone.split('/').pop().replace(/_/g, ' ');
+    if (props.timezone === 'UTC') return 'UTC';
+    return props.timezone.split('/').pop().replace(/_/g, ' ');
 });
 
 const chartEl = ref(null);
@@ -183,14 +190,18 @@ onUnmounted(() => {
     window.removeEventListener('resize', handleResize);
 });
 
+function tzOpts() {
+    return props.timezone ? { timeZone: props.timezone } : {};
+}
+
 function fmtDate(ts) {
     const d = new Date(ts * 1000);
-    return d.toLocaleDateString('en-GB', { day: '2-digit', month: '2-digit', year: '2-digit' });
+    return d.toLocaleDateString('en-GB', { day: '2-digit', month: '2-digit', year: '2-digit', ...tzOpts() });
 }
 
 function fmtTime(ts) {
     const d = new Date(ts * 1000);
-    return d.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
+    return d.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', ...tzOpts() });
 }
 
 function fmtVal(v, decimals = 1) {

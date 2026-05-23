@@ -45,11 +45,15 @@ class AdminLogController extends Controller
             unset($row);
         }
 
+        $weather = $metrics->getWeatherData();
+        $positionTimezone = $weather['timezone'] ?? null;
+
         return Inertia::render('Admin/Log', [
             'rows' => $rows,
             'period' => $period,
             'hasActiveJourney' => $journey !== null,
             'journeyTitle' => $journey?->title,
+            'positionTimezone' => $positionTimezone,
         ]);
     }
 }
