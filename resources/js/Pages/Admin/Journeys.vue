@@ -118,14 +118,14 @@ function fmtDate(iso) {
 
 <style scoped>
 .status-badge { font-size: 10px; font-weight: 600; letter-spacing: 0.03em; padding: 3px 8px; border-radius: 4px; text-transform: capitalize; }
-.status-badge--planned { color: oklch(0.55 0.12 80); background: oklch(0.55 0.12 80 / 0.10); }
+.status-badge--planned { color: var(--color-amber); background: var(--color-amber-bg); }
 .status-badge--active { color: var(--color-green); background: var(--color-green-bg); }
-.status-badge--completed { color: oklch(0.55 0.15 240); background: oklch(0.55 0.15 240 / 0.10); }
-.status-badge--abandoned { color: var(--color-text-dim); background: oklch(0.60 0.005 40 / 0.08); }
+.status-badge--completed { color: var(--color-blue); background: var(--color-blue-bg); }
+.status-badge--abandoned { color: var(--color-text-dim); background: var(--color-bg); }
 
 .modal-overlay {
     position: fixed; inset: 0;
-    background: oklch(0.05 0.008 40 / 0.45);
+    background: rgba(0, 0, 0, 0.45);
     display: flex; align-items: center; justify-content: center;
     z-index: 100; padding: 24px;
 }
@@ -134,6 +134,6 @@ function fmtDate(iso) {
     border-radius: 12px;
     padding: 28px 28px 24px;
     width: 100%; max-width: 400px;
-    box-shadow: 0 8px 40px oklch(0.05 0.008 40 / 0.14);
+    box-shadow: 0 8px 40px rgba(0, 0, 0, 0.14);
 }
 </style>

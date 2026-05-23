@@ -65,7 +65,7 @@
             <div class="strip">
                 <div class="strip-cell"><div class="strip-label">SOG</div><div class="strip-value text-scarlet">{{ fmt(boat?.speed_sog) }}</div><div class="strip-unit">kn</div></div>
                 <div class="strip-cell"><div class="strip-label">Heading</div><div class="strip-value">{{ fmt(boat?.heading, 0) }}</div><div class="strip-unit">°</div></div>
-                <div class="strip-cell"><div class="strip-label">Depth</div><div class="strip-value" style="color: oklch(0.55 0.15 240)">{{ fmt(boat?.depth) }}</div><div class="strip-unit">m</div></div>
+                <div class="strip-cell"><div class="strip-label">Depth</div><div class="strip-value text-blue">{{ fmt(boat?.depth) }}</div><div class="strip-unit">m</div></div>
                 <div class="strip-cell"><div class="strip-label">Battery</div><div class="strip-value text-green">{{ fmt(boat?.house_battery_voltage, 2) }}</div><div class="strip-unit">V</div></div>
             </div>
             <div v-if="gps?.latitude != null" class="text-[12px] text-text-secondary mt-2 tabular-nums">
@@ -81,7 +81,7 @@
                 <div class="space-y-2 text-[13px]">
                     <div class="data-row">
                         <span>Next Waypoint</span>
-                        <span style="color: oklch(0.55 0.15 240)">{{ fmtNav(boat.nav_wp_distance) }} nm</span>
+                        <span class="text-blue">{{ fmtNav(boat.nav_wp_distance) }} nm</span>
                     </div>
                     <div class="data-row">
                         <span>Time to Go</span>
@@ -107,7 +107,7 @@
                     </div>
                     <div class="data-row">
                         <span>Air / Sea Temp</span>
-                        <span>{{ fmt(weather.temp) }}° <span style="color: oklch(0.55 0.15 240)">/ {{ fmt(weather.seaTemp) }}°C</span></span>
+                        <span>{{ fmt(weather.temp) }}° <span class="text-blue">/ {{ fmt(weather.seaTemp) }}°C</span></span>
                     </div>
                     <div class="data-row">
                         <span>Wind</span>
@@ -382,7 +382,7 @@ function degreesToCompass(deg) {
 
 .modal-overlay {
     position: fixed; inset: 0;
-    background: oklch(0.05 0.008 40 / 0.45);
+    background: rgba(0, 0, 0, 0.45);
     display: flex; align-items: center; justify-content: center;
     z-index: 100; padding: 24px;
 }
@@ -391,6 +391,6 @@ function degreesToCompass(deg) {
     border-radius: 12px;
     padding: 28px 28px 24px;
     width: 100%; max-width: 400px;
-    box-shadow: 0 8px 40px oklch(0.05 0.008 40 / 0.14);
+    box-shadow: 0 8px 40px rgba(0, 0, 0, 0.14);
 }
 </style>
