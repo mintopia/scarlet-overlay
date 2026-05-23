@@ -42,8 +42,7 @@ export function useScarletMetrics(options = {}) {
         const sog = boat.value?.speed_sog;
         if ((sog == null || sog < 0.5) && portName.value) return 'In Port';
         const current = boat.value?.house_battery_current;
-        const voltage = boat.value?.house_battery_voltage;
-        if (current != null && voltage != null && current > 0 && voltage > 13.2) return 'Under Power';
+        if (current != null && current > 0) return 'Under Power';
         return 'Under Sail';
     });
 
