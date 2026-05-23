@@ -109,8 +109,26 @@ class JourneyController extends Controller
         return redirect()->route('admin.journeys')->with('success', 'Import started. Track data will appear shortly.');
     }
 
-    public function edit(Journey $journey)
+    public function edit(Journey $journey, MetricsService $metrics)
     {
+        $logRows = [];
+        if ($journey->started_at && $journey->ended_at) {
+            $durationHours = $journey->started_at->diffInHours($journey->ended_at);
+            if ($durationHours > 168) {
+                $step = 14400;
+            } elseif ($durationHours > 72) {
+                $step = 7200;
+            } else {
+                $step = 3600;
+            }
+            $logRows = $metrics->getLogData(
+                null,
+                (string) $step,
+                $journey->started_at->timestamp,
+                $journey->ended_at->timestamp,
+            );
+        }
+
         return Inertia::render('Admin/JourneyEdit', [
             'journey' => array_merge(
                 $journey->only('id', 'slug', 'title', 'from_port', 'to_port', 'is_public', 'notes', 'status', 'gpx_route_path'),
@@ -120,6 +138,7 @@ class JourneyController extends Controller
                     'track_point_count' => $journey->trackPoints()->count(),
                 ],
             ),
+            'logRows' => $logRows,
         ]);
     }
 

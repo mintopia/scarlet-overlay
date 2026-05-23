@@ -75,6 +75,14 @@
             </div>
         </div>
 
+        <!-- Ship's Log -->
+        <div v-if="logRows.length" class="panel p-0 mb-6">
+            <div class="px-6 pt-5 pb-3">
+                <h2 class="text-[15px] font-semibold">Ship's Log</h2>
+            </div>
+            <LogTable :rows="logRows" :show-date="true" />
+        </div>
+
         <!-- Danger Zone -->
         <div class="panel p-6 border-error bg-[oklch(0.58_0.20_27_/_0.08)]">
             <h2 class="text-[15px] font-semibold mb-3 text-red-600">Danger Zone</h2>
@@ -133,8 +141,12 @@ import { ref } from 'vue';
 import { Head, Link, useForm, router } from '@inertiajs/vue3';
 import AdminLayout from '@/Layouts/AdminLayout.vue';
 import SavedCheck from '@/components/SavedCheck.vue';
+import LogTable from '@/components/LogTable.vue';
 
-const props = defineProps({ journey: Object });
+const props = defineProps({
+    journey: Object,
+    logRows: { type: Array, default: () => [] },
+});
 
 const form = useForm({
     title: props.journey.title,
