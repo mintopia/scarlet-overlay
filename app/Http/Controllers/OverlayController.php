@@ -13,6 +13,9 @@ class OverlayController extends Controller
         Inertia::setRootView('overlay-app');
 
         $journey = \App\Models\Journey::current();
+        $routeJourney = $journey
+            ?? \App\Models\Journey::planned()
+            ?? \App\Models\Journey::completed()->whereNotNull('route_waypoints')->orderByDesc('ended_at')->first();
 
         return Inertia::render('Public/Overlay', [
             'initialMetrics' => $metrics->getAllMetrics(),
@@ -21,7 +24,7 @@ class OverlayController extends Controller
             'passageFrom' => $journey?->from_port ?? '',
             'passageTo' => $journey?->to_port ?? '',
             'portName' => BoatSetting::getValue('port_name', ''),
-            'routeWaypoints' => $journey?->route_waypoints ?? [],
+            'routeWaypoints' => $routeJourney?->route_waypoints ?? [],
         ]);
     }
 }

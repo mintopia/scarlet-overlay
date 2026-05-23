@@ -11,6 +11,9 @@ class DashboardController extends Controller
     public function index(MetricsService $metrics)
     {
         $journey = \App\Models\Journey::current();
+        $routeJourney = $journey
+            ?? \App\Models\Journey::planned()
+            ?? \App\Models\Journey::completed()->whereNotNull('route_waypoints')->orderByDesc('ended_at')->first();
 
         return Inertia::render('Public/Dashboard', [
             'initialMetrics' => $metrics->getAllMetrics(),
@@ -23,7 +26,7 @@ class DashboardController extends Controller
             'reverb' => config('scarlet.reverb'),
             'reverbKey' => config('broadcasting.connections.reverb.key'),
             'tripOffset' => (float) BoatSetting::getValue('trip_offset', 0),
-            'routeWaypoints' => $journey?->route_waypoints ?? [],
+            'routeWaypoints' => $routeJourney?->route_waypoints ?? [],
         ]);
     }
 }
