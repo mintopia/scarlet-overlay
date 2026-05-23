@@ -18,7 +18,7 @@ class BoatMetricsController extends Controller
             'boat' => $metrics->getBoatMetrics(),
             'batteryHistory' => $prometheus->queryRange($history['battery'], '24h', '300s'),
             'batteryPowerHistory' => $prometheus->queryRange($history['battery_power'], '24h', '300s'),
-            'speedHistory' => $prometheus->queryRange($history['speed'], '24h', '300s'),
+            'speedHistory' => $prometheus->queryRangeWithFallback($history['speed'], 'scarlet_gps_speed_kn', '24h', '300s'),
             'tempHistoryForepeak' => $prometheus->queryRange($history['temp_forepeak'], '24h', '300s'),
             'tempHistoryQuarterberth' => $prometheus->queryRange($history['temp_quarterberth'], '24h', '300s'),
             'tempHistoryMainCabin' => $prometheus->queryRange($history['temp_main_cabin'], '24h', '300s'),

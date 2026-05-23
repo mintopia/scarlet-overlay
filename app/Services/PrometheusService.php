@@ -99,6 +99,27 @@ class PrometheusService
         }
     }
 
+    public function queryRangeWithFallback(string $primary, string $fallback, ?string $duration, string $step = '15s', ?int $start = null, ?int $end = null): array
+    {
+        $data = $this->queryRange($primary, $duration, $step, $start, $end);
+
+        if (!empty($data)) {
+            $fallbackData = $this->queryRange($fallback, $duration, $step, $start, $end);
+            if (!empty($fallbackData)) {
+                $primaryByTs = collect($data)->keyBy('timestamp');
+                foreach ($fallbackData as $point) {
+                    if (!$primaryByTs->has($point['timestamp'])) {
+                        $data[] = $point;
+                    }
+                }
+                usort($data, fn ($a, $b) => $a['timestamp'] <=> $b['timestamp']);
+            }
+            return $data;
+        }
+
+        return $this->queryRange($fallback, $duration, $step, $start, $end);
+    }
+
     public function queryMultiple(array $queries): array
     {
         $results = [];

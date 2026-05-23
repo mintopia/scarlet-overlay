@@ -23,9 +23,17 @@ class MetricsService
 
     public function getBoatMetrics(): array
     {
-        return $this->prometheus->queryMultiple(
+        $metrics = $this->prometheus->queryMultiple(
             config('scarlet.metrics.mappings.boat')
         );
+
+        if ($metrics['speed_sog'] === null) {
+            $metrics['speed_sog'] = $this->prometheus->query(
+                config('scarlet.metrics.mappings.gps.speed')
+            );
+        }
+
+        return $metrics;
     }
 
     public function getTrackerMetrics(): array

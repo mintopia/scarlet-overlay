@@ -41,7 +41,7 @@ class ExploreController extends Controller
         $range = $request->query('range', '24h');
         [$start, $end, $step] = $this->resolveTimeRange($request, $range);
 
-        $data = $prometheus->queryRange($metric['query'], null, $step, $start, $end);
+        $data = $this->queryMetricRange($prometheus, $metric, null, $step, $start, $end);
 
         $overlays = [];
         $overlayParam = $request->query('overlay', '');
@@ -51,7 +51,7 @@ class ExploreController extends Controller
                 if (isset($allMetrics[$os]) && $os !== $slug) {
                     $overlays[] = [
                         'metric' => array_merge($allMetrics[$os], ['slug' => $os]),
-                        'data' => $prometheus->queryRange($allMetrics[$os]['query'], null, $step, $start, $end),
+                        'data' => $this->queryMetricRange($prometheus, $allMetrics[$os], null, $step, $start, $end),
                     ];
                 }
             }
@@ -99,7 +99,7 @@ class ExploreController extends Controller
             if (!isset($allMetrics[$slug])) {
                 return response()->json(['error' => "Unknown metric: {$slug}"], 422);
             }
-            $data = $prometheus->queryRange($allMetrics[$slug]['query'], null, $step, $start, $end);
+            $data = $this->queryMetricRange($prometheus, $allMetrics[$slug], null, $step, $start, $end);
             $values = array_column($data, 'value');
 
             $results[] = [
@@ -161,6 +161,14 @@ class ExploreController extends Controller
     {
         $step = max(15, (int) floor($durationSeconds / 300));
         return $step . 's';
+    }
+
+    private function queryMetricRange(PrometheusService $prometheus, array $metric, ?string $duration, string $step, int $start, int $end): array
+    {
+        if (!empty($metric['fallback'])) {
+            return $prometheus->queryRangeWithFallback($metric['query'], $metric['fallback'], $duration, $step, $start, $end);
+        }
+        return $prometheus->queryRange($metric['query'], $duration, $step, $start, $end);
     }
 
     private function getPassageData(): array

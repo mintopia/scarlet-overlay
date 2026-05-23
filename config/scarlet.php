@@ -33,8 +33,8 @@ return [
 
         'mappings' => [
             'boat' => [
-                // Navigation (merged by tracker — uses Signal K when available, GPS fallback)
-                'speed_sog' => 'scarlet_boat_speed_kn',
+                // Navigation
+                'speed_sog' => 'scarlet_signalk_navigation_speedOverGround * 1.94384',
                 'speed_stw' => 'scarlet_signalk_navigation_speedThroughWater * 1.94384',
                 'heading' => 'scarlet_boat_heading_deg',
                 'cog' => 'scarlet_signalk_navigation_courseOverGroundTrue * 180 / 3.14159265359',
@@ -130,6 +130,7 @@ return [
                     'unit' => 'kn',
                     'color' => 'oklch(0.54 0.22 27)',
                     'query' => 'scarlet_signalk_navigation_speedOverGround * 1.94384',
+                    'fallback' => 'scarlet_gps_speed_kn',
                     'group' => 'navigation',
                 ],
                 'depth' => [
