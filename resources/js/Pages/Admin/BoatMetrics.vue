@@ -50,13 +50,13 @@
                 <svg viewBox="0 0 400 100" class="w-full" preserveAspectRatio="none">
                     <defs>
                         <linearGradient id="battGrad" x1="0" y1="0" x2="0" y2="1">
-                            <stop offset="0%" stop-color="oklch(0.62 0.15 155)" stop-opacity="0.18"/>
-                            <stop offset="100%" stop-color="oklch(0.62 0.15 155)" stop-opacity="0.02"/>
+                            <stop offset="0%" stop-color="var(--color-green)" stop-opacity="0.18"/>
+                            <stop offset="100%" stop-color="var(--color-green)" stop-opacity="0.02"/>
                         </linearGradient>
                     </defs>
                     <polygon v-if="batteryHistory?.length" :points="toArea(batteryHistory, 400, 100, batteryMin, batteryMax)" fill="url(#battGrad)"/>
-                    <polyline v-if="batteryHistory?.length" :points="toLine(batteryHistory, 400, 100, batteryMin, batteryMax)" fill="none" stroke="oklch(0.62 0.15 155)" stroke-width="1.5" stroke-linejoin="round" stroke-linecap="round"/>
-                    <text v-if="!batteryHistory?.length" x="200" y="55" text-anchor="middle" font-size="12" fill="oklch(0.70 0.005 40)">No data</text>
+                    <polyline v-if="batteryHistory?.length" :points="toLine(batteryHistory, 400, 100, batteryMin, batteryMax)" fill="none" stroke="var(--color-green)" stroke-width="1.5" stroke-linejoin="round" stroke-linecap="round"/>
+                    <text v-if="!batteryHistory?.length" x="200" y="55" text-anchor="middle" font-size="12" fill="var(--color-text-dim)">No data</text>
                 </svg>
                 <div class="chart-axis"><span>24h ago</span><span>now</span></div>
             </Link>
@@ -70,13 +70,13 @@
                 <svg viewBox="0 0 400 100" class="w-full" preserveAspectRatio="none">
                     <defs>
                         <linearGradient id="spdGrad" x1="0" y1="0" x2="0" y2="1">
-                            <stop offset="0%" stop-color="oklch(0.54 0.22 27)" stop-opacity="0.18"/>
-                            <stop offset="100%" stop-color="oklch(0.54 0.22 27)" stop-opacity="0.02"/>
+                            <stop offset="0%" stop-color="var(--color-scarlet)" stop-opacity="0.18"/>
+                            <stop offset="100%" stop-color="var(--color-scarlet)" stop-opacity="0.02"/>
                         </linearGradient>
                     </defs>
                     <polygon v-if="speedHistory?.length" :points="toArea(speedHistory, 400, 100, 0, speedMax)" fill="url(#spdGrad)"/>
-                    <polyline v-if="speedHistory?.length" :points="toLine(speedHistory, 400, 100, 0, speedMax)" fill="none" stroke="oklch(0.54 0.22 27)" stroke-width="1.5" stroke-linejoin="round" stroke-linecap="round"/>
-                    <text v-if="!speedHistory?.length" x="200" y="55" text-anchor="middle" font-size="12" fill="oklch(0.70 0.005 40)">No data</text>
+                    <polyline v-if="speedHistory?.length" :points="toLine(speedHistory, 400, 100, 0, speedMax)" fill="none" stroke="var(--color-scarlet)" stroke-width="1.5" stroke-linejoin="round" stroke-linecap="round"/>
+                    <text v-if="!speedHistory?.length" x="200" y="55" text-anchor="middle" font-size="12" fill="var(--color-text-dim)">No data</text>
                 </svg>
                 <div class="chart-axis"><span>24h ago</span><span>now</span></div>
             </Link>
@@ -90,32 +90,32 @@
                 <span class="tabular-nums text-[12px] font-medium" :class="livePower != null && livePower >= 0 ? 'text-green' : 'text-amber'">{{ livePowerLabel }}</span>
             </div>
             <div class="chart-legend">
-                <span><span class="legend-dot" style="color: oklch(0.62 0.15 155)">&#9679;</span> Charging</span>
-                <span><span class="legend-dot" style="color: oklch(0.65 0.18 40)">&#9679;</span> Discharging</span>
+                <span><span class="legend-dot text-green">&#9679;</span> Charging</span>
+                <span><span class="legend-dot text-amber">&#9679;</span> Discharging</span>
             </div>
             <svg viewBox="0 0 400 120" class="w-full" preserveAspectRatio="none">
                 <defs>
                     <linearGradient id="chargeGrad" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="0%" stop-color="oklch(0.62 0.15 155)" stop-opacity="0.22"/>
-                        <stop offset="100%" stop-color="oklch(0.62 0.15 155)" stop-opacity="0.02"/>
+                        <stop offset="0%" stop-color="var(--color-green)" stop-opacity="0.22"/>
+                        <stop offset="100%" stop-color="var(--color-green)" stop-opacity="0.02"/>
                     </linearGradient>
                     <linearGradient id="dischargeGrad" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="0%" stop-color="oklch(0.65 0.18 40)" stop-opacity="0.02"/>
-                        <stop offset="100%" stop-color="oklch(0.65 0.18 40)" stop-opacity="0.22"/>
+                        <stop offset="0%" stop-color="var(--color-amber)" stop-opacity="0.02"/>
+                        <stop offset="100%" stop-color="var(--color-amber)" stop-opacity="0.22"/>
                     </linearGradient>
                     <clipPath id="clipCharge"><rect x="0" y="0" width="400" height="60"/></clipPath>
                     <clipPath id="clipDischarge"><rect x="0" y="60" width="400" height="60"/></clipPath>
                 </defs>
-                <line x1="0" y1="60" x2="400" y2="60" stroke="oklch(0.50 0.005 40)" stroke-width="0.5" stroke-dasharray="4,3" v-if="batteryPowerHistory?.length"/>
+                <line x1="0" y1="60" x2="400" y2="60" stroke="var(--color-text-dim)" stroke-width="0.5" stroke-dasharray="4,3" v-if="batteryPowerHistory?.length"/>
                 <polygon v-if="batteryPowerHistory?.length" :points="toPowerArea(batteryPowerHistory, 400, 120, powerAbsMax, true)" fill="url(#chargeGrad)"/>
                 <polygon v-if="batteryPowerHistory?.length" :points="toPowerArea(batteryPowerHistory, 400, 120, powerAbsMax, false)" fill="url(#dischargeGrad)"/>
-                <polyline v-if="batteryPowerHistory?.length" :points="toPowerLine(batteryPowerHistory, 400, 120, powerAbsMax)" fill="none" stroke="oklch(0.62 0.15 155)" stroke-width="1.5" stroke-linejoin="round" stroke-linecap="round" clip-path="url(#clipCharge)"/>
-                <polyline v-if="batteryPowerHistory?.length" :points="toPowerLine(batteryPowerHistory, 400, 120, powerAbsMax)" fill="none" stroke="oklch(0.65 0.18 40)" stroke-width="1.5" stroke-linejoin="round" stroke-linecap="round" clip-path="url(#clipDischarge)"/>
-                <text v-if="!batteryPowerHistory?.length" x="200" y="65" text-anchor="middle" font-size="12" fill="oklch(0.70 0.005 40)">No data</text>
+                <polyline v-if="batteryPowerHistory?.length" :points="toPowerLine(batteryPowerHistory, 400, 120, powerAbsMax)" fill="none" stroke="var(--color-green)" stroke-width="1.5" stroke-linejoin="round" stroke-linecap="round" clip-path="url(#clipCharge)"/>
+                <polyline v-if="batteryPowerHistory?.length" :points="toPowerLine(batteryPowerHistory, 400, 120, powerAbsMax)" fill="none" stroke="var(--color-amber)" stroke-width="1.5" stroke-linejoin="round" stroke-linecap="round" clip-path="url(#clipDischarge)"/>
+                <text v-if="!batteryPowerHistory?.length" x="200" y="65" text-anchor="middle" font-size="12" fill="var(--color-text-dim)">No data</text>
             </svg>
             <div class="chart-axis">
                 <span>24h ago</span>
-                <span class="text-center" style="color: oklch(0.50 0.005 40)">0 W</span>
+                <span class="text-center text-text-dim">0 W</span>
                 <span>now</span>
             </div>
         </Link>
@@ -126,22 +126,22 @@
                 <svg class="explore-icon" viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M6 2H2v4M14 10v4h-4M2 6l4-4M10 14l4-4"/></svg>
                 <div class="panel-title mb-0.5">Cabin Temperature</div>
                 <div class="chart-legend">
-                    <span><span class="legend-dot" style="color: oklch(0.70 0.14 70)">&#9679;</span> Forepeak {{ live?.cabin_temp_forepeak != null ? fmt(live.cabin_temp_forepeak) + '°C' : '—' }}</span>
-                    <span><span class="legend-dot" style="color: oklch(0.60 0.16 240)">&#9679;</span> Quarterberth {{ live?.cabin_temp_quarterberth != null ? fmt(live.cabin_temp_quarterberth) + '°C' : '—' }}</span>
+                    <span><span class="legend-dot text-amber">&#9679;</span> Forepeak {{ live?.cabin_temp_forepeak != null ? fmt(live.cabin_temp_forepeak) + '°C' : '—' }}</span>
+                    <span><span class="legend-dot text-blue">&#9679;</span> Quarterberth {{ live?.cabin_temp_quarterberth != null ? fmt(live.cabin_temp_quarterberth) + '°C' : '—' }}</span>
                     <span><span class="legend-dot" style="color: oklch(0.65 0.18 330)">&#9679;</span> Main Cabin {{ live?.cabin_temp_main != null ? fmt(live.cabin_temp_main) + '°C' : '—' }}</span>
                 </div>
                 <svg viewBox="0 0 400 100" class="w-full" preserveAspectRatio="none">
                     <defs>
                         <linearGradient id="tmpGrad" x1="0" y1="0" x2="0" y2="1">
-                            <stop offset="0%" stop-color="oklch(0.70 0.14 70)" stop-opacity="0.10"/>
-                            <stop offset="100%" stop-color="oklch(0.70 0.14 70)" stop-opacity="0.01"/>
+                            <stop offset="0%" stop-color="var(--color-amber)" stop-opacity="0.10"/>
+                            <stop offset="100%" stop-color="var(--color-amber)" stop-opacity="0.01"/>
                         </linearGradient>
                     </defs>
                     <polygon v-if="tempHistoryForepeak?.length" :points="toArea(tempHistoryForepeak, 400, 100, tempMin, tempMax)" fill="url(#tmpGrad)"/>
-                    <polyline v-if="tempHistoryForepeak?.length" :points="toLine(tempHistoryForepeak, 400, 100, tempMin, tempMax)" fill="none" stroke="oklch(0.70 0.14 70)" stroke-width="1.5" stroke-linejoin="round" stroke-linecap="round"/>
+                    <polyline v-if="tempHistoryForepeak?.length" :points="toLine(tempHistoryForepeak, 400, 100, tempMin, tempMax)" fill="none" stroke="var(--color-amber)" stroke-width="1.5" stroke-linejoin="round" stroke-linecap="round"/>
                     <polyline v-if="tempHistoryQuarterberth?.length" :points="toLine(tempHistoryQuarterberth, 400, 100, tempMin, tempMax)" fill="none" stroke="oklch(0.60 0.16 240)" stroke-width="1.5" stroke-linejoin="round" stroke-linecap="round"/>
                     <polyline v-if="tempHistoryMainCabin?.length" :points="toLine(tempHistoryMainCabin, 400, 100, tempMin, tempMax)" fill="none" stroke="oklch(0.65 0.18 330)" stroke-width="1.5" stroke-linejoin="round" stroke-linecap="round"/>
-                    <text v-if="!hasTempData" x="200" y="55" text-anchor="middle" font-size="12" fill="oklch(0.70 0.005 40)">No data</text>
+                    <text v-if="!hasTempData" x="200" y="55" text-anchor="middle" font-size="12" fill="var(--color-text-dim)">No data</text>
                 </svg>
                 <div class="chart-axis"><span>24h ago</span><span>now</span></div>
             </Link>
@@ -150,22 +150,22 @@
                 <svg class="explore-icon" viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M6 2H2v4M14 10v4h-4M2 6l4-4M10 14l4-4"/></svg>
                 <div class="panel-title mb-0.5">Cabin Humidity</div>
                 <div class="chart-legend">
-                    <span><span class="legend-dot" style="color: oklch(0.70 0.14 70)">&#9679;</span> Forepeak {{ live?.cabin_humidity_forepeak != null ? fmt(live.cabin_humidity_forepeak, 0) + '%' : '—' }}</span>
-                    <span><span class="legend-dot" style="color: oklch(0.60 0.16 240)">&#9679;</span> Quarterberth {{ live?.cabin_humidity_quarterberth != null ? fmt(live.cabin_humidity_quarterberth, 0) + '%' : '—' }}</span>
+                    <span><span class="legend-dot text-amber">&#9679;</span> Forepeak {{ live?.cabin_humidity_forepeak != null ? fmt(live.cabin_humidity_forepeak, 0) + '%' : '—' }}</span>
+                    <span><span class="legend-dot text-blue">&#9679;</span> Quarterberth {{ live?.cabin_humidity_quarterberth != null ? fmt(live.cabin_humidity_quarterberth, 0) + '%' : '—' }}</span>
                     <span><span class="legend-dot" style="color: oklch(0.65 0.18 330)">&#9679;</span> Main Cabin {{ live?.cabin_humidity_main != null ? fmt(live.cabin_humidity_main, 0) + '%' : '—' }}</span>
                 </div>
                 <svg viewBox="0 0 400 100" class="w-full" preserveAspectRatio="none">
                     <defs>
                         <linearGradient id="humGrad" x1="0" y1="0" x2="0" y2="1">
-                            <stop offset="0%" stop-color="oklch(0.70 0.14 70)" stop-opacity="0.10"/>
-                            <stop offset="100%" stop-color="oklch(0.70 0.14 70)" stop-opacity="0.01"/>
+                            <stop offset="0%" stop-color="var(--color-amber)" stop-opacity="0.10"/>
+                            <stop offset="100%" stop-color="var(--color-amber)" stop-opacity="0.01"/>
                         </linearGradient>
                     </defs>
                     <polygon v-if="humidityHistoryForepeak?.length" :points="toArea(humidityHistoryForepeak, 400, 100, humidityMin, humidityMax)" fill="url(#humGrad)"/>
-                    <polyline v-if="humidityHistoryForepeak?.length" :points="toLine(humidityHistoryForepeak, 400, 100, humidityMin, humidityMax)" fill="none" stroke="oklch(0.70 0.14 70)" stroke-width="1.5" stroke-linejoin="round" stroke-linecap="round"/>
+                    <polyline v-if="humidityHistoryForepeak?.length" :points="toLine(humidityHistoryForepeak, 400, 100, humidityMin, humidityMax)" fill="none" stroke="var(--color-amber)" stroke-width="1.5" stroke-linejoin="round" stroke-linecap="round"/>
                     <polyline v-if="humidityHistoryQuarterberth?.length" :points="toLine(humidityHistoryQuarterberth, 400, 100, humidityMin, humidityMax)" fill="none" stroke="oklch(0.60 0.16 240)" stroke-width="1.5" stroke-linejoin="round" stroke-linecap="round"/>
                     <polyline v-if="humidityHistoryMainCabin?.length" :points="toLine(humidityHistoryMainCabin, 400, 100, humidityMin, humidityMax)" fill="none" stroke="oklch(0.65 0.18 330)" stroke-width="1.5" stroke-linejoin="round" stroke-linecap="round"/>
-                    <text v-if="!hasHumidityData" x="200" y="55" text-anchor="middle" font-size="12" fill="oklch(0.70 0.005 40)">No data</text>
+                    <text v-if="!hasHumidityData" x="200" y="55" text-anchor="middle" font-size="12" fill="var(--color-text-dim)">No data</text>
                 </svg>
                 <div class="chart-axis"><span>24h ago</span><span>now</span></div>
             </Link>
@@ -197,13 +197,13 @@
                         <circle cx="70" cy="70" r="3" fill="oklch(0.82 0.005 40)"/>
                         <!-- Heading (blue) -->
                         <g :style="`transform: rotate(${live?.heading ?? 0}deg)`" style="transform-origin: 70px 70px">
-                            <polygon points="70,14 64,34 76,34" fill="oklch(0.55 0.15 240)"/>
-                            <line x1="70" y1="34" x2="70" y2="90" stroke="oklch(0.55 0.15 240)" stroke-width="2"/>
+                            <polygon points="70,14 64,34 76,34" fill="var(--color-blue)"/>
+                            <line x1="70" y1="34" x2="70" y2="90" stroke="var(--color-blue)" stroke-width="2"/>
                         </g>
                         <!-- True wind direction (scarlet, shorter) -->
                         <g :style="`transform: rotate(${live?.wind_direction_true ?? 0}deg)`" style="transform-origin: 70px 70px">
-                            <polygon points="70,18 66,32 74,32" fill="oklch(0.54 0.22 27)" opacity="0.85"/>
-                            <line x1="70" y1="32" x2="70" y2="56" stroke="oklch(0.54 0.22 27)" stroke-width="1.5" opacity="0.85"/>
+                            <polygon points="70,18 66,32 74,32" fill="var(--color-scarlet)" opacity="0.85"/>
+                            <line x1="70" y1="32" x2="70" y2="56" stroke="var(--color-scarlet)" stroke-width="1.5" opacity="0.85"/>
                         </g>
                     </svg>
                     <div class="flex-1 space-y-2 text-[13px]">
@@ -217,7 +217,7 @@
                         </div>
                         <div class="data-row">
                             <span>SOG</span>
-                            <span style="color: oklch(0.55 0.15 240)">{{ fmt(live?.speed_sog) }} kn</span>
+                            <span class="text-blue">{{ fmt(live?.speed_sog) }} kn</span>
                         </div>
                         <div class="data-row">
                             <span>STW</span>
@@ -242,7 +242,7 @@
                         <template v-if="live?.nav_wp_distance > 0 && live?.nav_wp_ttg > 0">
                             <div class="data-row">
                                 <span>Next WP</span>
-                                <span style="color: oklch(0.55 0.15 240)">{{ fmt(live.nav_wp_distance) }} nm</span>
+                                <span class="text-blue">{{ fmt(live.nav_wp_distance) }} nm</span>
                             </div>
                             <div class="data-row">
                                 <span>TTG</span>
@@ -302,10 +302,10 @@
                     <div>
                         <div class="flex justify-between text-[12px] mb-1.5">
                             <span class="text-text-secondary">Fresh Water</span>
-                            <span class="tabular-nums font-semibold" style="color: oklch(0.55 0.15 240)">{{ fmt(live?.water_level, 0) }}%</span>
+                            <span class="tabular-nums font-semibold text-blue">{{ fmt(live?.water_level, 0) }}%</span>
                         </div>
                         <div class="tank-track">
-                            <div class="tank-fill" :style="{ background: 'oklch(0.55 0.15 240)', transform: 'scaleX(' + (clamp(live?.water_level) / 100) + ')' }"></div>
+                            <div class="tank-fill bg-blue" :style="{ transform: 'scaleX(' + (clamp(live?.water_level) / 100) + ')' }"></div>
                         </div>
                     </div>
                 </div>
@@ -323,13 +323,13 @@
                 <svg viewBox="0 0 400 100" class="w-full" preserveAspectRatio="none">
                     <defs>
                         <linearGradient id="fuelGrad" x1="0" y1="0" x2="0" y2="1">
-                            <stop offset="0%" stop-color="oklch(0.70 0.14 70)" stop-opacity="0.18"/>
-                            <stop offset="100%" stop-color="oklch(0.70 0.14 70)" stop-opacity="0.02"/>
+                            <stop offset="0%" stop-color="var(--color-amber)" stop-opacity="0.18"/>
+                            <stop offset="100%" stop-color="var(--color-amber)" stop-opacity="0.02"/>
                         </linearGradient>
                     </defs>
                     <polygon v-if="fuelHistory?.length" :points="toArea(fuelHistory, 400, 100, 0, 100)" fill="url(#fuelGrad)"/>
-                    <polyline v-if="fuelHistory?.length" :points="toLine(fuelHistory, 400, 100, 0, 100)" fill="none" stroke="oklch(0.70 0.14 70)" stroke-width="1.5" stroke-linejoin="round" stroke-linecap="round"/>
-                    <text v-if="!fuelHistory?.length" x="200" y="55" text-anchor="middle" font-size="12" fill="oklch(0.70 0.005 40)">No data</text>
+                    <polyline v-if="fuelHistory?.length" :points="toLine(fuelHistory, 400, 100, 0, 100)" fill="none" stroke="var(--color-amber)" stroke-width="1.5" stroke-linejoin="round" stroke-linecap="round"/>
+                    <text v-if="!fuelHistory?.length" x="200" y="55" text-anchor="middle" font-size="12" fill="var(--color-text-dim)">No data</text>
                 </svg>
                 <div class="chart-axis"><span>24h ago</span><span>now</span></div>
             </Link>
@@ -338,18 +338,18 @@
                 <svg class="explore-icon" viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M6 2H2v4M14 10v4h-4M2 6l4-4M10 14l4-4"/></svg>
                 <div class="panel-head">
                     <span class="panel-title">Fresh Water Level</span>
-                    <span class="tabular-nums text-[12px] font-medium" style="color: oklch(0.55 0.15 240)">{{ live?.water_level != null ? fmt(live.water_level, 0) + '%' : '—' }}</span>
+                    <span class="tabular-nums text-[12px] font-medium text-blue">{{ live?.water_level != null ? fmt(live.water_level, 0) + '%' : '—' }}</span>
                 </div>
                 <svg viewBox="0 0 400 100" class="w-full" preserveAspectRatio="none">
                     <defs>
                         <linearGradient id="waterGrad" x1="0" y1="0" x2="0" y2="1">
-                            <stop offset="0%" stop-color="oklch(0.55 0.15 240)" stop-opacity="0.18"/>
-                            <stop offset="100%" stop-color="oklch(0.55 0.15 240)" stop-opacity="0.02"/>
+                            <stop offset="0%" stop-color="var(--color-blue)" stop-opacity="0.18"/>
+                            <stop offset="100%" stop-color="var(--color-blue)" stop-opacity="0.02"/>
                         </linearGradient>
                     </defs>
                     <polygon v-if="waterHistory?.length" :points="toArea(waterHistory, 400, 100, 0, 100)" fill="url(#waterGrad)"/>
-                    <polyline v-if="waterHistory?.length" :points="toLine(waterHistory, 400, 100, 0, 100)" fill="none" stroke="oklch(0.55 0.15 240)" stroke-width="1.5" stroke-linejoin="round" stroke-linecap="round"/>
-                    <text v-if="!waterHistory?.length" x="200" y="55" text-anchor="middle" font-size="12" fill="oklch(0.70 0.005 40)">No data</text>
+                    <polyline v-if="waterHistory?.length" :points="toLine(waterHistory, 400, 100, 0, 100)" fill="none" stroke="var(--color-blue)" stroke-width="1.5" stroke-linejoin="round" stroke-linecap="round"/>
+                    <text v-if="!waterHistory?.length" x="200" y="55" text-anchor="middle" font-size="12" fill="var(--color-text-dim)">No data</text>
                 </svg>
                 <div class="chart-axis"><span>24h ago</span><span>now</span></div>
             </Link>
@@ -579,7 +579,7 @@ function formatEta(seconds) {
 }
 
 .strip-value--depth {
-    color: oklch(0.55 0.15 240);
+    color: var(--color-blue);
 }
 
 .strip-unit {
