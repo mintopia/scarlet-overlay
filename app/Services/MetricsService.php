@@ -178,24 +178,17 @@ class MetricsService
             if ($i === 0) {
                 $rows[$i]['dist'] = null;
                 $rows[$i]['dmg'] = null;
-                $rows[$i]['diff'] = null;
                 continue;
             }
             $prev = $rows[$i - 1];
             $curr = $rows[$i];
 
-            $dist = ($curr['trip_log'] !== null && $prev['trip_log'] !== null)
+            $rows[$i]['dist'] = ($curr['trip_log'] !== null && $prev['trip_log'] !== null)
                 ? $curr['trip_log'] - $prev['trip_log']
                 : null;
 
-            $dmg = ($curr['wp_distance'] !== null && $prev['wp_distance'] !== null)
+            $rows[$i]['dmg'] = ($curr['wp_distance'] !== null && $prev['wp_distance'] !== null)
                 ? $prev['wp_distance'] - $curr['wp_distance']
-                : null;
-
-            $rows[$i]['dist'] = $dist;
-            $rows[$i]['dmg'] = $dmg;
-            $rows[$i]['diff'] = ($dist !== null && $dmg !== null)
-                ? $dmg - $dist
                 : null;
         }
 
