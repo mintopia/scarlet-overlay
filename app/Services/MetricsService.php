@@ -174,22 +174,36 @@ class MetricsService
             $rows[] = $row;
         }
 
-        for ($i = count($rows) - 1; $i >= 0; $i--) {
+        $cumDist = 0;
+        $cumDmg = 0;
+        for ($i = 0; $i < count($rows); $i++) {
             if ($i === 0) {
                 $rows[$i]['dist'] = null;
                 $rows[$i]['dmg'] = null;
+                $rows[$i]['total_dist'] = 0;
+                $rows[$i]['diff'] = null;
+                $rows[$i]['cum_diff'] = 0;
                 continue;
             }
             $prev = $rows[$i - 1];
             $curr = $rows[$i];
 
-            $rows[$i]['dist'] = ($curr['trip_log'] !== null && $prev['trip_log'] !== null)
+            $dist = ($curr['trip_log'] !== null && $prev['trip_log'] !== null)
                 ? $curr['trip_log'] - $prev['trip_log']
                 : null;
 
-            $rows[$i]['dmg'] = ($curr['wp_distance'] !== null && $prev['wp_distance'] !== null)
+            $dmg = ($curr['wp_distance'] !== null && $prev['wp_distance'] !== null)
                 ? $prev['wp_distance'] - $curr['wp_distance']
                 : null;
+
+            if ($dist !== null) $cumDist += $dist;
+            if ($dmg !== null) $cumDmg += $dmg;
+
+            $rows[$i]['dist'] = $dist;
+            $rows[$i]['dmg'] = $dmg;
+            $rows[$i]['total_dist'] = round($cumDist, 1);
+            $rows[$i]['diff'] = ($dist !== null && $dmg !== null) ? $dmg - $dist : null;
+            $rows[$i]['cum_diff'] = round($cumDmg - $cumDist, 1);
         }
 
         return $rows;
