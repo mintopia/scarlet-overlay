@@ -115,6 +115,7 @@ onUnmounted(() => {
     .sidebar {
         position: relative;
         transform: none;
+        z-index: auto;
     }
 }
 

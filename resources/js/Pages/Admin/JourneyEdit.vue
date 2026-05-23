@@ -172,7 +172,7 @@ function deleteJourney() {
     position: fixed; inset: 0;
     background: oklch(0.05 0.008 40 / 0.45);
     display: flex; align-items: center; justify-content: center;
-    z-index: 50; padding: 24px;
+    z-index: 100; padding: 24px;
 }
 .modal-card {
     background: var(--color-surface);
