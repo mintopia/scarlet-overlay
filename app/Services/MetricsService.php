@@ -168,22 +168,16 @@ class MetricsService
             $rows[] = $row;
         }
 
-        $stepHours = $stepSeconds / 3600;
         for ($i = count($rows) - 1; $i >= 0; $i--) {
             if ($i === 0) {
                 $rows[$i]['sow'] = null;
-                $rows[$i]['vmg'] = null;
                 continue;
             }
             $prev = $rows[$i - 1];
             $curr = $rows[$i];
 
             $rows[$i]['sow'] = ($curr['trip_log'] !== null && $prev['trip_log'] !== null)
-                ? ($curr['trip_log'] - $prev['trip_log']) / $stepHours
-                : null;
-
-            $rows[$i]['vmg'] = ($curr['wp_distance'] !== null && $prev['wp_distance'] !== null)
-                ? ($prev['wp_distance'] - $curr['wp_distance']) / $stepHours
+                ? $curr['trip_log'] - $prev['trip_log']
                 : null;
         }
 

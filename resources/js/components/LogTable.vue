@@ -5,14 +5,13 @@
                 <tr>
                     <th class="col-time">Date<br>Time</th>
                     <th class="col-num">Log<br><span class="th-unit">nm</span></th>
-                    <th class="col-num">SOW<br><span class="th-unit">kn</span></th>
+                    <th class="col-num">Dist<br><span class="th-unit">nm</span></th>
                     <th class="col-num">Wind<br><span class="th-unit">dir</span></th>
                     <th class="col-num">Wind<br><span class="th-unit">bft</span></th>
                     <th class="col-num">Baro<br><span class="th-unit">hPa</span></th>
                     <th class="col-pos">Lat<br>Long</th>
                     <th class="col-num">WP<br><span class="th-unit">nm</span></th>
                     <th class="col-num">TTG</th>
-                    <th class="col-num">VMG<br><span class="th-unit">kn</span></th>
                     <th class="col-num">Batt<br><span class="th-unit">%</span></th>
                     <th class="col-num">H₂O<br><span class="th-unit">%</span></th>
                     <th class="col-num">Fuel<br><span class="th-unit">%</span></th>
@@ -35,13 +34,12 @@
                     </td>
                     <td class="col-num">{{ fmtVal(row.wp_distance, 1) }}</td>
                     <td class="col-num">{{ fmtTtg(row.wp_ttg) }}</td>
-                    <td class="col-num" :class="vmgClass(row.vmg)">{{ fmtVmg(row.vmg) }}</td>
                     <td class="col-num">{{ fmtPct(row.battery_soc) }}</td>
                     <td class="col-num">{{ fmtPct(row.water_level) }}</td>
                     <td class="col-num">{{ fmtPct(row.fuel_level) }}</td>
                 </tr>
                 <tr v-if="!rows.length">
-                    <td colspan="13" class="text-center text-text-dim py-6">No log data for this period.</td>
+                    <td colspan="12" class="text-center text-text-dim py-6">No log data for this period.</td>
                 </tr>
             </tbody>
         </table>
@@ -69,19 +67,6 @@ function fmtVal(v, decimals = 1) {
 
 function fmtPct(v) {
     return v != null ? Math.round(v) + '' : '—';
-}
-
-function fmtVmg(v) {
-    if (v == null) return '—';
-    const sign = v >= 0 ? '+' : '';
-    return sign + v.toFixed(1);
-}
-
-function vmgClass(v) {
-    if (v == null) return '';
-    if (v > 0.1) return 'vmg-positive';
-    if (v < -0.1) return 'vmg-negative';
-    return '';
 }
 
 function fmtLat(lat) {
@@ -202,13 +187,4 @@ function knotsToBeaufort(kn) {
     background: oklch(0.96 0.006 70);
 }
 
-.vmg-positive {
-    color: oklch(0.55 0.16 155);
-    font-weight: 600;
-}
-
-.vmg-negative {
-    color: oklch(0.55 0.18 27);
-    font-weight: 600;
-}
 </style>
