@@ -24,6 +24,7 @@ class WeatherResource extends JsonResource
             'timezone' => $this->timezone,
             'code' => $this->wmoCode,
             'summary' => $this->getWeatherSummary(),
+            'conditionText' => $this->getConditionText(),
             'temp' => $this->temp,
             'seaTemp' => $this->seaTemp,
             'daytime' => $this->daytime,
