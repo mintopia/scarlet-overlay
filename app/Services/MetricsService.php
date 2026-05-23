@@ -33,6 +33,11 @@ class MetricsService
             );
         }
 
+        $tw = $this->calculateTrueWind($metrics['_aws'], $metrics['_awa'], $metrics['_sog'], $metrics['_heading']);
+        $metrics['wind_speed_true'] = $tw['speed'];
+        $metrics['wind_direction_true'] = $tw['direction'];
+        unset($metrics['_aws'], $metrics['_awa'], $metrics['_sog'], $metrics['_heading']);
+
         return $metrics;
     }
 

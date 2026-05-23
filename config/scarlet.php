@@ -44,11 +44,13 @@ return [
                 'nav_wp_distance' => 'scarlet_signalk_navigation_courseGreatCircle_nextPoint_distance / 1852',
                 'nav_wp_ttg' => 'scarlet_signalk_navigation_courseGreatCircle_nextPoint_timeToGo',
 
-                // Wind (apparent from Signal K, true from tracker)
+                // Wind (apparent from Signal K, true computed from apparent + SOG + heading)
                 'wind_speed_apparent' => 'scarlet_signalk_environment_wind_speedApparent * 1.94384',
                 'wind_angle_apparent' => 'scarlet_signalk_environment_wind_angleApparent * 180 / 3.14159265359',
-                'wind_speed_true' => 'scarlet_boat_wind_speed_kn',
-                'wind_direction_true' => 'scarlet_boat_wind_direction_deg',
+                '_aws' => 'scarlet_signalk_environment_wind_speedApparent',
+                '_awa' => 'scarlet_signalk_environment_wind_angleApparent',
+                '_sog' => 'scarlet_signalk_navigation_speedOverGround',
+                '_heading' => 'scarlet_signalk_navigation_headingTrue',
 
                 // Environment
                 'water_temp' => 'scarlet_signalk_environment_water_temperature - 273.15',
