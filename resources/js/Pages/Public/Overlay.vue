@@ -406,7 +406,6 @@ onUnmounted(() => {
     border: none !important;
 }
 
-[data-state="port"] .leaflet-overlay-pane { display: none; }
 [data-state="offline"] .leaflet-overlay-pane { opacity: 0.5; }
 [data-state="offline"] .boat-marker { opacity: 0.5; }
 </style>
