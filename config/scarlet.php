@@ -41,8 +41,8 @@ return [
                 'depth' => 'scarlet_boat_depth_meters',
                 'heel' => 'scarlet_signalk_navigation_attitude_roll * 180 / 3.14159265359',
                 'trip_log' => 'scarlet_signalk_navigation_trip_log / 1852',
-                'nav_wp_distance' => 'scarlet_signalk_navigation_courseRhumbline_nextPoint_distance / 1852',
-                'nav_wp_ttg' => 'scarlet_signalk_navigation_courseRhumbline_nextPoint_timeToGo',
+                'nav_wp_distance' => 'scarlet_signalk_navigation_courseGreatCircle_nextPoint_distance / 1852',
+                'nav_wp_ttg' => 'scarlet_signalk_navigation_courseGreatCircle_nextPoint_timeToGo',
 
                 // Wind (apparent from Signal K, true from tracker)
                 'wind_speed_apparent' => 'scarlet_signalk_environment_wind_speedApparent * 1.94384',
@@ -160,14 +160,14 @@ return [
                     'label' => 'Distance to Waypoint',
                     'unit' => 'nm',
                     'color' => 'oklch(0.55 0.15 240)',
-                    'query' => 'scarlet_signalk_navigation_courseRhumbline_nextPoint_distance / 1852',
+                    'query' => 'scarlet_signalk_navigation_courseGreatCircle_nextPoint_distance / 1852',
                     'group' => 'navigation',
                 ],
                 'nav_wp_ttg' => [
                     'label' => 'Time to Waypoint',
                     'unit' => 's',
                     'color' => 'oklch(0.60 0.16 240)',
-                    'query' => 'scarlet_signalk_navigation_courseRhumbline_nextPoint_timeToGo',
+                    'query' => 'scarlet_signalk_navigation_courseGreatCircle_nextPoint_timeToGo',
                     'group' => 'navigation',
                 ],
 

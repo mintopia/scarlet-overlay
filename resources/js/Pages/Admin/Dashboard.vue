@@ -312,6 +312,7 @@ function formatEta(seconds) {
 
 .route-map {
     height: 220px;
+    isolation: isolate;
 }
 
 @media (min-width: 640px) {
