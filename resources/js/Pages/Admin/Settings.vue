@@ -78,7 +78,7 @@
             <div style="position: absolute; inset: 0; background: rgba(0,0,0,0.5);" @click="showReloadModal = false"></div>
             <div style="position: relative; background: white; border-radius: 12px; padding: 28px 32px; max-width: 420px; width: 100%; margin: 0 16px; box-shadow: 0 20px 60px rgba(0,0,0,0.25);">
                 <h3 style="font-size: 16px; font-weight: 700; margin: 0 0 10px;">Force Reload Clients</h3>
-                <p style="font-size: 14px; color: #6b7280; margin: 0 0 24px; line-height: 1.5;">This will reload all overlay and dashboard browser windows. Continue?</p>
+                <p class="text-sm text-text-secondary leading-normal mb-6">This will reload all overlay and dashboard browser windows. Continue?</p>
                 <div style="display: flex; gap: 10px; justify-content: flex-end;">
                     <button type="button" @click="showReloadModal = false" class="btn btn--secondary">Cancel</button>
                     <button type="button" @click="confirmForceReload" :disabled="reloading" class="btn btn--danger">

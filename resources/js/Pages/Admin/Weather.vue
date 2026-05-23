@@ -53,8 +53,8 @@
                     <div class="data-row"><span>Wave Height</span><span>{{ fmt(weather.waves?.height) }} m</span></div>
                     <div class="data-row"><span>Wave Direction</span><span>{{ degreesToCompass(weather.waves?.direction) }} ({{ fmt(weather.waves?.direction, 0) }}°)</span></div>
                     <div class="data-row"><span>Wave Period</span><span>{{ fmt(weather.waves?.period) }} s</span></div>
-                    <div class="data-row"><span>Sea Surface Temp (forecast)</span><span style="color: oklch(0.55 0.15 240)">{{ fmt(weather.seaTemp) }}°C</span></div>
-                    <div class="data-row"><span>Water Temp (boat sensor)</span><span style="color: oklch(0.55 0.15 240)">{{ fmt(boat?.water_temp) }}°C</span></div>
+                    <div class="data-row"><span>Sea Surface Temp (forecast)</span><span class="text-blue">{{ fmt(weather.seaTemp) }}°C</span></div>
+                    <div class="data-row"><span>Water Temp (boat sensor)</span><span class="text-blue">{{ fmt(boat?.water_temp) }}°C</span></div>
                 </div>
             </div>
 

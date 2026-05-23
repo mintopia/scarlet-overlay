@@ -84,7 +84,7 @@
         </div>
 
         <!-- Danger Zone -->
-        <div class="panel p-6 border-error bg-[oklch(0.58_0.20_27_/_0.08)]">
+        <div class="panel p-6 border-error bg-error-bg">
             <h2 class="text-[15px] font-semibold mb-3 text-red-600">Danger Zone</h2>
             <div class="flex items-center justify-between">
                 <p class="text-[13px] text-text-secondary">Permanently delete this journey and all its track data.</p>
@@ -182,7 +182,7 @@ function deleteJourney() {
 <style scoped>
 .modal-overlay {
     position: fixed; inset: 0;
-    background: oklch(0.05 0.008 40 / 0.45);
+    background: rgba(0, 0, 0, 0.45);
     display: flex; align-items: center; justify-content: center;
     z-index: 100; padding: 24px;
 }
@@ -191,7 +191,7 @@ function deleteJourney() {
     border-radius: 12px;
     padding: 28px 28px 24px;
     width: 100%; max-width: 400px;
-    box-shadow: 0 8px 40px oklch(0.05 0.008 40 / 0.14);
+    box-shadow: 0 8px 40px rgba(0, 0, 0, 0.14);
 }
 </style>
 
