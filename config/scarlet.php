@@ -342,7 +342,7 @@ return [
                 'wp_ttg' => 'scarlet_signalk_navigation_courseGreatCircle_nextPoint_timeToGo',
                 'battery_soc' => 'scarlet_signalk_electrical_batteries_0_capacity_stateOfCharge * 100',
                 'water_level' => 'scarlet_mqtt_percent{topic="watertank"}',
-                'fuel_level' => 'clamp_max(scarlet_signalk_tanks_fuel_currentLevel / 0.91, 1) * 100',
+                'fuel_level' => 'scarlet_signalk_tanks_fuel_currentLevel * 100',
             ],
         ],
     ],
