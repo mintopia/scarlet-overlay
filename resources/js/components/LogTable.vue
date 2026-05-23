@@ -3,51 +3,53 @@
         <table class="log-table">
             <thead>
                 <tr>
-                    <th class="col-time">Date<br>Time <span class="th-unit">({{ tzLabel }})</span></th>
-                    <th class="col-num">Crs<br><span class="th-unit">°</span></th>
-                    <th class="col-num">Total<br><span class="th-unit">nm</span></th>
-                    <th class="col-num">Log<br><span class="th-unit">nm</span></th>
-                    <th class="col-num">Dist<br><span class="th-unit">nm</span></th>
-                    <th class="col-num">Wind<br><span class="th-unit">dir</span></th>
-                    <th class="col-num">Wind<br><span class="th-unit">bft</span></th>
-                    <th class="col-num col-baro">Baro<br><span class="th-unit">hPa</span></th>
-                    <th class="col-pos">Lat<br>Long</th>
-                    <th class="col-num">WP<br><span class="th-unit">nm</span></th>
-                    <th class="col-num">DMG<br><span class="th-unit">nm</span></th>
-                    <th class="col-num">TTG</th>
-                    <th class="col-num">Batt<br><span class="th-unit">%</span></th>
-                    <th class="col-num">H₂O<br><span class="th-unit">%</span></th>
-                    <th class="col-num">Fuel<br><span class="th-unit">%</span></th>
-                    <th class="col-num">+/−<br><span class="th-unit">nm</span></th>
+                    <th class="col-time group-end" title="Date and time of log entry">Date<br>Time <span class="th-unit">({{ tzLabel }})</span></th>
+                    <th class="col-num" title="Course Over Ground (or heading if COG unavailable)">Crs<br><span class="th-unit">°</span></th>
+                    <th class="col-num" title="Overall trip log reading (cumulative)">Total<br><span class="th-unit">nm</span></th>
+                    <th class="col-num" title="Journey trip log reading">Log<br><span class="th-unit">nm</span></th>
+                    <th class="col-num group-end" title="Distance run this hour (through water)">Dist<br><span class="th-unit">nm</span></th>
+                    <th class="col-num" title="True wind direction">Wind<br><span class="th-unit">dir</span></th>
+                    <th class="col-num" title="True wind speed (Beaufort scale)">Wind<br><span class="th-unit">bft</span></th>
+                    <th class="col-num col-baro group-end" title="Barometric pressure (forecast)">Baro<br><span class="th-unit">hPa</span></th>
+                    <th class="col-pos group-end" title="Latitude and longitude">Lat<br>Long</th>
+                    <th class="col-num" title="Distance to next waypoint">WP<br><span class="th-unit">nm</span></th>
+                    <th class="col-num" title="Distance Made Good toward waypoint this hour">DMG<br><span class="th-unit">nm</span></th>
+                    <th class="col-num group-end" title="Time To Go to next waypoint">TTG</th>
+                    <th class="col-num" title="House battery state of charge">Batt<br><span class="th-unit">%</span></th>
+                    <th class="col-num" title="Fresh water tank level">H₂O<br><span class="th-unit">%</span></th>
+                    <th class="col-num group-end" title="Diesel tank level">Fuel<br><span class="th-unit">%</span></th>
+                    <th class="col-num" title="Efficiency: DMG minus Dist (positive = gaining on waypoint)">+/−<br><span class="th-unit">nm</span></th>
                 </tr>
             </thead>
             <tbody>
                 <tr v-for="row in rows" :key="row.timestamp">
-                    <td class="col-time">
+                    <td class="col-time group-end">
                         <div class="cell-date">{{ fmtDate(row.timestamp) }}</div>
                         <div class="cell-time">{{ fmtTime(row.timestamp) }}</div>
                     </td>
                     <td class="col-num">{{ fmtCourse(row.course) }}</td>
                     <td class="col-num">{{ fmtVal(row.total_log, 1) }}</td>
                     <td class="col-num">{{ fmtVal(row.trip_log, 1) }}</td>
-                    <td class="col-num">{{ fmtVal(row.dist, 1) }}</td>
+                    <td class="col-num group-end">{{ fmtVal(row.dist, 1) }}</td>
                     <td class="col-num">{{ degreesToCompass(row.wind_direction) }}</td>
                     <td class="col-num">{{ knotsToBeaufort(row.wind_speed) }}</td>
-                    <td class="col-num col-baro">{{ fmtBaro(row.pressure) }}</td>
-                    <td class="col-pos">
+                    <td class="col-num col-baro group-end">{{ fmtBaro(row.pressure) }}</td>
+                    <td class="col-pos group-end">
                         <div>{{ fmtLat(row.latitude) }}</div>
                         <div>{{ fmtLon(row.longitude) }}</div>
                     </td>
                     <td class="col-num">{{ fmtVal(row.wp_distance, 1) }}</td>
                     <td class="col-num">{{ fmtVal(row.dmg, 1) }}</td>
-                    <td class="col-num">{{ fmtTtg(row.wp_ttg) }}</td>
+                    <td class="col-num group-end">{{ fmtTtg(row.wp_ttg) }}</td>
                     <td class="col-num">{{ fmtPct(row.battery_soc) }}</td>
                     <td class="col-num">{{ fmtPct(row.water_level) }}</td>
-                    <td class="col-num">{{ fmtPct(row.fuel_level) }}</td>
+                    <td class="col-num group-end">{{ fmtPct(row.fuel_level) }}</td>
                     <td class="col-num" :class="diffClass(row.diff)">{{ fmtDiff(row.diff) }}</td>
                 </tr>
                 <tr v-if="!rows.length">
-                    <td colspan="16" class="text-center text-text-dim py-6">No log data for this period.</td>
+                    <td colspan="16" class="empty-state">
+                        No log data for this period. Start a journey from the Dashboard to begin logging, or select a different time period.
+                    </td>
                 </tr>
             </tbody>
         </table>
@@ -93,12 +95,17 @@ const lastDiff = computed(() => {
     return data[data.length - 1].cum_diff;
 });
 
+function tzOpts() {
+    return props.timezone ? { timeZone: props.timezone } : {};
+}
+
 function initChart() {
     if (!chartEl.value || progressData.value.length < 2) return;
     if (chart) { chart.destroy(); chart = null; }
 
     const timestamps = progressData.value.map(d => d.timestamp);
     const values = progressData.value.map(d => d.cum_diff);
+    const tz = tzOpts();
 
     chart = new uPlot({
         width: chartEl.value.offsetWidth,
@@ -132,8 +139,8 @@ function initChart() {
                 font: '10px system-ui',
                 values: (u, vals) => vals.map(v => {
                     const d = new Date(v * 1000);
-                    return d.toLocaleDateString('en-GB', { day: '2-digit', month: '2-digit' }) + '\n' +
-                           d.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
+                    return d.toLocaleDateString('en-GB', { day: '2-digit', month: '2-digit', ...tz }) + '\n' +
+                           d.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', ...tz });
                 }),
             },
             {
@@ -189,10 +196,6 @@ onUnmounted(() => {
     if (chart) chart.destroy();
     window.removeEventListener('resize', handleResize);
 });
-
-function tzOpts() {
-    return props.timezone ? { timeZone: props.timezone } : {};
-}
 
 function fmtDate(ts) {
     const d = new Date(ts * 1000);
@@ -316,6 +319,7 @@ function knotsToBeaufort(kn) {
     background: var(--color-surface);
     z-index: 1;
     line-height: 1.3;
+    cursor: help;
 }
 
 .th-unit {
@@ -330,7 +334,11 @@ function knotsToBeaufort(kn) {
     border-bottom: 1px solid var(--color-border-light);
 }
 
-.col-time { text-align: left !important; }
+.group-end {
+    border-right: 2px solid var(--color-border) !important;
+}
+
+.col-time { text-align: left !important; cursor: default; }
 .col-num { text-align: right; }
 .col-pos { text-align: right; font-size: 11px; }
 .col-baro { font-style: italic; opacity: 0.6; }
@@ -352,6 +360,13 @@ function knotsToBeaufort(kn) {
 
 .log-table tbody tr:hover {
     background: oklch(0.96 0.006 70);
+}
+
+.empty-state {
+    text-align: center;
+    color: var(--color-text-dim);
+    padding: 32px 16px;
+    font-size: 13px;
 }
 
 .diff-good {
