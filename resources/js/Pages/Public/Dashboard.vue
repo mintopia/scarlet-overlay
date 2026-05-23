@@ -85,6 +85,8 @@ const compassWind = computed(() => {
 const animAppWind = useSpringValue(() => boat.value?.wind_speed_apparent, { tension: 80, friction: 12 });
 const animWindAngle = useAngleSpring(() => Math.abs(boat.value?.wind_angle_apparent ?? 0));
 const animHeel = useSpringValue(() => Math.abs(boat.value?.heel ?? 0), { tension: 80, friction: 12 });
+const etaInfo = computed(() => formatEta(boat.value?.nav_wp_ttg));
+
 const adjustedTrip = computed(() => {
     const raw = boat.value?.trip_log;
     if (raw == null) return null;
@@ -102,9 +104,14 @@ function fmtNav(v) {
 }
 
 function formatEta(seconds) {
-    if (seconds == null || seconds <= 0) return '—';
-    const eta = new Date(Date.now() + seconds * 1000);
-    return eta.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
+    if (seconds == null || seconds <= 0) return { time: '—', days: 0 };
+    const now = new Date();
+    const eta = new Date(now.getTime() + seconds * 1000);
+    const time = eta.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
+    const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    const etaStart = new Date(eta.getFullYear(), eta.getMonth(), eta.getDate());
+    const days = Math.round((etaStart - todayStart) / 86400000);
+    return { time, days };
 }
 
 function zoomIn() { map?.zoomIn(); }
@@ -177,7 +184,8 @@ onUnmounted(() => {
                 </div>
                 <div class="pill-cell">
                     <div class="pill-lbl">ETA</div>
-                    <div class="pill-val">{{ formatEta(boat.nav_wp_ttg) }}</div>
+                    <div class="pill-val">{{ etaInfo.time }}</div>
+                    <div v-if="etaInfo.days > 0" class="pill-sub">+{{ etaInfo.days }} day{{ etaInfo.days > 1 ? 's' : '' }}</div>
                 </div>
             </div>
             <div class="pill pill--compound">
