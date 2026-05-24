@@ -29,7 +29,8 @@ class JourneyViewController extends Controller
 
         $trackPoints = $journey->trackPoints()
             ->select(['recorded_at', 'latitude', 'longitude', 'speed_sog', 'heading', 'cog', 'depth', 'wind_speed_apparent', 'wind_angle_apparent', 'wind_speed_true', 'wind_direction_true', 'house_battery_voltage', 'house_battery_current', 'heel'])
-            ->get();
+            ->get()
+            ->filter(fn ($p) => !(abs($p->latitude) < 0.1 && abs($p->longitude) < 0.1));
 
         $track = $trackPoints->map(fn ($p) => [
             $p->latitude, $p->longitude, $p->speed_sog ?? 0,
@@ -69,7 +70,9 @@ class JourneyViewController extends Controller
 
         $points = $journey->trackPoints()
             ->select(['recorded_at', 'latitude', 'longitude', 'speed_sog', 'heading', 'cog', 'depth', 'wind_speed_apparent', 'wind_angle_apparent', 'wind_speed_true', 'wind_direction_true', 'house_battery_voltage', 'house_battery_current', 'heel'])
-            ->get();
+            ->get()
+            ->filter(fn ($p) => !(abs($p->latitude) < 0.1 && abs($p->longitude) < 0.1))
+            ->values();
 
         return response()->json($points);
     }

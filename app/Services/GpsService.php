@@ -27,13 +27,17 @@ class GpsService
         ]);
 
         $gps = new Gps();
-        $gps->latitude = $data['latitude'] ?? 0;
-        $gps->longitude = $data['longitude'] ?? 0;
+        $lat = $data['latitude'] ?? null;
+        $lng = $data['longitude'] ?? null;
+        $nullIsland = $lat === null || $lng === null
+            || (abs($lat) < 0.1 && abs($lng) < 0.1);
+        $gps->latitude = $nullIsland ? null : $lat;
+        $gps->longitude = $nullIsland ? null : $lng;
         $gps->speed = $data['speed'] ?? 0;
         $gps->course = $data['course'] ?? 0;
         $gps->satellites = (int) ($data['satellites'] ?? 0);
         $gps->hdop = (int) ($data['hdop'] ?? 9999);
-        $gps->valid = $gps->latitude !== 0.0 && $gps->longitude !== 0.0;
+        $gps->valid = !$nullIsland;
         $gps->timestamp = \Carbon\CarbonImmutable::now();
 
         Cache::put('gps.location', $gps, 10);

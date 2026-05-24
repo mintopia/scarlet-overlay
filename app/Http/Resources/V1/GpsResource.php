@@ -20,8 +20,8 @@ class GpsResource extends JsonResource
     {
         return [
             'timestamp' => $this->timestamp?->toIso8601String(),
-            'latitude' => $this->latitude ?? 0,
-            'longitude' => $this->longitude ?? 0,
+            'latitude' => $this->latitude,
+            'longitude' => $this->longitude,
             'valid' => $this->valid,
             'satellites' => $this->satellites,
             'hdop' => $this->hdop,

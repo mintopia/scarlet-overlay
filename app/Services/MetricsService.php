@@ -98,7 +98,7 @@ class MetricsService
         ];
     }
 
-    public function getGpsTrack(string $duration = '12h', string $step = '30s'): array
+    public function getGpsTrack(string $duration = '48h', string $step = '30s'): array
     {
         $history = config('scarlet.metrics.mappings.history');
         $signalk = config('scarlet.metrics.mappings.signalk_position');

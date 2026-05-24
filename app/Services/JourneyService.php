@@ -20,7 +20,7 @@ class JourneyService
         $lat = $gps['latitude'] ?? null;
         $lng = $gps['longitude'] ?? null;
 
-        if ($lat === null || $lng === null || ($lat == 0 && $lng == 0)) {
+        if ($lat === null || $lng === null || (abs($lat) < 0.1 && abs($lng) < 0.1)) {
             return;
         }
 

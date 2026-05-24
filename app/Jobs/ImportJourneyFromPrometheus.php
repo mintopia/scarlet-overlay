@@ -87,6 +87,9 @@ class ImportJourneyFromPrometheus implements ShouldQueue
             if (!isset($row['latitude']) || !isset($row['longitude'])) {
                 continue;
             }
+            if (abs($row['latitude']) < 0.1 && abs($row['longitude']) < 0.1) {
+                continue;
+            }
 
             $batch[] = array_merge(['journey_id' => $journey->id], $row);
 
