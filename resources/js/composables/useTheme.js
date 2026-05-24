@@ -55,6 +55,8 @@ function isDarkFallback() {
     return hour < DEFAULT_SUNRISE_HOUR || hour >= DEFAULT_SUNSET_HOUR;
 }
 
+export { theme };
+
 export function useTheme() {
     let autoInterval = null;
     let gpsInterval = null;

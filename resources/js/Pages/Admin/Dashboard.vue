@@ -192,13 +192,14 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, onUnmounted } from 'vue';
+import { ref, computed, watch, onMounted, onUnmounted } from 'vue';
 import { Head, Link, router } from '@inertiajs/vue3';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import { addRouteLayer } from '../../scarlet';
 import AdminLayout from '@/Layouts/AdminLayout.vue';
 import { fmt, fmtDuration } from '@/composables/useFormatters.js';
+import { theme } from '@/composables/useTheme.js';
 
 const props = defineProps({
     boat: Object,
@@ -214,6 +215,11 @@ const props = defineProps({
 
 const mapEl = ref(null);
 let map = null;
+let tileLayer = null;
+
+function tileUrl() {
+    return theme.value === 'light' ? '/openseamap/{z}/{x}/{y}' : '/openseamap-dark/{z}/{x}/{y}';
+}
 
 const now = ref(Date.now());
 let ticker;
@@ -224,7 +230,7 @@ onMounted(() => {
         const first = props.routeWaypoints[0];
         map = L.map(mapEl.value, { zoomControl: false, attributionControl: false })
             .setView([first.lat, first.lng], 12);
-        L.tileLayer('/openseamap/{z}/{x}/{y}', { maxZoom: 18 }).addTo(map);
+        tileLayer = L.tileLayer(tileUrl(), { maxZoom: 18 }).addTo(map);
         addRouteLayer(map, props.routeWaypoints);
         const bounds = L.latLngBounds(props.routeWaypoints.map(w => [w.lat, w.lng]));
         map.fitBounds(bounds, { padding: [30, 30] });
@@ -233,6 +239,10 @@ onMounted(() => {
 onUnmounted(() => {
     clearInterval(ticker);
     map?.remove();
+});
+
+watch(theme, () => {
+    if (tileLayer) tileLayer.setUrl(tileUrl());
 });
 
 const timeSinceUpdate = computed(() => {

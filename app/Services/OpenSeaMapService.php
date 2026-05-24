@@ -14,6 +14,9 @@ class OpenSeaMapService
         if (Storage::directoryMissing('openseamap')) {
             Storage::createDirectory('openseamap');
         }
+        if (Storage::directoryMissing('openseamap-dark')) {
+            Storage::createDirectory('openseamap-dark');
+        }
     }
     public function getTile(int $z, int $x, int $y): ?string
     {
@@ -28,6 +31,33 @@ class OpenSeaMapService
     protected function makeTile(string $filename, int $z, int $x, int $y): ?string
     {
         $background = $this->getTileImage('openstreetmap', 'https://tile.openstreetmap.org', $z, $x, $y);
+        if ($background === null) {
+            return null;
+        }
+        $overlay = $this->getTileImage('seamark', 'https://tiles.openseamap.org/seamark', $z, $x, $y);
+        if ($overlay === null) {
+            $background->save(Storage::path($filename));
+            return $filename;
+        }
+
+        $background->place($overlay);
+        $background->save(Storage::path($filename));
+        return $filename;
+    }
+
+    public function getDarkTile(int $z, int $x, int $y): ?string
+    {
+        $filename = "openseamap-dark/{$z}.{$x}.{$y}.png";
+        if (Storage::exists($filename)) {
+            return $filename;
+        }
+
+        return $this->makeDarkTile($filename, $z, $x, $y);
+    }
+
+    protected function makeDarkTile(string $filename, int $z, int $x, int $y): ?string
+    {
+        $background = $this->getTileImage('cartodb-dark', 'https://basemaps.cartocdn.com/dark_all', $z, $x, $y);
         if ($background === null) {
             return null;
         }
