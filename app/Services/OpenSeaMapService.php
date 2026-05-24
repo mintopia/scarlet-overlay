@@ -61,15 +61,56 @@ class OpenSeaMapService
         if ($background === null) {
             return null;
         }
-        $overlay = $this->getTileImage('seamark', 'https://tiles.openseamap.org/seamark', $z, $x, $y);
-        if ($overlay === null) {
+
+        $rawOverlay = $this->getTileImage('seamark', 'https://tiles.openseamap.org/seamark', $z, $x, $y);
+        if ($rawOverlay === null) {
             $background->save(Storage::path($filename));
             return $filename;
         }
 
+        $overlay = $this->lightenForDarkBase(Storage::path("seamark/{$z}.{$x}.{$y}.png")) ?? $rawOverlay;
         $background->place($overlay);
         $background->save(Storage::path($filename));
         return $filename;
+    }
+
+    protected function lightenForDarkBase(string $path): ?ImageInterface
+    {
+        $gd = @imagecreatefrompng($path);
+        if (!$gd) return null;
+
+        imagealphablending($gd, false);
+        imagesavealpha($gd, true);
+
+        $w = imagesx($gd);
+        $h = imagesy($gd);
+
+        for ($px = 0; $px < $w; $px++) {
+            for ($py = 0; $py < $h; $py++) {
+                $rgba = imagecolorat($gd, $px, $py);
+                $alpha = ($rgba >> 24) & 0x7F;
+                if ($alpha > 120) continue;
+
+                $r = ($rgba >> 16) & 0xFF;
+                $g = ($rgba >> 8) & 0xFF;
+                $b = $rgba & 0xFF;
+
+                $brightness = ($r + $g + $b) / 3;
+                $saturation = max($r, $g, $b) - min($r, $g, $b);
+
+                if ($brightness < 80 && $saturation < 40) {
+                    $color = imagecolorallocatealpha($gd, 220, 220, 220, $alpha);
+                    imagesetpixel($gd, $px, $py, $color);
+                }
+            }
+        }
+
+        ob_start();
+        imagepng($gd);
+        $data = ob_get_clean();
+        imagedestroy($gd);
+
+        return $this->imageManager->read($data);
     }
 
     protected function getTileImage(string $prefix, string $url, int $z, int $x, int $y): ?ImageInterface
