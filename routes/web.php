@@ -10,6 +10,7 @@ use App\Http\Controllers\Admin\StreamMonitorController;
 use App\Http\Controllers\Admin\AdminWeatherController;
 use App\Http\Controllers\Admin\AdminLogController;
 use App\Http\Controllers\Admin\ExploreController;
+use App\Http\Controllers\Admin\SkipperOverviewController;
 use App\Http\Controllers\Admin\TrackerController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\PasskeyController;
@@ -66,6 +67,7 @@ Route::middleware('auth')->prefix('admin')->group(function () {
     Route::post('/settings/force-reload', [SettingsController::class, 'forceReload'])->name('admin.settings.force-reload');
     Route::get('/stream', [StreamMonitorController::class, 'index'])->name('admin.stream');
     Route::get('/tracker', [TrackerController::class, 'index'])->name('admin.tracker');
+    Route::get('skipper', [SkipperOverviewController::class, 'index'])->name('admin.skipper');
     Route::get('/metrics', [BoatMetricsController::class, 'index'])->name('admin.metrics');
     Route::get('/explore', [ExploreController::class, 'index'])->name('admin.explore');
     Route::get('/explore/series', [ExploreController::class, 'series'])->name('admin.explore.series');
