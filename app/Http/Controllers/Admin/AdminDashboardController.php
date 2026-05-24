@@ -32,6 +32,12 @@ class AdminDashboardController extends Controller
             ?? $plannedJourney
             ?? Journey::completed()->whereNotNull('route_waypoints')->orderByDesc('ended_at')->first();
 
+        $powerHistory = $prometheus->queryRange(
+            'scarlet_signalk_electrical_batteries_0_voltage * scarlet_signalk_electrical_batteries_0_current',
+            '1h',
+            '60s'
+        );
+
         return Inertia::render('Admin/Dashboard', [
             'boat' => $metrics->getBoatMetrics(),
             'gps' => $metrics->getGpsMetrics(),
@@ -58,6 +64,7 @@ class AdminDashboardController extends Controller
             'streamOnline' => (bool) $prometheus->query('scarlet_srt_up'),
             'streamPublisher' => (bool) $prometheus->query('scarlet_srt_publisher_connected'),
             'timestamp' => now()->toIso8601String(),
+            'powerHistory' => $powerHistory,
         ]);
     }
 }

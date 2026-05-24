@@ -121,14 +121,9 @@ const batterySoc     = computed(() => b.value.house_battery_soc     ?? 0)
 const fuelLevel      = computed(() => b.value.fuel_level            ?? 0)
 const waterLevel     = computed(() => b.value.water_level           ?? 0)
 const houseVoltage   = computed(() => b.value.house_battery_voltage ?? null)
-const houseCurrent   = computed(() => b.value.house_battery_current ?? null)
 const engineVoltage  = computed(() => b.value.engine_battery_voltage ?? null)
-const waterTemp      = computed(() => b.value.water_temp            ?? null)
 
-const livePower = computed(() => {
-    if (houseVoltage.value == null || houseCurrent.value == null) return null
-    return houseVoltage.value * houseCurrent.value
-})
+const livePower = computed(() => b.value.battery_power ?? null)
 const livePowerLabel = computed(() => {
     if (livePower.value == null) return '—'
     const sign = livePower.value >= 0 ? '+' : ''
@@ -154,6 +149,23 @@ const wxCurrentSpeed = computed(() => w.value.current_speed ?? null)
 const wxCurrentDir   = computed(() => w.value.current_direction ?? null)
 const wxPressure     = computed(() => w.value.pressure     ?? null)
 const wxSeaTemp      = computed(() => w.value.sea_temperature ?? null)
+
+const wxSummary = computed(() => w.value.summary ?? 'na')
+const wxGradient = computed(() => {
+    const gradients = {
+        'day-sunny':    'linear-gradient(135deg, oklch(0.72 0.14 80), oklch(0.65 0.16 55))',
+        'night-clear':  'linear-gradient(135deg, oklch(0.22 0.06 260), oklch(0.18 0.04 240))',
+        'cloud':        'linear-gradient(135deg, oklch(0.62 0.08 220), oklch(0.55 0.10 200))',
+        'cloudy':       'linear-gradient(135deg, oklch(0.52 0.04 230), oklch(0.45 0.03 220))',
+        'fog':          'linear-gradient(135deg, oklch(0.60 0.02 220), oklch(0.55 0.02 210))',
+        'sprinkle':     'linear-gradient(135deg, oklch(0.48 0.06 230), oklch(0.42 0.06 240))',
+        'rain':         'linear-gradient(135deg, oklch(0.40 0.06 235), oklch(0.34 0.06 245))',
+        'snow':         'linear-gradient(135deg, oklch(0.68 0.02 230), oklch(0.62 0.02 220))',
+        'showers':      'linear-gradient(135deg, oklch(0.46 0.06 230), oklch(0.40 0.06 240))',
+        'thunderstorm': 'linear-gradient(135deg, oklch(0.30 0.08 270), oklch(0.24 0.06 260))',
+    }
+    return gradients[wxSummary.value] ?? 'linear-gradient(135deg, oklch(0.62 0.08 220), oklch(0.55 0.10 200))'
+})
 </script>
 
 <template>
@@ -284,29 +296,15 @@ const wxSeaTemp      = computed(() => w.value.sea_temperature ?? null)
 
             <hr class="border-border-light" />
 
-            <!-- Voltage / current rows -->
+            <!-- Voltage rows -->
             <div class="space-y-1.5 text-[13px]">
                 <div class="data-row">
-                    <span>House V</span>
-                    <span class="tabular-nums">{{ houseVoltage != null ? fmt(houseVoltage, 2) + ' V' : '—' }}</span>
+                    <span>House Battery</span>
+                    <span class="tabular-nums">{{ houseVoltage != null ? fmt(houseVoltage, 1) + 'V' : '—' }}</span>
                 </div>
                 <div class="data-row">
-                    <span>Current</span>
-                    <span class="tabular-nums" :class="houseCurrent != null && houseCurrent >= 0 ? 'text-green' : 'text-amber'">
-                        {{ houseCurrent != null ? fmt(houseCurrent, 1) + ' A' : '—' }}
-                    </span>
-                </div>
-                <div class="data-row">
-                    <span>Power</span>
-                    <span class="tabular-nums" :class="livePowerClass">{{ livePowerLabel }}</span>
-                </div>
-                <div class="data-row">
-                    <span>Engine V</span>
-                    <span class="tabular-nums">{{ engineVoltage != null ? fmt(engineVoltage, 2) + ' V' : '—' }}</span>
-                </div>
-                <div class="data-row">
-                    <span>Water Temp</span>
-                    <span class="tabular-nums">{{ waterTemp != null ? fmt(waterTemp, 1) + '°C' : '—' }}</span>
+                    <span>Engine Battery</span>
+                    <span class="tabular-nums">{{ engineVoltage != null ? fmt(engineVoltage, 1) + 'V' : '—' }}</span>
                 </div>
             </div>
         </div>
@@ -347,7 +345,7 @@ const wxSeaTemp      = computed(() => w.value.sea_temperature ?? null)
         <!-- 6. Weather -->
         <div class="panel flex flex-col">
             <!-- Gradient hero strip — flush with top, no padding -->
-            <div class="wx-hero">
+            <div class="wx-hero" :style="{ background: wxGradient }">
                 <div>
                     <div class="font-sans text-[48px] font-bold tracking-tight leading-none text-white tabular-nums">
                         {{ wxTemp != null ? fmt(wxTemp, 1) + '°' : '—' }}
@@ -459,6 +457,5 @@ const wxSeaTemp      = computed(() => w.value.sea_temperature ?? null)
     align-items: center;
     justify-content: space-between;
     padding: 20px 20px 18px;
-    background: linear-gradient(135deg, oklch(0.32 0.14 205), oklch(0.26 0.10 230));
 }
 </style>

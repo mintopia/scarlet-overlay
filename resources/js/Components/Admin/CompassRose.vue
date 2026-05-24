@@ -82,6 +82,12 @@ const fineTicks = computed(() => {
         <text x="90" y="158" text-anchor="middle" fill="oklch(0.6 0.012 205)" font-size="9" font-family="Nunito Sans" font-weight="600" dominant-baseline="central">S</text>
         <text x="27" y="93" text-anchor="middle" fill="oklch(0.6 0.012 205)" font-size="9" font-family="Nunito Sans" font-weight="600" dominant-baseline="central">W</text>
 
+        <!-- Intercardinals -->
+        <text x="140.9" y="39.1" text-anchor="middle" fill="oklch(0.6 0.012 205)" font-size="7" font-family="Nunito Sans" font-weight="600" dominant-baseline="central">NE</text>
+        <text x="140.9" y="140.9" text-anchor="middle" fill="oklch(0.6 0.012 205)" font-size="7" font-family="Nunito Sans" font-weight="600" dominant-baseline="central">SE</text>
+        <text x="39.1" y="140.9" text-anchor="middle" fill="oklch(0.6 0.012 205)" font-size="7" font-family="Nunito Sans" font-weight="600" dominant-baseline="central">SW</text>
+        <text x="39.1" y="39.1" text-anchor="middle" fill="oklch(0.6 0.012 205)" font-size="7" font-family="Nunito Sans" font-weight="600" dominant-baseline="central">NW</text>
+
         <!-- Heading line + arrow -->
         <line x1="90" y1="90" :x2="headingLine.x2" :y2="headingLine.y2" stroke="var(--color-teal)" stroke-width="3" opacity="0.2"/>
         <polygon :points="headingArrow" fill="var(--color-teal)"/>

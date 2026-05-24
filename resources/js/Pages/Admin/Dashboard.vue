@@ -99,14 +99,14 @@
                 <span class="instrument-label">TWA</span>
             </div>
             <div class="instrument instrument--right">
-                <span class="instrument-unit">°C</span>
-                <span class="instrument-value">{{ fmt(liveBoat?.water_temp) }}</span>
-                <span class="instrument-label">Water</span>
+                <span class="instrument-unit">kn</span>
+                <span class="instrument-value text-amber">{{ fmt(liveBoat?.wind_speed_apparent) }}</span>
+                <span class="instrument-label">AWS</span>
             </div>
             <div class="instrument instrument--right">
-                <span class="instrument-unit">V</span>
-                <span class="instrument-value text-green">{{ fmt(liveBoat?.house_battery_voltage, 2) }}</span>
-                <span class="instrument-label">Battery</span>
+                <span class="instrument-unit">°</span>
+                <span class="instrument-value text-amber">{{ liveBoat?.wind_angle_apparent != null ? fmt(liveBoat.wind_angle_apparent, 0) : '—' }}</span>
+                <span class="instrument-label">AWA</span>
             </div>
         </div>
     </div>
@@ -157,32 +157,25 @@
                     color="green"
                 />
                 <LevelBar
-                    :value="solarPct"
-                    label="Solar"
+                    :value="fuelLevel"
+                    label="Fuel"
                     color="amber"
                 />
                 <LevelBar
-                    :value="trackerBattPct"
-                    label="Tracker"
+                    :value="waterLevel"
+                    label="Water"
                     color="blue"
                 />
             </div>
-            <div class="space-y-1.5 text-[12px] text-text-secondary">
-                <div class="data-row">
-                    <span>Connection</span>
-                    <span>{{ props.tracker?.wifi_rssi != null ? 'WiFi' : props.tracker?.lte_rssi != null ? 'LTE' : 'Disconnected' }}</span>
-                </div>
-                <div class="data-row">
-                    <span>Signal</span>
-                    <span>{{ props.tracker?.wifi_rssi != null ? fmt(props.tracker.wifi_rssi, 0) + ' dBm' : props.tracker?.lte_rssi != null ? fmt(props.tracker.lte_rssi, 0) + ' dBm' : '—' }}</span>
-                </div>
-            </div>
+            <a :href="'/admin/explore?metric=scarlet_boat_battery_power'" class="block">
+                <Sparkline :data="powerData" color="var(--color-green)" :height="36" :fill="true" :showDot="true" :zeroLine="true" />
+            </a>
         </div>
 
         <!-- Weather panel -->
         <div v-if="liveWeather" class="panel overflow-hidden">
             <!-- Gradient hero flush with panel top -->
-            <div class="weather-hero">
+            <div class="weather-hero" :style="{ background: wxGradient }">
                 <div class="weather-hero__icon">{{ wxIcon }}</div>
                 <div>
                     <div class="weather-hero__temp">{{ wxTemp }}</div>
@@ -226,6 +219,7 @@ import L from 'leaflet';
 import AdminLayout from '@/Layouts/AdminLayout.vue';
 import CompassRose from '@/Components/Admin/CompassRose.vue';
 import LevelBar from '@/Components/Admin/LevelBar.vue';
+import Sparkline from '@/Components/Admin/Sparkline.vue';
 import { fmt, fmtDuration } from '@/composables/useFormatters.js';
 import { useScarletMetrics } from '@/composables/useScarletMetrics.js';
 
@@ -241,6 +235,7 @@ const props = defineProps({
     streamOnline: Boolean,
     streamPublisher: Boolean,
     timestamp: String,
+    powerHistory: { type: Array, default: () => [] },
 });
 
 const routeWaypointsArr = computed(() => props.routeWaypoints ?? []);
@@ -304,25 +299,18 @@ const pointOfSailText = computed(() => {
     return 'Dead Run';
 });
 
-// Battery derived percentages (rough estimates from voltage / absolute value)
+// Battery / tank / power computeds
 const batteryPct = computed(() => {
+    const soc = liveBoat.value?.house_battery_soc;
+    if (soc != null) return Math.min(100, Math.max(0, soc));
     const v = liveBoat.value?.house_battery_voltage;
     if (v == null) return 0;
-    // 12V system: 11.5V = 0%, 12.7V = 100%
     return Math.min(100, Math.max(0, ((v - 11.5) / (12.7 - 11.5)) * 100));
 });
 
-const solarPct = computed(() => {
-    const w = liveBoat.value?.solar_watts;
-    if (w == null) return 0;
-    // Assume 400W max panel
-    return Math.min(100, Math.max(0, (w / 400) * 100));
-});
-
-const trackerBattPct = computed(() => {
-    const pct = props.tracker?.battery_percent;
-    return pct != null ? Math.min(100, Math.max(0, pct)) : 0;
-});
+const fuelLevel = computed(() => liveBoat.value?.fuel_level ?? 0);
+const waterLevel = computed(() => liveBoat.value?.water_level ?? 0);
+const powerData = computed(() => (props.powerHistory ?? []).map(d => d?.value ?? d));
 
 // ── Coordinate formatting ─────────────────────────────────────────────────────
 function fmtCoord(lat, lon) {
@@ -360,6 +348,23 @@ function degreesToCompass(deg) {
     const dirs = ['N', 'NNE', 'NE', 'ENE', 'E', 'ESE', 'SE', 'SSE', 'S', 'SSW', 'SW', 'WSW', 'W', 'WNW', 'NW', 'NNW'];
     return dirs[Math.round(((deg % 360) + 360) % 360 / 22.5) % 16];
 }
+
+const wxSummary = computed(() => liveWeather.value?.summary ?? 'na');
+const wxGradient = computed(() => {
+    const gradients = {
+        'day-sunny':    'linear-gradient(135deg, oklch(0.72 0.14 80), oklch(0.65 0.16 55))',
+        'night-clear':  'linear-gradient(135deg, oklch(0.22 0.06 260), oklch(0.18 0.04 240))',
+        'cloud':        'linear-gradient(135deg, oklch(0.62 0.08 220), oklch(0.55 0.10 200))',
+        'cloudy':       'linear-gradient(135deg, oklch(0.52 0.04 230), oklch(0.45 0.03 220))',
+        'fog':          'linear-gradient(135deg, oklch(0.60 0.02 220), oklch(0.55 0.02 210))',
+        'sprinkle':     'linear-gradient(135deg, oklch(0.48 0.06 230), oklch(0.42 0.06 240))',
+        'rain':         'linear-gradient(135deg, oklch(0.40 0.06 235), oklch(0.34 0.06 245))',
+        'snow':         'linear-gradient(135deg, oklch(0.68 0.02 230), oklch(0.62 0.02 220))',
+        'showers':      'linear-gradient(135deg, oklch(0.46 0.06 230), oklch(0.40 0.06 240))',
+        'thunderstorm': 'linear-gradient(135deg, oklch(0.30 0.08 270), oklch(0.24 0.06 260))',
+    };
+    return gradients[wxSummary.value] ?? 'linear-gradient(135deg, oklch(0.62 0.08 220), oklch(0.55 0.10 200))';
+});
 </script>
 
 <style scoped>
@@ -585,7 +590,6 @@ function degreesToCompass(deg) {
     align-items: center;
     gap: 16px;
     padding: 20px;
-    background: linear-gradient(135deg, oklch(0.38 0.12 245), oklch(0.32 0.10 255));
     color: white;
 }
 
