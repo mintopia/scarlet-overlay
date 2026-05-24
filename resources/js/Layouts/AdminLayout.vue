@@ -144,27 +144,29 @@ const { theme, autoMode, setTheme, enableAuto } = useTheme();
 const themeMenuOpen = ref(false);
 const userMenuOpen = ref(false);
 
+const home = { label: 'Dashboard', href: '/admin' };
+
 const breadcrumbMap = {
     'Admin/Dashboard': [{ label: 'Dashboard' }],
-    'Admin/Settings': [{ label: 'Settings' }],
-    'Admin/Journeys': [{ label: 'Journeys' }],
-    'Admin/JourneyCreate': [{ label: 'Journeys', href: '/admin/journeys' }, { label: 'New Journey' }],
-    'Admin/JourneyEdit': [{ label: 'Journeys', href: '/admin/journeys' }, { label: 'Edit' }],
-    'Admin/JourneyImport': [{ label: 'Journeys', href: '/admin/journeys' }, { label: 'Import' }],
-    'Admin/Log': [{ label: 'Log' }],
-    'Admin/Tracker': [{ label: 'Tracker' }],
-    'Admin/BoatMetrics': [{ label: 'Boat Metrics' }],
-    'Admin/Weather': [{ label: 'Weather' }],
-    'Admin/ExploreDashboard': [{ label: 'Explore' }],
-    'Admin/Explore': [{ label: 'Explore', href: '/admin/explore' }],
-    'Admin/StreamMonitor': [{ label: 'Stream Monitor' }],
-    'Admin/Profile': [{ label: 'Profile' }],
-    'Admin/Team': [{ label: 'Team' }],
+    'Admin/Settings': [home, { label: 'Settings' }],
+    'Admin/Journeys': [home, { label: 'Journeys' }],
+    'Admin/JourneyCreate': [home, { label: 'Journeys', href: '/admin/journeys' }, { label: 'New Journey' }],
+    'Admin/JourneyEdit': [home, { label: 'Journeys', href: '/admin/journeys' }, { label: 'Edit' }],
+    'Admin/JourneyImport': [home, { label: 'Journeys', href: '/admin/journeys' }, { label: 'Import' }],
+    'Admin/Log': [home, { label: 'Log' }],
+    'Admin/Tracker': [home, { label: 'Tracker' }],
+    'Admin/BoatMetrics': [home, { label: 'Boat Metrics' }],
+    'Admin/Weather': [home, { label: 'Weather' }],
+    'Admin/ExploreDashboard': [home, { label: 'Explore' }],
+    'Admin/Explore': [home, { label: 'Explore', href: '/admin/explore' }],
+    'Admin/StreamMonitor': [home, { label: 'Stream Monitor' }],
+    'Admin/Profile': [home, { label: 'Profile' }],
+    'Admin/Team': [home, { label: 'Team' }],
 };
 
 const computedBreadcrumbs = computed(() => {
-    if (props.breadcrumbs) return props.breadcrumbs;
-    return breadcrumbMap[currentPage] || [{ label: currentPage?.replace('Admin/', '') || 'Admin' }];
+    if (props.breadcrumbs) return [home, ...props.breadcrumbs];
+    return breadcrumbMap[currentPage] || [home, { label: currentPage?.replace('Admin/', '') || 'Admin' }];
 });
 
 const gravatarUrl = computed(() => {
