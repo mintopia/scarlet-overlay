@@ -1,10 +1,20 @@
 <template>
     <AdminLayout :wide="true">
         <Head title="Explore" />
-        <div class="flex items-baseline justify-between mb-6">
-            <h1 class="text-[22px] font-bold">Explore</h1>
+        <div class="flex items-center justify-between mb-6">
+            <div class="explore-select-wrap">
+                <select class="explore-select" @change="navigateToMetric($event.target.value)">
+                    <option value="" selected>Overview</option>
+                    <optgroup v-for="(groupMetrics, group) in metrics" :key="group" :label="groupLabel(group)">
+                        <option v-for="(m, slug) in groupMetrics" :key="slug" :value="slug">
+                            {{ m.label }}
+                        </option>
+                    </optgroup>
+                </select>
+                <svg class="explore-select-chevron" viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+            </div>
             <div class="flex items-center gap-1">
-                <button v-for="p in presets" :key="p.value" class="range-btn" :class="{ 'range-btn--active': currentRange === p.value }" @click="switchRange(p.value)">{{ p.label }}</button>
+                <button v-for="p in presets" :key="p.value" class="range-btn" :class="{ 'range-btn--active': currentRange === p.value, 'range-btn--passage': p.value === 'passage' }" @click="switchRange(p.value)">{{ p.label }}</button>
             </div>
         </div>
 
@@ -104,6 +114,12 @@ function openMetric(slug) {
     router.get(`/admin/explore?metric=${slug}&range=${range}`);
 }
 
+function navigateToMetric(slug) {
+    if (!slug) return;
+    const range = localStorage.getItem(RANGE_KEY) || currentRange.value;
+    router.get(`/admin/explore?metric=${slug}&range=${range}`);
+}
+
 function buildSparkline(el, data, color) {
     if (!el || !data?.length) return null;
     const timestamps = data.map(d => d.timestamp);
@@ -177,6 +193,37 @@ onUnmounted(() => {
 </script>
 
 <style scoped>
+.explore-select-wrap {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+}
+
+.explore-select {
+    font-size: 22px;
+    font-weight: 700;
+    border: none;
+    background: transparent;
+    color: var(--color-text-primary);
+    cursor: pointer;
+    padding: 2px 24px 2px 0;
+    -webkit-appearance: none;
+    appearance: none;
+}
+
+.explore-select:focus-visible {
+    outline: 2px solid var(--color-scarlet);
+    outline-offset: 2px;
+    border-radius: 4px;
+}
+
+.explore-select-chevron {
+    position: absolute;
+    right: 0;
+    pointer-events: none;
+    color: var(--color-text-dim);
+}
+
 .chart-grid {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
@@ -266,6 +313,9 @@ onUnmounted(() => {
     border-color: var(--color-scarlet);
     color: white;
 }
+
+.range-btn--passage { color: var(--color-scarlet); font-weight: 600; }
+.range-btn--passage.range-btn--active { background: var(--color-scarlet); color: white; }
 
 .all-metrics-grid {
     display: flex;

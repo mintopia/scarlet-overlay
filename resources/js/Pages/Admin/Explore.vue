@@ -1,5 +1,5 @@
 <template>
-    <AdminLayout>
+    <AdminLayout :breadcrumbs="[{ label: 'Explore', href: '/admin/explore' }, { label: metric.label }]">
         <Head :title="metric.label" />
 
         <!-- Page header / toolbar -->
@@ -13,6 +13,7 @@
                         class="metric-select"
                         @change="switchMetric($event.target.value)"
                     >
+                        <option value="__overview__">Overview</option>
                         <optgroup v-for="(groupMetrics, group) in metrics" :key="group" :label="groupLabel(group)">
                             <option v-for="(m, slug) in groupMetrics" :key="slug" :value="slug">
                                 {{ m.label }}{{ m.unit ? ` (${m.unit})` : '' }}
@@ -216,6 +217,10 @@ function buildUrl(params) {
 }
 
 function switchMetric(slug) {
+    if (slug === '__overview__') {
+        router.get('/admin/explore', { range: props.range });
+        return;
+    }
     router.get(buildUrl({ metric: slug, range: props.range }));
 }
 
