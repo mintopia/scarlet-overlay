@@ -21,27 +21,30 @@
             </div>
 
             <nav class="px-2.5 py-3 flex-1 flex flex-col gap-0.5 overflow-y-auto">
-                <div class="nav-label first:pt-1">Boat</div>
                 <NavLink href="/admin" icon="home" :active="currentPage === 'Admin/Dashboard'" @click="sidebarOpen = false">Dashboard</NavLink>
-                <NavLink href="/admin/settings" icon="settings" :active="currentPage === 'Admin/Settings'" @click="sidebarOpen = false">Settings</NavLink>
-                <NavLink href="/admin/journeys" icon="compass" :active="currentPage?.startsWith('Admin/Journey')" @click="sidebarOpen = false">Journeys</NavLink>
-                <NavLink href="/admin/log" icon="clipboard" :active="currentPage === 'Admin/Log'" @click="sidebarOpen = false">Log</NavLink>
-                <NavLink href="/admin/tracker" icon="activity" :active="currentPage === 'Admin/Tracker'" @click="sidebarOpen = false">Tracker</NavLink>
-                <NavLink href="/admin/metrics" icon="chart" :active="currentPage === 'Admin/BoatMetrics'" @click="sidebarOpen = false">Boat Metrics</NavLink>
-                <NavLink href="/admin/weather" icon="cloud" :active="currentPage === 'Admin/Weather'" @click="sidebarOpen = false">Weather</NavLink>
-                <NavLink href="/admin/explore" icon="search" :active="currentPage?.startsWith('Admin/Explore')" @click="sidebarOpen = false">Explore</NavLink>
-                <NavLink href="/admin/stream" icon="radio" :active="currentPage === 'Admin/StreamMonitor'" @click="sidebarOpen = false">Stream Monitor</NavLink>
 
-                <div class="nav-label">Links</div>
-                <a href="/overlay" target="_blank" class="nav-link">
-                    <svg class="nav-icon" viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
-                    Broadcast Overlay
+                <div class="nav-label">Skipper</div>
+                <NavLink href="/admin/skipper" icon="compass" :active="currentPage === 'Admin/SkipperOverview'" @click="sidebarOpen = false">Skipper Overview</NavLink>
+                <NavLink href="/admin/journeys" icon="compass" :active="currentPage?.startsWith('Admin/Journey')" @click="sidebarOpen = false">Journeys</NavLink>
+                <NavLink href="/admin/weather" icon="cloud" :active="currentPage === 'Admin/Weather'" @click="sidebarOpen = false">Weather</NavLink>
+                <NavLink href="/admin/log" icon="clipboard" :active="currentPage === 'Admin/Log'" @click="sidebarOpen = false">Ship's Log</NavLink>
+
+                <div class="nav-label">Broadcast</div>
+                <NavLink href="/admin/broadcast" icon="radio" :active="currentPage === 'Admin/Broadcast'" @click="sidebarOpen = false">Broadcast</NavLink>
+                <a href="/overlay" target="_blank" class="nav-external">
+                    Overlay <span class="nav-arrow">↗</span>
                 </a>
-                <a href="/dashboard" target="_blank" class="nav-link">
-                    <svg class="nav-icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"/><path d="M2 12h20"/></svg>
-                    Public Dashboard
+                <a href="/dashboard" target="_blank" class="nav-external">
+                    Public Dashboard <span class="nav-arrow">↗</span>
                 </a>
+
+                <div class="nav-label">System</div>
+                <NavLink href="/admin/tracker" icon="activity" :active="currentPage === 'Admin/Tracker'" @click="sidebarOpen = false">Tracker</NavLink>
+                <NavLink href="/admin/settings" icon="settings" :active="currentPage === 'Admin/Settings'" @click="sidebarOpen = false">Settings</NavLink>
                 <NavLink href="/admin/team" icon="users" :active="currentPage === 'Admin/Team'" @click="sidebarOpen = false">Team</NavLink>
+
+                <div class="nav-label">Tools</div>
+                <NavLink href="/admin/explore" icon="search" :active="currentPage?.startsWith('Admin/Explore')" @click="sidebarOpen = false">Explore</NavLink>
             </nav>
         </aside>
 
@@ -146,17 +149,18 @@ const home = { label: 'Dashboard', href: '/admin' };
 const breadcrumbMap = {
     'Admin/Dashboard': [{ label: 'Dashboard' }],
     'Admin/Settings': [home, { label: 'Settings' }],
+    'Admin/SkipperOverview': [home, { label: 'Skipper Overview' }],
     'Admin/Journeys': [home, { label: 'Journeys' }],
     'Admin/JourneyCreate': [home, { label: 'Journeys', href: '/admin/journeys' }, { label: 'New Journey' }],
     'Admin/JourneyEdit': [home, { label: 'Journeys', href: '/admin/journeys' }, { label: 'Edit' }],
     'Admin/JourneyImport': [home, { label: 'Journeys', href: '/admin/journeys' }, { label: 'Import' }],
-    'Admin/Log': [home, { label: 'Log' }],
+    'Admin/Log': [home, { label: "Ship's Log" }],
     'Admin/Tracker': [home, { label: 'Tracker' }],
     'Admin/BoatMetrics': [home, { label: 'Boat Metrics' }],
     'Admin/Weather': [home, { label: 'Weather' }],
+    'Admin/Broadcast': [home, { label: 'Broadcast' }],
     'Admin/ExploreDashboard': [home, { label: 'Explore' }],
     'Admin/Explore': [home, { label: 'Explore', href: '/admin/explore' }],
-    'Admin/StreamMonitor': [home, { label: 'Stream Monitor' }],
     'Admin/Profile': [home, { label: 'Profile' }],
     'Admin/Team': [home, { label: 'Team' }],
 };
@@ -300,6 +304,25 @@ onUnmounted(() => {
     stroke-width: 2;
     stroke-linecap: round;
     stroke-linejoin: round;
+}
+
+.nav-external {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 7px 16px;
+    font-size: 13px;
+    color: var(--color-text-dim);
+    text-decoration: none;
+    border-radius: 6px;
+    transition: color 0.12s;
+}
+.nav-external:hover {
+    color: var(--color-text-primary);
+}
+.nav-arrow {
+    font-size: 10px;
+    opacity: 0.4;
 }
 
 /* Top bar */
