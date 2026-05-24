@@ -1,289 +1,330 @@
 <template>
-    <AdminLayout>
-        <Head title="Dashboard" />
-        <h1 class="text-[22px] font-bold mb-6">Dashboard</h1>
+    <AdminLayout :wide="true">
+    <Head title="Dashboard" />
 
-        <!-- Active Journey / Start Journey -->
-        <div class="panel p-4 mb-6">
-            <div class="panel-title mb-3">Journey</div>
-            <template v-if="activeJourney">
-                <div class="flex items-baseline justify-between mb-2">
-                    <div>
-                        <span class="text-[16px] font-semibold">{{ activeJourney.title }}</span>
-                        <span class="ml-2 text-[10px] font-semibold tracking-wide px-2 py-0.5 rounded bg-green/10 text-green">ACTIVE</span>
-                    </div>
-                </div>
-                <div class="space-y-2 text-[13px] mb-4">
-                    <div class="data-row"><span>Elapsed</span><span>{{ fmtDuration(activeJourney.duration) }}</span></div>
-                    <div class="data-row"><span>Distance</span><span>{{ activeJourney.distance }} nm</span></div>
-                    <div class="data-row"><span>Speed</span><span class="text-scarlet">{{ fmt(boat?.speed_sog) }} kn</span></div>
-                </div>
-                <div class="flex gap-2">
-                    <button @click="showEndModal = true" class="btn btn--danger">End Journey</button>
-                    <Link href="/admin/journeys" class="btn btn--ghost">All Journeys</Link>
-                </div>
-            </template>
-            <template v-else-if="plannedJourney">
-                <div class="flex items-baseline justify-between mb-2">
-                    <div>
-                        <span class="text-[16px] font-semibold">{{ plannedJourney.title }}</span>
-                        <span class="ml-2 text-[10px] font-semibold tracking-wide px-2 py-0.5 rounded bg-amber-100 text-amber-700">PLANNED</span>
-                    </div>
-                </div>
-                <div class="space-y-2 text-[13px] mb-4">
-                    <div class="data-row"><span>Route</span><span>{{ plannedJourney.from_port }} → {{ plannedJourney.to_port }}</span></div>
-                    <div class="data-row"><span>GPX</span><span>{{ plannedJourney.has_gpx ? 'Uploaded' : 'None' }}</span></div>
-                </div>
-                <div class="flex gap-2">
-                    <button @click="showStartModal = true" class="btn btn--primary">Start Recording</button>
-                    <Link :href="`/admin/journeys/${plannedJourney.id}/edit`" class="btn btn--ghost">Edit</Link>
-                </div>
-            </template>
-            <template v-else>
-                <p class="text-[13px] text-text-secondary mb-3">No voyage underway. Plan a new journey to get started.</p>
-                <div class="flex gap-2">
-                    <Link href="/admin/journeys/create" class="btn btn--primary">Plan Journey</Link>
-                    <Link href="/admin/journeys/import" class="btn btn--ghost">Import from History</Link>
-                </div>
-            </template>
+    <!-- Status Ribbon -->
+    <div class="flex items-center justify-between p-3 px-6 bg-surface border border-border rounded-[14px] mb-5 shadow-sm">
+        <div class="flex items-center gap-4">
+            <span class="sailing-badge">{{ statusText }}</span>
+            <span class="text-sm text-text-secondary">
+                <span class="text-scarlet font-extrabold">Scarlet</span>
+                <template v-if="props.activeJourney">
+                    &nbsp;·&nbsp;{{ props.activeJourney.title }}
+                    <span class="text-text-dim">&nbsp;·&nbsp;{{ fmtDuration(props.activeJourney.duration) }}&nbsp;·&nbsp;{{ props.activeJourney.distance }} nm</span>
+                </template>
+                <template v-else-if="props.plannedJourney">
+                    &nbsp;·&nbsp;{{ props.plannedJourney.from_port }} → {{ props.plannedJourney.to_port }}
+                    <span class="ml-2 text-[10px] font-semibold tracking-wide px-2 py-0.5 rounded bg-amber-100 text-amber-700">PLANNED</span>
+                </template>
+                <template v-else>
+                    &nbsp;·&nbsp;<span class="text-text-dim">No active journey</span>
+                </template>
+            </span>
         </div>
-
-        <!-- Route Map -->
-        <div v-if="routeWaypoints.length" class="panel p-0 mb-6 overflow-hidden">
-            <div ref="mapEl" class="route-map"></div>
+        <div class="flex gap-3 items-center">
+            <div class="flex items-center gap-1.5">
+                <span :class="['health-dot', props.tracker?.battery_percent > 0 ? 'health-dot--green' : 'health-dot--red']"></span>
+                <span class="text-[11px] text-text-dim font-medium">Tracker</span>
+            </div>
+            <div class="flex items-center gap-1.5">
+                <span :class="['health-dot', props.streamOnline ? 'health-dot--green' : 'health-dot--red']"></span>
+                <span class="text-[11px] text-text-dim font-medium">Stream</span>
+            </div>
+            <div class="flex items-center gap-1.5">
+                <span :class="['health-dot', props.streamPublisher ? 'health-dot--green' : 'health-dot--amber']"></span>
+                <span class="text-[11px] text-text-dim font-medium">Publisher</span>
+            </div>
         </div>
+    </div>
 
-        <!-- Boat Status -->
-        <div class="panel p-4 mb-6">
-            <div class="flex items-baseline justify-between mb-3">
-                <span class="panel-title">Boat Status</span>
-                <div class="flex items-center gap-3">
-                    <span v-if="props.timestamp" class="text-[11px] text-text-dim tabular-nums">{{ timeSinceUpdate }}</span>
-                    <Link href="/admin/metrics" class="text-[12px] text-scarlet font-medium hover:underline">View Metrics →</Link>
-                </div>
+    <!-- Helm Section -->
+    <div class="helm-grid panel p-5 mb-5">
+        <!-- Left instruments: SOG, SOW, HDG, Depth -->
+        <div class="helm-instruments helm-instruments--left">
+            <div class="instrument">
+                <span class="instrument-label">SOG</span>
+                <span class="instrument-value text-teal">{{ fmt(liveBoat?.speed_sog) }}</span>
+                <span class="instrument-unit">kn</span>
             </div>
-            <div class="strip">
-                <div class="strip-cell"><div class="strip-label">SOG</div><div class="strip-value text-scarlet">{{ fmt(boat?.speed_sog) }}</div><div class="strip-unit">kn</div></div>
-                <div class="strip-cell"><div class="strip-label">Heading</div><div class="strip-value">{{ fmt(boat?.heading, 0) }}</div><div class="strip-unit">°</div></div>
-                <div class="strip-cell"><div class="strip-label">Depth</div><div class="strip-value text-blue">{{ fmt(boat?.depth) }}</div><div class="strip-unit">m</div></div>
-                <div class="strip-cell"><div class="strip-label">Battery</div><div class="strip-value text-green">{{ fmt(boat?.house_battery_voltage, 2) }}</div><div class="strip-unit">V</div></div>
+            <div class="instrument">
+                <span class="instrument-label">SOW</span>
+                <span class="instrument-value text-teal">{{ fmt(liveBoat?.speed_stw) }}</span>
+                <span class="instrument-unit">kn</span>
             </div>
-            <div v-if="gps?.latitude != null" class="text-[12px] text-text-secondary mt-2 tabular-nums">
-                {{ fmtCoord(gps.latitude, gps.longitude) }}
+            <div class="instrument">
+                <span class="instrument-label">HDG</span>
+                <span class="instrument-value">{{ fmt(liveBoat?.heading, 0) }}</span>
+                <span class="instrument-unit">°</span>
+            </div>
+            <div class="instrument">
+                <span class="instrument-label">Depth</span>
+                <span class="instrument-value text-blue">{{ fmt(liveBoat?.depth) }}</span>
+                <span class="instrument-unit">m</span>
             </div>
         </div>
 
-        <!-- Conditions: Navigation + Weather -->
-        <div class="conditions-grid mb-6">
-            <!-- Navigation (autopilot waypoint) -->
-            <div v-if="boat?.nav_wp_distance > 0 && boat?.nav_wp_ttg > 0" class="panel p-4">
-                <div class="panel-title mb-3">Navigation</div>
-                <div class="space-y-2 text-[13px]">
-                    <div class="data-row">
-                        <span>Next Waypoint</span>
-                        <span class="text-blue">{{ fmtNav(boat.nav_wp_distance) }} nm</span>
-                    </div>
-                    <div class="data-row">
-                        <span>Time to Go</span>
-                        <span>{{ formatTtg(boat.nav_wp_ttg) }}</span>
-                    </div>
-                    <div class="data-row">
-                        <span>ETA</span>
-                        <span>{{ formatEta(boat.nav_wp_ttg) }}</span>
-                    </div>
+        <!-- Center: Compass hero -->
+        <div class="helm-center">
+            <CompassRose
+                :heading="liveBoat?.heading ?? 0"
+                :cog="liveBoat?.cog ?? null"
+                :size="340"
+            />
+            <div class="helm-pos-label">
+                <span class="text-[13px] font-bold text-text-secondary">{{ pointOfSailText }}</span>
+            </div>
+            <div class="helm-footer">
+                <span class="helm-footer-item">
+                    <span class="helm-footer-label">HDG</span>
+                    <span class="helm-footer-value">{{ fmt(liveBoat?.heading, 0) }}°</span>
+                </span>
+                <span class="helm-footer-sep">·</span>
+                <span class="helm-footer-item">
+                    <span class="helm-footer-label">TWD</span>
+                    <span class="helm-footer-value">{{ twd != null ? fmt(twd, 0) + '°' : '—' }}</span>
+                </span>
+            </div>
+        </div>
+
+        <!-- Right instruments: TWS, TWA -->
+        <div class="helm-instruments helm-instruments--right">
+            <div class="instrument instrument--right">
+                <span class="instrument-unit">kn</span>
+                <span class="instrument-value text-amber">{{ fmt(liveBoat?.wind_speed_true) }}</span>
+                <span class="instrument-label">TWS</span>
+            </div>
+            <div class="instrument instrument--right">
+                <span class="instrument-unit">°</span>
+                <span class="instrument-value text-amber">{{ liveBoat?.wind_direction_true != null ? fmt(liveBoat.wind_direction_true, 0) : '—' }}</span>
+                <span class="instrument-label">TWA</span>
+            </div>
+            <div class="instrument instrument--right">
+                <span class="instrument-unit">°C</span>
+                <span class="instrument-value">{{ fmt(liveBoat?.water_temp) }}</span>
+                <span class="instrument-label">Water</span>
+            </div>
+            <div class="instrument instrument--right">
+                <span class="instrument-unit">V</span>
+                <span class="instrument-value text-green">{{ fmt(liveBoat?.house_battery_voltage, 2) }}</span>
+                <span class="instrument-label">Battery</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Journey Section -->
+    <div v-if="routeWaypointsArr.length || liveGps?.latitude" class="journey-grid panel p-0 mb-5 overflow-hidden">
+        <!-- Map -->
+        <div ref="mapEl" class="journey-map"></div>
+
+        <!-- Nav sidebar -->
+        <div class="journey-sidebar p-4 flex flex-col gap-4">
+            <div class="journey-reading">
+                <span class="journey-reading__label">DTW</span>
+                <span class="journey-reading__value text-blue">{{ liveBoat?.nav_wp_distance != null ? fmt(liveBoat.nav_wp_distance, 1) : '—' }}</span>
+                <span class="journey-reading__unit">nm</span>
+            </div>
+            <div class="journey-reading">
+                <span class="journey-reading__label">TTG</span>
+                <span class="journey-reading__value">{{ formatTtg(liveBoat?.nav_wp_ttg) }}</span>
+            </div>
+            <div class="journey-reading">
+                <span class="journey-reading__label">ETA</span>
+                <span class="journey-reading__value">{{ formatEta(liveBoat?.nav_wp_ttg) }}</span>
+            </div>
+            <div class="mt-auto pt-3 border-t border-border-light">
+                <div v-if="liveGps?.latitude != null" class="text-[11px] text-text-dim tabular-nums leading-relaxed">
+                    {{ fmtCoord(liveGps.latitude, liveGps.longitude) }}
+                </div>
+                <div class="text-[11px] text-text-dim mt-1">
+                    <Link href="/admin/journeys" class="text-scarlet font-medium hover:underline">Journeys →</Link>
                 </div>
             </div>
+        </div>
+    </div>
 
-            <!-- Weather -->
-            <div v-if="weather" class="panel p-4">
-                <div class="flex items-baseline justify-between mb-3">
-                    <span class="panel-title">Weather</span>
-                    <Link href="/admin/weather" class="text-[12px] text-scarlet font-medium hover:underline">Details →</Link>
+    <!-- Bottom Row -->
+    <div class="bottom-grid">
+        <!-- Ship Status panel -->
+        <div class="panel p-4">
+            <div class="flex items-baseline justify-between mb-4">
+                <span class="panel-title">Ship Status</span>
+                <Link href="/admin/tracker" class="text-[12px] text-scarlet font-medium hover:underline">Tracker →</Link>
+            </div>
+            <div class="space-y-3 mb-4">
+                <LevelBar
+                    :value="batteryPct"
+                    label="Battery"
+                    color="green"
+                />
+                <LevelBar
+                    :value="solarPct"
+                    label="Solar"
+                    color="amber"
+                />
+                <LevelBar
+                    :value="trackerBattPct"
+                    label="Tracker"
+                    color="blue"
+                />
+            </div>
+            <div class="space-y-1.5 text-[12px] text-text-secondary">
+                <div class="data-row">
+                    <span>Connection</span>
+                    <span>{{ props.tracker?.wifi_rssi != null ? 'WiFi' : props.tracker?.lte_rssi != null ? 'LTE' : 'Disconnected' }}</span>
                 </div>
-                <div class="space-y-2 text-[13px]">
-                    <div class="data-row">
-                        <span>Conditions</span>
-                        <span>{{ weather.conditionText }}</span>
-                    </div>
-                    <div class="data-row">
-                        <span>Air / Sea Temp</span>
-                        <span>{{ fmt(weather.temp) }}° <span class="text-blue">/ {{ fmt(weather.seaTemp) }}°C</span></span>
-                    </div>
-                    <div class="data-row">
-                        <span>Wind</span>
-                        <span>{{ fmt(weather.wind?.speed) }} kn {{ degreesToCompass(weather.wind?.direction) }}</span>
-                    </div>
-                </div>
-                <div v-if="boat?.wind_speed_true != null || boat?.water_temp != null" class="text-[11px] text-text-dim mt-3 pt-3 border-t border-border-light">
-                    <span class="font-semibold">Boat sensors:</span>
-                    <span v-if="boat?.wind_speed_true != null"> Wind {{ fmt(boat.wind_speed_true) }} kn {{ degreesToCompass(boat.wind_direction_true) }}</span>
-                    <span v-if="boat?.water_temp != null"> · Water {{ fmt(boat.water_temp) }}°C</span>
+                <div class="data-row">
+                    <span>Signal</span>
+                    <span>{{ props.tracker?.wifi_rssi != null ? fmt(props.tracker.wifi_rssi, 0) + ' dBm' : props.tracker?.lte_rssi != null ? fmt(props.tracker.lte_rssi, 0) + ' dBm' : '—' }}</span>
                 </div>
             </div>
         </div>
 
-        <!-- Secondary: Tracker + Recent Journeys -->
-        <div class="secondary-grid">
-            <!-- Tracker Status -->
-            <div class="panel p-4">
-                <div class="flex items-baseline justify-between mb-3">
-                    <span class="panel-title">Tracker</span>
-                    <Link href="/admin/tracker" class="text-[12px] text-scarlet font-medium hover:underline">Details →</Link>
-                </div>
-                <div class="space-y-2 text-[13px]">
-                    <div class="data-row">
-                        <span>Connection</span>
-                        <span>{{ tracker?.wifi_rssi != null ? 'WiFi' : tracker?.lte_rssi != null ? 'LTE' : 'Disconnected' }}</span>
-                    </div>
-                    <div class="data-row">
-                        <span>Signal</span>
-                        <span>{{ tracker?.wifi_rssi != null ? fmt(tracker.wifi_rssi, 0) + ' dBm' : tracker?.lte_rssi != null ? fmt(tracker.lte_rssi, 0) + ' dBm' : '—' }}</span>
-                    </div>
-                    <div class="data-row">
-                        <span>Battery</span>
-                        <span>{{ tracker?.battery_percent != null ? fmt(tracker.battery_percent, 0) + '%' : '—' }}</span>
-                    </div>
+        <!-- Weather panel -->
+        <div v-if="liveWeather" class="panel overflow-hidden">
+            <!-- Gradient hero flush with panel top -->
+            <div class="weather-hero">
+                <div class="weather-hero__icon">{{ wxIcon }}</div>
+                <div>
+                    <div class="weather-hero__temp">{{ wxTemp }}</div>
+                    <div class="weather-hero__condition">{{ wxCondition }}</div>
                 </div>
             </div>
-
-            <!-- Recent Journeys -->
-            <div class="panel p-4" v-if="recentJourneys.length">
-                <div class="flex items-baseline justify-between mb-3">
-                    <span class="panel-title">Recent Journeys</span>
-                    <Link href="/admin/journeys" class="text-[12px] text-scarlet font-medium hover:underline">View All →</Link>
+            <div class="p-4 pt-3 space-y-2 text-[13px]">
+                <div class="data-row">
+                    <span class="text-text-secondary">Sea Temp</span>
+                    <span class="text-blue font-semibold tabular-nums">{{ wxSeaTemp }}</span>
                 </div>
-                <div class="space-y-2">
-                    <Link v-for="j in recentJourneys" :key="j.id" :href="`/journey/${j.slug}`" class="flex items-baseline justify-between text-[13px] py-1.5 hover:text-scarlet transition-colors">
-                        <span class="font-medium">{{ j.title }}</span>
-                        <span class="text-text-dim tabular-nums">{{ fmtDate(j.started_at) }} · {{ j.distance }} nm</span>
-                    </Link>
+                <div class="data-row">
+                    <span class="text-text-secondary">Wind</span>
+                    <span class="font-semibold tabular-nums">{{ wxWindSpeed }} {{ degreesToCompass(liveWeather.wind?.direction) }}</span>
+                </div>
+                <div class="data-row">
+                    <span class="text-text-secondary">Waves</span>
+                    <span class="font-semibold tabular-nums">{{ wxWaveHeight }}<span v-if="wxWavePeriod" class="text-text-dim"> @ {{ wxWavePeriod }}</span></span>
+                </div>
+                <div class="data-row">
+                    <span class="text-text-secondary">Pressure</span>
+                    <span class="font-semibold tabular-nums">{{ liveWeather.pressure != null ? fmt(liveWeather.pressure, 0) + ' hPa' : '—' }}</span>
+                </div>
+                <div class="mt-3 pt-3 border-t border-border-light">
+                    <Link href="/admin/weather" class="text-[12px] text-scarlet font-medium hover:underline">Weather details →</Link>
                 </div>
             </div>
         </div>
-
-        <!-- Start Journey Confirm Modal -->
-        <Transition name="modal">
-        <div v-if="showStartModal" class="modal-overlay" @click.self="showStartModal = false">
-            <div class="modal-card" role="dialog" aria-modal="true" aria-label="Confirm start journey">
-                <h3 class="text-[16px] font-semibold mb-2">Start recording?</h3>
-                <p class="text-[13px] text-text-secondary mb-5">This will begin track recording for <strong>{{ plannedJourney?.title }}</strong>. GPS position and boat data will be logged from now.</p>
-                <div class="flex items-center justify-end gap-3">
-                    <button @click="showStartModal = false" class="btn btn--ghost">Cancel</button>
-                    <button @click="startJourney" :disabled="startingJourney" class="btn btn--primary">Start Recording</button>
-                </div>
-            </div>
+        <div v-else class="panel p-4">
+            <div class="panel-title mb-3">Weather</div>
+            <p class="text-[13px] text-text-secondary">No weather data available.</p>
         </div>
-        </Transition>
-
-        <!-- End Journey Confirm Modal -->
-        <Transition name="modal">
-        <div v-if="showEndModal" class="modal-overlay" @click.self="showEndModal = false">
-            <div class="modal-card" role="dialog" aria-modal="true" aria-label="Confirm end journey">
-                <h3 class="text-[16px] font-semibold mb-2">End this journey?</h3>
-                <p class="text-[13px] text-text-secondary mb-5">This will mark <strong>{{ activeJourney?.title }}</strong> as completed. You can still edit it afterwards.</p>
-                <div class="flex items-center justify-end gap-3">
-                    <button @click="showEndModal = false" class="btn btn--ghost">Cancel</button>
-                    <button @click="endJourney" :disabled="endingJourney" class="btn btn--danger">End Journey</button>
-                </div>
-            </div>
-        </div>
-        </Transition>
+    </div>
     </AdminLayout>
 </template>
 
 <script setup>
-import { ref, computed, watch, onMounted, onUnmounted } from 'vue';
-import { Head, Link, router } from '@inertiajs/vue3';
+import { ref, computed, onMounted, onUnmounted } from 'vue';
+import { Head, Link } from '@inertiajs/vue3';
 import L from 'leaflet';
-import 'leaflet/dist/leaflet.css';
-import { addRouteLayer } from '../../scarlet';
 import AdminLayout from '@/Layouts/AdminLayout.vue';
+import CompassRose from '@/Components/Admin/CompassRose.vue';
+import LevelBar from '@/Components/Admin/LevelBar.vue';
 import { fmt, fmtDuration } from '@/composables/useFormatters.js';
-import { theme } from '@/composables/useTheme.js';
+import { useScarletMetrics } from '@/composables/useScarletMetrics.js';
 
 const props = defineProps({
     boat: Object,
     gps: Object,
     tracker: Object,
+    weather: Object,
     activeJourney: Object,
     plannedJourney: Object,
     routeWaypoints: { type: Array, default: () => [] },
-    recentJourneys: Array,
+    recentJourneys: { type: Array, default: () => [] },
+    streamOnline: Boolean,
+    streamPublisher: Boolean,
     timestamp: String,
-    weather: Object,
 });
 
+const routeWaypointsArr = computed(() => props.routeWaypoints ?? []);
+
+const {
+    boat: liveBoat,
+    gps: liveGps,
+    weather: liveWeather,
+    statusText,
+    wxTemp,
+    wxCondition,
+    wxIcon,
+    wxSeaTemp,
+    wxWindSpeed,
+    wxWaveHeight,
+    wxWavePeriod,
+    initMap,
+    addMapTarget,
+} = useScarletMetrics({
+    initialMetrics: { boat: props.boat, gps: props.gps, weather: props.weather },
+    gpsTrack: routeWaypointsArr.value.map(w => [w.lat, w.lng]),
+    routeWaypoints: routeWaypointsArr.value,
+});
+
+// ── Map ──────────────────────────────────────────────────────────────────────
 const mapEl = ref(null);
 let map = null;
-let tileLayer = null;
 
-function tileUrl() {
-    return theme.value === 'light' ? '/openseamap/{z}/{x}/{y}' : '/openseamap-dark/{z}/{x}/{y}';
-}
-
-const now = ref(Date.now());
-let ticker;
 onMounted(() => {
-    ticker = setInterval(() => { now.value = Date.now(); }, 1000);
+    if (mapEl.value) {
+        map = initMap(mapEl.value, { interactive: true });
+        addMapTarget(map, { autoCenter: true });
 
-    if (mapEl.value && props.routeWaypoints.length) {
-        const first = props.routeWaypoints[0];
-        map = L.map(mapEl.value, { zoomControl: false, attributionControl: false })
-            .setView([first.lat, first.lng], 12);
-        tileLayer = L.tileLayer(tileUrl(), { maxZoom: 18 }).addTo(map);
-        addRouteLayer(map, props.routeWaypoints);
-        const bounds = L.latLngBounds(props.routeWaypoints.map(w => [w.lat, w.lng]));
-        map.fitBounds(bounds, { padding: [30, 30] });
+        if (routeWaypointsArr.value.length) {
+            const bounds = L.latLngBounds(routeWaypointsArr.value.map(w => [w.lat, w.lng]));
+            map.fitBounds(bounds, { padding: [30, 30] });
+        }
     }
 });
+
 onUnmounted(() => {
-    clearInterval(ticker);
     map?.remove();
+    map = null;
 });
 
-watch(theme, () => {
-    if (tileLayer) tileLayer.setUrl(tileUrl());
+// ── Computed helpers ─────────────────────────────────────────────────────────
+const twd = computed(() => liveBoat.value?.wind_direction_true ?? null);
+
+const pointOfSailText = computed(() => {
+    const twa = liveBoat.value?.wind_direction_true;
+    const hdg = liveBoat.value?.heading;
+    if (twa == null || hdg == null) return '';
+    const rel = ((twa - hdg + 360) % 360);
+    const abs = rel > 180 ? 360 - rel : rel;
+    if (abs < 45) return 'In Irons';
+    if (abs < 60) return 'Close Hauled';
+    if (abs < 80) return 'Close Reach';
+    if (abs < 100) return 'Beam Reach';
+    if (abs < 150) return 'Broad Reach';
+    if (abs < 170) return 'Running';
+    return 'Dead Run';
 });
 
-const timeSinceUpdate = computed(() => {
-    if (!props.timestamp) return '';
-    const diff = Math.floor((now.value - new Date(props.timestamp).getTime()) / 1000);
-    if (diff < 5) return 'just now';
-    if (diff < 60) return `${diff}s ago`;
-    return `${Math.floor(diff / 60)}m ago`;
+// Battery derived percentages (rough estimates from voltage / absolute value)
+const batteryPct = computed(() => {
+    const v = liveBoat.value?.house_battery_voltage;
+    if (v == null) return 0;
+    // 12V system: 11.5V = 0%, 12.7V = 100%
+    return Math.min(100, Math.max(0, ((v - 11.5) / (12.7 - 11.5)) * 100));
 });
 
-const showStartModal = ref(false);
-const startingJourney = ref(false);
-const showEndModal = ref(false);
-const endingJourney = ref(false);
+const solarPct = computed(() => {
+    const w = liveBoat.value?.solar_watts;
+    if (w == null) return 0;
+    // Assume 400W max panel
+    return Math.min(100, Math.max(0, (w / 400) * 100));
+});
 
-function startJourney() {
-    startingJourney.value = true;
-    router.post(`/admin/journeys/${props.plannedJourney.id}/start`, {}, {
-        onFinish: () => {
-            startingJourney.value = false;
-            showStartModal.value = false;
-        },
-    });
-}
+const trackerBattPct = computed(() => {
+    const pct = props.tracker?.battery_percent;
+    return pct != null ? Math.min(100, Math.max(0, pct)) : 0;
+});
 
-function endJourney() {
-    endingJourney.value = true;
-    router.post(`/admin/journeys/${props.activeJourney.id}/end`, {}, {
-        onFinish: () => {
-            endingJourney.value = false;
-            showEndModal.value = false;
-        },
-    });
-}
-
-function fmtDate(iso) {
-    if (!iso) return '';
-    const d = new Date(iso);
-    return d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' });
-}
-
+// ── Coordinate formatting ─────────────────────────────────────────────────────
 function fmtCoord(lat, lon) {
     if (lat == null || lon == null) return '';
     return fmtDM(lat, 'N', 'S') + '  ' + fmtDM(lon, 'E', 'W');
@@ -295,10 +336,6 @@ function fmtDM(decimal, pos, neg) {
     const deg = Math.floor(abs);
     const min = ((abs - deg) * 60).toFixed(1).padStart(4, '0');
     return `${deg}°${min}'${dir}`;
-}
-
-function fmtNav(v) {
-    return v != null ? v.toFixed(1) : '—';
 }
 
 function formatTtg(seconds) {
@@ -320,12 +357,259 @@ function formatEta(seconds) {
 
 function degreesToCompass(deg) {
     if (deg == null) return '—';
-    const dirs = ['N','NNE','NE','ENE','E','ESE','SE','SSE','S','SSW','SW','WSW','W','WNW','NW','NNW'];
+    const dirs = ['N', 'NNE', 'NE', 'ENE', 'E', 'ESE', 'SE', 'SSE', 'S', 'SSW', 'SW', 'WSW', 'W', 'WNW', 'NW', 'NNW'];
     return dirs[Math.round(((deg % 360) + 360) % 360 / 22.5) % 16];
 }
 </script>
 
 <style scoped>
+/* ── Status ribbon ─────────────────────────────────────────────────────────── */
+.health-dot {
+    display: inline-block;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    flex-shrink: 0;
+}
+.health-dot--green { background: var(--color-green); box-shadow: 0 0 5px oklch(0.48 0.16 150 / 0.4); }
+.health-dot--amber { background: oklch(0.7 0.18 70); box-shadow: 0 0 5px oklch(0.7 0.18 70 / 0.4); }
+.health-dot--red   { background: var(--color-scarlet); }
+
+.sailing-badge {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    background: linear-gradient(135deg, oklch(0.9 0.06 150), oklch(0.85 0.07 160));
+    color: oklch(0.24 0.1 150);
+    padding: 5px 16px 5px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 800;
+    letter-spacing: 1.2px;
+    text-transform: uppercase;
+}
+.sailing-badge::before {
+    content: '';
+    width: 7px;
+    height: 7px;
+    background: oklch(0.48 0.16 150);
+    border-radius: 50%;
+}
+
+/* ── Helm section ──────────────────────────────────────────────────────────── */
+.helm-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 16px;
+    align-items: center;
+}
+
+@media (min-width: 900px) {
+    .helm-grid {
+        grid-template-columns: 1fr 360px 1fr;
+    }
+}
+
+.helm-instruments {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.helm-instruments--left { align-items: flex-start; }
+.helm-instruments--right { align-items: flex-end; }
+
+.instrument {
+    display: flex;
+    flex-direction: row;
+    align-items: baseline;
+    gap: 6px;
+}
+
+.instrument--right {
+    flex-direction: row-reverse;
+}
+
+.instrument-label {
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--color-text-dim);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    width: 46px;
+    flex-shrink: 0;
+}
+
+.instrument--right .instrument-label {
+    text-align: right;
+}
+
+.instrument-value {
+    font-family: var(--font-sans);
+    font-size: 46px;
+    font-weight: 600;
+    letter-spacing: -0.02em;
+    line-height: 1;
+    font-variant-numeric: tabular-nums;
+    color: var(--color-text-primary);
+}
+
+.instrument-unit {
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--color-text-dim);
+    margin-bottom: 4px;
+}
+
+.helm-center {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+}
+
+.helm-pos-label {
+    text-align: center;
+}
+
+.helm-footer {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 6px 16px;
+    background: var(--color-bg);
+    border: 1px solid var(--color-border-light);
+    border-radius: 20px;
+    font-size: 12px;
+}
+
+.helm-footer-item {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.helm-footer-label {
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    color: var(--color-text-dim);
+    letter-spacing: 0.04em;
+}
+
+.helm-footer-value {
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+    color: var(--color-text-primary);
+}
+
+.helm-footer-sep {
+    color: var(--color-border);
+}
+
+/* ── Journey section ───────────────────────────────────────────────────────── */
+.journey-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+}
+
+@media (min-width: 640px) {
+    .journey-grid {
+        grid-template-columns: 1fr 220px;
+    }
+}
+
+.journey-map {
+    height: 260px;
+    isolation: isolate;
+}
+
+@media (min-width: 640px) {
+    .journey-map { height: 320px; }
+}
+
+.journey-sidebar {
+    border-top: 1px solid var(--color-border-light);
+}
+
+@media (min-width: 640px) {
+    .journey-sidebar {
+        border-top: none;
+        border-left: 1px solid var(--color-border-light);
+    }
+}
+
+.journey-reading {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.journey-reading__label {
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--color-text-dim);
+}
+
+.journey-reading__value {
+    font-size: 26px;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+    line-height: 1;
+    color: var(--color-text-primary);
+}
+
+.journey-reading__unit {
+    font-size: 12px;
+    color: var(--color-text-dim);
+}
+
+/* ── Bottom row ────────────────────────────────────────────────────────────── */
+.bottom-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 12px;
+}
+
+@media (min-width: 640px) {
+    .bottom-grid {
+        grid-template-columns: 1fr 1fr;
+    }
+}
+
+/* ── Weather hero ──────────────────────────────────────────────────────────── */
+.weather-hero {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 20px;
+    background: linear-gradient(135deg, oklch(0.38 0.12 245), oklch(0.32 0.10 255));
+    color: white;
+}
+
+.weather-hero__icon {
+    font-size: 40px;
+    line-height: 1;
+    flex-shrink: 0;
+}
+
+.weather-hero__temp {
+    font-size: 32px;
+    font-weight: 800;
+    font-variant-numeric: tabular-nums;
+    line-height: 1;
+}
+
+.weather-hero__condition {
+    font-size: 13px;
+    font-weight: 600;
+    opacity: 0.85;
+    margin-top: 3px;
+}
+
+/* ── Shared utilities ──────────────────────────────────────────────────────── */
 .panel-title {
     font-size: 15px;
     font-weight: 600;
@@ -337,70 +621,15 @@ function degreesToCompass(deg) {
     align-items: baseline;
 }
 
-.data-row span:first-child { color: var(--color-text-secondary); }
-.data-row span:last-child { font-variant-numeric: tabular-nums; font-weight: 600; }
-
-.strip {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    background: var(--color-bg);
-    border: 1px solid var(--color-border-light);
-    border-radius: 8px;
-    overflow: hidden;
+.data-row span:last-child {
+    font-variant-numeric: tabular-nums;
+    font-weight: 600;
 }
 
-@media (min-width: 640px) {
-    .strip { grid-template-columns: repeat(4, 1fr); }
-}
-
-.strip-cell { padding: 10px 12px; text-align: center; }
-.strip-cell { border-bottom: 1px solid var(--color-border-light); border-right: 1px solid var(--color-border-light); }
-.strip-cell:nth-child(even) { border-right: none; }
-.strip-cell:nth-last-child(-n+2) { border-bottom: none; }
-
-@media (min-width: 640px) {
-    .strip-cell { border-bottom: none; border-right: none; }
-    .strip-cell + .strip-cell { border-left: 1px solid var(--color-border-light); }
-}
-.strip-label { font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em; color: var(--color-text-dim); margin-bottom: 2px; }
-.strip-value { font-size: 20px; font-weight: 700; font-variant-numeric: tabular-nums; line-height: 1; }
-.strip-unit { font-size: 10px; color: var(--color-text-dim); margin-top: 2px; }
-
-.conditions-grid {
-    display: grid;
-    gap: 12px;
-}
-
-.secondary-grid {
-    display: grid;
-    gap: 12px;
-}
-
-@media (min-width: 640px) {
-    .conditions-grid { grid-template-columns: repeat(2, 1fr); }
-    .secondary-grid { grid-template-columns: repeat(2, 1fr); }
-}
-
-.route-map {
-    height: 220px;
-    isolation: isolate;
-}
-
-@media (min-width: 640px) {
-    .route-map { height: 280px; }
-}
-
-.modal-overlay {
-    position: fixed; inset: 0;
-    background: rgba(0, 0, 0, 0.45);
-    display: flex; align-items: center; justify-content: center;
-    z-index: 100; padding: 24px;
-}
-.modal-card {
-    background: var(--color-surface);
-    border-radius: 12px;
-    padding: 28px 28px 24px;
-    width: 100%; max-width: 400px;
-    box-shadow: 0 8px 40px rgba(0, 0, 0, 0.14);
-}
+/* ── Color helpers used in instrument values ───────────────────────────────── */
+.text-teal   { color: var(--color-teal); }
+.text-amber  { color: var(--color-amber); }
+.text-blue   { color: var(--color-blue); }
+.text-green  { color: var(--color-green); }
+.text-scarlet { color: var(--color-scarlet); }
 </style>

@@ -5,11 +5,12 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Journey;
 use App\Services\MetricsService;
+use App\Services\PrometheusService;
 use Inertia\Inertia;
 
 class AdminDashboardController extends Controller
 {
-    public function index(MetricsService $metrics)
+    public function index(MetricsService $metrics, PrometheusService $prometheus)
     {
         $activeJourney = Journey::current();
         $plannedJourney = $activeJourney ? null : Journey::planned();
@@ -54,6 +55,8 @@ class AdminDashboardController extends Controller
             ] : null,
             'routeWaypoints' => $routeJourney?->route_waypoints ?? [],
             'recentJourneys' => $recentJourneys,
+            'streamOnline' => (bool) $prometheus->query('scarlet_srt_up'),
+            'streamPublisher' => (bool) $prometheus->query('scarlet_srt_publisher_connected'),
             'timestamp' => now()->toIso8601String(),
         ]);
     }
