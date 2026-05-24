@@ -22,13 +22,14 @@ class StreamMonitorController extends Controller
             'network' => 'scarlet_srt_publisher_network_bps',
         ]);
 
-        return Inertia::render('Admin/StreamMonitor', [
+        return Inertia::render('Admin/Broadcast', [
             'statsUrl' => $statsUrl,
             'fetchError' => $currentResult['fetchError'],
             'publisher' => $currentResult['values'],
             'bitrateHistory' => $prometheus->queryRange('scarlet_srt_publisher_bitrate_bps / 1000000', '1h', '15s'),
             'rttHistory' => $prometheus->queryRange('scarlet_srt_publisher_rtt_ms', '1h', '15s'),
             'droppedHistory' => $prometheus->queryRange('increase(scarlet_srt_publisher_dropped_packets_total[30s])', '1h', '15s'),
+            'hlsUrl' => config('scarlet.mediamtx.api_url') ? str_replace('/v3', '', config('scarlet.mediamtx.api_url')) . '/scarlet/index.m3u8' : null,
         ]);
     }
 }
