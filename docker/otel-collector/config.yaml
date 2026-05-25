@@ -38,15 +38,13 @@ exporters:
     namespace: scarlet
     resource_to_telemetry_conversion:
       enabled: true
-    tls:
-      insecure: true
 
 service:
   extensions: [bearertokenauth]
 
   telemetry:
     logs:
-      level: warn
+      level: info
 
   pipelines:
     metrics:

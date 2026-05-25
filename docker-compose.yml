@@ -87,6 +87,8 @@ services:
       OTEL_AUTH_TOKEN: "${OTEL_AUTH_TOKEN}"
     volumes:
       - ./docker/otel-collector/config.yaml:/etc/otelcol-contrib/config.yaml:ro
+    depends_on:
+      - victoriametrics
     networks:
       - scarlet
 

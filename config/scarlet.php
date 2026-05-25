@@ -23,7 +23,7 @@ return [
         'api_url' => env('MEDIAMTX_API_URL', 'http://mediamtx:9997'),
     ],
     'metrics' => [
-        'prometheus_url' => env('PROMETHEUS_URL', 'http://prometheus:9090'),
+        'prometheus_url' => env('PROMETHEUS_URL', 'http://victoriametrics:8428'),
         'push_interval' => (int) env('METRICS_PUSH_INTERVAL', 15),
 
         'battery' => [
