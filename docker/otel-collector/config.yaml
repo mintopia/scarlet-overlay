@@ -33,6 +33,14 @@ exporters:
       enabled: true
     metric_expiration: 10m
 
+  prometheusremotewrite:
+    endpoint: http://victoriametrics:8428/api/v1/write
+    namespace: scarlet
+    resource_to_telemetry_conversion:
+      enabled: true
+    tls:
+      insecure: true
+
 service:
   extensions: [bearertokenauth]
 
@@ -44,4 +52,4 @@ service:
     metrics:
       receivers: [otlp]
       processors: [memory_limiter, batch]
-      exporters: [prometheus]
+      exporters: [prometheus, prometheusremotewrite]

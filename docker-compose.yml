@@ -102,10 +102,23 @@ services:
     networks:
       - scarlet
 
+  victoriametrics:
+    image: victoriametrics/victoria-metrics:latest
+    ports:
+      - "${VICTORIAMETRICS_PORT:-8428}:8428"
+    volumes:
+      - victoriametrics-data:/victoria-metrics-data
+    command:
+      - "-retentionPeriod=100y"
+      - "-search.latencyOffset=0s"
+    networks:
+      - scarlet
+
 volumes:
   mariadb-data:
   redis-data:
   prometheus-data:
+  victoriametrics-data:
 
 networks:
   scarlet:
