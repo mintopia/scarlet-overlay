@@ -21,92 +21,141 @@
                 </template>
             </span>
         </div>
-        <div class="flex gap-3 items-center">
-            <div class="flex items-center gap-1.5">
-                <span :class="['health-dot', props.tracker?.battery_percent > 0 ? 'health-dot--green' : 'health-dot--red']"></span>
-                <span class="text-[11px] text-text-dim font-medium">Tracker</span>
+        <div class="flex gap-4 items-center">
+            <div class="flex gap-3 items-center">
+                <div class="flex items-center gap-1.5">
+                    <span :class="['health-dot', props.tracker?.battery_percent > 0 ? 'health-dot--green' : 'health-dot--red']"></span>
+                    <span class="text-[11px] text-text-dim font-medium">Tracker</span>
+                </div>
+                <div class="flex items-center gap-1.5">
+                    <span :class="['health-dot', props.streamOnline ? 'health-dot--green' : 'health-dot--red']"></span>
+                    <span class="text-[11px] text-text-dim font-medium">Stream</span>
+                </div>
+                <div class="flex items-center gap-1.5">
+                    <span :class="['health-dot', props.streamPublisher ? 'health-dot--green' : 'health-dot--amber']"></span>
+                    <span class="text-[11px] text-text-dim font-medium">Publisher</span>
+                </div>
             </div>
-            <div class="flex items-center gap-1.5">
-                <span :class="['health-dot', props.streamOnline ? 'health-dot--green' : 'health-dot--red']"></span>
-                <span class="text-[11px] text-text-dim font-medium">Stream</span>
-            </div>
-            <div class="flex items-center gap-1.5">
-                <span :class="['health-dot', props.streamPublisher ? 'health-dot--green' : 'health-dot--amber']"></span>
-                <span class="text-[11px] text-text-dim font-medium">Publisher</span>
+            <div class="text-right border-l border-border-light pl-4">
+                <div class="text-sm font-semibold tabular-nums font-sans">{{ clock }}</div>
+                <div class="text-[10px] text-text-dim font-medium">{{ clockDate }}</div>
             </div>
         </div>
     </div>
 
-    <!-- Helm Section -->
-    <div class="helm-grid panel p-5 mb-5">
-        <!-- Left instruments: SOG, SOW, HDG, Depth -->
-        <div class="helm-instruments helm-instruments--left">
-            <div class="instrument">
-                <span class="instrument-label">SOG</span>
-                <span class="instrument-value text-teal">{{ fmt(liveBoat?.speed_sog) }}</span>
-                <span class="instrument-unit">kn</span>
+    <!-- Helm + Systems row -->
+    <div class="helm-row mb-5">
+        <!-- Helm panel (2/3) -->
+        <div class="helm-grid panel p-5">
+            <!-- Left instruments: SOG, SOW, Depth + Log -->
+            <div class="helm-instruments helm-instruments--left">
+                <div class="instrument">
+                    <span class="instrument-label">SOG</span>
+                    <span class="instrument-value text-teal">{{ fmt(liveBoat?.speed_sog) }}</span>
+                    <span class="instrument-unit">kn</span>
+                </div>
+                <div class="instrument">
+                    <span class="instrument-label">SOW</span>
+                    <span class="instrument-value text-teal">{{ fmt(liveBoat?.speed_stw) }}</span>
+                    <span class="instrument-unit">kn</span>
+                </div>
+                <div class="instrument">
+                    <span class="instrument-label">Depth</span>
+                    <span class="instrument-value text-blue">{{ fmt(liveBoat?.depth) }}</span>
+                    <span class="instrument-unit">m</span>
+                </div>
+                <div class="mt-auto pt-2">
+                    <div class="text-[10px] font-bold uppercase tracking-wide text-text-dim">Log</div>
+                    <div class="font-sans text-base font-semibold tabular-nums text-text-secondary">
+                        {{ liveBoat?.trip_log != null ? fmt(liveBoat.trip_log, 0) : '—' }} <span class="text-xs text-text-dim font-medium">nm</span>
+                    </div>
+                </div>
             </div>
-            <div class="instrument">
-                <span class="instrument-label">SOW</span>
-                <span class="instrument-value text-teal">{{ fmt(liveBoat?.speed_stw) }}</span>
-                <span class="instrument-unit">kn</span>
+
+            <!-- Center: Compass hero -->
+            <div class="helm-center">
+                <CompassRose
+                    :heading="liveBoat?.heading ?? 0"
+                    :cog="liveBoat?.cog ?? null"
+                    :twa="relativeTwa"
+                    :awa="liveBoat?.wind_angle_apparent ?? null"
+                    :size="340"
+                />
             </div>
-            <div class="instrument">
-                <span class="instrument-label">HDG</span>
-                <span class="instrument-value">{{ fmt(liveBoat?.heading, 0) }}</span>
-                <span class="instrument-unit">°</span>
-            </div>
-            <div class="instrument">
-                <span class="instrument-label">Depth</span>
-                <span class="instrument-value text-blue">{{ fmt(liveBoat?.depth) }}</span>
-                <span class="instrument-unit">m</span>
+
+            <!-- Right: Heading + Wind readings + point of sail -->
+            <div class="helm-readings">
+                <div class="helm-reading">
+                    <span class="helm-reading__label" style="color: var(--color-teal)">Heading</span>
+                    <div class="helm-reading__row">
+                        <span class="helm-reading__value text-teal">{{ fmt(liveBoat?.heading, 0) }}</span>
+                        <span class="helm-reading__unit">°</span>
+                    </div>
+                </div>
+                <div class="helm-reading">
+                    <span class="helm-reading__label" style="color: var(--color-amber)">True Wind</span>
+                    <div class="helm-reading__row">
+                        <span class="helm-reading__value text-amber">{{ fmt(liveBoat?.wind_speed_true) }}</span>
+                        <span class="helm-reading__unit">kn</span>
+                    </div>
+                    <div class="helm-reading__sub">{{ twd != null ? fmt(twd, 0) + '°' : '—' }}</div>
+                </div>
+                <div class="helm-reading">
+                    <span class="helm-reading__label" style="color: oklch(0.55 0.18 330)">Apparent Wind</span>
+                    <div class="helm-reading__row">
+                        <span class="helm-reading__value" style="color: oklch(0.55 0.18 330)">{{ fmt(liveBoat?.wind_speed_apparent) }}</span>
+                        <span class="helm-reading__unit">kn</span>
+                    </div>
+                    <div class="helm-reading__sub">{{ liveBoat?.wind_angle_apparent != null ? fmt(Math.abs(liveBoat.wind_angle_apparent), 0) + '°' : '—' }}</div>
+                </div>
+                <div class="helm-pos-badge" :style="{ '--pos-color': pointOfSailColor }" v-if="pointOfSailText">
+                    {{ pointOfSailText }}
+                </div>
             </div>
         </div>
 
-        <!-- Center: Compass hero -->
-        <div class="helm-center">
-            <CompassRose
-                :heading="liveBoat?.heading ?? 0"
-                :cog="liveBoat?.cog ?? null"
-                :size="340"
-            />
-            <div class="helm-pos-label">
-                <span class="text-[13px] font-bold text-text-secondary">{{ pointOfSailText }}</span>
+        <!-- Right column: Systems + Weather (1/3) -->
+        <div class="helm-sidebar">
+            <!-- Systems -->
+            <div class="panel p-4 flex flex-col">
+                <div class="flex items-baseline justify-between mb-3">
+                    <span class="panel-title">Systems</span>
+                    <Link href="/admin/tracker" class="text-[12px] text-scarlet font-medium hover:underline">Tracker →</Link>
+                </div>
+                <div class="space-y-2.5 mb-3">
+                    <LevelBar :value="batteryPct" label="Battery" color="green" />
+                    <LevelBar :value="fuelLevel" label="Fuel" color="amber" />
+                    <LevelBar :value="waterLevel" label="Water" color="blue" />
+                </div>
+                <div>
+                    <div class="flex items-baseline justify-between mb-1">
+                        <span class="text-[10px] font-medium text-text-dim uppercase tracking-wide">Power</span>
+                        <span class="font-sans text-xs font-semibold tabular-nums" :class="(liveBoat?.house_battery_current ?? 0) >= 0 ? 'text-green' : 'text-amber'">
+                            {{ liveBoat?.house_battery_voltage != null && liveBoat?.house_battery_current != null ? (liveBoat.house_battery_current >= 0 ? '+' : '') + Math.round(liveBoat.house_battery_voltage * liveBoat.house_battery_current) + 'W' : '—' }}
+                        </span>
+                    </div>
+                    <a :href="'/admin/explore?metric=scarlet_boat_battery_power'" class="block">
+                        <Sparkline :data="powerData" color="var(--color-green)" :height="36" :fill="true" :showDot="true" :zeroLine="true" />
+                    </a>
+                </div>
             </div>
-            <div class="helm-footer">
-                <span class="helm-footer-item">
-                    <span class="helm-footer-label">HDG</span>
-                    <span class="helm-footer-value">{{ fmt(liveBoat?.heading, 0) }}°</span>
-                </span>
-                <span class="helm-footer-sep">·</span>
-                <span class="helm-footer-item">
-                    <span class="helm-footer-label">TWD</span>
-                    <span class="helm-footer-value">{{ twd != null ? fmt(twd, 0) + '°' : '—' }}</span>
-                </span>
-            </div>
-        </div>
 
-        <!-- Right instruments: TWS, TWA -->
-        <div class="helm-instruments helm-instruments--right">
-            <div class="instrument instrument--right">
-                <span class="instrument-unit">kn</span>
-                <span class="instrument-value text-amber">{{ fmt(liveBoat?.wind_speed_true) }}</span>
-                <span class="instrument-label">TWS</span>
+            <!-- Weather -->
+            <div v-if="liveWeather" class="panel p-3 flex flex-col flex-1 overflow-hidden" :style="{ borderTop: '3px solid', borderImage: wxGradient + ' 1' }">
+                <div class="flex items-center justify-between mb-2">
+                    <span class="text-[20px] leading-none">{{ wxIcon }}</span>
+                    <span class="font-sans text-lg font-bold tabular-nums">{{ wxTemp }}</span>
+                </div>
+                <div class="space-y-1 text-[11px] flex-1">
+                    <div class="data-row"><span class="text-text-dim">Sea</span><span class="font-semibold tabular-nums">{{ wxSeaTemp }}</span></div>
+                    <div class="data-row"><span class="text-text-dim">Wind</span><span class="font-semibold tabular-nums">{{ wxWindSpeed }}</span></div>
+                    <div class="data-row"><span class="text-text-dim">Waves</span><span class="font-semibold tabular-nums">{{ wxWaveHeight }}</span></div>
+                    <div class="data-row"><span class="text-text-dim">Pressure</span><span class="font-semibold tabular-nums">{{ liveWeather.pressure != null ? fmt(liveWeather.pressure, 0) + ' hPa' : '—' }}</span></div>
+                </div>
             </div>
-            <div class="instrument instrument--right">
-                <span class="instrument-unit">°</span>
-                <span class="instrument-value text-amber">{{ liveBoat?.wind_direction_true != null ? fmt(liveBoat.wind_direction_true, 0) : '—' }}</span>
-                <span class="instrument-label">TWA</span>
-            </div>
-            <div class="instrument instrument--right">
-                <span class="instrument-unit">kn</span>
-                <span class="instrument-value text-amber">{{ fmt(liveBoat?.wind_speed_apparent) }}</span>
-                <span class="instrument-label">AWS</span>
-            </div>
-            <div class="instrument instrument--right">
-                <span class="instrument-unit">°</span>
-                <span class="instrument-value text-amber">{{ liveBoat?.wind_angle_apparent != null ? fmt(liveBoat.wind_angle_apparent, 0) : '—' }}</span>
-                <span class="instrument-label">AWA</span>
+            <div v-else class="panel p-3 flex-1">
+                <div class="text-xs font-semibold mb-1">Weather</div>
+                <p class="text-[11px] text-text-secondary">No data</p>
             </div>
         </div>
     </div>
@@ -131,84 +180,22 @@
                 <span class="journey-reading__label">ETA</span>
                 <span class="journey-reading__value">{{ formatEta(liveBoat?.nav_wp_ttg) }}</span>
             </div>
-            <div class="mt-auto pt-3 border-t border-border-light">
-                <div v-if="liveGps?.latitude != null" class="text-[11px] text-text-dim tabular-nums leading-relaxed">
-                    {{ fmtCoord(liveGps.latitude, liveGps.longitude) }}
-                </div>
-                <div class="text-[11px] text-text-dim mt-1">
-                    <Link href="/admin/journeys" class="text-scarlet font-medium hover:underline">Journeys →</Link>
-                </div>
+            <div class="journey-reading" v-if="props.activeJourney?.distance || props.plannedJourney?.distance">
+                <span class="journey-reading__label">Distance</span>
+                <span class="journey-reading__value">{{ props.activeJourney?.distance ?? props.plannedJourney?.distance ?? '—' }}</span>
+                <span class="journey-reading__unit">nm</span>
+            </div>
+            <div class="journey-reading" v-if="liveGps?.latitude != null">
+                <span class="journey-reading__label">Lat</span>
+                <span class="journey-reading__value">{{ fmtDM(liveGps.latitude, 'N', 'S') }}</span>
+            </div>
+            <div class="journey-reading" v-if="liveGps?.longitude != null">
+                <span class="journey-reading__label">Lon</span>
+                <span class="journey-reading__value">{{ fmtDM(liveGps.longitude, 'E', 'W') }}</span>
             </div>
         </div>
     </div>
 
-    <!-- Bottom Row -->
-    <div class="bottom-grid">
-        <!-- Ship Status panel -->
-        <div class="panel p-4">
-            <div class="flex items-baseline justify-between mb-4">
-                <span class="panel-title">Ship Status</span>
-                <Link href="/admin/tracker" class="text-[12px] text-scarlet font-medium hover:underline">Tracker →</Link>
-            </div>
-            <div class="space-y-3 mb-4">
-                <LevelBar
-                    :value="batteryPct"
-                    label="Battery"
-                    color="green"
-                />
-                <LevelBar
-                    :value="fuelLevel"
-                    label="Fuel"
-                    color="amber"
-                />
-                <LevelBar
-                    :value="waterLevel"
-                    label="Water"
-                    color="blue"
-                />
-            </div>
-            <a :href="'/admin/explore?metric=scarlet_boat_battery_power'" class="block">
-                <Sparkline :data="powerData" color="var(--color-green)" :height="36" :fill="true" :showDot="true" :zeroLine="true" />
-            </a>
-        </div>
-
-        <!-- Weather panel -->
-        <div v-if="liveWeather" class="panel overflow-hidden">
-            <!-- Gradient hero flush with panel top -->
-            <div class="weather-hero" :style="{ background: wxGradient }">
-                <div class="weather-hero__icon">{{ wxIcon }}</div>
-                <div>
-                    <div class="weather-hero__temp">{{ wxTemp }}</div>
-                    <div class="weather-hero__condition">{{ wxCondition }}</div>
-                </div>
-            </div>
-            <div class="p-4 pt-3 space-y-2 text-[13px]">
-                <div class="data-row">
-                    <span class="text-text-secondary">Sea Temp</span>
-                    <span class="text-blue font-semibold tabular-nums">{{ wxSeaTemp }}</span>
-                </div>
-                <div class="data-row">
-                    <span class="text-text-secondary">Wind</span>
-                    <span class="font-semibold tabular-nums">{{ wxWindSpeed }} {{ degreesToCompass(liveWeather.wind?.direction) }}</span>
-                </div>
-                <div class="data-row">
-                    <span class="text-text-secondary">Waves</span>
-                    <span class="font-semibold tabular-nums">{{ wxWaveHeight }}<span v-if="wxWavePeriod" class="text-text-dim"> @ {{ wxWavePeriod }}</span></span>
-                </div>
-                <div class="data-row">
-                    <span class="text-text-secondary">Pressure</span>
-                    <span class="font-semibold tabular-nums">{{ liveWeather.pressure != null ? fmt(liveWeather.pressure, 0) + ' hPa' : '—' }}</span>
-                </div>
-                <div class="mt-3 pt-3 border-t border-border-light">
-                    <Link href="/admin/weather" class="text-[12px] text-scarlet font-medium hover:underline">Weather details →</Link>
-                </div>
-            </div>
-        </div>
-        <div v-else class="panel p-4">
-            <div class="panel-title mb-3">Weather</div>
-            <p class="text-[13px] text-text-secondary">No weather data available.</p>
-        </div>
-    </div>
     </AdminLayout>
 </template>
 
@@ -252,6 +239,8 @@ const {
     wxWindSpeed,
     wxWaveHeight,
     wxWavePeriod,
+    clock,
+    clockDate,
     initMap,
     addMapTarget,
 } = useScarletMetrics({
@@ -284,6 +273,15 @@ onUnmounted(() => {
 // ── Computed helpers ─────────────────────────────────────────────────────────
 const twd = computed(() => liveBoat.value?.wind_direction_true ?? null);
 
+const relativeTwa = computed(() => {
+    if (liveBoat.value?.wind_angle_true != null) return liveBoat.value.wind_angle_true;
+    const twdVal = liveBoat.value?.wind_direction_true;
+    const hdg = liveBoat.value?.heading;
+    if (twdVal == null || hdg == null) return null;
+    return ((twdVal - hdg + 360) % 360);
+});
+
+
 const pointOfSailText = computed(() => {
     const twa = liveBoat.value?.wind_direction_true;
     const hdg = liveBoat.value?.heading;
@@ -297,6 +295,15 @@ const pointOfSailText = computed(() => {
     if (abs < 150) return 'Broad Reach';
     if (abs < 170) return 'Running';
     return 'Dead Run';
+});
+
+const pointOfSailColor = computed(() => {
+    const t = pointOfSailText.value;
+    if (t === 'In Irons') return 'oklch(0.48 0.22 25)';
+    if (t === 'Close Hauled' || t === 'Close Reach') return 'oklch(0.42 0.14 178)';
+    if (t === 'Beam Reach' || t === 'Broad Reach') return 'oklch(0.48 0.17 70)';
+    if (t === 'Running' || t === 'Dead Run') return 'oklch(0.45 0.16 150)';
+    return 'var(--color-text-dim)';
 });
 
 // Battery / tank / power computeds
@@ -401,6 +408,25 @@ const wxGradient = computed(() => {
     border-radius: 50%;
 }
 
+/* ── Helm row (helm 2/3 + sidebar 1/3) ────────────────────────────────────── */
+.helm-row {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 12px;
+}
+
+@media (min-width: 1024px) {
+    .helm-row {
+        grid-template-columns: 2fr 1fr;
+    }
+}
+
+.helm-sidebar {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
 /* ── Helm section ──────────────────────────────────────────────────────────── */
 .helm-grid {
     display: grid;
@@ -466,50 +492,73 @@ const wxGradient = computed(() => {
     margin-bottom: 4px;
 }
 
-.helm-center {
+/* ── Wind readings ────────────────────────────────────────────────────────── */
+.helm-readings {
     display: flex;
     flex-direction: column;
-    align-items: center;
-    gap: 8px;
+    align-items: flex-end;
+    justify-content: center;
+    gap: 16px;
 }
 
-.helm-pos-label {
-    text-align: center;
-}
-
-.helm-footer {
+.helm-reading {
     display: flex;
-    align-items: center;
-    gap: 12px;
-    padding: 6px 16px;
-    background: var(--color-bg);
-    border: 1px solid var(--color-border-light);
-    border-radius: 20px;
-    font-size: 12px;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 2px;
 }
 
-.helm-footer-item {
-    display: flex;
-    align-items: center;
-    gap: 5px;
-}
-
-.helm-footer-label {
+.helm-reading__label {
     font-size: 11px;
     font-weight: 700;
     text-transform: uppercase;
+    letter-spacing: 1px;
     color: var(--color-text-dim);
-    letter-spacing: 0.04em;
 }
 
-.helm-footer-value {
+.helm-reading__row {
+    display: flex;
+    align-items: baseline;
+    gap: 4px;
+}
+
+.helm-reading__value {
+    font-family: var(--font-sans);
+    font-size: 36px;
     font-weight: 600;
+    letter-spacing: -0.02em;
+    line-height: 1;
     font-variant-numeric: tabular-nums;
     color: var(--color-text-primary);
 }
 
-.helm-footer-sep {
-    color: var(--color-border);
+.helm-reading__unit {
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--color-text-dim);
+}
+
+.helm-reading__sub {
+    font-family: var(--font-sans);
+    font-size: 13px;
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+    color: var(--color-text-dim);
+    margin-top: -2px;
+}
+
+.helm-pos-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 5px 14px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 800;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--pos-color);
+    background: color-mix(in oklch, var(--pos-color) 12%, transparent);
+    align-self: flex-end;
 }
 
 /* ── Journey section ───────────────────────────────────────────────────────── */
@@ -525,12 +574,13 @@ const wxGradient = computed(() => {
 }
 
 .journey-map {
-    height: 260px;
+    min-height: 300px;
     isolation: isolate;
 }
 
 @media (min-width: 640px) {
-    .journey-map { height: 320px; }
+    .journey-grid { min-height: 400px; }
+    .journey-map { height: 100%; }
 }
 
 .journey-sidebar {
@@ -569,19 +619,6 @@ const wxGradient = computed(() => {
 .journey-reading__unit {
     font-size: 12px;
     color: var(--color-text-dim);
-}
-
-/* ── Bottom row ────────────────────────────────────────────────────────────── */
-.bottom-grid {
-    display: grid;
-    grid-template-columns: 1fr;
-    gap: 12px;
-}
-
-@media (min-width: 640px) {
-    .bottom-grid {
-        grid-template-columns: 1fr 1fr;
-    }
 }
 
 /* ── Weather hero ──────────────────────────────────────────────────────────── */

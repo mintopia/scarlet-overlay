@@ -25,6 +25,12 @@ export default defineConfig({
     ],
     server: {
         allowedHosts: true,
+        cors: true,
+        hmr: {
+            host: 'scarlet-vite.slow-sheppard.ws.cloudagent.mintopia.net',
+            protocol: 'wss',
+            clientPort: 443,
+        },
     },
     resolve: {
         alias: {

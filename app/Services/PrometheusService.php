@@ -14,6 +14,83 @@ class PrometheusService
         $this->baseUrl = config('scarlet.metrics.prometheus_url');
     }
 
+    public function queryAt(string $promql, int $timestamp): ?float
+    {
+        try {
+            $response = Http::timeout(5)->get("{$this->baseUrl}/api/v1/query", [
+                'query' => $promql,
+                'time' => $timestamp,
+            ]);
+
+            if (!$response->ok()) {
+                return null;
+            }
+
+            $result = $response->json('data.result');
+            return !empty($result) ? (float) $result[0]['value'][1] : null;
+        } catch (\Throwable $e) {
+            return null;
+        }
+    }
+
+    protected function queryLastOverTimeAt(string $promql, int $timestamp, string $lookback = '10m'): ?float
+    {
+        $wrapped = preg_replace_callback(
+            '/\b(scarlet_[a-zA-Z0-9_:]*)(\{[^}]*\})?/',
+            fn ($m) => "last_over_time({$m[0]}[{$lookback}])",
+            $promql,
+        );
+
+        if ($wrapped === $promql) {
+            return null;
+        }
+
+        try {
+            $response = Http::timeout(30)->get("{$this->baseUrl}/api/v1/query", [
+                'query' => $wrapped,
+                'time' => $timestamp,
+            ]);
+
+            if (!$response->ok()) {
+                return null;
+            }
+
+            $result = $response->json('data.result');
+            return !empty($result) ? (float) $result[0]['value'][1] : null;
+        } catch (\Throwable $e) {
+            return null;
+        }
+    }
+
+    public function queryMultipleAt(array $queries, int $timestamp): array
+    {
+        $responses = Http::pool(function ($pool) use ($queries, $timestamp) {
+            foreach ($queries as $key => $promql) {
+                $pool->as($key)->timeout(5)->get("{$this->baseUrl}/api/v1/query", [
+                    'query' => $promql,
+                    'time' => $timestamp,
+                ]);
+            }
+        });
+
+        $results = [];
+        foreach ($queries as $key => $promql) {
+            try {
+                $response = $responses[$key] ?? null;
+                if ($response && $response->ok()) {
+                    $result = $response->json('data.result');
+                    $results[$key] = !empty($result) ? (float) $result[0]['value'][1] : null;
+                } else {
+                    $results[$key] = null;
+                }
+            } catch (\Throwable $e) {
+                $results[$key] = null;
+            }
+        }
+
+        return $results;
+    }
+
     public function query(string $promql): ?float
     {
         try {

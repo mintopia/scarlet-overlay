@@ -98,6 +98,77 @@ class MetricsService
         ];
     }
 
+    public function getAllMetricsAt(int $timestamp): array
+    {
+        $boat = $this->prometheus->queryMultipleAt(
+            config('scarlet.metrics.mappings.boat'),
+            $timestamp
+        );
+
+        if ($boat['speed_sog'] === null) {
+            $boat['speed_sog'] = $this->prometheus->queryAt(
+                config('scarlet.metrics.mappings.gps.speed'),
+                $timestamp
+            );
+        }
+
+        $tw = $this->calculateTrueWind($boat['_aws'], $boat['_awa'], $boat['_stw'], $boat['_heading']);
+        $boat['wind_speed_true'] = $tw['speed'];
+        $boat['wind_direction_true'] = $tw['direction'];
+        unset($boat['_aws'], $boat['_awa'], $boat['_stw'], $boat['_heading']);
+
+        $tracker = $this->prometheus->queryMultipleAt(
+            config('scarlet.metrics.mappings.tracker'),
+            $timestamp
+        );
+        $tracker['battery_percent'] = $this->voltageToPct($tracker['battery_voltage'] ?? null);
+
+        $gps = $this->prometheus->queryMultipleAt(
+            config('scarlet.metrics.mappings.gps'),
+            $timestamp
+        );
+        $signalk = $this->prometheus->queryMultipleAt(
+            config('scarlet.metrics.mappings.signalk_position'),
+            $timestamp
+        );
+        if ($signalk['latitude'] !== null && $signalk['longitude'] !== null) {
+            $gps['latitude'] = $signalk['latitude'];
+            $gps['longitude'] = $signalk['longitude'];
+        }
+        if ($this->isNullIsland($gps['latitude'] ?? null, $gps['longitude'] ?? null)) {
+            $gps['latitude'] = null;
+            $gps['longitude'] = null;
+        }
+
+        $weatherMetrics = $this->prometheus->queryMultipleAt([
+            'temperature' => 'scarlet_weather_temperature_celsius',
+            'wind_speed' => 'scarlet_weather_wind_speed_kn',
+            'wind_direction' => 'scarlet_weather_wind_direction_deg',
+            'wave_height' => 'scarlet_weather_wave_height_m',
+            'wave_period' => 'scarlet_weather_wave_period_s',
+            'pressure' => 'scarlet_weather_pressure_hpa',
+            'current_speed' => 'scarlet_weather_current_speed_kn',
+            'current_direction' => 'scarlet_weather_current_direction_deg',
+        ], $timestamp);
+
+        $hasWeather = collect($weatherMetrics)->filter()->isNotEmpty();
+        $weather = $hasWeather ? array_merge($weatherMetrics, [
+            'condition' => 'Partly Cloudy',
+            'summary' => 'cloud',
+            'icon' => '⛅',
+            'sea_temperature' => $boat['water_temp'] ?? null,
+        ]) : $this->getWeatherData();
+
+        return [
+            'boat' => $boat,
+            'tracker' => $tracker,
+            'gps' => $gps,
+            'weather' => $weather,
+            'settings' => $this->getSettings(),
+            'timestamp' => date('c', $timestamp),
+        ];
+    }
+
     public function getGpsTrack(string $duration = '48h', string $step = '30s'): array
     {
         $history = config('scarlet.metrics.mappings.history');
