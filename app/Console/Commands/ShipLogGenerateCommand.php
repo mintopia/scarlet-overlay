@@ -27,12 +27,6 @@ class ShipLogGenerateCommand extends Command
         $queries = config('scarlet.metrics.mappings.log');
         $values = $prometheus->queryMultipleAt($queries, $timestamp);
 
-        foreach ($queries as $key => $promql) {
-            if ($values[$key] === null) {
-                $values[$key] = $prometheus->queryLastOverTimeAt($promql, $timestamp, '1h');
-            }
-        }
-
         $trueWind = $this->calculateTrueWind(
             $values['aws'],
             $values['awa'],

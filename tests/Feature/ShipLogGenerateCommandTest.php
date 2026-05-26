@@ -38,8 +38,6 @@ class ShipLogGenerateCommandTest extends TestCase
         $mock->shouldReceive('queryMultipleAt')
             ->once()
             ->andReturn($merged);
-        $mock->shouldReceive('queryLastOverTimeAt')
-            ->andReturn(null);
     }
 
     public function test_generate_creates_ship_log_entry(): void
@@ -102,8 +100,6 @@ class ShipLogGenerateCommandTest extends TestCase
                 'water_level' => null,
                 'fuel_level' => null,
             ]);
-        $mock->shouldReceive('queryLastOverTimeAt')
-            ->andReturn(null);
 
         $this->artisan('ship-log:generate')->assertSuccessful();
 

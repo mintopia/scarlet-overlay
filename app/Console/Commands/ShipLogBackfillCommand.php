@@ -42,11 +42,13 @@ class ShipLogBackfillCommand extends Command
 
         $queries = config('scarlet.metrics.mappings.log');
 
+        $this->line('Queries: '.implode(', ', array_keys($queries)));
+
         $seriesByKey = [];
         foreach ($queries as $key => $promql) {
-            $this->line("Fetching {$key}...");
-            $wrapped = $prometheus->wrapLastOverTime($promql, $stepSeconds.'s') ?? $promql;
-            $data = $prometheus->queryRange($wrapped, null, $stepSeconds.'s', $alignedStart, $alignedEnd);
+            $this->line("Fetching {$key}: {$promql}");
+            $data = $prometheus->queryRange($promql, null, $stepSeconds.'s', $alignedStart, $alignedEnd);
+            $this->line("  → {$key}: ".count($data).' data points');
             $seriesByKey[$key] = collect($data)->keyBy('timestamp');
         }
 
