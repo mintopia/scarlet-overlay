@@ -25,16 +25,22 @@ class ExploreControllerTest extends TestCase
         $response->assertRedirect('/login');
     }
 
-    public function test_explore_page_requires_metric_param(): void
+    public function test_explore_page_shows_dashboard_without_metric(): void
     {
         $response = $this->actingAs($this->user)->get('/admin/explore');
-        $response->assertRedirect('/admin/metrics');
+        $response->assertStatus(200);
+        $response->assertInertia(fn ($page) => $page
+            ->component('Admin/ExploreDashboard')
+        );
     }
 
-    public function test_explore_page_rejects_invalid_metric(): void
+    public function test_explore_page_shows_dashboard_for_invalid_metric(): void
     {
         $response = $this->actingAs($this->user)->get('/admin/explore?metric=nonexistent');
-        $response->assertRedirect('/admin/metrics');
+        $response->assertStatus(200);
+        $response->assertInertia(fn ($page) => $page
+            ->component('Admin/ExploreDashboard')
+        );
     }
 
     public function test_explore_page_renders_with_valid_metric(): void

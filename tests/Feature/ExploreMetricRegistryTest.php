@@ -16,7 +16,10 @@ class ExploreMetricRegistryTest extends TestCase
             $this->assertArrayHasKey('label', $entry, "Metric '{$slug}' missing label");
             $this->assertArrayHasKey('unit', $entry, "Metric '{$slug}' missing unit");
             $this->assertArrayHasKey('color', $entry, "Metric '{$slug}' missing color");
-            $this->assertArrayHasKey('query', $entry, "Metric '{$slug}' missing query");
+            $this->assertTrue(
+                isset($entry['query']) || isset($entry['computed']),
+                "Metric '{$slug}' missing query or computed",
+            );
             $this->assertArrayHasKey('group', $entry, "Metric '{$slug}' missing group");
         }
     }
