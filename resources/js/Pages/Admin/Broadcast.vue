@@ -5,33 +5,33 @@
         <!-- Header -->
         <div class="flex justify-between items-center mb-5">
             <h1 class="font-sans text-2xl font-extrabold tracking-tight">Broadcast</h1>
-            <div class="flex gap-2.5">
-                <a href="/overlay" target="_blank" class="text-[13px] font-semibold text-text-dim hover:text-text border border-border rounded-lg px-3 py-1.5 hover:border-border-hover transition-colors">Overlay ↗</a>
-                <a href="/dashboard" target="_blank" class="text-[13px] font-semibold text-text-dim hover:text-text border border-border rounded-lg px-3 py-1.5 hover:border-border-hover transition-colors">Public Dashboard ↗</a>
+            <div class="flex gap-4">
+                <a href="/overlay" target="_blank" class="text-[11px] font-body font-bold text-teal hover:underline">Overlay →</a>
+                <a href="/dashboard" target="_blank" class="text-[11px] font-body font-bold text-teal hover:underline">Public Dashboard →</a>
             </div>
         </div>
 
         <!-- Status Hero -->
         <div class="panel p-5 flex items-center gap-5 mb-4">
             <!-- Pulsing status indicator -->
-            <div class="relative flex-shrink-0 w-[52px] h-[52px] flex items-center justify-center">
+            <div class="relative flex-shrink-0 w-[32px] h-[32px] flex items-center justify-center">
                 <span
                     v-if="isConnected"
                     class="absolute inset-0 rounded-full bg-green opacity-30"
                     style="animation: status-pulse 1.4s ease-out infinite;"
                 ></span>
                 <span
-                    class="w-[52px] h-[52px] rounded-full inline-block"
+                    class="w-[32px] h-[32px] rounded-full inline-block"
                     :class="isConnected ? 'bg-green' : 'bg-text-dim opacity-30'"
                 ></span>
             </div>
 
             <!-- Status text + connection details -->
             <div class="flex-1 min-w-0">
-                <div class="text-[22px] font-extrabold leading-none mb-1" :class="isConnected ? 'text-green' : 'text-text-dim'">
+                <div class="text-[22px] font-sans font-extrabold leading-none mb-1" :class="isConnected ? 'text-green' : 'text-text-dim'">
                     {{ isConnected ? 'Live' : 'Offline' }}
                 </div>
-                <div class="text-[13px] text-text-dim">
+                <div class="text-[13px] font-body text-text-dim">
                     <template v-if="isConnected">
                         Latency {{ publisher?.latency != null ? Number(publisher.latency).toFixed(0) + ' ms' : '—' }}
                         &nbsp;&middot;&nbsp;
@@ -46,14 +46,14 @@
             <!-- At-a-glance stats -->
             <div class="flex gap-6 flex-shrink-0">
                 <div class="text-right">
-                    <div class="text-[11px] font-extrabold tracking-[2px] uppercase text-text-dim mb-0.5">Bitrate</div>
-                    <div class="text-[20px] font-semibold tabular-nums" :class="isConnected ? 'text-teal' : 'text-text-dim'">
+                    <div class="text-[11px] font-body font-extrabold tracking-[2px] uppercase text-text-dim mb-0.5">Bitrate</div>
+                    <div class="text-[20px] font-sans font-semibold tabular-nums" :class="isConnected ? 'text-teal' : 'text-text-dim'">
                         {{ formatBitrate(publisher?.bitrate) }} <span class="text-[13px] font-normal">Mbps</span>
                     </div>
                 </div>
                 <div class="text-right">
-                    <div class="text-[11px] font-extrabold tracking-[2px] uppercase text-text-dim mb-0.5">Drops</div>
-                    <div class="text-[20px] font-semibold tabular-nums" :class="(publisher?.dropped_pkts ?? 0) > 0 ? 'text-amber' : (isConnected ? 'text-green' : 'text-text-dim')">
+                    <div class="text-[11px] font-body font-extrabold tracking-[2px] uppercase text-text-dim mb-0.5">Drops</div>
+                    <div class="text-[20px] font-sans font-semibold tabular-nums" :class="(publisher?.dropped_pkts ?? 0) > 0 ? 'text-amber' : (isConnected ? 'text-green' : 'text-text-dim')">
                         {{ publisher?.dropped_pkts ?? 0 }}
                     </div>
                 </div>
@@ -84,44 +84,48 @@
 
             <!-- Right: 3 stacked stat panels -->
             <div class="flex flex-col gap-4">
-                <!-- Bitrate panel -->
-                <a href="/admin/explore?metric=srt_bitrate" class="panel flex-1 flex flex-col no-underline hover:opacity-90 transition-opacity">
-                    <div class="p-3 px-4.5">
-                        <div class="text-[11px] font-extrabold tracking-[2.5px] uppercase text-teal">Bitrate</div>
-                    </div>
-                    <div class="px-4.5 pb-3.5 flex-1 flex flex-col">
-                        <span class="font-sans text-[22px] font-semibold text-teal mb-1 tabular-nums">
+                <!-- Bitrate panel (tallest — primary metric) -->
+                <div class="panel flex-[2] flex flex-col">
+                    <div class="p-3 px-4.5 flex items-baseline justify-between">
+                        <div class="text-[11px] font-body font-extrabold tracking-[2.5px] uppercase text-teal">Bitrate</div>
+                        <span class="font-sans text-[22px] font-semibold text-teal tabular-nums">
                             {{ formatBitrate(publisher?.bitrate) }} <span class="text-[13px] font-normal">Mbps</span>
                         </span>
-                        <Sparkline :data="bitrateValues" color="var(--color-teal)" :height="36" />
                     </div>
-                </a>
+                    <div class="px-4.5 pb-3.5 flex-1 flex flex-col justify-end">
+                        <Sparkline :data="bitrateValues" color="var(--color-teal)" :height="44" :fill="true" :showDot="true" />
+                    </div>
+                </div>
 
-                <!-- Drops panel -->
-                <a href="/admin/explore?metric=srt_drops" class="panel flex-1 flex flex-col no-underline hover:opacity-90 transition-opacity">
-                    <div class="p-3 px-4.5">
-                        <div class="text-[11px] font-extrabold tracking-[2.5px] uppercase text-scarlet">Drops</div>
-                    </div>
-                    <div class="px-4.5 pb-3.5 flex-1 flex flex-col">
-                        <span class="font-sans text-[22px] font-semibold text-scarlet mb-1 tabular-nums">
-                            {{ publisher?.dropped_pkts ?? 0 }} <span class="text-[13px] font-normal">pkts</span>
+                <!-- Drops panel (compact — counter with context) -->
+                <div class="panel flex flex-col">
+                    <div class="p-3 px-4.5 flex items-baseline justify-between">
+                        <div class="text-[11px] font-body font-extrabold tracking-[2.5px] uppercase text-scarlet">Dropped Packets</div>
+                        <span class="font-sans text-[22px] font-semibold tabular-nums" :class="(publisher?.dropped_pkts ?? 0) > 0 ? 'text-scarlet' : 'text-green'">
+                            {{ publisher?.dropped_pkts ?? 0 }}
                         </span>
-                        <Sparkline :data="droppedValues" color="var(--color-scarlet)" :height="36" />
                     </div>
-                </a>
+                    <div class="px-4.5 pb-3.5">
+                        <Sparkline :data="droppedValues" color="var(--color-scarlet)" :height="28" :fill="false" :showDot="true" />
+                    </div>
+                </div>
 
-                <!-- RTT panel -->
-                <a href="/admin/explore?metric=srt_rtt" class="panel flex-1 flex flex-col no-underline hover:opacity-90 transition-opacity">
-                    <div class="p-3 px-4.5">
-                        <div class="text-[11px] font-extrabold tracking-[2.5px] uppercase text-amber">RTT</div>
-                    </div>
-                    <div class="px-4.5 pb-3.5 flex-1 flex flex-col">
-                        <span class="font-sans text-[22px] font-semibold text-amber mb-1 tabular-nums">
+                <!-- RTT panel (with latency detail row) -->
+                <div class="panel flex flex-col">
+                    <div class="p-3 px-4.5 flex items-baseline justify-between">
+                        <div class="text-[11px] font-body font-extrabold tracking-[2.5px] uppercase text-amber">Round Trip</div>
+                        <span class="font-sans text-[22px] font-semibold text-amber tabular-nums">
                             {{ publisher?.rtt != null ? Number(publisher.rtt).toFixed(1) : '—' }} <span class="text-[13px] font-normal">ms</span>
                         </span>
-                        <Sparkline :data="rttValues" color="var(--color-amber)" :height="36" />
                     </div>
-                </a>
+                    <div class="px-4.5 pb-3.5 flex flex-col gap-2">
+                        <Sparkline :data="rttValues" color="var(--color-amber)" :height="32" :fill="true" :showDot="true" />
+                        <div class="flex justify-between text-[12px] font-body">
+                            <span class="text-text-dim">Latency</span>
+                            <span class="font-sans font-semibold tabular-nums">{{ publisher?.latency != null ? Number(publisher.latency).toFixed(0) + ' ms' : '—' }}</span>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     </AdminLayout>

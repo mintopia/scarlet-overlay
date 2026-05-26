@@ -25,15 +25,15 @@
             <div class="flex gap-3 items-center">
                 <div class="flex items-center gap-1.5">
                     <span :class="['health-dot', props.tracker?.battery_percent > 0 ? 'health-dot--green' : 'health-dot--red']"></span>
-                    <span class="text-[11px] text-text-dim font-medium">Tracker</span>
+                    <span class="text-[11px] font-body text-text-dim font-medium">Tracker</span>
                 </div>
                 <div class="flex items-center gap-1.5">
                     <span :class="['health-dot', props.streamOnline ? 'health-dot--green' : 'health-dot--red']"></span>
-                    <span class="text-[11px] text-text-dim font-medium">Stream</span>
+                    <span class="text-[11px] font-body text-text-dim font-medium">Stream</span>
                 </div>
                 <div class="flex items-center gap-1.5">
                     <span :class="['health-dot', props.streamPublisher ? 'health-dot--green' : 'health-dot--amber']"></span>
-                    <span class="text-[11px] text-text-dim font-medium">Publisher</span>
+                    <span class="text-[11px] font-body text-text-dim font-medium">Publisher</span>
                 </div>
             </div>
             <div class="text-right border-l border-border-light pl-4">
@@ -65,7 +65,7 @@
                     <span class="instrument-unit">m</span>
                 </div>
                 <div class="mt-auto pt-2">
-                    <div class="text-[10px] font-bold uppercase tracking-wide text-text-dim">Log</div>
+                    <div class="text-[10px] font-body font-bold uppercase tracking-wide text-text-dim">Log</div>
                     <div class="font-sans text-base font-semibold tabular-nums text-text-secondary">
                         {{ liveBoat?.trip_log != null ? fmt(liveBoat.trip_log, 0) : '—' }} <span class="text-xs text-text-dim font-medium">nm</span>
                     </div>
@@ -101,9 +101,9 @@
                     <div class="helm-reading__sub">{{ twd != null ? fmt(twd, 0) + '°' : '—' }}</div>
                 </div>
                 <div class="helm-reading">
-                    <span class="helm-reading__label" style="color: oklch(0.55 0.18 330)">Apparent Wind</span>
+                    <span class="helm-reading__label" style="color: var(--color-teal); opacity: 0.65">Apparent Wind</span>
                     <div class="helm-reading__row">
-                        <span class="helm-reading__value" style="color: oklch(0.55 0.18 330)">{{ fmt(liveBoat?.wind_speed_apparent) }}</span>
+                        <span class="helm-reading__value" style="color: var(--color-teal); opacity: 0.65">{{ fmt(liveBoat?.wind_speed_apparent) }}</span>
                         <span class="helm-reading__unit">kn</span>
                     </div>
                     <div class="helm-reading__sub">{{ liveBoat?.wind_angle_apparent != null ? fmt(Math.abs(liveBoat.wind_angle_apparent), 0) + '°' : '—' }}</div>
@@ -119,8 +119,8 @@
             <!-- Systems -->
             <div class="panel p-4 flex flex-col">
                 <div class="flex items-baseline justify-between mb-3">
-                    <span class="panel-title">Systems</span>
-                    <Link href="/admin/tracker" class="text-[12px] text-scarlet font-medium hover:underline">Tracker →</Link>
+                    <span class="text-[11px] font-body font-extrabold tracking-[2.5px] uppercase text-teal">Systems</span>
+                    <Link href="/admin/tracker" class="text-[11px] font-body font-bold text-teal hover:underline">Explore →</Link>
                 </div>
                 <div class="space-y-2.5 mb-3">
                     <LevelBar :value="batteryPct" label="Battery" color="green" />
@@ -129,33 +129,38 @@
                 </div>
                 <div>
                     <div class="flex items-baseline justify-between mb-1">
-                        <span class="text-[10px] font-medium text-text-dim uppercase tracking-wide">Power</span>
+                        <span class="text-[10px] font-body font-bold text-text-dim uppercase tracking-wide">Power</span>
                         <span class="font-sans text-xs font-semibold tabular-nums" :class="(liveBoat?.house_battery_current ?? 0) >= 0 ? 'text-green' : 'text-amber'">
                             {{ liveBoat?.house_battery_voltage != null && liveBoat?.house_battery_current != null ? (liveBoat.house_battery_current >= 0 ? '+' : '') + Math.round(liveBoat.house_battery_voltage * liveBoat.house_battery_current) + 'W' : '—' }}
                         </span>
                     </div>
-                    <a :href="'/admin/explore?metric=scarlet_boat_battery_power'" class="block">
+                    <a href="/admin/explore?metric=battery_power" class="block">
                         <Sparkline :data="powerData" color="var(--color-green)" :height="36" :fill="true" :showDot="true" :zeroLine="true" />
                     </a>
                 </div>
             </div>
 
             <!-- Weather -->
-            <div v-if="liveWeather" class="panel p-3 flex flex-col flex-1 overflow-hidden" :style="{ borderTop: '3px solid', borderImage: wxGradient + ' 1' }">
-                <div class="flex items-center justify-between mb-2">
-                    <span class="text-[20px] leading-none">{{ wxIcon }}</span>
-                    <span class="font-sans text-lg font-bold tabular-nums">{{ wxTemp }}</span>
+            <div v-if="liveWeather" class="panel flex flex-col flex-1 overflow-hidden">
+                <div class="wx-hero rounded-t-[15px]" :style="{ background: wxGradient }">
+                    <div>
+                        <div class="font-sans text-[44px] font-bold tracking-tight leading-none text-white tabular-nums">
+                            {{ wxTemp }}
+                        </div>
+                        <div class="text-sm font-body font-medium text-white/80 mt-1">{{ wxCondition }}</div>
+                    </div>
+                    <div class="text-[36px] leading-none" aria-hidden="true">{{ wxIcon }}</div>
                 </div>
-                <div class="space-y-1 text-[11px] flex-1">
-                    <div class="data-row"><span class="text-text-dim">Sea</span><span class="font-semibold tabular-nums">{{ wxSeaTemp }}</span></div>
-                    <div class="data-row"><span class="text-text-dim">Wind</span><span class="font-semibold tabular-nums">{{ wxWindSpeed }}</span></div>
-                    <div class="data-row"><span class="text-text-dim">Waves</span><span class="font-semibold tabular-nums">{{ wxWaveHeight }}</span></div>
-                    <div class="data-row"><span class="text-text-dim">Pressure</span><span class="font-semibold tabular-nums">{{ liveWeather.pressure != null ? fmt(liveWeather.pressure, 0) + ' hPa' : '—' }}</span></div>
+                <div class="p-3 space-y-1 text-[11px] flex-1">
+                    <div class="data-row"><span class="font-body text-text-dim">Sea</span><span class="font-sans font-semibold tabular-nums">{{ wxSeaTemp }}</span></div>
+                    <div class="data-row"><span class="font-body text-text-dim">Wind</span><span class="font-sans font-semibold tabular-nums">{{ wxWindSpeed }}</span></div>
+                    <div class="data-row"><span class="font-body text-text-dim">Waves</span><span class="font-sans font-semibold tabular-nums">{{ wxWaveHeight }}</span></div>
+                    <div class="data-row"><span class="font-body text-text-dim">Pressure</span><span class="font-sans font-semibold tabular-nums">{{ liveWeather.pressure != null ? fmt(liveWeather.pressure, 0) + ' hPa' : '—' }}</span></div>
                 </div>
             </div>
             <div v-else class="panel p-3 flex-1">
-                <div class="text-xs font-semibold mb-1">Weather</div>
-                <p class="text-[11px] text-text-secondary">No data</p>
+                <div class="text-[11px] font-body font-extrabold tracking-[2.5px] uppercase text-text-dim mb-1">Weather</div>
+                <p class="text-[11px] font-body text-text-secondary">No data</p>
             </div>
         </div>
     </div>
@@ -477,7 +482,7 @@ const wxGradient = computed(() => {
 
 .instrument-value {
     font-family: var(--font-sans);
-    font-size: 46px;
+    font-size: 44px;
     font-weight: 600;
     letter-spacing: -0.02em;
     line-height: 1;
@@ -622,40 +627,14 @@ const wxGradient = computed(() => {
 }
 
 /* ── Weather hero ──────────────────────────────────────────────────────────── */
-.weather-hero {
+.wx-hero {
     display: flex;
     align-items: center;
-    gap: 16px;
-    padding: 20px;
-    color: white;
-}
-
-.weather-hero__icon {
-    font-size: 40px;
-    line-height: 1;
-    flex-shrink: 0;
-}
-
-.weather-hero__temp {
-    font-size: 32px;
-    font-weight: 800;
-    font-variant-numeric: tabular-nums;
-    line-height: 1;
-}
-
-.weather-hero__condition {
-    font-size: 13px;
-    font-weight: 600;
-    opacity: 0.85;
-    margin-top: 3px;
+    justify-content: space-between;
+    padding: 20px 20px 18px;
 }
 
 /* ── Shared utilities ──────────────────────────────────────────────────────── */
-.panel-title {
-    font-size: 15px;
-    font-weight: 600;
-}
-
 .data-row {
     display: flex;
     justify-content: space-between;

@@ -1,4 +1,5 @@
 <?php
+
 return [
     'weather' => [
         'endpoints' => [
@@ -73,6 +74,7 @@ return [
                 'cabin_humidity_main' => 'scarlet_mqtt_humidity{topic="zigbee2mqtt/Main Cabin"}',
                 'cabin_temp_forepeak' => 'scarlet_environment_temperature_celsius',
                 'cabin_humidity_forepeak' => 'scarlet_environment_humidity_percent',
+                'cabin_pressure_forepeak' => 'scarlet_mqtt_pressure{topic="zigbee2mqtt/Forepeak"}',
             ],
 
             'tracker' => [
@@ -120,6 +122,7 @@ return [
                 'humidity_forepeak' => 'scarlet_environment_humidity_percent',
                 'humidity_quarterberth' => 'scarlet_mqtt_humidity{topic="zigbee2mqtt/Quarterberth"}',
                 'humidity_main_cabin' => 'scarlet_mqtt_humidity{topic="zigbee2mqtt/Main Cabin"}',
+                'pressure_forepeak' => 'scarlet_mqtt_pressure{topic="zigbee2mqtt/Forepeak"}',
                 'battery_current' => 'scarlet_signalk_electrical_batteries_0_current',
                 'battery_power' => 'scarlet_signalk_electrical_batteries_0_current * scarlet_signalk_electrical_batteries_0_voltage',
                 'fuel_level' => 'scarlet_signalk_tanks_fuel_currentLevel * 100',
@@ -284,6 +287,13 @@ return [
                     'query' => 'scarlet_mqtt_humidity{topic="zigbee2mqtt/Main Cabin"}',
                     'group' => 'cabin',
                 ],
+                'pressure_forepeak' => [
+                    'label' => 'Pressure: Forepeak',
+                    'unit' => 'hPa',
+                    'color' => 'oklch(0.55 0.15 240)',
+                    'query' => 'scarlet_mqtt_pressure{topic="zigbee2mqtt/Forepeak"}',
+                    'group' => 'cabin',
+                ],
 
                 // Tanks
                 'fuel_level' => [
@@ -339,7 +349,7 @@ return [
                 'stw' => 'scarlet_signalk_navigation_speedThroughWater',
                 'heading' => 'scarlet_signalk_navigation_headingTrue',
                 'cog' => 'scarlet_signalk_navigation_courseOverGroundTrue',
-                'pressure' => 'scarlet_weather_pressure_hpa',
+                'pressure' => 'scarlet_mqtt_pressure{topic="zigbee2mqtt/Forepeak"}',
                 'latitude' => 'scarlet_signalk_navigation_position_latitude',
                 'longitude' => 'scarlet_signalk_navigation_position_longitude',
                 'wp_distance' => 'scarlet_signalk_navigation_courseGreatCircle_nextPoint_distance / 1852',

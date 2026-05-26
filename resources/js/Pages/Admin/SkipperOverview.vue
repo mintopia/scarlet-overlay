@@ -8,7 +8,6 @@ import Sparkline from '@/Components/Admin/Sparkline.vue'
 import LevelBar from '@/Components/Admin/LevelBar.vue'
 import { fmt, fmtDuration } from '@/composables/useFormatters.js'
 
-defineOptions({ layout: AdminLayout })
 
 const props = defineProps({
     boat:            { type: Object, default: () => ({}) },
@@ -169,6 +168,7 @@ const wxGradient = computed(() => {
 </script>
 
 <template>
+    <AdminLayout>
     <Head title="Skipper Overview" />
 
     <div class="skipper-grid">
@@ -179,7 +179,7 @@ const wxGradient = computed(() => {
 
         <!-- 1. Heading & Course -->
         <div class="panel p-4 flex flex-col items-center gap-3">
-            <div class="text-[11px] font-extrabold tracking-[2.5px] uppercase text-teal self-center">
+            <div class="text-[11px] font-body font-extrabold tracking-[2.5px] uppercase text-teal self-center">
                 Heading &amp; Course
             </div>
 
@@ -187,28 +187,28 @@ const wxGradient = computed(() => {
 
             <div class="hdg-grid w-full">
                 <div class="text-center">
-                    <div class="text-xs font-medium text-text-dim mb-0.5">HDG</div>
+                    <div class="text-xs font-body font-medium text-text-dim mb-0.5">HDG</div>
                     <div class="font-sans text-base font-semibold tabular-nums">
                         {{ fmt(heading, 0) }}<span class="text-text-dim text-xs">&deg;</span>
                     </div>
                 </div>
                 <div class="hdg-divider"></div>
                 <div class="text-center">
-                    <div class="text-xs font-medium text-text-dim mb-0.5">COG</div>
+                    <div class="text-xs font-body font-medium text-text-dim mb-0.5">COG</div>
                     <div class="font-sans text-base font-semibold tabular-nums">
                         {{ cog != null ? fmt(cog, 0) : '—' }}<span v-if="cog != null" class="text-text-dim text-xs">&deg;</span>
                     </div>
                 </div>
             </div>
 
-            <div class="text-xs font-medium text-text-dim text-center tabular-nums">
+            <div class="text-xs font-body font-medium text-text-dim text-center tabular-nums">
                 {{ posText ?? '—' }}
             </div>
         </div>
 
         <!-- 2. Speed -->
         <div class="panel p-4 flex flex-col gap-2">
-            <div class="text-[11px] font-extrabold tracking-[2.5px] uppercase text-teal">
+            <div class="text-[11px] font-body font-extrabold tracking-[2.5px] uppercase text-teal">
                 Speed
             </div>
 
@@ -221,16 +221,16 @@ const wxGradient = computed(() => {
             </div>
 
             <!-- SOW sub-line -->
-            <div class="text-xs font-medium text-text-dim -mt-1">
+            <div class="text-xs font-body font-medium text-text-dim -mt-1">
                 SOW&nbsp;<span class="font-sans text-base font-semibold text-text-primary tabular-nums">{{ sow != null ? fmt(sow) : '—' }}</span>&nbsp;kn
             </div>
 
             <!-- Speed sparkline -->
-            <a :href="'/admin/explore?metric=scarlet_gps_speed_sog'" class="block mt-1">
+            <a href="/admin/explore?metric=speed" class="block mt-1">
                 <Sparkline :data="speedData" color="var(--color-teal)" :height="36" :fill="true" :showDot="true" />
             </a>
 
-            <div class="text-[10px] font-extrabold tracking-[2px] uppercase text-text-dim mt-0.5">Navigation</div>
+            <div class="text-[10px] font-body font-extrabold tracking-[2px] uppercase text-text-dim mt-0.5">Navigation</div>
 
             <!-- DTW / TTG / ETA rows -->
             <div class="space-y-1.5 text-[13px]">
@@ -267,7 +267,7 @@ const wxGradient = computed(() => {
             <div class="font-sans text-base font-semibold text-amber text-center">
                 {{ pointOfSail }}
             </div>
-            <div class="text-xs font-medium text-text-dim text-center">
+            <div class="text-xs font-body font-medium text-text-dim text-center">
                 {{ beaufort }}
                 <span class="text-text-dim"> &middot; </span>
                 {{ fmt(tws, 1) }} kn
@@ -283,7 +283,7 @@ const wxGradient = computed(() => {
 
         <!-- 4. Systems -->
         <div class="panel p-4 flex flex-col gap-3">
-            <div class="text-[11px] font-extrabold tracking-[2.5px] uppercase text-teal">
+            <div class="text-[11px] font-body font-extrabold tracking-[2.5px] uppercase text-teal">
                 Systems
             </div>
 
@@ -311,19 +311,19 @@ const wxGradient = computed(() => {
 
         <!-- 5. Depth & Power -->
         <div class="panel p-4 flex flex-col gap-4">
-            <div class="text-[11px] font-extrabold tracking-[2.5px] uppercase text-teal">
+            <div class="text-[11px] font-body font-extrabold tracking-[2.5px] uppercase text-teal">
                 Depth &amp; Power
             </div>
 
             <!-- Depth chart -->
             <div>
                 <div class="flex items-baseline justify-between mb-1.5">
-                    <span class="text-xs font-medium text-text-dim uppercase tracking-wide">Depth</span>
+                    <span class="text-xs font-body font-medium text-text-dim uppercase tracking-wide">Depth</span>
                     <span class="font-sans text-base font-semibold tabular-nums">
                         {{ depth != null ? fmt(depth, 1) + ' m' : '—' }}
                     </span>
                 </div>
-                <a :href="'/admin/explore?metric=scarlet_gps_depth'" class="block">
+                <a href="/admin/explore?metric=depth" class="block">
                     <Sparkline :data="depthData" color="var(--color-blue)" :height="44" :fill="true" :showDot="true" />
                 </a>
             </div>
@@ -331,12 +331,12 @@ const wxGradient = computed(() => {
             <!-- Power chart -->
             <div>
                 <div class="flex items-baseline justify-between mb-1.5">
-                    <span class="text-xs font-medium text-text-dim uppercase tracking-wide">Battery Power</span>
+                    <span class="text-xs font-body font-medium text-text-dim uppercase tracking-wide">Battery Power</span>
                     <span class="font-sans text-base font-semibold tabular-nums" :class="livePowerClass">
                         {{ livePowerLabel }}
                     </span>
                 </div>
-                <a :href="'/admin/explore?metric=scarlet_boat_battery_power'" class="block">
+                <a href="/admin/explore?metric=battery_power" class="block">
                     <Sparkline :data="powerData" color="var(--color-green)" :height="44" :fill="true" :showDot="true" :zeroLine="true" />
                 </a>
             </div>
@@ -394,12 +394,12 @@ const wxGradient = computed(() => {
                 <!-- Pressure sparkline -->
                 <div>
                     <div class="flex items-baseline justify-between mb-1.5">
-                        <span class="text-xs font-medium text-text-dim uppercase tracking-wide">Pressure</span>
+                        <span class="text-xs font-body font-medium text-text-dim uppercase tracking-wide">Pressure</span>
                         <span class="font-sans text-sm font-semibold tabular-nums">
                             {{ wxPressure != null ? fmt(wxPressure, 0) + ' hPa' : '—' }}
                         </span>
                     </div>
-                    <a :href="'/admin/explore?metric=scarlet_boat_pressure'" class="block">
+                    <a href="/admin/explore?metric=pressure_forepeak" class="block">
                         <Sparkline :data="pressureData" color="var(--color-teal)" :height="32" :fill="true" :showDot="true" />
                     </a>
                 </div>
@@ -407,6 +407,7 @@ const wxGradient = computed(() => {
         </div>
 
     </div>
+    </AdminLayout>
 </template>
 
 <style scoped>

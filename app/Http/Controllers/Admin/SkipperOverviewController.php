@@ -16,7 +16,7 @@ class SkipperOverviewController extends Controller
         $weather = $metrics->getWeatherData();
 
         $depthHistory = $prometheus->queryRange(
-            'scarlet_boat_depth_meters',
+            config('scarlet.metrics.mappings.boat.depth'),
             '1h',
             '60s'
         );
@@ -28,7 +28,7 @@ class SkipperOverviewController extends Controller
         );
 
         $pressureHistory = $prometheus->queryRange(
-            'scarlet_weather_pressure_hpa',
+            config('scarlet.metrics.mappings.history.pressure_forepeak'),
             '24h',
             '15m'
         );
