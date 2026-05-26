@@ -227,6 +227,7 @@ const props = defineProps({
     gps: Object,
     tracker: Object,
     weather: Object,
+    settings: Object,
     activeJourney: Object,
     plannedJourney: Object,
     routeWaypoints: { type: Array, default: () => [] },
@@ -257,7 +258,7 @@ const {
     initMap,
     addMapTarget,
 } = useScarletMetrics({
-    initialMetrics: { boat: props.boat, gps: props.gps, weather: props.weather },
+    initialMetrics: { boat: props.boat, gps: props.gps, weather: props.weather, settings: props.settings },
     gpsTrack: props.gpsTrack,
     routeWaypoints: routeWaypointsArr.value,
 });
