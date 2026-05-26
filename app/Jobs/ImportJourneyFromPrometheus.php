@@ -5,6 +5,7 @@ namespace App\Jobs;
 use App\Models\Journey;
 use App\Models\JourneyTrackPoint;
 use App\Services\PrometheusService;
+use Carbon\Carbon;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
@@ -25,14 +26,14 @@ class ImportJourneyFromPrometheus implements ShouldQueue
     public function handle(PrometheusService $prometheus): void
     {
         $journey = Journey::findOrFail($this->journeyId);
-        $start = \Carbon\Carbon::parse($this->startTime)->timestamp;
-        $end = \Carbon\Carbon::parse($this->endTime)->timestamp;
+        $start = Carbon::parse($this->startTime)->timestamp;
+        $end = Carbon::parse($this->endTime)->timestamp;
         $step = '30s';
 
         $signalk = config('scarlet.metrics.mappings.signalk_position');
         $skLat = $prometheus->queryRange($signalk['latitude'], '', $step, $start, $end);
         $skLng = $prometheus->queryRange($signalk['longitude'], '', $step, $start, $end);
-        $useSignalK = !empty($skLat) && !empty($skLng);
+        $useSignalK = ! empty($skLat) && ! empty($skLng);
 
         $metrics = [
             'speed_sog' => 'scarlet_gps_speed_kn',
@@ -49,9 +50,9 @@ class ImportJourneyFromPrometheus implements ShouldQueue
             'heel' => 'scarlet_signalk_navigation_attitude_roll * 180 / 3.14159265359',
         ];
 
-        if (!$useSignalK) {
-            $metrics['latitude'] = 'scarlet_gps_latitude_deg';
-            $metrics['longitude'] = 'scarlet_gps_longitude_deg';
+        if (! $useSignalK) {
+            $metrics['latitude'] = 'scarlet_gps_latitude_deg{gps_source="signalk"} != 0';
+            $metrics['longitude'] = 'scarlet_gps_longitude_deg{gps_source="signalk"} != 0';
         }
 
         $data = [];
@@ -73,7 +74,7 @@ class ImportJourneyFromPrometheus implements ShouldQueue
             $results = $prometheus->queryRange($query, '', $step, $start, $end);
             foreach ($results as $point) {
                 $ts = $point['timestamp'];
-                if (!isset($data[$ts])) {
+                if (! isset($data[$ts])) {
                     $data[$ts] = ['recorded_at' => date('Y-m-d H:i:s', $ts)];
                 }
                 $data[$ts][$key] = $point['value'];
@@ -84,7 +85,7 @@ class ImportJourneyFromPrometheus implements ShouldQueue
 
         $batch = [];
         foreach ($data as $row) {
-            if (!isset($row['latitude']) || !isset($row['longitude'])) {
+            if (! isset($row['latitude']) || ! isset($row['longitude'])) {
                 continue;
             }
             if (abs($row['latitude']) < 0.1 && abs($row['longitude']) < 0.1) {
@@ -99,12 +100,11 @@ class ImportJourneyFromPrometheus implements ShouldQueue
             }
         }
 
-        if (!empty($batch)) {
+        if (! empty($batch)) {
             JourneyTrackPoint::insert($batch);
         }
 
         $pointCount = $journey->trackPoints()->count();
         Log::info("Imported {$pointCount} track points for journey #{$journey->id}");
     }
-
 }

@@ -6,8 +6,8 @@ trait ResolvesShipLogData
 {
     private function buildLogData(array $values): array
     {
-        $latitude = $this->nonZero($values['latitude']) ?? $values['signalk_latitude'] ?? null;
-        $longitude = $this->nonZero($values['longitude']) ?? $values['signalk_longitude'] ?? null;
+        $latitude = $this->nonZero($values['latitude']) ?? $this->nonZero($values['signalk_latitude'] ?? null);
+        $longitude = $this->nonZero($values['longitude']) ?? $this->nonZero($values['signalk_longitude'] ?? null);
 
         $trueWind = $this->calculateTrueWind(
             $values['aws'],
