@@ -5,22 +5,8 @@
         <!-- Page header / toolbar -->
         <div class="toolbar">
             <div class="toolbar-left">
-                <Link href="/admin/explore" class="back-link">&larr; Explore</Link>
-                <span class="toolbar-sep">/</span>
-                <div class="metric-select-wrap">
-                    <select
-                        :value="metric.slug"
-                        class="metric-select"
-                        @change="switchMetric($event.target.value)"
-                    >
-                        <option value="__overview__">Overview</option>
-                        <optgroup v-for="(groupMetrics, group) in metrics" :key="group" :label="groupLabel(group)">
-                            <option v-for="(m, slug) in groupMetrics" :key="slug" :value="slug">
-                                {{ m.label }}{{ m.unit ? ` (${m.unit})` : '' }}
-                            </option>
-                        </optgroup>
-                    </select>
-                </div>
+                <h1 class="metric-title">{{ metric.label }}</h1>
+                <span v-if="metric.unit" class="metric-title-unit">{{ metric.unit }}</span>
             </div>
 
             <div class="toolbar-right">
@@ -140,7 +126,7 @@
 </template>
 
 <script setup>
-import { Head, Link, router } from '@inertiajs/vue3';
+import { Head, router } from '@inertiajs/vue3';
 import AdminLayout from '@/Layouts/AdminLayout.vue';
 import { ref, computed, nextTick, onMounted, onUnmounted } from 'vue';
 import uPlot from 'uplot';
@@ -214,14 +200,6 @@ function buildUrl(params) {
         if (v != null && v !== '') query.set(k, v);
     }
     return `${base}?${query.toString()}`;
-}
-
-function switchMetric(slug) {
-    if (slug === '__overview__') {
-        router.get('/admin/explore', { range: props.range });
-        return;
-    }
-    router.get(buildUrl({ metric: slug, range: props.range }));
 }
 
 function switchRange(range) {
@@ -666,30 +644,18 @@ onUnmounted(() => {
 
 .toolbar-sep { color: var(--color-border); }
 
-.back-link {
-    font-size: 13px;
-    color: var(--color-text-secondary);
-    text-decoration: none;
-}
-
-.back-link:hover { color: var(--color-text-primary); }
-
-.metric-select {
-    font-weight: 600;
+.metric-title {
+    font-weight: 700;
     font-size: 15px;
-    border: none;
-    background: transparent;
     color: var(--color-text-primary);
-    cursor: pointer;
-    padding: 2px 4px;
-    -webkit-appearance: none;
-    appearance: none;
+    margin: 0;
+    line-height: 1;
 }
 
-.metric-select:focus-visible {
-    outline: 2px solid var(--color-scarlet);
-    outline-offset: 2px;
-    border-radius: 4px;
+.metric-title-unit {
+    font-size: 12px;
+    color: var(--color-text-dim);
+    font-weight: 500;
 }
 
 .preset-cluster { display: flex; gap: 3px; }

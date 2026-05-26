@@ -22,29 +22,26 @@
 
             <nav class="px-2.5 py-3 flex-1 flex flex-col gap-0.5 overflow-y-auto">
                 <NavLink href="/admin" icon="home" :active="currentPage === 'Admin/Dashboard'" @click="sidebarOpen = false">Dashboard</NavLink>
-
-                <div class="nav-label">Skipper</div>
-                <NavLink href="/admin/skipper" icon="compass" :active="currentPage === 'Admin/SkipperOverview'" @click="sidebarOpen = false">Skipper Overview</NavLink>
                 <NavLink href="/admin/journeys" icon="compass" :active="currentPage?.startsWith('Admin/Journey')" @click="sidebarOpen = false">Journeys</NavLink>
-                <NavLink href="/admin/weather" icon="cloud" :active="currentPage === 'Admin/Weather'" @click="sidebarOpen = false">Weather</NavLink>
                 <NavLink href="/admin/log" icon="clipboard" :active="currentPage === 'Admin/Log'" @click="sidebarOpen = false">Ship's Log</NavLink>
+                <NavLink href="/admin/weather" icon="cloud" :active="currentPage === 'Admin/Weather'" @click="sidebarOpen = false">Weather</NavLink>
+                <NavLink href="/admin/explore" icon="search" :active="currentPage?.startsWith('Admin/Explore')" @click="sidebarOpen = false">Explore</NavLink>
 
-                <div class="nav-label">Broadcast</div>
+                <div class="nav-divider"></div>
+
+                <NavLink href="/admin/tracker" icon="activity" :active="currentPage === 'Admin/Tracker'" @click="sidebarOpen = false">Tracker</NavLink>
                 <NavLink href="/admin/broadcast" icon="radio" :active="currentPage === 'Admin/Broadcast'" @click="sidebarOpen = false">Broadcast</NavLink>
+                <NavLink href="/admin/settings" icon="settings" :active="currentPage === 'Admin/Settings'" @click="sidebarOpen = false">Settings</NavLink>
+                <NavLink href="/admin/team" icon="users" :active="currentPage === 'Admin/Team'" @click="sidebarOpen = false">Team</NavLink>
+
+                <div class="flex-1"></div>
+
                 <a href="/overlay" target="_blank" class="nav-external">
                     Overlay <span class="nav-arrow">↗</span>
                 </a>
                 <a href="/dashboard" target="_blank" class="nav-external">
                     Public Dashboard <span class="nav-arrow">↗</span>
                 </a>
-
-                <div class="nav-label">System</div>
-                <NavLink href="/admin/tracker" icon="activity" :active="currentPage === 'Admin/Tracker'" @click="sidebarOpen = false">Tracker</NavLink>
-                <NavLink href="/admin/settings" icon="settings" :active="currentPage === 'Admin/Settings'" @click="sidebarOpen = false">Settings</NavLink>
-                <NavLink href="/admin/team" icon="users" :active="currentPage === 'Admin/Team'" @click="sidebarOpen = false">Team</NavLink>
-
-                <div class="nav-label">Tools</div>
-                <NavLink href="/admin/explore" icon="search" :active="currentPage?.startsWith('Admin/Explore')" @click="sidebarOpen = false">Explore</NavLink>
             </nav>
         </aside>
 
@@ -149,7 +146,6 @@ const home = { label: 'Dashboard', href: '/admin' };
 const breadcrumbMap = {
     'Admin/Dashboard': [{ label: 'Dashboard' }],
     'Admin/Settings': [home, { label: 'Settings' }],
-    'Admin/SkipperOverview': [home, { label: 'Skipper Overview' }],
     'Admin/Journeys': [home, { label: 'Journeys' }],
     'Admin/JourneyCreate': [home, { label: 'Journeys', href: '/admin/journeys' }, { label: 'New Journey' }],
     'Admin/JourneyEdit': [home, { label: 'Journeys', href: '/admin/journeys' }, { label: 'Edit' }],
@@ -269,13 +265,10 @@ onUnmounted(() => {
     opacity: 0;
 }
 
-.nav-label {
-    font-size: 10px;
-    font-weight: 700;
-    color: var(--color-text-dim);
-    letter-spacing: 0.04em;
-    text-transform: uppercase;
-    padding: 16px 12px 6px;
+.nav-divider {
+    height: 1px;
+    background: var(--color-border-light);
+    margin: 6px 12px;
 }
 
 .nav-link {

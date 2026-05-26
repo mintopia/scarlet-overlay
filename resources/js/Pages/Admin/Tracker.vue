@@ -1,5 +1,5 @@
 <template>
-    <AdminLayout>
+    <AdminLayout :wide="true">
         <Head title="Tracker" />
 
         <!-- Page header -->

@@ -43,6 +43,7 @@ class AdminDashboardController extends Controller
             'gps' => $metrics->getGpsMetrics(),
             'tracker' => $metrics->getTrackerMetrics(),
             'weather' => $metrics->getWeatherData(),
+            'gpsTrack' => $metrics->getGpsTrack(),
             'activeJourney' => $activeJourney ? [
                 'id' => $activeJourney->id,
                 'title' => $activeJourney->title,

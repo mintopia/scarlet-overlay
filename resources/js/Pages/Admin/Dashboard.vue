@@ -223,6 +223,7 @@ const props = defineProps({
     activeJourney: Object,
     plannedJourney: Object,
     routeWaypoints: { type: Array, default: () => [] },
+    gpsTrack: { type: Array, default: () => [] },
     recentJourneys: { type: Array, default: () => [] },
     streamOnline: Boolean,
     streamPublisher: Boolean,
@@ -250,7 +251,7 @@ const {
     addMapTarget,
 } = useScarletMetrics({
     initialMetrics: { boat: props.boat, gps: props.gps, weather: props.weather },
-    gpsTrack: routeWaypointsArr.value.map(w => [w.lat, w.lng]),
+    gpsTrack: props.gpsTrack,
     routeWaypoints: routeWaypointsArr.value,
 });
 
@@ -491,7 +492,7 @@ const wxGradient = computed(() => {
 }
 
 .instrument-unit {
-    font-size: 14px;
+    font-size: 11px;
     font-weight: 500;
     color: var(--color-text-dim);
     margin-bottom: 4px;
@@ -538,7 +539,7 @@ const wxGradient = computed(() => {
 }
 
 .helm-reading__unit {
-    font-size: 14px;
+    font-size: 11px;
     font-weight: 500;
     color: var(--color-text-dim);
 }
