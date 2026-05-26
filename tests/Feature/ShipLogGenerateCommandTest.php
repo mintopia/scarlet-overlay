@@ -1,0 +1,109 @@
+<?php
+
+namespace Tests\Feature;
+
+use App\Models\Journey;
+use App\Models\ShipLog;
+use App\Services\PrometheusService;
+use Illuminate\Foundation\Testing\RefreshDatabase;
+use Tests\TestCase;
+
+class ShipLogGenerateCommandTest extends TestCase
+{
+    use RefreshDatabase;
+
+    private function mockPrometheus(array $values = []): void
+    {
+        $defaults = [
+            'trip_log' => 12.3,
+            'aws' => 8.5,
+            'awa' => 0.78,
+            'stw' => 3.1,
+            'heading' => 4.78,
+            'cog' => 4.78,
+            'pressure' => 1013.2,
+            'latitude' => 50.75,
+            'longitude' => -1.54,
+            'wp_distance' => 8.2,
+            'wp_ttg' => 10800.0,
+            'battery_soc' => 87.0,
+            'water_level' => 62.0,
+            'fuel_level' => 95.0,
+        ];
+
+        $merged = array_merge($defaults, $values);
+
+        $mock = $this->mock(PrometheusService::class);
+        $mock->shouldReceive('queryMultipleAt')
+            ->once()
+            ->andReturn($merged);
+    }
+
+    public function test_generate_creates_ship_log_entry(): void
+    {
+        $this->mockPrometheus();
+
+        $this->artisan('ship-log:generate')
+            ->assertSuccessful();
+
+        $this->assertDatabaseCount('ship_logs', 1);
+
+        $log = ShipLog::first();
+        $this->assertEquals(1013.2, (float) $log->pressure);
+        $this->assertEquals(50.75, (float) $log->latitude);
+        $this->assertNotNull($log->wind_speed);
+        $this->assertNotNull($log->wind_direction);
+        $this->assertNotNull($log->course);
+    }
+
+    public function test_generate_is_idempotent(): void
+    {
+        $this->mockPrometheus();
+
+        $this->artisan('ship-log:generate')->assertSuccessful();
+        $this->artisan('ship-log:generate')->assertSuccessful();
+
+        $this->assertDatabaseCount('ship_logs', 1);
+    }
+
+    public function test_generate_associates_active_journey(): void
+    {
+        $journey = Journey::factory()->active()->create();
+        $this->mockPrometheus();
+
+        $this->artisan('ship-log:generate')->assertSuccessful();
+
+        $log = ShipLog::first();
+        $this->assertEquals($journey->id, $log->journey_id);
+    }
+
+    public function test_generate_handles_null_metrics(): void
+    {
+        $mock = $this->mock(PrometheusService::class);
+        $mock->shouldReceive('queryMultipleAt')
+            ->once()
+            ->andReturn([
+                'trip_log' => null,
+                'aws' => null,
+                'awa' => null,
+                'stw' => null,
+                'heading' => null,
+                'cog' => null,
+                'pressure' => null,
+                'latitude' => null,
+                'longitude' => null,
+                'wp_distance' => null,
+                'wp_ttg' => null,
+                'battery_soc' => null,
+                'water_level' => null,
+                'fuel_level' => null,
+            ]);
+
+        $this->artisan('ship-log:generate')->assertSuccessful();
+
+        $log = ShipLog::first();
+        $this->assertNull($log->latitude);
+        $this->assertNull($log->wind_speed);
+        $this->assertNull($log->course);
+    }
+}

@@ -9,3 +9,4 @@ Artisan::command('inspire', function () {
 })->purpose('Display an inspiring quote');
 
 Schedule::command('mediamtx:sync')->everyFiveMinutes();
+Schedule::command('ship-log:generate')->hourly();
