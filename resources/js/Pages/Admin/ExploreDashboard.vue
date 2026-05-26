@@ -1,5 +1,5 @@
 <template>
-    <AdminLayout :wide="true">
+    <AdminLayout>
         <Head title="Explore" />
         <div class="flex items-center justify-between mb-6">
             <h1 class="font-sans text-xl font-extrabold tracking-tight">Explore</h1>

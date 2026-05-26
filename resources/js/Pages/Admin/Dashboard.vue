@@ -1,5 +1,5 @@
 <template>
-    <AdminLayout :wide="true">
+    <AdminLayout>
     <Head title="Dashboard" />
 
     <!-- Status Ribbon -->

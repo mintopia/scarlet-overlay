@@ -2,6 +2,11 @@
 
 namespace App\Services;
 
+use App\Http\Resources\V1\WeatherResource;
+use App\Models\BoatSetting;
+use App\Models\Journey;
+use Carbon\CarbonInterval;
+
 class MetricsService
 {
     public function __construct(
@@ -11,13 +16,13 @@ class MetricsService
 
     public function getSettings(): array
     {
-        $journey = \App\Models\Journey::current();
+        $journey = Journey::current();
 
         return [
-            'boat_name' => \App\Models\BoatSetting::getValue('boat_name', config('scarlet.name')),
+            'boat_name' => BoatSetting::getValue('boat_name', config('scarlet.name')),
             'passage_from' => $journey?->from_port ?? '',
             'passage_to' => $journey?->to_port ?? '',
-            'port_name' => \App\Models\BoatSetting::getValue('port_name', ''),
+            'port_name' => BoatSetting::getValue('port_name', ''),
         ];
     }
 
@@ -48,6 +53,9 @@ class MetricsService
         );
 
         $metrics['battery_percent'] = $this->voltageToPct($metrics['battery_voltage'] ?? null);
+        $metrics['last_seen'] = $this->prometheus->queryTimestamp(
+            config('scarlet.metrics.mappings.tracker.uptime')
+        );
 
         return $metrics;
     }
@@ -79,7 +87,8 @@ class MetricsService
     {
         try {
             $weather = $this->weather->getWeather();
-            return (new \App\Http\Resources\V1\WeatherResource($weather))
+
+            return (new WeatherResource($weather))
                 ->toArray(request());
         } catch (\Throwable) {
             return null;
@@ -190,9 +199,13 @@ class MetricsService
         foreach ($latData as $point) {
             $ts = $point['timestamp'];
             $lng = $lngByTs->get($ts);
-            if (!$lng) continue;
+            if (! $lng) {
+                continue;
+            }
 
-            if ($this->isNullIsland($point['value'], $lng['value'])) continue;
+            if ($this->isNullIsland($point['value'], $lng['value'])) {
+                continue;
+            }
 
             $sog = $sogByTs->get($ts);
 
@@ -215,7 +228,7 @@ class MetricsService
             $alignedEnd = (int) floor($end / $stepSeconds) * $stepSeconds;
         } else {
             $alignedEnd = (int) floor(now()->timestamp / $stepSeconds) * $stepSeconds;
-            $seconds = \Carbon\CarbonInterval::fromString($duration ?? '24h')->totalSeconds;
+            $seconds = CarbonInterval::fromString($duration ?? '24h')->totalSeconds;
             $alignedStart = $alignedEnd - (int) $seconds;
             $alignedStart = (int) ceil($alignedStart / $stepSeconds) * $stepSeconds;
         }
@@ -224,7 +237,7 @@ class MetricsService
         $seriesByKey = [];
 
         foreach ($queries as $key => $promql) {
-            $data = $this->prometheus->queryRange($promql, null, $step . 's', $alignedStart, $alignedEnd);
+            $data = $this->prometheus->queryRange($promql, null, $step.'s', $alignedStart, $alignedEnd);
             $seriesByKey[$key] = collect($data)->keyBy('timestamp');
         }
 
@@ -253,6 +266,7 @@ class MetricsService
                 $rows[$i]['dmg'] = null;
                 $rows[$i]['diff'] = null;
                 $rows[$i]['cum_diff'] = 0;
+
                 continue;
             }
             $prev = $rows[$i - 1];
@@ -314,7 +328,9 @@ class MetricsService
             $stwPoint = $stwByTs->get($ts);
             $hdgPoint = $hdgByTs->get($ts);
 
-            if (!$awaPoint || !$stwPoint || !$hdgPoint) continue;
+            if (! $awaPoint || ! $stwPoint || ! $hdgPoint) {
+                continue;
+            }
 
             $tw = $this->calculateTrueWind($point['value'], $awaPoint['value'], $stwPoint['value'], $hdgPoint['value']);
 

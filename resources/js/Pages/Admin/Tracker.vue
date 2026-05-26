@@ -1,5 +1,5 @@
 <template>
-    <AdminLayout :wide="true">
+    <AdminLayout>
         <Head title="Tracker" />
 
         <!-- Page header -->
@@ -246,7 +246,7 @@ const props = defineProps({
 });
 
 const metrics = ref(null);
-const lastUpdate = ref(props.tracker ? Date.now() : null);
+const lastUpdate = ref(props.tracker?.last_seen ? props.tracker.last_seen * 1000 : null);
 let echoChannel = null;
 if (typeof window !== 'undefined' && window.Echo) {
     echoChannel = window.Echo.channel('metrics');
@@ -274,8 +274,9 @@ const timeSinceUpdate = computed(() => {
 });
 
 const isConnected = computed(() => {
-    const t = live.value;
-    return t && (t.lte_rssi != null || t.wifi_rssi != null);
+    if (!lastUpdate.value) return false;
+    const age = (now.value - lastUpdate.value) / 1000;
+    return age < 120;
 });
 
 const primaryConnection = computed(() => {

@@ -115,9 +115,7 @@
 
             <!-- Main content -->
             <main class="admin-main">
-                <div :class="wide ? '' : 'max-w-[820px]'">
-                    <slot />
-                </div>
+                <slot />
             </main>
         </div>
     </div>
@@ -130,7 +128,6 @@ import NavLink from './NavLink.vue';
 import { useTheme } from '../composables/useTheme.js';
 
 const props = defineProps({
-    wide: { type: Boolean, default: false },
     breadcrumbs: { type: Array, default: null },
 });
 
