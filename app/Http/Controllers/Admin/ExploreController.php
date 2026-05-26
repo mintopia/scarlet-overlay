@@ -32,7 +32,7 @@ class ExploreController extends Controller
         $slug = $request->query('metric');
         $allMetrics = config('scarlet.metrics.mappings.explore');
 
-        if (!$slug || !isset($allMetrics[$slug])) {
+        if (! $slug || ! isset($allMetrics[$slug])) {
             return $this->dashboard($request, $prometheus, $metrics);
         }
 
@@ -66,6 +66,16 @@ class ExploreController extends Controller
 
         $refresh = (int) $request->query('refresh', self::DEFAULT_REFRESH[$range] ?? 0);
 
+        $journeys = Journey::whereNotNull('started_at')
+            ->orderByDesc('started_at')
+            ->limit(10)
+            ->get(['id', 'title', 'from_port', 'to_port', 'started_at', 'ended_at']);
+
+        $propulsionData = [];
+        if (in_array($slug, ['speed', 'stw']) && isset($allMetrics['battery_current'])) {
+            $propulsionData = $this->queryMetricRange($prometheus, $allMetrics['battery_current'], null, $step, $start, $end, $metrics);
+        }
+
         return Inertia::render('Admin/Explore', [
             'metric' => $metric,
             'metrics' => $grouped,
@@ -77,6 +87,8 @@ class ExploreController extends Controller
             'step' => $step,
             'refresh' => $refresh,
             'passage' => $passage,
+            'journeys' => $journeys,
+            'propulsionData' => $propulsionData,
         ]);
     }
 
@@ -96,7 +108,7 @@ class ExploreController extends Controller
 
         $results = [];
         foreach ($slugs as $slug) {
-            if (!isset($allMetrics[$slug])) {
+            if (! isset($allMetrics[$slug])) {
                 return response()->json(['error' => "Unknown metric: {$slug}"], 422);
             }
             $data = $this->queryMetricRange($prometheus, $allMetrics[$slug], null, $step, $start, $end, $metrics);
@@ -106,10 +118,10 @@ class ExploreController extends Controller
                 'metric' => $slug,
                 'data' => $data,
                 'stats' => [
-                    'current' => !empty($values) ? end($values) : null,
-                    'min' => !empty($values) ? min($values) : null,
-                    'max' => !empty($values) ? max($values) : null,
-                    'avg' => !empty($values) ? round(array_sum($values) / count($values), 2) : null,
+                    'current' => ! empty($values) ? end($values) : null,
+                    'min' => ! empty($values) ? min($values) : null,
+                    'max' => ! empty($values) ? max($values) : null,
+                    'avg' => ! empty($values) ? round(array_sum($values) / count($values), 2) : null,
                 ],
             ];
         }
@@ -124,6 +136,7 @@ class ExploreController extends Controller
 
         if ($start > 0) {
             $step = $this->calculateStep($end - $start);
+
             return [$start, $end, $step];
         }
 
@@ -131,6 +144,7 @@ class ExploreController extends Controller
             $passage = $this->getPassageData();
             if ($passage['available']) {
                 $step = $this->calculateStep($passage['end'] - $passage['start']);
+
                 return [$passage['start'], $passage['end'], $step];
             }
             $range = '24h';
@@ -160,56 +174,68 @@ class ExploreController extends Controller
     private function calculateStep(int $durationSeconds): string
     {
         $step = max(15, (int) floor($durationSeconds / 300));
-        return $step . 's';
+
+        return $step.'s';
+    }
+
+    public function current(PrometheusService $prometheus, MetricsService $metrics): JsonResponse
+    {
+        $allMetrics = config('scarlet.metrics.mappings.explore');
+        $queries = [];
+        foreach ($allMetrics as $slug => $metric) {
+            if (! empty($metric['computed'])) {
+                continue;
+            }
+            $queries[$slug] = $metric['query'];
+        }
+
+        $values = $prometheus->queryMultipleAt($queries, now()->timestamp);
+
+        $computedWind = $metrics->getLatestTrueWind();
+        if ($computedWind) {
+            $values['wind_speed_true'] = $computedWind['speed'] ?? null;
+            $values['wind_direction_true'] = $computedWind['direction'] ?? null;
+        }
+
+        return response()->json($values);
     }
 
     private function dashboard(Request $request, PrometheusService $prometheus, MetricsService $metrics)
     {
         $allMetrics = config('scarlet.metrics.mappings.explore');
-        $passage = $this->getPassageData();
-
-        $range = $request->query('range', $passage['available'] ? 'passage' : '24h');
-        [$start, $end, $step] = $this->resolveTimeRange($request, $range);
-
-        $dashboardSlugs = ['speed', 'depth', 'wind_speed_true', 'wind_direction_true', 'battery_voltage', 'battery_soc', 'fuel_level', 'water_level'];
-
-        $charts = [];
-        foreach ($dashboardSlugs as $slug) {
-            if (!isset($allMetrics[$slug])) continue;
-            $metric = $allMetrics[$slug];
-            $metric['slug'] = $slug;
-            $data = $this->queryMetricRange($prometheus, $metric, null, $step, $start, $end, $metrics);
-            $values = array_column($data, 'value');
-            $charts[] = [
-                'metric' => $metric,
-                'data' => $data,
-                'stats' => [
-                    'current' => !empty($values) ? end($values) : null,
-                    'min' => !empty($values) ? min($values) : null,
-                    'max' => !empty($values) ? max($values) : null,
-                ],
-            ];
-        }
+        $groups = config('scarlet.metrics.mappings.explore_groups');
 
         $grouped = [];
-        foreach ($allMetrics as $s => $m) {
-            $grouped[$m['group']][$s] = $m;
+        foreach ($allMetrics as $slug => $metric) {
+            $metric['slug'] = $slug;
+            $grouped[$metric['group']][$slug] = $metric;
+        }
+
+        $queries = [];
+        foreach ($allMetrics as $slug => $metric) {
+            if (! empty($metric['computed'])) {
+                continue;
+            }
+            $queries[$slug] = $metric['query'];
+        }
+        $currentValues = $prometheus->queryMultipleAt($queries, now()->timestamp);
+
+        $computedWind = $metrics->getLatestTrueWind();
+        if ($computedWind) {
+            $currentValues['wind_speed_true'] = $computedWind['speed'] ?? null;
+            $currentValues['wind_direction_true'] = $computedWind['direction'] ?? null;
         }
 
         return Inertia::render('Admin/ExploreDashboard', [
-            'charts' => $charts,
+            'groups' => $groups,
             'metrics' => $grouped,
-            'range' => $range,
-            'start' => $start,
-            'end' => $end,
-            'step' => $step,
-            'passage' => $passage,
+            'currentValues' => $currentValues,
         ]);
     }
 
     private function queryMetricRange(PrometheusService $prometheus, array $metric, ?string $duration, string $step, int $start, int $end, ?MetricsService $metrics = null): array
     {
-        if (!empty($metric['computed']) && $metrics) {
+        if (! empty($metric['computed']) && $metrics) {
             $field = match ($metric['computed']) {
                 'true_wind_speed' => 'speed',
                 'true_wind_direction' => 'direction',
@@ -219,9 +245,10 @@ class ExploreController extends Controller
                 return $metrics->getTrueWindSeries($field, $duration, $step, $start, $end);
             }
         }
-        if (!empty($metric['fallback'])) {
+        if (! empty($metric['fallback'])) {
             return $prometheus->queryRangeWithFallback($metric['query'], $metric['fallback'], $duration, $step, $start, $end);
         }
+
         return $prometheus->queryRange($metric['query'] ?? '', $duration, $step, $start, $end);
     }
 
@@ -229,7 +256,7 @@ class ExploreController extends Controller
     {
         $journey = Journey::latest('started_at')->first();
 
-        if (!$journey || !$journey->started_at) {
+        if (! $journey || ! $journey->started_at) {
             return ['available' => false, 'start' => null, 'end' => null];
         }
 

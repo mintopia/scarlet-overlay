@@ -69,6 +69,7 @@ Route::middleware('auth')->prefix('admin')->group(function () {
     Route::get('/metrics', [BoatMetricsController::class, 'index'])->name('admin.metrics');
     Route::get('/explore', [ExploreController::class, 'index'])->name('admin.explore');
     Route::get('/explore/series', [ExploreController::class, 'series'])->name('admin.explore.series');
+    Route::get('/explore/current', [ExploreController::class, 'current'])->name('admin.explore.current');
     Route::get('/environment', [AdminEnvironmentController::class, 'index'])->name('admin.environment');
     Route::get('/environment/series', [AdminEnvironmentController::class, 'series'])->name('admin.environment.series');
     Route::redirect('/weather', '/admin/environment');

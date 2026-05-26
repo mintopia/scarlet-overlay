@@ -310,6 +310,20 @@ class MetricsService
         ];
     }
 
+    public function getLatestTrueWind(): ?array
+    {
+        $metrics = $this->prometheus->queryMultiple([
+            'aws' => 'scarlet_signalk_environment_wind_speedApparent',
+            'awa' => 'scarlet_signalk_environment_wind_angleApparent',
+            'stw' => 'scarlet_signalk_navigation_speedThroughWater',
+            'heading' => 'scarlet_signalk_navigation_headingTrue',
+        ]);
+
+        $tw = $this->calculateTrueWind($metrics['aws'], $metrics['awa'], $metrics['stw'], $metrics['heading']);
+
+        return ($tw['speed'] !== null) ? $tw : null;
+    }
+
     public function getTrueWindSeries(string $field, ?string $duration, string $step, ?int $start = null, ?int $end = null): array
     {
         $aws = $this->prometheus->queryRange('scarlet_signalk_environment_wind_speedApparent', $duration, $step, $start, $end);

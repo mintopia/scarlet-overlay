@@ -28,16 +28,40 @@ class ExploreMetricRegistryTest extends TestCase
     {
         $metrics = config('scarlet.metrics.mappings.explore');
 
-        $this->assertTrue($metrics['battery_power']['signed'] ?? false);
+        $this->assertSame('signed', $metrics['battery_power']['type'] ?? null);
     }
 
     public function test_explore_config_groups_are_valid(): void
     {
-        $validGroups = ['navigation', 'wind', 'power', 'cabin', 'tanks', 'tracker'];
+        $validGroups = array_keys(config('scarlet.metrics.mappings.explore_groups'));
         $metrics = config('scarlet.metrics.mappings.explore');
 
         foreach ($metrics as $slug => $entry) {
             $this->assertContains($entry['group'], $validGroups, "Metric '{$slug}' has invalid group '{$entry['group']}'");
+        }
+    }
+
+    public function test_explore_config_metrics_have_valid_types(): void
+    {
+        $validTypes = ['standard', 'compass', 'inverted', 'gauge', 'signed', 'duration'];
+        $metrics = config('scarlet.metrics.mappings.explore');
+
+        foreach ($metrics as $slug => $entry) {
+            $this->assertArrayHasKey('type', $entry, "Metric '{$slug}' missing type");
+            $this->assertContains($entry['type'], $validTypes, "Metric '{$slug}' has invalid type '{$entry['type']}'");
+        }
+    }
+
+    public function test_explore_groups_config_exists(): void
+    {
+        $groups = config('scarlet.metrics.mappings.explore_groups');
+
+        $this->assertNotEmpty($groups);
+
+        foreach ($groups as $key => $group) {
+            $this->assertArrayHasKey('label', $group, "Group '{$key}' missing label");
+            $this->assertArrayHasKey('color', $group, "Group '{$key}' missing color");
+            $this->assertArrayHasKey('expanded', $group, "Group '{$key}' missing expanded");
         }
     }
 }
