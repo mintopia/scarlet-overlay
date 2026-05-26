@@ -95,8 +95,8 @@ return [
             ],
 
             'gps' => [
-                'latitude' => 'scarlet_gps_latitude_deg{gps_source="signalk"}',
-                'longitude' => 'scarlet_gps_longitude_deg{gps_source="signalk"}',
+                'latitude' => 'scarlet_gps_latitude_deg',
+                'longitude' => 'scarlet_gps_longitude_deg',
                 'altitude' => 'scarlet_gps_altitude_meters',
                 'satellites' => 'scarlet_gps_satellites',
                 'hdop' => 'scarlet_gps_hdop',
@@ -111,8 +111,8 @@ return [
             ],
 
             'history' => [
-                'track_latitude' => 'scarlet_gps_latitude_deg{gps_source="signalk"} != 0',
-                'track_longitude' => 'scarlet_gps_longitude_deg{gps_source="signalk"} != 0',
+                'track_latitude' => 'scarlet_gps_latitude_deg != 0',
+                'track_longitude' => 'scarlet_gps_longitude_deg != 0',
                 'track_sog' => 'scarlet_gps_speed_kn',
                 'battery' => 'scarlet_signalk_electrical_batteries_0_voltage',
                 'speed' => 'scarlet_signalk_navigation_speedOverGround * 1.94384',
@@ -352,8 +352,8 @@ return [
             ],
 
             'log' => [
-                'latitude' => 'scarlet_gps_latitude_deg{gps_source="signalk"} != 0',
-                'longitude' => 'scarlet_gps_longitude_deg{gps_source="signalk"} != 0',
+                'latitude' => 'scarlet_gps_latitude_deg != 0',
+                'longitude' => 'scarlet_gps_longitude_deg != 0',
                 'signalk_latitude' => 'scarlet_signalk_navigation_position_latitude',
                 'signalk_longitude' => 'scarlet_signalk_navigation_position_longitude',
                 'gps_heading' => 'scarlet_gps_heading_deg',
