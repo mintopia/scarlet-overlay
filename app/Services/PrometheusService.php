@@ -120,38 +120,36 @@ class PrometheusService
 
     public function queryFresh(string $promql, int $maxAge = 120): ?float
     {
-        try {
-            $response = Http::timeout(5)->get("{$this->baseUrl}/api/v1/query", [
-                'query' => $promql,
-            ]);
-
-            if (! $response->ok()) {
-                return null;
-            }
-
-            $result = $response->json('data.result');
-            if (! empty($result)) {
-                $timestamp = (int) $result[0]['value'][0];
-                if (now()->timestamp - $timestamp > $maxAge) {
-                    return null;
-                }
-
-                return (float) $result[0]['value'][1];
-            }
-
-            return null;
-        } catch (\Throwable $e) {
-            Log::warning("Prometheus query failed [{$promql}]: {$e->getMessage()}");
-
+        $result = $this->queryWithAge($promql, "{$maxAge}s");
+        if ($result === null) {
             return null;
         }
+
+        return $result['age'] <= $maxAge ? $result['value'] : null;
     }
 
     public function queryTimestamp(string $promql): ?int
     {
+        $result = $this->queryWithAge($promql, '5m');
+
+        return $result['timestamp'] ?? null;
+    }
+
+    protected function queryWithAge(string $promql, string $lookback): ?array
+    {
+        $wrapped = preg_replace_callback(
+            '/\b(scarlet_[a-zA-Z0-9_:]*)(\{[^}]*\})?/',
+            fn ($m) => "last_over_time({$m[0]}[{$lookback}])",
+            $promql,
+        );
+
+        if ($wrapped === $promql) {
+            return null;
+        }
+
         try {
             $response = Http::timeout(5)->get("{$this->baseUrl}/api/v1/query", [
-                'query' => $promql,
+                'query' => $wrapped,
             ]);
 
             if (! $response->ok()) {
@@ -159,12 +157,20 @@ class PrometheusService
             }
 
             $result = $response->json('data.result');
-            if (! empty($result)) {
-                return (int) $result[0]['value'][0];
+            if (empty($result)) {
+                return null;
             }
 
-            return null;
-        } catch (\Throwable) {
+            $timestamp = (int) $result[0]['value'][0];
+
+            return [
+                'value' => (float) $result[0]['value'][1],
+                'timestamp' => $timestamp,
+                'age' => now()->timestamp - $timestamp,
+            ];
+        } catch (\Throwable $e) {
+            Log::warning("Prometheus query failed [{$promql}]: {$e->getMessage()}");
+
             return null;
         }
     }
@@ -271,35 +277,15 @@ class PrometheusService
      * fetchError is true when a network/HTTP exception was thrown; it is false
      * when the fetch succeeded but Prometheus returned no data (publisher offline).
      */
-    public function queryMultipleWithStatus(array $queries): array
+    public function queryMultipleWithStatus(array $queries, int $maxAge = 120): array
     {
         $results = [];
         $fetchError = false;
 
         foreach ($queries as $key => $promql) {
             try {
-                $response = Http::timeout(5)->get("{$this->baseUrl}/api/v1/query", [
-                    'query' => $promql,
-                ]);
-
-                if (! $response->ok()) {
-                    $fetchError = true;
-                    $results[$key] = null;
-
-                    continue;
-                }
-
-                $result = $response->json('data.result');
-                if (! empty($result)) {
-                    $timestamp = (int) $result[0]['value'][0];
-                    if (now()->timestamp - $timestamp > 120) {
-                        $results[$key] = null;
-                    } else {
-                        $results[$key] = (float) $result[0]['value'][1];
-                    }
-                } else {
-                    $results[$key] = null;
-                }
+                $fresh = $this->queryFresh($promql, $maxAge);
+                $results[$key] = $fresh;
             } catch (\Throwable $e) {
                 Log::warning("Prometheus query failed [{$promql}]: {$e->getMessage()}");
                 $fetchError = true;
