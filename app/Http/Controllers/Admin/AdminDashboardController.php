@@ -63,8 +63,8 @@ class AdminDashboardController extends Controller
             ] : null,
             'routeWaypoints' => $routeJourney?->route_waypoints ?? [],
             'recentJourneys' => $recentJourneys,
-            'streamOnline' => (bool) $prometheus->query('scarlet_srt_up'),
-            'streamPublisher' => (bool) $prometheus->query('scarlet_srt_publisher_connected'),
+            'streamOnline' => (bool) $prometheus->queryFresh('scarlet_srt_up'),
+            'streamPublisher' => (bool) $prometheus->queryFresh('scarlet_srt_publisher_connected'),
             'timestamp' => now()->toIso8601String(),
             'powerHistory' => $powerHistory,
         ]);

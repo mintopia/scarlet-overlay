@@ -118,6 +118,35 @@ class PrometheusService
         }
     }
 
+    public function queryFresh(string $promql, int $maxAge = 120): ?float
+    {
+        try {
+            $response = Http::timeout(5)->get("{$this->baseUrl}/api/v1/query", [
+                'query' => $promql,
+            ]);
+
+            if (! $response->ok()) {
+                return null;
+            }
+
+            $result = $response->json('data.result');
+            if (! empty($result)) {
+                $timestamp = (int) $result[0]['value'][0];
+                if (now()->timestamp - $timestamp > $maxAge) {
+                    return null;
+                }
+
+                return (float) $result[0]['value'][1];
+            }
+
+            return null;
+        } catch (\Throwable $e) {
+            Log::warning("Prometheus query failed [{$promql}]: {$e->getMessage()}");
+
+            return null;
+        }
+    }
+
     public function queryTimestamp(string $promql): ?int
     {
         try {
@@ -262,9 +291,14 @@ class PrometheusService
 
                 $result = $response->json('data.result');
                 if (! empty($result)) {
-                    $results[$key] = (float) $result[0]['value'][1];
+                    $timestamp = (int) $result[0]['value'][0];
+                    if (now()->timestamp - $timestamp > 120) {
+                        $results[$key] = null;
+                    } else {
+                        $results[$key] = (float) $result[0]['value'][1];
+                    }
                 } else {
-                    $results[$key] = $this->queryLastOverTime($promql);
+                    $results[$key] = null;
                 }
             } catch (\Throwable $e) {
                 Log::warning("Prometheus query failed [{$promql}]: {$e->getMessage()}");

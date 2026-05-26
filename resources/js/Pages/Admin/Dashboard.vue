@@ -24,7 +24,7 @@
         <div class="flex gap-4 items-center">
             <div class="flex gap-3 items-center">
                 <div class="flex items-center gap-1.5">
-                    <span :class="['health-dot', props.tracker?.battery_percent > 0 ? 'health-dot--green' : 'health-dot--red']"></span>
+                    <span :class="['health-dot', trackerFresh ? 'health-dot--green' : 'health-dot--red']"></span>
                     <span class="text-[11px] font-body text-text-dim font-medium">Tracker</span>
                 </div>
                 <div class="flex items-center gap-1.5">
@@ -240,6 +240,11 @@ const props = defineProps({
 });
 
 const routeWaypointsArr = computed(() => props.routeWaypoints ?? []);
+const trackerFresh = computed(() => {
+    const ts = props.tracker?.last_seen;
+    if (!ts) return false;
+    return (Date.now() / 1000) - ts < 120;
+});
 
 const {
     boat: liveBoat,
