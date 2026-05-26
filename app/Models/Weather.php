@@ -1,25 +1,42 @@
 <?php
+
 namespace App\Models;
 
 class Weather
 {
     public int $wmoCode = 0;
+
     public bool $daytime = true;
+
     public ?float $longitude = null;
+
     public ?float $latitude = null;
+
     public ?float $temp = null;
+
     public float $windSpeed = 0;
+
     public float $windGusts = 0;
+
     public int $windDirection = 0;
+
     public ?float $pressure = null;
 
     public float $waveHeight = 0;
+
     public int $waveDirection = 0;
+
     public float $wavePeriod = 0;
+
     public ?float $seaTemp = null;
+
     public float $current = 0;
+
     public int $currentDirection = 0;
+
     public string $timezone = 'UTC';
+
+    public array $forecast = [];
 
     public function getConditionText(): string
     {
@@ -50,6 +67,7 @@ class Weather
                 if ($this->daytime) {
                     return 'day-sunny';
                 }
+
                 return 'night-clear';
 
             case 2:

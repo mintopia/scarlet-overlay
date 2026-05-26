@@ -12,12 +12,19 @@ class ShipLogBackfillCommand extends Command
 {
     protected $signature = 'ship-log:backfill
         {--from= : Start date (Y-m-d or Y-m-d H:i)}
-        {--to= : End date (Y-m-d or Y-m-d H:i)}';
+        {--to= : End date (Y-m-d or Y-m-d H:i)}
+        {--truncate : Delete all existing entries before backfilling}';
 
     protected $description = 'Backfill ship log entries from Prometheus history';
 
     public function handle(PrometheusService $prometheus): int
     {
+        if ($this->option('truncate')) {
+            $count = ShipLog::count();
+            ShipLog::truncate();
+            $this->warn("Truncated {$count} existing entries.");
+        }
+
         $stepSeconds = 3600;
 
         $from = $this->option('from')
@@ -38,7 +45,8 @@ class ShipLogBackfillCommand extends Command
         $seriesByKey = [];
         foreach ($queries as $key => $promql) {
             $this->line("Fetching {$key}...");
-            $data = $prometheus->queryRange($promql, null, $stepSeconds.'s', $alignedStart, $alignedEnd);
+            $wrapped = $prometheus->wrapLastOverTime($promql, $stepSeconds.'s') ?? $promql;
+            $data = $prometheus->queryRange($wrapped, null, $stepSeconds.'s', $alignedStart, $alignedEnd);
             $seriesByKey[$key] = collect($data)->keyBy('timestamp');
         }
 
@@ -75,9 +83,10 @@ class ShipLogBackfillCommand extends Command
                 $values['heading'],
             );
 
+            $gpsHeading = $values['gps_heading'];
             $cog = $values['cog'];
             $heading = $values['heading'];
-            $course = $cog !== null ? rad2deg($cog) : ($heading !== null ? rad2deg($heading) : null);
+            $course = $gpsHeading ?? ($cog !== null ? rad2deg($cog) : ($heading !== null ? rad2deg($heading) : null));
 
             $journeyId = $journeys->first(fn ($j) => $ts >= $j['start'] && $ts <= $j['end'])['id'] ?? null;
 

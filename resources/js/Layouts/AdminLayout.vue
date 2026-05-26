@@ -24,7 +24,7 @@
                 <NavLink href="/admin" icon="home" :active="currentPage === 'Admin/Dashboard'" @click="sidebarOpen = false">Dashboard</NavLink>
                 <NavLink href="/admin/journeys" icon="compass" :active="currentPage?.startsWith('Admin/Journey')" @click="sidebarOpen = false">Journeys</NavLink>
                 <NavLink href="/admin/log" icon="clipboard" :active="currentPage === 'Admin/Log'" @click="sidebarOpen = false">Ship's Log</NavLink>
-                <NavLink href="/admin/weather" icon="cloud" :active="currentPage === 'Admin/Weather'" @click="sidebarOpen = false">Weather</NavLink>
+                <NavLink href="/admin/environment" icon="thermometer" :active="currentPage === 'Admin/Environment'" @click="sidebarOpen = false">Environment</NavLink>
                 <NavLink href="/admin/explore" icon="search" :active="currentPage?.startsWith('Admin/Explore')" @click="sidebarOpen = false">Explore</NavLink>
 
                 <div class="nav-divider"></div>
@@ -150,7 +150,7 @@ const breadcrumbMap = {
     'Admin/Log': [home, { label: "Ship's Log" }],
     'Admin/Tracker': [home, { label: 'Tracker' }],
     'Admin/BoatMetrics': [home, { label: 'Boat Metrics' }],
-    'Admin/Weather': [home, { label: 'Weather' }],
+    'Admin/Environment': [home, { label: 'Environment' }],
     'Admin/Broadcast': [home, { label: 'Broadcast' }],
     'Admin/ExploreDashboard': [home, { label: 'Explore' }],
     'Admin/Explore': [home, { label: 'Explore', href: '/admin/explore' }],

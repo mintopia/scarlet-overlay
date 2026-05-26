@@ -38,15 +38,12 @@ class AdminLogController extends Controller
 
         $rows = $this->buildRows($logs, $period === 'journey');
 
-        $weather = $metrics->getWeatherData();
-        $positionTimezone = $weather['timezone'] ?? null;
-
         return Inertia::render('Admin/Log', [
             'rows' => $rows,
             'period' => $period,
             'hasActiveJourney' => $journey !== null,
             'journeyTitle' => $journey?->title,
-            'positionTimezone' => $positionTimezone,
+            'positionTimezone' => Inertia::defer(fn () => ($metrics->getWeatherData())['timezone'] ?? null),
         ]);
     }
 

@@ -29,20 +29,21 @@ class WeatherResource extends JsonResource
             'seaTemp' => $this->seaTemp,
             'daytime' => $this->daytime,
             'pressure' => $this->pressure,
-            'wind' => (object)[
+            'wind' => (object) [
                 'speed' => $this->windSpeed,
                 'gusts' => $this->windGusts,
                 'direction' => $this->windDirection,
             ],
-            'waves' => (object)[
+            'waves' => (object) [
                 'height' => $this->waveHeight,
                 'direction' => $this->waveDirection,
                 'period' => $this->wavePeriod,
             ],
-            'current' => (object)[
+            'current' => (object) [
                 'speed' => round($this->current * 1.94384, 1),
                 'direction' => $this->currentDirection,
             ],
+            'forecast' => $this->forecast,
         ];
     }
 }

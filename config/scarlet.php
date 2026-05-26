@@ -295,6 +295,15 @@ return [
                     'group' => 'cabin',
                 ],
 
+                // Environment
+                'water_temp' => [
+                    'label' => 'Sea Water Temperature',
+                    'unit' => '°C',
+                    'color' => 'oklch(0.55 0.15 240)',
+                    'query' => 'scarlet_signalk_environment_water_temperature - 273.15',
+                    'group' => 'cabin',
+                ],
+
                 // Tanks
                 'fuel_level' => [
                     'label' => 'Diesel Level',
@@ -343,6 +352,9 @@ return [
             ],
 
             'log' => [
+                'latitude' => 'scarlet_gps_latitude_deg',
+                'longitude' => 'scarlet_gps_longitude_deg',
+                'gps_heading' => 'scarlet_gps_heading_deg',
                 'trip_log' => 'scarlet_signalk_navigation_trip_log / 1852',
                 'aws' => 'scarlet_signalk_environment_wind_speedApparent',
                 'awa' => 'scarlet_signalk_environment_wind_angleApparent',
@@ -350,8 +362,6 @@ return [
                 'heading' => 'scarlet_signalk_navigation_headingTrue',
                 'cog' => 'scarlet_signalk_navigation_courseOverGroundTrue',
                 'pressure' => 'scarlet_mqtt_pressure{topic="zigbee2mqtt/Forepeak cabin"}',
-                'latitude' => 'scarlet_signalk_navigation_position_latitude',
-                'longitude' => 'scarlet_signalk_navigation_position_longitude',
                 'wp_distance' => 'scarlet_signalk_navigation_courseGreatCircle_nextPoint_distance / 1852',
                 'wp_ttg' => 'scarlet_signalk_navigation_courseGreatCircle_nextPoint_timeToGo',
                 'battery_soc' => 'scarlet_signalk_electrical_batteries_0_capacity_stateOfCharge * 100',

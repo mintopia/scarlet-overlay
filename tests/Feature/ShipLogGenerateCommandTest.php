@@ -15,6 +15,9 @@ class ShipLogGenerateCommandTest extends TestCase
     private function mockPrometheus(array $values = []): void
     {
         $defaults = [
+            'latitude' => 50.75,
+            'longitude' => -1.54,
+            'gps_heading' => 274.0,
             'trip_log' => 12.3,
             'aws' => 8.5,
             'awa' => 0.78,
@@ -22,8 +25,6 @@ class ShipLogGenerateCommandTest extends TestCase
             'heading' => 4.78,
             'cog' => 4.78,
             'pressure' => 1013.2,
-            'latitude' => 50.75,
-            'longitude' => -1.54,
             'wp_distance' => 8.2,
             'wp_ttg' => 10800.0,
             'battery_soc' => 87.0,
@@ -37,6 +38,8 @@ class ShipLogGenerateCommandTest extends TestCase
         $mock->shouldReceive('queryMultipleAt')
             ->once()
             ->andReturn($merged);
+        $mock->shouldReceive('queryLastOverTimeAt')
+            ->andReturn(null);
     }
 
     public function test_generate_creates_ship_log_entry(): void
@@ -53,7 +56,7 @@ class ShipLogGenerateCommandTest extends TestCase
         $this->assertEquals(50.75, (float) $log->latitude);
         $this->assertNotNull($log->wind_speed);
         $this->assertNotNull($log->wind_direction);
-        $this->assertNotNull($log->course);
+        $this->assertEquals(274.0, (float) $log->course);
     }
 
     public function test_generate_is_idempotent(): void
@@ -83,6 +86,9 @@ class ShipLogGenerateCommandTest extends TestCase
         $mock->shouldReceive('queryMultipleAt')
             ->once()
             ->andReturn([
+                'latitude' => null,
+                'longitude' => null,
+                'gps_heading' => null,
                 'trip_log' => null,
                 'aws' => null,
                 'awa' => null,
@@ -90,14 +96,14 @@ class ShipLogGenerateCommandTest extends TestCase
                 'heading' => null,
                 'cog' => null,
                 'pressure' => null,
-                'latitude' => null,
-                'longitude' => null,
                 'wp_distance' => null,
                 'wp_ttg' => null,
                 'battery_soc' => null,
                 'water_level' => null,
                 'fuel_level' => null,
             ]);
+        $mock->shouldReceive('queryLastOverTimeAt')
+            ->andReturn(null);
 
         $this->artisan('ship-log:generate')->assertSuccessful();
 
@@ -105,5 +111,15 @@ class ShipLogGenerateCommandTest extends TestCase
         $this->assertNull($log->latitude);
         $this->assertNull($log->wind_speed);
         $this->assertNull($log->course);
+    }
+
+    public function test_generate_falls_back_to_signalk_cog_when_gps_heading_null(): void
+    {
+        $this->mockPrometheus(['gps_heading' => null, 'cog' => 4.78]);
+
+        $this->artisan('ship-log:generate')->assertSuccessful();
+
+        $log = ShipLog::first();
+        $this->assertEqualsWithDelta(rad2deg(4.78), (float) $log->course, 0.1);
     }
 }

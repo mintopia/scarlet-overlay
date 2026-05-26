@@ -1,25 +1,24 @@
 <?php
+
 namespace App\Services;
 
-use App\Models\Gps;
 use App\Models\Weather;
+use Carbon\Carbon;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 
 class WeatherService
 {
-    public function __construct(protected GpsService $gpsService)
-    {
-
-    }
+    public function __construct(protected GpsService $gpsService) {}
 
     public function getWeatherForHome(bool $force = false): Weather
     {
         if ($force) {
             return $this->fetchWeatherForHome();
         }
-        return Cache::get('weather.home.latest', function() {
+
+        return Cache::get('weather.home.latest', function () {
             return $this->fetchWeatherForHome();
         });
     }
@@ -29,6 +28,7 @@ class WeatherService
         if ($force) {
             return $this->fetchWeather(true);
         }
+
         return Cache::get('weather.latest', function () {
             return $this->fetchWeather();
         });
@@ -39,6 +39,7 @@ class WeatherService
         $gps = $this->gpsService->getLocation($forceGps);
         $weather = $this->fetchWeatherForLatLong($gps->latitude, $gps->longitude);
         Cache::put('weather.latest', $weather, 300);
+
         return $weather;
     }
 
@@ -46,6 +47,7 @@ class WeatherService
     {
         $weather = $this->fetchWeatherForLatLong(config('scarlet.home.latitude'), config('scarlet.home.longitude'));
         Cache::put('weather.home.latest', $weather, 300);
+
         return $weather;
     }
 
@@ -59,6 +61,8 @@ class WeatherService
             'longitude' => $longitude,
             'latitude' => $latitude,
             'current' => 'weather_code,temperature_2m,is_day,wind_speed_10m,wind_gusts_10m,wind_direction_10m,surface_pressure',
+            'hourly' => 'temperature_2m,weather_code',
+            'forecast_hours' => 24,
             'wind_speed_unit' => 'kn',
             'timezone' => 'auto',
         ];
@@ -79,19 +83,37 @@ class WeatherService
         $weather->latitude = $forecast['latitude'] ?? null;
         $weather->longitude = $forecast['longitude'] ?? null;
         $weather->timezone = $forecast['timezone'] ?? 'UTC';
-        $weather->temp = (float)$forecast['current']['temperature_2m'] ?? null;
-        $weather->daytime = (bool)$forecast['current']['is_day'] ?? true;
-        $weather->wmoCode = (float)$forecast['current']['weather_code'] ?? 0;
-        $weather->windSpeed = (float)$forecast['current']['wind_speed_10m'] ?? 0;
-        $weather->windGusts = (float)($forecast['current']['wind_gusts_10m'] ?? 0);
-        $weather->windDirection = (int)$forecast['current']['wind_direction_10m'] ?? 0;
-        $weather->pressure = isset($forecast['current']['surface_pressure']) ? (float)$forecast['current']['surface_pressure'] : null;
-        $weather->seaTemp = (float)$marine['current']['sea_surface_temperature'] ?? null;
-        $weather->current = (float)$marine['current']['ocean_current_velocity'] ?? 0;
-        $weather->currentDirection = (int)$marine['current']['ocean_current_direction'] ?? 0;
-        $weather->waveHeight = (float)$marine['current']['wave_height'] ?? 0;
-        $weather->waveDirection = (int)$marine['current']['wave_direction'] ?? 0;
-        $weather->wavePeriod = (float)$marine['current']['wave_period'] ?? 0;
+        $weather->temp = (float) $forecast['current']['temperature_2m'] ?? null;
+        $weather->daytime = (bool) $forecast['current']['is_day'] ?? true;
+        $weather->wmoCode = (float) $forecast['current']['weather_code'] ?? 0;
+        $weather->windSpeed = (float) $forecast['current']['wind_speed_10m'] ?? 0;
+        $weather->windGusts = (float) ($forecast['current']['wind_gusts_10m'] ?? 0);
+        $weather->windDirection = (int) $forecast['current']['wind_direction_10m'] ?? 0;
+        $weather->pressure = isset($forecast['current']['surface_pressure']) ? (float) $forecast['current']['surface_pressure'] : null;
+        $weather->seaTemp = (float) $marine['current']['sea_surface_temperature'] ?? null;
+        $weather->current = (float) $marine['current']['ocean_current_velocity'] ?? 0;
+        $weather->currentDirection = (int) $marine['current']['ocean_current_direction'] ?? 0;
+        $weather->waveHeight = (float) $marine['current']['wave_height'] ?? 0;
+        $weather->waveDirection = (int) $marine['current']['wave_direction'] ?? 0;
+        $weather->wavePeriod = (float) $marine['current']['wave_period'] ?? 0;
+
+        $hourlyTimes = $forecast['hourly']['time'] ?? [];
+        $hourlyTemps = $forecast['hourly']['temperature_2m'] ?? [];
+        $hourlyCodes = $forecast['hourly']['weather_code'] ?? [];
+        $now = now($weather->timezone);
+
+        foreach ($hourlyTimes as $i => $time) {
+            $hour = Carbon::parse($time, $weather->timezone);
+            if ($hour->lte($now)) {
+                continue;
+            }
+            $weather->forecast[] = [
+                'time' => $hour->toIso8601String(),
+                'temp' => $hourlyTemps[$i] ?? null,
+                'code' => $hourlyCodes[$i] ?? 0,
+            ];
+        }
+
         return $weather;
     }
 }

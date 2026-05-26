@@ -35,7 +35,7 @@ class PrometheusService
         }
     }
 
-    protected function queryLastOverTimeAt(string $promql, int $timestamp, string $lookback = '10m'): ?float
+    public function queryLastOverTimeAt(string $promql, int $timestamp, string $lookback = '10m'): ?float
     {
         $wrapped = preg_replace_callback(
             '/\b(scarlet_[a-zA-Z0-9_:]*)(\{[^}]*\})?/',
@@ -207,6 +207,17 @@ class PrometheusService
 
             return null;
         }
+    }
+
+    public function wrapLastOverTime(string $promql, string $lookback = '1h'): ?string
+    {
+        $wrapped = preg_replace_callback(
+            '/\b(scarlet_[a-zA-Z0-9_:]*)(\{[^}]*\})?/',
+            fn ($m) => "last_over_time({$m[0]}[{$lookback}])",
+            $promql,
+        );
+
+        return $wrapped !== $promql ? $wrapped : null;
     }
 
     public function queryRange(string $promql, ?string $duration, string $step = '15s', ?int $start = null, ?int $end = null): array

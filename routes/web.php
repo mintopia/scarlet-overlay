@@ -1,8 +1,8 @@
 <?php
 
 use App\Http\Controllers\Admin\AdminDashboardController;
+use App\Http\Controllers\Admin\AdminEnvironmentController;
 use App\Http\Controllers\Admin\AdminLogController;
-use App\Http\Controllers\Admin\AdminWeatherController;
 use App\Http\Controllers\Admin\BoatMetricsController;
 use App\Http\Controllers\Admin\ExploreController;
 use App\Http\Controllers\Admin\JourneyController;
@@ -69,7 +69,9 @@ Route::middleware('auth')->prefix('admin')->group(function () {
     Route::get('/metrics', [BoatMetricsController::class, 'index'])->name('admin.metrics');
     Route::get('/explore', [ExploreController::class, 'index'])->name('admin.explore');
     Route::get('/explore/series', [ExploreController::class, 'series'])->name('admin.explore.series');
-    Route::get('/weather', [AdminWeatherController::class, 'index'])->name('admin.weather');
+    Route::get('/environment', [AdminEnvironmentController::class, 'index'])->name('admin.environment');
+    Route::get('/environment/series', [AdminEnvironmentController::class, 'series'])->name('admin.environment.series');
+    Route::redirect('/weather', '/admin/environment');
     Route::get('/log', [AdminLogController::class, 'index'])->name('admin.log');
     Route::patch('/ship-log/{shipLog}', [AdminLogController::class, 'update'])->name('admin.ship-log.update');
     Route::get('/profile', [ProfileController::class, 'index'])->name('admin.profile');
