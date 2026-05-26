@@ -19,35 +19,73 @@
                     <th class="col-num" title="Fresh water tank level">H₂O<br><span class="th-unit">%</span></th>
                     <th class="col-num group-end" title="Diesel tank level">Fuel<br><span class="th-unit">%</span></th>
                     <th class="col-num" title="Efficiency: DMG minus Dist (positive = gaining on waypoint)">+/−<br><span class="th-unit">nm</span></th>
+                    <th class="col-note" title="Log notes"></th>
                 </tr>
             </thead>
             <tbody>
-                <tr v-for="row in rows" :key="row.timestamp">
-                    <td class="col-time group-end">
-                        <div class="cell-date">{{ fmtDate(row.timestamp) }}</div>
-                        <div class="cell-time">{{ fmtTime(row.timestamp) }}</div>
-                    </td>
-                    <td class="col-num">{{ fmtCourse(row.course) }}</td>
-                    <td class="col-num">{{ fmtVal(row.total_log, 1) }}</td>
-                    <td class="col-num">{{ fmtVal(row.trip_log, 1) }}</td>
-                    <td class="col-num group-end">{{ fmtVal(row.dist, 1) }}</td>
-                    <td class="col-num">{{ degreesToCompass(row.wind_direction) }}</td>
-                    <td class="col-num">{{ knotsToBeaufort(row.wind_speed) }}</td>
-                    <td class="col-num col-baro group-end">{{ fmtBaro(row.pressure) }}</td>
-                    <td class="col-pos group-end">
-                        <div>{{ fmtLat(row.latitude) }}</div>
-                        <div>{{ fmtLon(row.longitude) }}</div>
-                    </td>
-                    <td class="col-num">{{ fmtVal(row.wp_distance, 1) }}</td>
-                    <td class="col-num">{{ fmtVal(row.dmg, 1) }}</td>
-                    <td class="col-num group-end">{{ fmtTtg(row.wp_ttg) }}</td>
-                    <td class="col-num">{{ fmtPct(row.battery_soc) }}</td>
-                    <td class="col-num">{{ fmtPct(row.water_level) }}</td>
-                    <td class="col-num group-end">{{ fmtPct(row.fuel_level) }}</td>
-                    <td class="col-num" :class="diffClass(row.diff)">{{ fmtDiff(row.diff) }}</td>
-                </tr>
+                <template v-for="row in rows" :key="row.id || row.timestamp">
+                    <tr @click="toggleExpand(row)" class="data-row">
+                        <td class="col-time group-end">
+                            <div class="cell-date">{{ fmtDate(row.timestamp) }}</div>
+                            <div class="cell-time">{{ fmtTime(row.timestamp) }}</div>
+                        </td>
+                        <td class="col-num">{{ fmtCourse(row.course) }}</td>
+                        <td class="col-num">{{ fmtVal(row.total_log, 1) }}</td>
+                        <td class="col-num">{{ fmtVal(row.trip_log, 1) }}</td>
+                        <td class="col-num group-end">{{ fmtVal(row.dist, 1) }}</td>
+                        <td class="col-num">{{ degreesToCompass(row.wind_direction) }}</td>
+                        <td class="col-num">{{ knotsToBeaufort(row.wind_speed) }}</td>
+                        <td class="col-num col-baro group-end">{{ fmtBaro(row.pressure) }}</td>
+                        <td class="col-pos group-end">
+                            <div>{{ fmtLat(row.latitude) }}</div>
+                            <div>{{ fmtLon(row.longitude) }}</div>
+                        </td>
+                        <td class="col-num">{{ fmtVal(row.wp_distance, 1) }}</td>
+                        <td class="col-num">{{ fmtVal(row.dmg, 1) }}</td>
+                        <td class="col-num group-end">{{ fmtTtg(row.wp_ttg) }}</td>
+                        <td class="col-num">{{ fmtPct(row.battery_soc) }}</td>
+                        <td class="col-num">{{ fmtPct(row.water_level) }}</td>
+                        <td class="col-num group-end">{{ fmtPct(row.fuel_level) }}</td>
+                        <td class="col-num" :class="diffClass(row.diff)">{{ fmtDiff(row.diff) }}</td>
+                        <td class="col-note" @click.stop="toggleExpand(row)">
+                            <svg v-if="row.notes" class="note-icon note-icon-filled" viewBox="0 0 16 16" fill="currentColor">
+                                <path d="M8 1C4.13 1 1 3.58 1 6.75c0 1.83 1.06 3.44 2.7 4.5L3 14.5l3.56-1.79C7.03 12.9 7.5 13 8 13c3.87 0 7-2.58 7-5.75S11.87 1 8 1z"/>
+                            </svg>
+                            <svg v-else class="note-icon note-icon-add" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5">
+                                <line x1="8" y1="4" x2="8" y2="12"/>
+                                <line x1="4" y1="8" x2="12" y2="8"/>
+                            </svg>
+                        </td>
+                    </tr>
+                    <tr v-if="isExpanded(row)" class="note-row">
+                        <td :colspan="17">
+                            <div class="note-content">
+                                <div v-if="editingId === row.id" class="note-edit">
+                                    <textarea
+                                        ref="noteTextarea"
+                                        v-model="editText"
+                                        class="note-textarea"
+                                        rows="2"
+                                        placeholder="Add a note..."
+                                        @keydown.enter.meta="saveNote(row)"
+                                        @keydown.enter.ctrl="saveNote(row)"
+                                        @keydown.escape="cancelEdit"
+                                    ></textarea>
+                                    <div class="note-actions">
+                                        <button class="note-btn note-btn-cancel" @click="cancelEdit">Cancel</button>
+                                        <button class="note-btn note-btn-save" @click="saveNote(row)" :disabled="saving">Save</button>
+                                    </div>
+                                </div>
+                                <div v-else class="note-read" @click.stop="startEdit(row)">
+                                    <span v-if="row.notes" class="note-text">{{ row.notes }}</span>
+                                    <span v-else class="note-placeholder">Click to add a note...</span>
+                                </div>
+                            </div>
+                        </td>
+                    </tr>
+                </template>
                 <tr v-if="!rows.length">
-                    <td colspan="16" class="empty-state">
+                    <td colspan="17" class="empty-state">
                         No log data for this period. Start a journey from the Dashboard to begin logging, or select a different time period.
                     </td>
                 </tr>
@@ -68,13 +106,86 @@
 
 <script setup>
 import { ref, computed, onMounted, onUnmounted, nextTick, watch } from 'vue';
+import { router } from '@inertiajs/vue3';
 import uPlot from 'uplot';
 import 'uplot/dist/uPlot.min.css';
 
 const props = defineProps({
     rows: { type: Array, default: () => [] },
     timezone: { type: String, default: undefined },
+    showAllNotes: { type: Boolean, default: false },
 });
+
+const expandedIds = ref(new Set());
+const editingId = ref(null);
+const editText = ref('');
+const saving = ref(false);
+const noteTextarea = ref(null);
+
+function isExpanded(row) {
+    if (!row.id) return false;
+    if (props.showAllNotes && row.notes) return true;
+    return expandedIds.value.has(row.id);
+}
+
+function toggleExpand(row) {
+    if (!row.id) return;
+    if (expandedIds.value.has(row.id)) {
+        if (editingId.value === row.id) {
+            cancelEdit();
+        }
+        expandedIds.value.delete(row.id);
+    } else {
+        expandedIds.value.add(row.id);
+    }
+}
+
+function startEdit(row) {
+    if (editingId.value && editingId.value !== row.id) {
+        cancelEdit();
+    }
+    editingId.value = row.id;
+    editText.value = row.notes || '';
+    if (!expandedIds.value.has(row.id)) {
+        expandedIds.value.add(row.id);
+    }
+    nextTick(() => {
+        if (noteTextarea.value) {
+            const el = Array.isArray(noteTextarea.value) ? noteTextarea.value[0] : noteTextarea.value;
+            el?.focus();
+        }
+    });
+}
+
+function cancelEdit() {
+    const wasId = editingId.value;
+    editingId.value = null;
+    editText.value = '';
+    const row = props.rows.find(r => r.id === wasId);
+    if (row && !row.notes && !props.showAllNotes) {
+        expandedIds.value.delete(wasId);
+    }
+}
+
+function saveNote(row) {
+    if (saving.value) return;
+    saving.value = true;
+    router.patch(`/admin/ship-log/${row.id}`, {
+        notes: editText.value || null,
+    }, {
+        preserveState: true,
+        preserveScroll: true,
+        onSuccess: () => {
+            row.notes = editText.value || null;
+            editingId.value = null;
+            editText.value = '';
+            saving.value = false;
+        },
+        onError: () => {
+            saving.value = false;
+        },
+    });
+}
 
 const tzLabel = computed(() => {
     if (!props.timezone) return Intl.DateTimeFormat().resolvedOptions().timeZone.split('/').pop().replace(/_/g, ' ');
@@ -200,6 +311,8 @@ onUnmounted(() => {
     if (chart) chart.destroy();
     window.removeEventListener('resize', handleResize);
 });
+
+watch(() => props.rows, () => nextTick(() => initChart()), { deep: true });
 
 function fmtDate(ts) {
     const d = new Date(ts * 1000);
@@ -347,6 +460,38 @@ function knotsToBeaufort(kn) {
 .col-pos { text-align: right; font-size: 11px; }
 .col-baro { font-style: italic; opacity: 0.6; }
 
+.col-note {
+    width: 28px;
+    text-align: center !important;
+    padding: 4px 2px;
+    cursor: pointer;
+}
+
+.note-icon {
+    width: 14px;
+    height: 14px;
+    display: inline-block;
+    vertical-align: middle;
+}
+
+.note-icon-filled {
+    color: var(--color-text-dim);
+}
+
+.note-icon-add {
+    color: var(--color-border);
+    opacity: 0.6;
+}
+
+.data-row {
+    cursor: pointer;
+}
+
+.data-row:hover .note-icon-add {
+    opacity: 1;
+    color: var(--color-text-dim);
+}
+
 .cell-date {
     font-size: 10px;
     color: var(--color-text-dim);
@@ -358,12 +503,106 @@ function knotsToBeaufort(kn) {
     line-height: 1.2;
 }
 
-.log-table tbody tr:nth-child(even) {
+.log-table tbody .data-row:nth-child(even of .data-row) {
     background: var(--color-bg);
 }
 
-.log-table tbody tr:hover {
+.log-table tbody .data-row:hover {
     background: var(--color-scarlet-light);
+}
+
+.note-row td {
+    padding: 0;
+    border-bottom: 1px solid var(--color-border-light);
+    background: var(--color-bg);
+}
+
+.note-content {
+    padding: 8px 12px;
+}
+
+.note-read {
+    cursor: pointer;
+    padding: 4px 0;
+    min-height: 24px;
+}
+
+.note-text {
+    font-size: 12px;
+    color: var(--color-text-secondary);
+    white-space: pre-wrap;
+    line-height: 1.5;
+}
+
+.note-placeholder {
+    font-size: 12px;
+    color: var(--color-text-dim);
+    opacity: 0.5;
+    font-style: italic;
+}
+
+.note-edit {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.note-textarea {
+    width: 100%;
+    font-size: 12px;
+    font-family: inherit;
+    line-height: 1.5;
+    padding: 6px 8px;
+    border: 1px solid var(--color-border);
+    border-radius: 6px;
+    background: var(--color-surface);
+    color: var(--color-text-primary);
+    resize: vertical;
+    min-height: 48px;
+}
+
+.note-textarea:focus {
+    outline: none;
+    border-color: var(--color-text-dim);
+}
+
+.note-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 6px;
+}
+
+.note-btn {
+    font-size: 11px;
+    font-weight: 600;
+    padding: 4px 12px;
+    border-radius: 4px;
+    border: none;
+    cursor: pointer;
+    transition: background 0.1s ease;
+}
+
+.note-btn-cancel {
+    background: transparent;
+    color: var(--color-text-dim);
+}
+
+.note-btn-cancel:hover {
+    background: var(--color-border-light);
+}
+
+.note-btn-save {
+    background: var(--color-text-primary);
+    color: var(--color-surface);
+}
+
+.note-btn-save:hover {
+    opacity: 0.9;
+}
+
+.note-btn-save:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
 }
 
 .empty-state {

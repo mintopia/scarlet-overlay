@@ -4,6 +4,13 @@
         <div class="flex items-baseline justify-between mb-6">
             <h1 class="text-[22px] font-bold">Ship's Log</h1>
             <div class="flex items-center gap-4">
+                <label class="toolbar-toggle">
+                    <input type="checkbox" v-model="showNotes" class="sr-only peer" />
+                    <span class="toolbar-toggle-track peer-checked:bg-[var(--color-text-primary)]">
+                        <span class="toolbar-toggle-thumb peer-checked:translate-x-3"></span>
+                    </span>
+                    <span class="toolbar-label-text">Notes</span>
+                </label>
                 <label class="toolbar-label">
                     <span class="toolbar-label-text">Timezone</span>
                     <select v-model="selectedTz" class="field-input text-[13px] py-1.5 px-3" style="width: auto; height: auto">
@@ -26,7 +33,7 @@
             </div>
         </div>
 
-        <LogTable :rows="rows" :timezone="activeTz" />
+        <LogTable :rows="rows" :timezone="activeTz" :show-all-notes="showNotes" />
     </AdminLayout>
 </template>
 
@@ -48,6 +55,7 @@ const localTzLabel = Intl.DateTimeFormat().resolvedOptions().timeZone.replace(/_
 const positionTzLabel = computed(() => props.positionTimezone?.split('/').pop()?.replace(/_/g, ' ') || '');
 const selectedPeriod = ref(props.period);
 const selectedTz = ref(localStorage.getItem('scarlet_log_tz') || 'local');
+const showNotes = ref(localStorage.getItem('scarlet_log_notes') === 'true');
 
 const activeTz = computed(() => {
     const tz = selectedTz.value;
@@ -57,6 +65,10 @@ const activeTz = computed(() => {
 
 watch(selectedTz, (val) => {
     localStorage.setItem('scarlet_log_tz', val);
+});
+
+watch(showNotes, (val) => {
+    localStorage.setItem('scarlet_log_notes', val ? 'true' : 'false');
 });
 
 function changePeriod() {
@@ -77,5 +89,42 @@ function changePeriod() {
     text-transform: uppercase;
     letter-spacing: 0.04em;
     color: var(--color-text-dim);
+}
+
+.toolbar-toggle {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    cursor: pointer;
+}
+
+.toolbar-toggle-track {
+    display: block;
+    width: 28px;
+    height: 16px;
+    border-radius: 8px;
+    background: var(--color-border);
+    position: relative;
+    transition: background 0.15s ease;
+}
+
+.toolbar-toggle-thumb {
+    display: block;
+    width: 12px;
+    height: 12px;
+    border-radius: 6px;
+    background: var(--color-surface);
+    position: absolute;
+    top: 2px;
+    left: 2px;
+    transition: transform 0.15s ease;
+}
+
+.peer:checked ~ .toolbar-toggle-track {
+    background: var(--color-text-primary);
+}
+
+.peer:checked ~ .toolbar-toggle-track .toolbar-toggle-thumb {
+    transform: translateX(12px);
 }
 </style>
