@@ -3,7 +3,7 @@
         <Head title="Boat Metrics" />
 
         <div class="flex items-baseline justify-between mb-6">
-            <h1 class="text-[22px] font-bold">Boat Metrics</h1>
+            <h1 class="font-sans text-2xl font-extrabold tracking-tight">Boat Metrics</h1>
             <div class="flex items-center gap-2 text-[13px] text-text-dim">
                 <span class="w-2 h-2 rounded-full bg-green inline-block" :class="lastUpdate ? 'opacity-100' : 'opacity-30'"></span>
                 <span class="tabular-nums">{{ timeSinceUpdate }}</span>
@@ -41,7 +41,7 @@
 
         <!-- Battery + Speed history -->
         <div class="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4 mb-3">
-            <Link href="/admin/explore?metric=battery_voltage&range=24h" class="panel explore-link">
+            <Link href="/admin/explore?metric=battery_voltage&range=24h" class="panel explore-link p-4">
                 <svg class="explore-icon" viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M6 2H2v4M14 10v4h-4M2 6l4-4M10 14l4-4"/></svg>
                 <div class="panel-head">
                     <span class="panel-title">Battery Voltage</span>
@@ -61,7 +61,7 @@
                 <div class="chart-axis"><span>24h ago</span><span>now</span></div>
             </Link>
 
-            <Link href="/admin/explore?metric=speed&range=24h" class="panel explore-link">
+            <Link href="/admin/explore?metric=speed&range=24h" class="panel explore-link p-4">
                 <svg class="explore-icon" viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M6 2H2v4M14 10v4h-4M2 6l4-4M10 14l4-4"/></svg>
                 <div class="panel-head">
                     <span class="panel-title">Speed</span>
@@ -83,7 +83,7 @@
         </div>
 
         <!-- Battery Power (charge/discharge in watts) -->
-        <Link href="/admin/explore?metric=battery_power&range=24h" class="panel explore-link mb-6">
+        <Link href="/admin/explore?metric=battery_power&range=24h" class="panel explore-link p-4 mb-6">
             <svg class="explore-icon" viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M6 2H2v4M14 10v4h-4M2 6l4-4M10 14l4-4"/></svg>
             <div class="panel-head">
                 <span class="panel-title">Battery Power</span>
@@ -122,7 +122,7 @@
 
         <!-- Temperature + Humidity history -->
         <div class="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4 mb-6">
-            <Link href="/admin/explore?metric=temp_forepeak&range=24h" class="panel explore-link">
+            <Link href="/admin/explore?metric=temp_forepeak&range=24h" class="panel explore-link p-4">
                 <svg class="explore-icon" viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M6 2H2v4M14 10v4h-4M2 6l4-4M10 14l4-4"/></svg>
                 <div class="panel-title mb-0.5">Cabin Temperature</div>
                 <div class="chart-legend">
@@ -146,7 +146,7 @@
                 <div class="chart-axis"><span>24h ago</span><span>now</span></div>
             </Link>
 
-            <Link href="/admin/explore?metric=humidity_forepeak&range=24h" class="panel explore-link">
+            <Link href="/admin/explore?metric=humidity_forepeak&range=24h" class="panel explore-link p-4">
                 <svg class="explore-icon" viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M6 2H2v4M14 10v4h-4M2 6l4-4M10 14l4-4"/></svg>
                 <div class="panel-title mb-0.5">Cabin Humidity</div>
                 <div class="chart-legend">
@@ -173,7 +173,7 @@
 
         <!-- Compass + Power & Tanks -->
         <div class="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4">
-            <div class="panel">
+            <div class="panel p-4">
                 <div class="panel-title mb-3">Compass</div>
                 <div class="compass-layout">
                     <svg viewBox="0 0 140 140" class="compass-svg">
@@ -257,7 +257,7 @@
                 </div>
             </div>
 
-            <div class="panel">
+            <div class="panel p-4">
                 <div class="panel-title mb-3">Power & Tanks</div>
 
                 <div class="section-label">House Battery</div>
@@ -314,7 +314,7 @@
 
         <!-- Tank Level History -->
         <div class="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4 mt-3">
-            <Link href="/admin/explore?metric=fuel_level&range=24h" class="panel explore-link">
+            <Link href="/admin/explore?metric=fuel_level&range=24h" class="panel explore-link p-4">
                 <svg class="explore-icon" viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M6 2H2v4M14 10v4h-4M2 6l4-4M10 14l4-4"/></svg>
                 <div class="panel-head">
                     <span class="panel-title">Diesel Level</span>
@@ -334,7 +334,7 @@
                 <div class="chart-axis"><span>24h ago</span><span>now</span></div>
             </Link>
 
-            <Link href="/admin/explore?metric=water_level&range=24h" class="panel explore-link">
+            <Link href="/admin/explore?metric=water_level&range=24h" class="panel explore-link p-4">
                 <svg class="explore-icon" viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M6 2H2v4M14 10v4h-4M2 6l4-4M10 14l4-4"/></svg>
                 <div class="panel-head">
                     <span class="panel-title">Fresh Water Level</span>
@@ -535,7 +535,7 @@ function formatEta(seconds) {
     grid-template-columns: repeat(2, 1fr);
     background: var(--color-surface);
     border: 1px solid var(--color-border);
-    border-radius: 10px;
+    border-radius: 16px;
     margin-bottom: 24px;
     overflow: hidden;
 }
@@ -563,7 +563,8 @@ function formatEta(seconds) {
 
 .strip-label {
     font-size: 11px;
-    font-weight: 600;
+    font-weight: 800;
+    font-family: var(--font-body);
     text-transform: uppercase;
     letter-spacing: 0.04em;
     color: var(--color-text-dim);
@@ -571,6 +572,7 @@ function formatEta(seconds) {
 }
 
 .strip-value {
+    font-family: var(--font-sans);
     font-size: 24px;
     font-weight: 700;
     font-variant-numeric: tabular-nums;
@@ -588,23 +590,11 @@ function formatEta(seconds) {
     margin-top: 3px;
 }
 
-.panel {
-    background: var(--color-surface);
-    border: 1px solid var(--color-border);
-    border-radius: 10px;
-    padding: 16px;
-}
-
 .panel-head {
     display: flex;
     justify-content: space-between;
     align-items: baseline;
     margin-bottom: 8px;
-}
-
-.panel-title {
-    font-size: 15px;
-    font-weight: 600;
 }
 
 .chart-axis {
@@ -630,7 +620,8 @@ function formatEta(seconds) {
 
 .section-label {
     font-size: 11px;
-    font-weight: 600;
+    font-weight: 800;
+    font-family: var(--font-body);
     text-transform: uppercase;
     letter-spacing: 0.04em;
     color: var(--color-text-dim);
@@ -644,16 +635,18 @@ function formatEta(seconds) {
 }
 
 .data-row span:first-child {
+    font-family: var(--font-body);
     color: var(--color-text-secondary);
 }
 
 .data-row span:last-child {
+    font-family: var(--font-sans);
     font-variant-numeric: tabular-nums;
     font-weight: 600;
 }
 
 .tank-track {
-    height: 16px;
+    height: 8px;
     border-radius: 9999px;
     background: var(--color-bg);
     overflow: hidden;

@@ -1,7 +1,7 @@
 <template>
     <AdminLayout>
         <Head title="Weather" />
-        <h1 class="text-[22px] font-bold mb-6">Weather</h1>
+        <h1 class="font-sans text-2xl font-extrabold tracking-tight mb-6">Weather</h1>
 
         <template v-if="weather">
             <!-- Conditions -->
@@ -20,7 +20,7 @@
                 <div class="panel-title mb-3">Wind</div>
                 <table class="w-full text-[13px]">
                     <thead>
-                        <tr class="text-left text-[11px] font-semibold text-text-dim uppercase tracking-wide">
+                        <tr class="text-left text-[11px] font-extrabold text-text-dim uppercase tracking-wide">
                             <th class="pb-2">Source</th>
                             <th class="pb-2">Speed</th>
                             <th class="pb-2">Direction</th>
@@ -95,8 +95,7 @@ function degreesToCompass(deg) {
 </script>
 
 <style scoped>
-.panel-title { font-size: 15px; font-weight: 600; }
 .data-row { display: flex; justify-content: space-between; align-items: baseline; }
-.data-row span:first-child { color: var(--color-text-secondary); }
-.data-row span:last-child { font-variant-numeric: tabular-nums; font-weight: 600; }
+.data-row span:first-child { font-family: var(--font-body); color: var(--color-text-secondary); }
+.data-row span:last-child { font-family: var(--font-sans); font-variant-numeric: tabular-nums; font-weight: 600; }
 </style>

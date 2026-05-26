@@ -54,7 +54,7 @@ One shadow scale: `0 1px 5px oklch(0.2 0.02 205 / 0.08)` for panels. No elevatio
 
 | Tier | Size | Weight | Family | Usage |
 |---|---|---|---|---|
-| **Hero** | 72px | 700 | Nunito Sans | Primary instrument readings (SOG on Skipper page) |
+| **Hero** | 72px | 700 | Nunito Sans | Primary instrument readings |
 | **Display** | 44px | 700 | Nunito Sans | Weather temperature, large compass center numbers |
 | **Instrument** | 26-28px | 600-800 | Nunito Sans | Compass headings, wind dial center value, chart headline values |
 | **Secondary Value** | 16-18px | 600 | Nunito Sans | Data row values (nav, voltage, weather rows), chart current values |

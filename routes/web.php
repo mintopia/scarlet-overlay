@@ -1,29 +1,27 @@
 <?php
 
 use App\Http\Controllers\Admin\AdminDashboardController;
+use App\Http\Controllers\Admin\AdminLogController;
+use App\Http\Controllers\Admin\AdminWeatherController;
 use App\Http\Controllers\Admin\BoatMetricsController;
+use App\Http\Controllers\Admin\ExploreController;
 use App\Http\Controllers\Admin\JourneyController;
 use App\Http\Controllers\Admin\ProfileController;
 use App\Http\Controllers\Admin\SettingsController;
-use App\Http\Controllers\Admin\TeamController;
 use App\Http\Controllers\Admin\StreamMonitorController;
-use App\Http\Controllers\Admin\AdminWeatherController;
-use App\Http\Controllers\Admin\AdminLogController;
-use App\Http\Controllers\Admin\ExploreController;
-use App\Http\Controllers\Admin\SkipperOverviewController;
+use App\Http\Controllers\Admin\TeamController;
 use App\Http\Controllers\Admin\TrackerController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\PasskeyController;
 use App\Http\Controllers\Auth\RegisterController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\HomeController;
+use App\Http\Controllers\JourneyViewController;
 use App\Http\Controllers\MapTileController;
 use App\Http\Controllers\OverlayController;
-use App\Http\Controllers\JourneyViewController;
 use App\Http\Controllers\SrtMetricsController;
 use App\Http\Controllers\WeatherMetricsController;
 use Illuminate\Support\Facades\Route;
-use Inertia\Inertia;
 
 Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
 Route::get('/', fn () => redirect('/dashboard'));
@@ -68,7 +66,6 @@ Route::middleware('auth')->prefix('admin')->group(function () {
     Route::get('broadcast', [StreamMonitorController::class, 'index'])->name('admin.broadcast');
     Route::redirect('stream', 'broadcast');
     Route::get('/tracker', [TrackerController::class, 'index'])->name('admin.tracker');
-    Route::get('skipper', [SkipperOverviewController::class, 'index'])->name('admin.skipper');
     Route::get('/metrics', [BoatMetricsController::class, 'index'])->name('admin.metrics');
     Route::get('/explore', [ExploreController::class, 'index'])->name('admin.explore');
     Route::get('/explore/series', [ExploreController::class, 'series'])->name('admin.explore.series');
