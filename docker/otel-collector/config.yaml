@@ -25,14 +25,6 @@ processors:
     spike_limit_mib: 64
 
 exporters:
-  prometheus:
-    endpoint: 0.0.0.0:8889
-    namespace: scarlet
-    send_timestamps: true
-    resource_to_telemetry_conversion:
-      enabled: true
-    metric_expiration: 10m
-
   prometheusremotewrite:
     endpoint: http://victoriametrics:8428/api/v1/write
     namespace: scarlet
@@ -50,4 +42,4 @@ service:
     metrics:
       receivers: [otlp]
       processors: [memory_limiter, batch]
-      exporters: [prometheus, prometheusremotewrite]
+      exporters: [prometheusremotewrite]

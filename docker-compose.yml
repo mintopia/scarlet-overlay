@@ -44,7 +44,7 @@ services:
     env_file: .env
     depends_on:
       - redis
-      - prometheus
+      - otel-collector
       - reverb
     networks:
       - scarlet
@@ -92,34 +92,23 @@ services:
     networks:
       - scarlet
 
-  prometheus:
-    image: prom/prometheus:latest
-    ports:
-      - "${PROMETHEUS_PORT:-9090}:9090"
-    volumes:
-      - ./docker/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
-      - prometheus-data:/prometheus
-    depends_on:
-      - otel-collector
-    networks:
-      - scarlet
-
   victoriametrics:
     image: victoriametrics/victoria-metrics:latest
     ports:
       - "${VICTORIAMETRICS_PORT:-8428}:8428"
     volumes:
       - victoriametrics-data:/victoria-metrics-data
+      - ./docker/victoriametrics/scrape.yml:/etc/victoriametrics/scrape.yml:ro
     command:
       - "-retentionPeriod=100y"
       - "-search.latencyOffset=0s"
+      - "-promscrape.config=/etc/victoriametrics/scrape.yml"
     networks:
       - scarlet
 
 volumes:
   mariadb-data:
   redis-data:
-  prometheus-data:
   victoriametrics-data:
 
 networks:
