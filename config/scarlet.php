@@ -354,6 +354,8 @@ return [
             'log' => [
                 'latitude' => 'scarlet_gps_latitude_deg',
                 'longitude' => 'scarlet_gps_longitude_deg',
+                'signalk_latitude' => 'scarlet_signalk_navigation_position_latitude',
+                'signalk_longitude' => 'scarlet_signalk_navigation_position_longitude',
                 'gps_heading' => 'scarlet_gps_heading_deg',
                 'trip_log' => 'scarlet_signalk_navigation_trip_log / 1852',
                 'aws' => 'scarlet_signalk_environment_wind_speedApparent',
