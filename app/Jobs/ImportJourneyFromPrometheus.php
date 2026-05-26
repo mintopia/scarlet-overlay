@@ -51,8 +51,8 @@ class ImportJourneyFromPrometheus implements ShouldQueue
         ];
 
         if (! $useSignalK) {
-            $metrics['latitude'] = 'scarlet_gps_latitude_deg != 0';
-            $metrics['longitude'] = 'scarlet_gps_longitude_deg != 0';
+            $metrics['latitude'] = 'max(scarlet_gps_latitude_deg)';
+            $metrics['longitude'] = 'max(scarlet_gps_longitude_deg)';
         }
 
         $data = [];
