@@ -24,6 +24,13 @@ Homestead.yaml
 Thumbs.db
 
 .superpowers/
+.claude/
+.impeccable/
+.playwright-cli/
+test-results/
+core.*
+*.om
+current-dashboard.png
 **/caddy
 frankenphp
 frankenphp-worker.php
