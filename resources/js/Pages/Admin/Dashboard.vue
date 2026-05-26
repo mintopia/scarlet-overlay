@@ -49,25 +49,32 @@
         <div class="helm-grid panel p-5">
             <!-- Left instruments: SOG, SOW, Depth + Log -->
             <div class="helm-instruments helm-instruments--left">
-                <div class="instrument">
-                    <span class="instrument-label">SOG</span>
-                    <span class="instrument-value text-teal">{{ fmt(liveBoat?.speed_sog) }}</span>
-                    <span class="instrument-unit">kn</span>
+                <div class="helm-reading">
+                    <span class="helm-reading__label text-teal">SOG</span>
+                    <div class="helm-reading__row">
+                        <span class="helm-reading__value text-teal">{{ fmt(liveBoat?.speed_sog) }}</span>
+                        <span class="helm-reading__unit">kn</span>
+                    </div>
                 </div>
-                <div class="instrument">
-                    <span class="instrument-label">SOW</span>
-                    <span class="instrument-value text-teal">{{ fmt(liveBoat?.speed_stw) }}</span>
-                    <span class="instrument-unit">kn</span>
+                <div class="helm-reading">
+                    <span class="helm-reading__label text-teal">SOW</span>
+                    <div class="helm-reading__row">
+                        <span class="helm-reading__value text-teal">{{ fmt(liveBoat?.speed_stw) }}</span>
+                        <span class="helm-reading__unit">kn</span>
+                    </div>
                 </div>
-                <div class="instrument">
-                    <span class="instrument-label">Depth</span>
-                    <span class="instrument-value text-blue">{{ fmt(liveBoat?.depth) }}</span>
-                    <span class="instrument-unit">m</span>
+                <div class="helm-reading">
+                    <span class="helm-reading__label text-blue">Depth</span>
+                    <div class="helm-reading__row">
+                        <span class="helm-reading__value text-blue">{{ fmt(liveBoat?.depth) }}</span>
+                        <span class="helm-reading__unit">m</span>
+                    </div>
                 </div>
-                <div class="mt-auto pt-2">
-                    <div class="text-[10px] font-body font-bold uppercase tracking-wide text-text-dim">Log</div>
-                    <div class="font-sans text-base font-semibold tabular-nums text-text-secondary">
-                        {{ liveBoat?.trip_log != null ? fmt(liveBoat.trip_log, 0) : '—' }} <span class="text-xs text-text-dim font-medium">nm</span>
+                <div class="helm-reading">
+                    <span class="helm-reading__label">Log</span>
+                    <div class="helm-reading__row">
+                        <span class="helm-reading__value">{{ liveBoat?.trip_log != null ? fmt(liveBoat.trip_log, 0) : '—' }}</span>
+                        <span class="helm-reading__unit">nm</span>
                     </div>
                 </div>
             </div>
@@ -450,53 +457,11 @@ const wxGradient = computed(() => {
 .helm-instruments {
     display: flex;
     flex-direction: column;
-    gap: 20px;
+    gap: 16px;
 }
 
 .helm-instruments--left { align-items: flex-start; }
-.helm-instruments--right { align-items: flex-end; }
-
-.instrument {
-    display: flex;
-    flex-direction: row;
-    align-items: baseline;
-    gap: 6px;
-}
-
-.instrument--right {
-    flex-direction: row-reverse;
-}
-
-.instrument-label {
-    font-size: 12px;
-    font-weight: 700;
-    color: var(--color-text-dim);
-    text-transform: uppercase;
-    letter-spacing: 0.04em;
-    width: 46px;
-    flex-shrink: 0;
-}
-
-.instrument--right .instrument-label {
-    text-align: right;
-}
-
-.instrument-value {
-    font-family: var(--font-sans);
-    font-size: 44px;
-    font-weight: 600;
-    letter-spacing: -0.02em;
-    line-height: 1;
-    font-variant-numeric: tabular-nums;
-    color: var(--color-text-primary);
-}
-
-.instrument-unit {
-    font-size: 11px;
-    font-weight: 500;
-    color: var(--color-text-dim);
-    margin-bottom: 4px;
-}
+.helm-instruments--left .helm-reading { align-items: flex-start; }
 
 /* ── Wind readings ────────────────────────────────────────────────────────── */
 .helm-readings {
@@ -518,7 +483,7 @@ const wxGradient = computed(() => {
     font-size: 11px;
     font-weight: 700;
     text-transform: uppercase;
-    letter-spacing: 1px;
+    letter-spacing: 0.06em;
     color: var(--color-text-dim);
 }
 
