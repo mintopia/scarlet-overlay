@@ -3,6 +3,7 @@
 namespace App\Console\Commands;
 
 use App\Events\MetricsUpdated;
+use App\Models\BoatSetting;
 use App\Services\MetricsService;
 use Illuminate\Console\Command;
 use Illuminate\Support\Carbon;
@@ -29,8 +30,9 @@ class MetricsFakeCommand extends Command
     private function replayFromFile(): int
     {
         $path = base_path($this->option('file'));
-        if (!file_exists($path)) {
+        if (! file_exists($path)) {
             $this->error("File not found: {$path}");
+
             return self::FAILURE;
         }
 
@@ -58,18 +60,12 @@ class MetricsFakeCommand extends Command
             $boat = $this->extractGroup($m, 'boat.');
             $tracker = $this->extractGroup($m, 'tracker.');
             $gps = $this->extractGroup($m, 'gps.');
-            $signalk = $this->extractGroup($m, 'signalk_position.');
             $weather = $this->extractGroup($m, 'weather.');
             $srt = $this->extractGroup($m, 'srt.');
 
-            if ($signalk['latitude'] !== null && $signalk['longitude'] !== null) {
-                $gps['latitude'] = $signalk['latitude'];
-                $gps['longitude'] = $signalk['longitude'];
-            }
-
             $tracker['battery_percent'] = $this->voltageToPct($tracker['battery_voltage'] ?? null);
 
-            if (!empty(array_filter($weather, fn ($v) => $v !== null))) {
+            if (! empty(array_filter($weather, fn ($v) => $v !== null))) {
                 $weather['condition'] = $this->deriveCondition($weather);
                 $weather['summary'] = $this->deriveSummary($weather);
                 $weather['icon'] = $this->deriveIcon($weather['summary']);
@@ -79,8 +75,8 @@ class MetricsFakeCommand extends Command
             }
 
             $settings = [
-                'boat_name' => \App\Models\BoatSetting::getValue('boat_name', config('scarlet.name')),
-                'port_name' => \App\Models\BoatSetting::getValue('port_name', ''),
+                'boat_name' => BoatSetting::getValue('boat_name', config('scarlet.name')),
+                'port_name' => BoatSetting::getValue('port_name', ''),
             ];
 
             MetricsUpdated::dispatch(
@@ -177,12 +173,16 @@ class MetricsFakeCommand extends Command
                 $result[substr($key, $prefixLen)] = $value;
             }
         }
+
         return $result;
     }
 
     private function voltageToPct(?float $voltage): int
     {
-        if ($voltage === null) return 0;
+        if ($voltage === null) {
+            return 0;
+        }
+
         return (int) min(100, max(0, (($voltage - 3.0) / (4.2 - 3.0)) * 100));
     }
 
@@ -191,9 +191,16 @@ class MetricsFakeCommand extends Command
         $wind = $weather['wind_speed'] ?? 0;
         $temp = $weather['temperature'] ?? 15;
 
-        if ($wind > 30) return 'Stormy';
-        if ($wind > 20) return 'Very Windy';
-        if ($temp > 25) return 'Clear';
+        if ($wind > 30) {
+            return 'Stormy';
+        }
+        if ($wind > 20) {
+            return 'Very Windy';
+        }
+        if ($temp > 25) {
+            return 'Clear';
+        }
+
         return 'Partly Cloudy';
     }
 
@@ -202,9 +209,16 @@ class MetricsFakeCommand extends Command
         $wind = $weather['wind_speed'] ?? 0;
         $temp = $weather['temperature'] ?? 15;
 
-        if ($wind > 30) return 'thunderstorm';
-        if ($wind > 20) return 'rain';
-        if ($temp > 25) return 'day-sunny';
+        if ($wind > 30) {
+            return 'thunderstorm';
+        }
+        if ($wind > 20) {
+            return 'rain';
+        }
+        if ($temp > 25) {
+            return 'day-sunny';
+        }
+
         return 'cloud';
     }
 
@@ -224,6 +238,7 @@ class MetricsFakeCommand extends Command
     private function syntheticWeather(int $frameIndex, ?float $waterTemp): array
     {
         $t = $frameIndex * 0.01;
+
         return [
             'temperature' => round(18.5 + sin($t * 0.3) * 1.5, 1),
             'condition' => 'Partly Cloudy',

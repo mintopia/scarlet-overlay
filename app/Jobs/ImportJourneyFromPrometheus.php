@@ -30,10 +30,10 @@ class ImportJourneyFromPrometheus implements ShouldQueue
         $end = Carbon::parse($this->endTime)->timestamp;
         $step = '30s';
 
-        $signalk = config('scarlet.metrics.mappings.signalk_position');
-        $skLat = $prometheus->queryRange($signalk['latitude'], '', $step, $start, $end);
-        $skLng = $prometheus->queryRange($signalk['longitude'], '', $step, $start, $end);
-        $useSignalK = ! empty($skLat) && ! empty($skLng);
+        $history = config('scarlet.metrics.mappings.history');
+        $latData = $prometheus->queryRange($history['track_latitude'], '', $step, $start, $end, fillGaps: false);
+        $lngData = $prometheus->queryRange($history['track_longitude'], '', $step, $start, $end, fillGaps: false);
+        $lngByTs = collect($lngData)->keyBy('timestamp');
 
         $metrics = [
             'speed_sog' => 'scarlet_gps_speed_kn',
@@ -50,34 +50,30 @@ class ImportJourneyFromPrometheus implements ShouldQueue
             'heel' => 'scarlet_signalk_navigation_attitude_roll * 180 / 3.14159265359',
         ];
 
-        if (! $useSignalK) {
-            $metrics['latitude'] = 'max(scarlet_gps_latitude_deg)';
-            $metrics['longitude'] = 'max(scarlet_gps_longitude_deg)';
-        }
-
         $data = [];
-
-        if ($useSignalK) {
-            foreach ($skLat as $point) {
-                $ts = $point['timestamp'];
-                $data[$ts] = ['recorded_at' => date('Y-m-d H:i:s', $ts), 'latitude' => $point['value']];
+        foreach ($latData as $point) {
+            $ts = $point['timestamp'];
+            $lng = $lngByTs->get($ts);
+            if (! $lng) {
+                continue;
             }
-            foreach ($skLng as $point) {
-                $ts = $point['timestamp'];
-                if (isset($data[$ts])) {
-                    $data[$ts]['longitude'] = $point['value'];
-                }
+            if (abs($point['value']) < 0.1 && abs($lng['value']) < 0.1) {
+                continue;
             }
+            $data[$ts] = [
+                'recorded_at' => date('Y-m-d H:i:s', $ts),
+                'latitude' => $point['value'],
+                'longitude' => $lng['value'],
+            ];
         }
 
         foreach ($metrics as $key => $query) {
-            $results = $prometheus->queryRange($query, '', $step, $start, $end);
+            $results = $prometheus->queryRange($query, '', $step, $start, $end, fillGaps: false);
             foreach ($results as $point) {
                 $ts = $point['timestamp'];
-                if (! isset($data[$ts])) {
-                    $data[$ts] = ['recorded_at' => date('Y-m-d H:i:s', $ts)];
+                if (isset($data[$ts])) {
+                    $data[$ts][$key] = $point['value'];
                 }
-                $data[$ts][$key] = $point['value'];
             }
         }
 
@@ -85,13 +81,6 @@ class ImportJourneyFromPrometheus implements ShouldQueue
 
         $batch = [];
         foreach ($data as $row) {
-            if (! isset($row['latitude']) || ! isset($row['longitude'])) {
-                continue;
-            }
-            if (abs($row['latitude']) < 0.1 && abs($row['longitude']) < 0.1) {
-                continue;
-            }
-
             $batch[] = array_merge(['journey_id' => $journey->id], $row);
 
             if (count($batch) >= 500) {

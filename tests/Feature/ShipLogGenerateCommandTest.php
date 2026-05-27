@@ -17,8 +17,6 @@ class ShipLogGenerateCommandTest extends TestCase
         $defaults = [
             'latitude' => 50.75,
             'longitude' => -1.54,
-            'signalk_latitude' => 50.75,
-            'signalk_longitude' => -1.54,
             'gps_heading' => 274.0,
             'trip_log' => 12.3,
             'aws' => 8.5,
@@ -111,29 +109,25 @@ class ShipLogGenerateCommandTest extends TestCase
         $this->assertEqualsWithDelta(rad2deg(4.78), (float) $log->course, 0.1);
     }
 
-    public function test_generate_falls_back_to_signalk_position_when_gps_zero(): void
+    public function test_generate_filters_null_island_position(): void
     {
         $this->mockPrometheus([
             'latitude' => 0.0,
             'longitude' => 0.0,
-            'signalk_latitude' => 43.54,
-            'signalk_longitude' => 3.89,
         ]);
 
         $this->artisan('ship-log:generate')->assertSuccessful();
 
         $log = ShipLog::first();
-        $this->assertEqualsWithDelta(43.54, (float) $log->latitude, 0.01);
-        $this->assertEqualsWithDelta(3.89, (float) $log->longitude, 0.01);
+        $this->assertNull($log->latitude);
+        $this->assertNull($log->longitude);
     }
 
-    public function test_generate_falls_back_to_signalk_position_when_gps_null(): void
+    public function test_generate_stores_valid_position(): void
     {
         $this->mockPrometheus([
-            'latitude' => null,
-            'longitude' => null,
-            'signalk_latitude' => 43.54,
-            'signalk_longitude' => 3.89,
+            'latitude' => 43.54,
+            'longitude' => 3.89,
         ]);
 
         $this->artisan('ship-log:generate')->assertSuccessful();

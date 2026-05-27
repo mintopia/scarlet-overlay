@@ -66,15 +66,6 @@ class MetricsService
             config('scarlet.metrics.mappings.gps')
         );
 
-        $signalk = $this->prometheus->queryMultiple(
-            config('scarlet.metrics.mappings.signalk_position')
-        );
-
-        if ($signalk['latitude'] !== null && $signalk['longitude'] !== null) {
-            $gps['latitude'] = $signalk['latitude'];
-            $gps['longitude'] = $signalk['longitude'];
-        }
-
         if ($this->isNullIsland($gps['latitude'], $gps['longitude'])) {
             $gps['latitude'] = null;
             $gps['longitude'] = null;
@@ -168,14 +159,6 @@ class MetricsService
             config('scarlet.metrics.mappings.gps'),
             $timestamp
         );
-        $signalk = $this->prometheus->queryMultipleAt(
-            config('scarlet.metrics.mappings.signalk_position'),
-            $timestamp
-        );
-        if ($signalk['latitude'] !== null && $signalk['longitude'] !== null) {
-            $gps['latitude'] = $signalk['latitude'];
-            $gps['longitude'] = $signalk['longitude'];
-        }
         if ($this->isNullIsland($gps['latitude'] ?? null, $gps['longitude'] ?? null)) {
             $gps['latitude'] = null;
             $gps['longitude'] = null;
@@ -213,15 +196,9 @@ class MetricsService
     public function getGpsTrack(string $duration = '48h', string $step = '30s'): array
     {
         $history = config('scarlet.metrics.mappings.history');
-        $signalk = config('scarlet.metrics.mappings.signalk_position');
 
-        $latData = $this->prometheus->queryRange($signalk['latitude'], $duration, $step, fillGaps: false);
-        $lngData = $this->prometheus->queryRange($signalk['longitude'], $duration, $step, fillGaps: false);
-
-        if (empty($latData) || empty($lngData)) {
-            $latData = $this->prometheus->queryRange($history['track_latitude'], $duration, $step, fillGaps: false);
-            $lngData = $this->prometheus->queryRange($history['track_longitude'], $duration, $step, fillGaps: false);
-        }
+        $latData = $this->prometheus->queryRange($history['track_latitude'], $duration, $step, fillGaps: false);
+        $lngData = $this->prometheus->queryRange($history['track_longitude'], $duration, $step, fillGaps: false);
         $sogData = $this->prometheus->queryRange($history['track_sog'], $duration, $step, fillGaps: false);
 
         $lngByTs = collect($lngData)->keyBy('timestamp');

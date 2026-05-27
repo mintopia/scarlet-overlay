@@ -2,6 +2,7 @@
 
 namespace App\Console\Commands;
 
+use Carbon\Carbon;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Http;
 
@@ -19,7 +20,7 @@ class MetricsExtractCommand extends Command
     {
         $promUrl = config('scarlet.metrics.prometheus_url');
         $from = $this->option('from')
-            ? \Carbon\Carbon::parse($this->option('from'))
+            ? Carbon::parse($this->option('from'))
             : now()->subHour();
 
         $durationStr = $this->option('duration');
@@ -43,7 +44,7 @@ class MetricsExtractCommand extends Command
         $this->newLine();
 
         $queries = $this->buildQueryList();
-        $this->info(count($queries) . " metrics to extract");
+        $this->info(count($queries).' metrics to extract');
 
         $seriesData = [];
         $bar = $this->output->createProgressBar(count($queries));
@@ -63,7 +64,7 @@ class MetricsExtractCommand extends Command
 
                 if ($response->ok()) {
                     $result = $response->json('data.result');
-                    if (!empty($result)) {
+                    if (! empty($result)) {
                         $values = collect($result[0]['values'])
                             ->mapWithKeys(fn ($v) => [(int) $v[0] => (float) $v[1]])
                             ->all();
@@ -80,7 +81,7 @@ class MetricsExtractCommand extends Command
         $this->newLine(2);
 
         $filledCount = count($seriesData);
-        $this->info("{$filledCount}/" . count($queries) . " metrics have data");
+        $this->info("{$filledCount}/".count($queries).' metrics have data');
 
         // Build the timeline: for each timestamp, assemble the full metrics snapshot
         $timestamps = range($startTs, $endTs, $step);
@@ -161,7 +162,7 @@ class MetricsExtractCommand extends Command
 
         $path = base_path($output);
         $dir = dirname($path);
-        if (!is_dir($dir)) {
+        if (! is_dir($dir)) {
             mkdir($dir, 0755, true);
         }
 
@@ -178,7 +179,7 @@ class MetricsExtractCommand extends Command
     {
         $queries = [];
 
-        foreach (['boat', 'tracker', 'gps', 'signalk_position'] as $group) {
+        foreach (['boat', 'tracker', 'gps'] as $group) {
             foreach (config("scarlet.metrics.mappings.{$group}") as $key => $promql) {
                 if (is_string($promql)) {
                     $queries["{$group}.{$key}"] = $promql;

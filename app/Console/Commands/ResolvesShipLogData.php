@@ -6,8 +6,8 @@ trait ResolvesShipLogData
 {
     private function buildLogData(array $values): array
     {
-        $latitude = $this->nonZero($values['latitude']) ?? $this->nonZero($values['signalk_latitude'] ?? null);
-        $longitude = $this->nonZero($values['longitude']) ?? $this->nonZero($values['signalk_longitude'] ?? null);
+        $latitude = $this->nonZero($values['latitude']);
+        $longitude = $this->nonZero($values['longitude']);
 
         if ($latitude !== null && $longitude !== null && abs($latitude) < 0.1 && abs($longitude) < 0.1) {
             $latitude = null;
