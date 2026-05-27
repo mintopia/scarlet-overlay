@@ -189,7 +189,7 @@ class ExploreController extends Controller
             $queries[$slug] = $metric['query'];
         }
 
-        $values = $prometheus->queryMultipleAt($queries, now()->timestamp);
+        $values = $prometheus->queryMultipleAt($queries, now()->timestamp, fallback: true);
 
         $computedWind = $metrics->getLatestTrueWind();
         if ($computedWind) {
@@ -218,7 +218,7 @@ class ExploreController extends Controller
             }
             $queries[$slug] = $metric['query'];
         }
-        $currentValues = $prometheus->queryMultipleAt($queries, now()->timestamp);
+        $currentValues = $prometheus->queryMultipleAt($queries, now()->timestamp, fallback: true);
 
         $computedWind = $metrics->getLatestTrueWind();
         if ($computedWind) {

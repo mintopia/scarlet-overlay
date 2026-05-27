@@ -95,8 +95,8 @@ return [
             ],
 
             'gps' => [
-                'latitude' => 'scarlet_gps_latitude_deg',
-                'longitude' => 'scarlet_gps_longitude_deg',
+                'latitude' => 'scarlet_gps_latitude_deg != 0',
+                'longitude' => 'scarlet_gps_longitude_deg != 0',
                 'altitude' => 'scarlet_gps_altitude_meters',
                 'satellites' => 'scarlet_gps_satellites',
                 'hdop' => 'scarlet_gps_hdop',
@@ -106,13 +106,13 @@ return [
 
             // Signal K position (float64 precision, smooth updates)
             'signalk_position' => [
-                'latitude' => 'scarlet_signalk_navigation_position_latitude',
-                'longitude' => 'scarlet_signalk_navigation_position_longitude',
+                'latitude' => 'scarlet_signalk_navigation_position_latitude != 0',
+                'longitude' => 'scarlet_signalk_navigation_position_longitude != 0',
             ],
 
             'history' => [
-                'track_latitude' => 'max(scarlet_gps_latitude_deg)',
-                'track_longitude' => 'max(scarlet_gps_longitude_deg)',
+                'track_latitude' => 'max(scarlet_gps_latitude_deg != 0)',
+                'track_longitude' => 'max(scarlet_gps_longitude_deg != 0)',
                 'track_sog' => 'max(scarlet_gps_speed_kn)',
                 'battery' => 'max(scarlet_signalk_electrical_batteries_0_voltage)',
                 'speed' => 'max(scarlet_signalk_navigation_speedOverGround) * 1.94384',
@@ -494,10 +494,10 @@ return [
             ],
 
             'log' => [
-                'latitude' => 'max(scarlet_gps_latitude_deg)',
-                'longitude' => 'max(scarlet_gps_longitude_deg)',
-                'signalk_latitude' => 'max(scarlet_signalk_navigation_position_latitude)',
-                'signalk_longitude' => 'max(scarlet_signalk_navigation_position_longitude)',
+                'latitude' => 'max(scarlet_gps_latitude_deg != 0)',
+                'longitude' => 'max(scarlet_gps_longitude_deg != 0)',
+                'signalk_latitude' => 'max(scarlet_signalk_navigation_position_latitude != 0)',
+                'signalk_longitude' => 'max(scarlet_signalk_navigation_position_longitude != 0)',
                 'gps_heading' => 'max(scarlet_gps_heading_deg)',
                 'trip_log' => 'max(scarlet_signalk_navigation_trip_log) / 1852',
                 'aws' => 'max(scarlet_signalk_environment_wind_speedApparent)',

@@ -65,7 +65,7 @@ class PrometheusService
         }
     }
 
-    public function queryMultipleAt(array $queries, int $timestamp): array
+    public function queryMultipleAt(array $queries, int $timestamp, bool $fallback = false): array
     {
         $responses = Http::pool(function ($pool) use ($queries, $timestamp) {
             foreach ($queries as $key => $promql) {
@@ -77,6 +77,7 @@ class PrometheusService
         });
 
         $results = [];
+        $missingKeys = [];
         foreach ($queries as $key => $promql) {
             try {
                 $response = $responses[$key] ?? null;
@@ -88,6 +89,16 @@ class PrometheusService
                 }
             } catch (\Throwable $e) {
                 $results[$key] = null;
+            }
+
+            if ($results[$key] === null && $fallback) {
+                $missingKeys[$key] = $promql;
+            }
+        }
+
+        if (! empty($missingKeys)) {
+            foreach ($missingKeys as $key => $promql) {
+                $results[$key] = $this->queryLastOverTimeAt($promql, $timestamp);
             }
         }
 
