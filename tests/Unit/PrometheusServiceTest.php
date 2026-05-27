@@ -21,7 +21,7 @@ class PrometheusServiceTest extends TestCase
         ]);
 
         $service = new PrometheusService;
-        $result = $service->query('boat_speed_kn');
+        $result = $service->query('scarlet_speed_kn');
         $this->assertEquals(4.6, $result);
     }
 
@@ -120,5 +120,59 @@ class PrometheusServiceTest extends TestCase
 
         $this->assertArrayHasKey('speed', $result);
         $this->assertNull($result['speed']);
+    }
+
+    public function test_query_fresh_returns_value_when_recent(): void
+    {
+        $now = now()->timestamp;
+        Http::fake([
+            '*/api/v1/query*' => Http::response([
+                'status' => 'success',
+                'data' => [
+                    'resultType' => 'vector',
+                    'result' => [['value' => [$now, '5.0']]],
+                ],
+            ]),
+        ]);
+
+        $service = new PrometheusService;
+        $result = $service->queryFresh('scarlet_metric', 120);
+        $this->assertEquals(5.0, $result);
+    }
+
+    public function test_query_fresh_returns_null_when_stale(): void
+    {
+        $staleTs = now()->timestamp - 300;
+        Http::fake([
+            '*/api/v1/query*' => Http::response([
+                'status' => 'success',
+                'data' => [
+                    'resultType' => 'vector',
+                    'result' => [['value' => [$staleTs, '5.0']]],
+                ],
+            ]),
+        ]);
+
+        $service = new PrometheusService;
+        $result = $service->queryFresh('scarlet_metric', 120);
+        $this->assertNull($result);
+    }
+
+    public function test_query_timestamp_returns_last_seen_time(): void
+    {
+        $ts = now()->timestamp - 30;
+        Http::fake([
+            '*/api/v1/query*' => Http::response([
+                'status' => 'success',
+                'data' => [
+                    'resultType' => 'vector',
+                    'result' => [['value' => [$ts, '42.0']]],
+                ],
+            ]),
+        ]);
+
+        $service = new PrometheusService;
+        $result = $service->queryTimestamp('scarlet_metric');
+        $this->assertEquals($ts, $result);
     }
 }

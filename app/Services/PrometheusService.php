@@ -107,31 +107,14 @@ class PrometheusService
 
     public function query(string $promql): ?float
     {
-        try {
-            $response = Http::timeout(5)->get("{$this->baseUrl}/api/v1/query", [
-                'query' => $promql,
-            ]);
+        $result = $this->queryWithTimestamp($promql, '24h');
 
-            if (! $response->ok()) {
-                return null;
-            }
-
-            $result = $response->json('data.result');
-            if (! empty($result)) {
-                return (float) $result[0]['value'][1];
-            }
-
-            return $this->queryLastOverTime($promql);
-        } catch (\Throwable $e) {
-            Log::warning("Prometheus query failed [{$promql}]: {$e->getMessage()}");
-
-            return null;
-        }
+        return $result['value'] ?? null;
     }
 
     public function queryFresh(string $promql, int $maxAge = 120): ?float
     {
-        $result = $this->queryWithAge($promql, "{$maxAge}s");
+        $result = $this->queryWithTimestamp($promql, '24h');
         if ($result === null) {
             return null;
         }
@@ -141,12 +124,12 @@ class PrometheusService
 
     public function queryTimestamp(string $promql): ?int
     {
-        $result = $this->queryWithAge($promql, '5m');
+        $result = $this->queryWithTimestamp($promql, '24h');
 
         return $result['timestamp'] ?? null;
     }
 
-    protected function queryWithAge(string $promql, string $lookback): ?array
+    protected function queryWithTimestamp(string $promql, string $lookback = '24h'): ?array
     {
         $wrapped = preg_replace_callback(
             '/\b(scarlet_[a-zA-Z0-9_:]*)(\{[^}]*\})?/',
@@ -184,51 +167,6 @@ class PrometheusService
 
             return null;
         }
-    }
-
-    protected function queryLastOverTime(string $promql, string $lookback = '24h'): ?float
-    {
-        $wrapped = preg_replace_callback(
-            '/\b(scarlet_[a-zA-Z0-9_:]*)(\{[^}]*\})?/',
-            fn ($m) => "last_over_time({$m[0]}[{$lookback}])",
-            $promql,
-        );
-
-        if ($wrapped === $promql) {
-            return null;
-        }
-
-        try {
-            $response = Http::timeout(5)->get("{$this->baseUrl}/api/v1/query", [
-                'query' => $wrapped,
-            ]);
-
-            if (! $response->ok()) {
-                return null;
-            }
-
-            $result = $response->json('data.result');
-            if (empty($result)) {
-                return null;
-            }
-
-            return (float) $result[0]['value'][1];
-        } catch (\Throwable $e) {
-            Log::warning("Prometheus last_over_time query failed [{$promql}]: {$e->getMessage()}");
-
-            return null;
-        }
-    }
-
-    public function wrapLastOverTime(string $promql, string $lookback = '1h'): ?string
-    {
-        $wrapped = preg_replace_callback(
-            '/\b(scarlet_[a-zA-Z0-9_:]*)(\{[^}]*\})?/',
-            fn ($m) => "last_over_time({$m[0]}[{$lookback}])",
-            $promql,
-        );
-
-        return $wrapped !== $promql ? $wrapped : null;
     }
 
     public function queryRange(string $promql, ?string $duration, string $step = '15s', ?int $start = null, ?int $end = null, bool $fillGaps = true): array
