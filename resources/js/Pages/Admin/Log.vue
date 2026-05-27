@@ -26,7 +26,7 @@
             </div>
         </div>
 
-        <LogTable :rows="rows" :timezone="activeTz" :show-all-notes="true" />
+        <LogTable :rows="rows" :timezone="activeTz" />
     </AdminLayout>
 </template>
 

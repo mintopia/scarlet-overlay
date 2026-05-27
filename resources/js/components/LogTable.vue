@@ -24,7 +24,7 @@
             </thead>
             <tbody>
                 <template v-for="row in rows" :key="row.id || row.timestamp">
-                    <tr @click="toggleExpand(row)" class="data-row">
+                    <tr class="data-row">
                         <td class="col-time group-end">
                             <div class="cell-date">{{ fmtDate(row.timestamp) }}</div>
                             <div class="cell-time">{{ fmtTime(row.timestamp) }}</div>
@@ -47,17 +47,9 @@
                         <td class="col-num">{{ fmtPct(row.water_level) }}</td>
                         <td class="col-num group-end">{{ fmtPct(row.fuel_level) }}</td>
                         <td class="col-num" :class="diffClass(row.diff)">{{ fmtDiff(row.diff) }}</td>
-                        <td class="col-note" @click.stop="toggleExpand(row)">
-                            <svg v-if="row.notes" class="note-icon note-icon-filled" viewBox="0 0 16 16" fill="currentColor">
-                                <path d="M8 1C4.13 1 1 3.58 1 6.75c0 1.83 1.06 3.44 2.7 4.5L3 14.5l3.56-1.79C7.03 12.9 7.5 13 8 13c3.87 0 7-2.58 7-5.75S11.87 1 8 1z"/>
-                            </svg>
-                            <svg v-else class="note-icon note-icon-add" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5">
-                                <line x1="8" y1="4" x2="8" y2="12"/>
-                                <line x1="4" y1="8" x2="12" y2="8"/>
-                            </svg>
-                        </td>
+                        <td class="col-note"></td>
                     </tr>
-                    <tr v-if="isExpanded(row)" class="note-row">
+                    <tr v-if="row.id" class="note-row">
                         <td :colspan="17">
                             <div class="note-content">
                                 <div v-if="editingId === row.id" class="note-edit">
@@ -113,32 +105,12 @@ import 'uplot/dist/uPlot.min.css';
 const props = defineProps({
     rows: { type: Array, default: () => [] },
     timezone: { type: String, default: undefined },
-    showAllNotes: { type: Boolean, default: false },
 });
 
-const expandedIds = ref(new Set());
 const editingId = ref(null);
 const editText = ref('');
 const saving = ref(false);
 const noteTextarea = ref(null);
-
-function isExpanded(row) {
-    if (!row.id) return false;
-    if (props.showAllNotes && row.notes) return true;
-    return expandedIds.value.has(row.id);
-}
-
-function toggleExpand(row) {
-    if (!row.id) return;
-    if (expandedIds.value.has(row.id)) {
-        if (editingId.value === row.id) {
-            cancelEdit();
-        }
-        expandedIds.value.delete(row.id);
-    } else {
-        expandedIds.value.add(row.id);
-    }
-}
 
 function startEdit(row) {
     if (editingId.value && editingId.value !== row.id) {
@@ -146,9 +118,6 @@ function startEdit(row) {
     }
     editingId.value = row.id;
     editText.value = row.notes || '';
-    if (!expandedIds.value.has(row.id)) {
-        expandedIds.value.add(row.id);
-    }
     nextTick(() => {
         if (noteTextarea.value) {
             const el = Array.isArray(noteTextarea.value) ? noteTextarea.value[0] : noteTextarea.value;
@@ -158,13 +127,8 @@ function startEdit(row) {
 }
 
 function cancelEdit() {
-    const wasId = editingId.value;
     editingId.value = null;
     editText.value = '';
-    const row = props.rows.find(r => r.id === wasId);
-    if (row && !row.notes && !props.showAllNotes) {
-        expandedIds.value.delete(wasId);
-    }
 }
 
 function saveNote(row) {
@@ -467,30 +431,6 @@ function knotsToBeaufort(kn) {
     cursor: pointer;
 }
 
-.note-icon {
-    width: 14px;
-    height: 14px;
-    display: inline-block;
-    vertical-align: middle;
-}
-
-.note-icon-filled {
-    color: var(--color-text-dim);
-}
-
-.note-icon-add {
-    color: var(--color-border);
-    opacity: 0.6;
-}
-
-.data-row {
-    cursor: pointer;
-}
-
-.data-row:hover .note-icon-add {
-    opacity: 1;
-    color: var(--color-text-dim);
-}
 
 .cell-date {
     font-size: 10px;
