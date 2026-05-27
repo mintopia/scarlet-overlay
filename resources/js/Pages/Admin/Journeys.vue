@@ -10,9 +10,15 @@
             </div>
         </div>
 
-        <div v-if="journeys.length === 0" class="panel text-center py-12 px-6">
-            <p class="text-text-primary text-[15px] font-medium mb-1">No journeys recorded</p>
-            <p class="text-text-secondary text-[13px]">Start your first voyage or import from track history.</p>
+        <div v-if="journeys.length === 0" class="panel text-center py-14 px-6">
+            <svg class="mx-auto mb-4" viewBox="0 0 80 48" width="64" height="38" fill="none" aria-hidden="true">
+                <path d="M8 40 Q24 20 40 24 Q56 28 72 8" stroke="var(--color-border)" stroke-width="1.5" stroke-dasharray="5 4" stroke-linecap="round" />
+                <circle cx="8" cy="40" r="3.5" stroke="var(--color-text-dim)" stroke-width="1.5" />
+                <circle cx="72" cy="8" r="3.5" stroke="var(--color-teal)" stroke-width="1.5" />
+                <circle cx="72" cy="8" r="1.5" fill="var(--color-teal)" />
+            </svg>
+            <p class="text-text-primary text-[15px] font-medium mb-1">No journeys yet</p>
+            <p class="text-text-secondary text-[13px] max-w-xs mx-auto">Plan your first passage or import tracks from your sailing history.</p>
         </div>
 
         <div v-else class="panel overflow-x-auto">
@@ -83,6 +89,9 @@ import { ref } from 'vue';
 import { Head, Link, router } from '@inertiajs/vue3';
 import AdminLayout from '@/Layouts/AdminLayout.vue';
 import { fmtDuration } from '@/composables/useFormatters.js';
+import { useToast } from '@/composables/useToast.js';
+
+const toast = useToast();
 
 defineProps({ journeys: Array });
 
@@ -94,7 +103,9 @@ function confirmStart(journey) {
 }
 
 function startJourney() {
+    const title = startingJourney.value.title;
     router.post(`/admin/journeys/${startingJourney.value.id}/start`, {}, {
+        onSuccess: () => { toast.success(`Recording started for ${title}`); },
         onFinish: () => { startingJourney.value = null; },
     });
 }
@@ -104,7 +115,9 @@ function confirmEnd(journey) {
 }
 
 function endJourney() {
+    const title = endingJourney.value.title;
     router.post(`/admin/journeys/${endingJourney.value.id}/end`, {}, {
+        onSuccess: () => { toast.success(`${title} completed`); },
         onFinish: () => { endingJourney.value = null; },
     });
 }

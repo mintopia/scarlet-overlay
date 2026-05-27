@@ -32,17 +32,15 @@ class SettingsTest extends TestCase
         $this->assertEquals('235117890', BoatSetting::getValue('mmsi'));
     }
 
-    public function test_can_save_port(): void
+    public function test_can_save_trip_settings(): void
     {
         $user = User::factory()->owner()->create();
 
         $response = $this->actingAs($user)->put('/admin/settings/port', [
-            'port_name' => 'Lymington Marina',
             'trip_offset' => 5.2,
         ]);
 
         $response->assertRedirect();
-        $this->assertEquals('Lymington Marina', BoatSetting::getValue('port_name'));
         $this->assertEquals(5.2, BoatSetting::getValue('trip_offset'));
     }
 }

@@ -173,11 +173,11 @@ textarea.field-input {
     font-size: 13px;
     font-weight: 600;
     cursor: pointer;
-    transition: background 0.12s ease-out, border-color 0.12s ease-out, color 0.12s ease-out, transform 0.1s ease-out;
+    transition: background 0.12s ease-out, border-color 0.12s ease-out, color 0.12s ease-out, transform 0.1s ease-out, box-shadow 0.1s ease-out;
 }
 
 .btn:active:not(:disabled) {
-    transform: translateY(1px);
+    transform: translateY(1px) scale(0.98);
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -310,4 +310,32 @@ textarea.field-input {
 
 .explore-link:hover .explore-icon {
     opacity: 1;
+}
+
+/* ── Skeleton loading shimmer ─────────────────────────────── */
+
+.skeleton {
+    border-radius: 8px;
+    background: linear-gradient(
+        100deg,
+        var(--color-bg) 30%,
+        var(--color-border-light) 50%,
+        var(--color-bg) 70%
+    );
+    background-size: 200% 100%;
+    animation: shimmer 1.8s ease-in-out infinite;
+}
+
+.skeleton--chart {
+    flex: 1;
+    height: 140px;
+}
+
+@keyframes shimmer {
+    0% { background-position: 200% 0; }
+    100% { background-position: -200% 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .skeleton { animation: none; }
 }

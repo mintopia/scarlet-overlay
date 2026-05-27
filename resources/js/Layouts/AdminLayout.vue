@@ -118,6 +118,8 @@
                 <slot />
             </main>
         </div>
+
+        <ToastContainer />
     </div>
 </template>
 
@@ -125,6 +127,7 @@
 import { ref, computed, onMounted, onUnmounted } from 'vue';
 import { Link, usePage, router } from '@inertiajs/vue3';
 import NavLink from './NavLink.vue';
+import ToastContainer from '@/Components/ToastContainer.vue';
 import { useTheme } from '../composables/useTheme.js';
 
 const props = defineProps({

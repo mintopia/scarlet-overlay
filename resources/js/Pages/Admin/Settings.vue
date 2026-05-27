@@ -24,15 +24,10 @@
             </div>
         </form>
 
-        <!-- Port Settings -->
+        <!-- Trip Settings -->
         <form @submit.prevent="portForm.put(route('admin.settings.port'))" class="panel p-6 mb-6">
-            <h2 class="text-[15px] font-semibold mb-4">Port Settings</h2>
+            <h2 class="text-[15px] font-semibold mb-4">Trip Settings</h2>
             <div>
-                <label class="field-label">Port Name</label>
-                <input v-model="portForm.port_name" type="text" placeholder="e.g. Lymington Marina" class="field-input sm:max-w-sm" />
-                <p v-if="portForm.errors.port_name" class="field-error">{{ portForm.errors.port_name }}</p>
-            </div>
-            <div class="mt-4">
                 <label class="field-label">Trip Offset (nm)</label>
                 <input v-model.number="portForm.trip_offset" type="number" step="0.1" min="0" placeholder="0" class="field-input tabular-nums sm:max-w-[200px]" />
                 <p class="mt-1 text-[12px] text-text-secondary">Subtracted from the trip log when displayed on the dashboard and stream.</p>
@@ -104,7 +99,6 @@ const identityForm = useForm({
 });
 
 const portForm = useForm({
-    port_name: props.settings?.port_name ?? '',
     trip_offset: props.settings?.trip_offset ?? 0,
 });
 

@@ -811,23 +811,6 @@ fetchSparklines()
     gap: 20px;
 }
 
-.skeleton {
-    border-radius: 8px;
-    background: linear-gradient(90deg, var(--color-bg) 25%, var(--color-border-light) 50%, var(--color-bg) 75%);
-    background-size: 200% 100%;
-    animation: skeleton-pulse 1.5s ease-in-out infinite;
-}
-
-.skeleton--chart {
-    flex: 1;
-    height: 140px;
-}
-
-@keyframes skeleton-pulse {
-    0% { background-position: 200% 0; }
-    100% { background-position: -200% 0; }
-}
-
 /* Drawer transition */
 .drawer-enter-active {
     transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);

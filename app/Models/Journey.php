@@ -2,12 +2,12 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class Journey extends Model
 {
@@ -32,7 +32,7 @@ class Journey extends Model
                 $journey->slug = static::generateUniqueSlug($journey->from_port, $journey->to_port);
             }
             if (empty($journey->title)) {
-                $journey->title = $journey->from_port . ' → ' . $journey->to_port;
+                $journey->title = $journey->from_port.' → '.$journey->to_port;
             }
         });
 
@@ -78,6 +78,13 @@ class Journey extends Model
         return static::query()->where('status', 'planned')->first();
     }
 
+    public static function lastPort(): ?string
+    {
+        return static::completed()
+            ->orderByDesc('ended_at')
+            ->value('to_port');
+    }
+
     public static function createPlanned(string $fromPort, string $toPort, array $extra = []): self
     {
         if (static::active()->exists() || static::query()->where('status', 'planned')->exists()) {
@@ -115,15 +122,20 @@ class Journey extends Model
 
     public function getDurationAttribute(): ?float
     {
-        if (!$this->started_at) return null;
+        if (! $this->started_at) {
+            return null;
+        }
         $end = $this->ended_at ?? now();
+
         return $this->started_at->diffInSeconds($end);
     }
 
     public function getDistanceAttribute(): float
     {
         $points = $this->trackPoints()->select(['latitude', 'longitude'])->get();
-        if ($points->count() < 2) return 0;
+        if ($points->count() < 2) {
+            return 0;
+        }
 
         $total = 0;
         for ($i = 1; $i < $points->count(); $i++) {
@@ -132,18 +144,19 @@ class Journey extends Model
                 $points[$i]->latitude, $points[$i]->longitude,
             );
         }
+
         return round($total, 1);
     }
 
     protected static function generateUniqueSlug(string $from, string $to): string
     {
-        $base = Str::slug($from . ' to ' . $to);
+        $base = Str::slug($from.' to '.$to);
         $slug = $base;
         $counter = 1;
 
         while (static::where('slug', $slug)->exists()) {
             $counter++;
-            $slug = $base . '-' . $counter;
+            $slug = $base.'-'.$counter;
         }
 
         return $slug;
@@ -155,6 +168,7 @@ class Journey extends Model
         $dLat = deg2rad($lat2 - $lat1);
         $dLon = deg2rad($lon2 - $lon1);
         $a = sin($dLat / 2) ** 2 + cos(deg2rad($lat1)) * cos(deg2rad($lat2)) * sin($dLon / 2) ** 2;
+
         return $r * 2 * atan2(sqrt($a), sqrt(1 - $a));
     }
 }

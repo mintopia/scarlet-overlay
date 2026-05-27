@@ -105,12 +105,16 @@ function fmtNav(v) {
 
 function formatEta(seconds) {
     if (seconds == null || seconds <= 0) return { time: '—', days: 0 };
+    const tz = weather.value?.timezone || 'UTC';
     const now = new Date();
     const eta = new Date(now.getTime() + seconds * 1000);
-    const time = eta.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
-    const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-    const etaStart = new Date(eta.getFullYear(), eta.getMonth(), eta.getDate());
-    const days = Math.round((etaStart - todayStart) / 86400000);
+    const time = new Intl.DateTimeFormat('en-GB', { hour: '2-digit', minute: '2-digit', timeZone: tz }).format(eta);
+    const dayFmt = new Intl.DateTimeFormat('en-GB', { year: 'numeric', month: '2-digit', day: '2-digit', timeZone: tz });
+    const nowDay = dayFmt.format(now);
+    const etaDay = dayFmt.format(eta);
+    const [nd, nm, ny] = nowDay.split('/').map(Number);
+    const [ed, em, ey] = etaDay.split('/').map(Number);
+    const days = Math.round((new Date(ey, em - 1, ed) - new Date(ny, nm - 1, nd)) / 86400000);
     return { time, days };
 }
 

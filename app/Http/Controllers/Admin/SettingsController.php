@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Events\ForceReload;
 use App\Http\Controllers\Controller;
 use App\Models\BoatSetting;
 use App\Services\MediaMtxService;
@@ -33,14 +34,12 @@ class SettingsController extends Controller
     public function updatePort(Request $request)
     {
         $validated = $request->validate([
-            'port_name' => ['nullable', 'string', 'max:100'],
             'trip_offset' => ['nullable', 'numeric', 'min:0'],
         ]);
 
-        BoatSetting::setValue('port_name', $validated['port_name'] ?? '');
         BoatSetting::setValue('trip_offset', $validated['trip_offset'] ?? 0);
 
-        return back()->with('success', 'Port settings updated.');
+        return back()->with('success', 'Trip settings updated.');
     }
 
     public function updateStream(Request $request, MediaMtxService $mediaMtx)
@@ -61,7 +60,8 @@ class SettingsController extends Controller
 
     public function forceReload()
     {
-        event(new \App\Events\ForceReload());
+        event(new ForceReload);
+
         return back()->with('success', 'Reload signal sent.');
     }
 }
