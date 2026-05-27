@@ -38,12 +38,16 @@ class AdminDashboardController extends Controller
             '60s'
         );
 
+        $gps = $metrics->getGpsMetrics();
+        $weather = $metrics->getWeatherData();
+
         return Inertia::render('Admin/Dashboard', [
             'boat' => $metrics->getBoatMetrics(),
-            'gps' => $metrics->getGpsMetrics(),
+            'gps' => $gps,
             'tracker' => $metrics->getTrackerMetrics(),
-            'weather' => $metrics->getWeatherData(),
+            'weather' => $weather,
             'settings' => $metrics->getSettings(),
+            'sun' => $metrics->getSunTimes($gps['latitude'] ?? null, $gps['longitude'] ?? null, $weather['timezone'] ?? 'UTC'),
             'gpsTrack' => $metrics->getGpsTrack(),
             'activeJourney' => $activeJourney ? [
                 'id' => $activeJourney->id,

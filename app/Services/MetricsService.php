@@ -22,7 +22,7 @@ class MetricsService
             'boat_name' => BoatSetting::getValue('boat_name', config('scarlet.name')),
             'passage_from' => $journey?->from_port ?? '',
             'passage_to' => $journey?->to_port ?? '',
-            'port_name' => BoatSetting::getValue('port_name', ''),
+            'port_name' => Journey::lastPort() ?? '',
         ];
     }
 
@@ -95,14 +95,46 @@ class MetricsService
         }
     }
 
+    public function getSunTimes(?float $latitude, ?float $longitude, string $timezone = 'UTC'): ?array
+    {
+        if ($latitude === null || $longitude === null) {
+            return null;
+        }
+
+        $tz = new \DateTimeZone($timezone);
+        $now = new \DateTimeImmutable('now', $tz);
+        $info = date_sun_info($now->getTimestamp(), $latitude, $longitude);
+
+        $format = fn (mixed $value): ?string => match (true) {
+            $value === true => 'always',
+            $value === false => 'never',
+            is_int($value) => (new \DateTimeImmutable("@$value"))->setTimezone($tz)->format('H:i'),
+            default => null,
+        };
+
+        return [
+            'sunrise' => $format($info['sunrise']),
+            'sunset' => $format($info['sunset']),
+            'civilDawn' => $format($info['civil_twilight_begin']),
+            'civilDusk' => $format($info['civil_twilight_end']),
+            'isDay' => is_int($info['sunrise']) && is_int($info['sunset'])
+                && $now->getTimestamp() >= $info['sunrise']
+                && $now->getTimestamp() < $info['sunset'],
+        ];
+    }
+
     public function getAllMetrics(): array
     {
+        $gps = $this->getGpsMetrics();
+        $weather = $this->getWeatherData();
+
         return [
             'boat' => $this->getBoatMetrics(),
             'tracker' => $this->getTrackerMetrics(),
-            'gps' => $this->getGpsMetrics(),
-            'weather' => $this->getWeatherData(),
+            'gps' => $gps,
+            'weather' => $weather,
             'settings' => $this->getSettings(),
+            'sun' => $this->getSunTimes($gps['latitude'] ?? null, $gps['longitude'] ?? null, $weather['timezone'] ?? 'UTC'),
             'timestamp' => now()->toIso8601String(),
         ];
     }

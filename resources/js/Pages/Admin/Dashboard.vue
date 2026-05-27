@@ -23,18 +23,28 @@
         </div>
         <div class="flex gap-4 items-center">
             <div class="flex gap-3 items-center">
-                <div class="flex items-center gap-1.5">
+                <div class="flex items-center gap-1.5" :title="trackerFresh ? 'Receiving telemetry data' : 'No data received for 2+ minutes'">
                     <span :class="['health-dot', trackerFresh ? 'health-dot--green' : 'health-dot--red']"></span>
                     <span class="text-[11px] font-body text-text-dim font-medium">Tracker</span>
                 </div>
-                <div class="flex items-center gap-1.5">
+                <div class="flex items-center gap-1.5" :title="props.streamOnline ? 'Stream is live' : 'Stream is offline'">
                     <span :class="['health-dot', props.streamOnline ? 'health-dot--green' : 'health-dot--red']"></span>
                     <span class="text-[11px] font-body text-text-dim font-medium">Stream</span>
                 </div>
-                <div class="flex items-center gap-1.5">
+                <div class="flex items-center gap-1.5" :title="props.streamPublisher ? 'Publisher connected' : 'No active publisher'">
                     <span :class="['health-dot', props.streamPublisher ? 'health-dot--green' : 'health-dot--amber']"></span>
                     <span class="text-[11px] font-body text-text-dim font-medium">Publisher</span>
                 </div>
+            </div>
+            <div v-if="liveSun" class="flex items-center gap-2.5 border-l border-border-light pl-4 text-[11px] font-body tabular-nums">
+                <span class="flex items-center gap-1" :title="'Sunrise' + (liveSun.civilDawn ? ' (dawn ' + liveSun.civilDawn + ')' : '')">
+                    <svg class="w-3 h-3 text-amber" viewBox="0 0 16 16" fill="currentColor"><path d="M8 1v2m0 10v2M1 8h2m10 0h2m-2.5-4.5L11 5m-6 6-1.5 1.5M13.5 12.5 12 11M5 5 3.5 3.5"/><circle cx="8" cy="8" r="3"/><path d="M8 4a4 4 0 0 1 0 8" fill="none" stroke="currentColor" stroke-width="1"/></svg>
+                    <span class="font-semibold">{{ liveSun.sunrise === 'always' ? 'No set' : liveSun.sunrise === 'never' ? '--:--' : liveSun.sunrise }}</span>
+                </span>
+                <span class="flex items-center gap-1" :title="'Sunset' + (liveSun.civilDusk ? ' (dusk ' + liveSun.civilDusk + ')' : '')">
+                    <svg class="w-3 h-3 text-text-dim" viewBox="0 0 16 16" fill="currentColor"><path d="M8 1v2m0 10v2M1 8h2m10 0h2m-2.5-4.5L11 5m-6 6-1.5 1.5M13.5 12.5 12 11M5 5 3.5 3.5"/><circle cx="8" cy="8" r="3"/></svg>
+                    <span class="font-semibold">{{ liveSun.sunset === 'always' ? 'No rise' : liveSun.sunset === 'never' ? '--:--' : liveSun.sunset }}</span>
+                </span>
             </div>
             <div class="text-right border-l border-border-light pl-4">
                 <div class="text-sm font-semibold tabular-nums font-sans">{{ clock }}</div>
@@ -52,28 +62,28 @@
                 <div class="helm-reading">
                     <span class="helm-reading__label text-teal">SOG</span>
                     <div class="helm-reading__row">
-                        <span class="helm-reading__value text-teal">{{ fmt(liveBoat?.speed_sog) }}</span>
+                        <span class="helm-reading__value text-teal">{{ fmt(animSog.value) }}</span>
                         <span class="helm-reading__unit">kn</span>
                     </div>
                 </div>
                 <div class="helm-reading">
                     <span class="helm-reading__label text-teal">SOW</span>
                     <div class="helm-reading__row">
-                        <span class="helm-reading__value text-teal">{{ fmt(liveBoat?.speed_stw) }}</span>
+                        <span class="helm-reading__value text-teal">{{ fmt(animStw.value) }}</span>
                         <span class="helm-reading__unit">kn</span>
                     </div>
                 </div>
                 <div class="helm-reading">
                     <span class="helm-reading__label text-blue">Depth</span>
                     <div class="helm-reading__row">
-                        <span class="helm-reading__value text-blue">{{ fmt(liveBoat?.depth) }}</span>
+                        <span class="helm-reading__value text-blue">{{ fmt(animDepth.value) }}</span>
                         <span class="helm-reading__unit">m</span>
                     </div>
                 </div>
                 <div class="helm-reading">
                     <span class="helm-reading__label">Log</span>
                     <div class="helm-reading__row">
-                        <span class="helm-reading__value">{{ liveBoat?.trip_log != null ? fmt(liveBoat.trip_log, 0) : '—' }}</span>
+                        <span class="helm-reading__value">{{ liveBoat?.trip_log != null ? fmt(animLog.value, 0) : '—' }}</span>
                         <span class="helm-reading__unit">nm</span>
                     </div>
                 </div>
@@ -95,25 +105,25 @@
                 <div class="helm-reading">
                     <span class="helm-reading__label" style="color: var(--color-teal)">Heading</span>
                     <div class="helm-reading__row">
-                        <span class="helm-reading__value text-teal">{{ fmt(liveBoat?.heading, 0) }}</span>
+                        <span class="helm-reading__value text-teal">{{ fmt(animHdg.value, 0) }}</span>
                         <span class="helm-reading__unit">°</span>
                     </div>
                 </div>
                 <div class="helm-reading">
                     <span class="helm-reading__label" style="color: var(--color-amber)">True Wind</span>
                     <div class="helm-reading__row">
-                        <span class="helm-reading__value text-amber">{{ fmt(liveBoat?.wind_speed_true) }}</span>
+                        <span class="helm-reading__value text-amber">{{ fmt(animTws.value) }}</span>
                         <span class="helm-reading__unit">kn</span>
                     </div>
-                    <div class="helm-reading__sub">{{ twd != null ? fmt(twd, 0) + '°' : '—' }}</div>
+                    <div class="helm-reading__sub">{{ twd != null ? fmt(animTwd.value, 0) + '°' : '—' }}</div>
                 </div>
                 <div class="helm-reading">
                     <span class="helm-reading__label" style="color: var(--color-teal); opacity: 0.65">Apparent Wind</span>
                     <div class="helm-reading__row">
-                        <span class="helm-reading__value" style="color: var(--color-teal); opacity: 0.65">{{ fmt(liveBoat?.wind_speed_apparent) }}</span>
+                        <span class="helm-reading__value" style="color: var(--color-teal); opacity: 0.65">{{ fmt(animAws.value) }}</span>
                         <span class="helm-reading__unit">kn</span>
                     </div>
-                    <div class="helm-reading__sub">{{ liveBoat?.wind_angle_apparent != null ? fmt(Math.abs(liveBoat.wind_angle_apparent), 0) + '°' : '—' }}</div>
+                    <div class="helm-reading__sub">{{ liveBoat?.wind_angle_apparent != null ? fmt(Math.abs(animAwa.value), 0) + '°' : '—' }}</div>
                 </div>
                 <div class="helm-pos-badge" :style="{ '--pos-color': pointOfSailColor }" v-if="pointOfSailText">
                     {{ pointOfSailText }}
@@ -181,7 +191,7 @@
         <div class="journey-sidebar p-4 flex flex-col gap-4">
             <div class="journey-reading">
                 <span class="journey-reading__label">DTW</span>
-                <span class="journey-reading__value text-blue">{{ liveBoat?.nav_wp_distance != null ? fmt(liveBoat.nav_wp_distance, 1) : '—' }}</span>
+                <span class="journey-reading__value text-blue">{{ liveBoat?.nav_wp_distance != null ? fmt(animDtw.value, 1) : '—' }}</span>
                 <span class="journey-reading__unit">nm</span>
             </div>
             <div class="journey-reading">
@@ -221,6 +231,7 @@ import LevelBar from '@/Components/Admin/LevelBar.vue';
 import Sparkline from '@/Components/Admin/Sparkline.vue';
 import { fmt, fmtDuration } from '@/composables/useFormatters.js';
 import { useScarletMetrics } from '@/composables/useScarletMetrics.js';
+import { useSpringValue, useAngleSpring } from '@/composables/useSpringValue.js';
 
 const props = defineProps({
     boat: Object,
@@ -233,6 +244,7 @@ const props = defineProps({
     routeWaypoints: { type: Array, default: () => [] },
     gpsTrack: { type: Array, default: () => [] },
     recentJourneys: { type: Array, default: () => [] },
+    sun: Object,
     streamOnline: Boolean,
     streamPublisher: Boolean,
     timestamp: String,
@@ -258,15 +270,29 @@ const {
     wxWindSpeed,
     wxWaveHeight,
     wxWavePeriod,
+    sun: liveSun,
     clock,
     clockDate,
     initMap,
     addMapTarget,
 } = useScarletMetrics({
     initialMetrics: { boat: props.boat, gps: props.gps, weather: props.weather, settings: props.settings },
+    initialSun: props.sun,
     gpsTrack: props.gpsTrack,
     routeWaypoints: routeWaypointsArr.value,
 });
+
+// ── Animated instrument values ───────────────────────────────────────────────
+const animSog = useSpringValue(() => liveBoat.value?.speed_sog);
+const animStw = useSpringValue(() => liveBoat.value?.speed_stw);
+const animDepth = useSpringValue(() => liveBoat.value?.depth);
+const animLog = useSpringValue(() => liveBoat.value?.trip_log);
+const animTws = useSpringValue(() => liveBoat.value?.wind_speed_true);
+const animAws = useSpringValue(() => liveBoat.value?.wind_speed_apparent);
+const animDtw = useSpringValue(() => liveBoat.value?.nav_wp_distance);
+const animHdg = useAngleSpring(() => liveBoat.value?.heading);
+const animTwd = useAngleSpring(() => liveBoat.value?.wind_direction_true);
+const animAwa = useAngleSpring(() => liveBoat.value?.wind_angle_apparent);
 
 // ── Map ──────────────────────────────────────────────────────────────────────
 const mapEl = ref(null);
@@ -401,6 +427,11 @@ const wxGradient = computed(() => {
     height: 8px;
     border-radius: 50%;
     flex-shrink: 0;
+    transition: background-color 0.4s ease-out, box-shadow 0.4s ease-out;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .health-dot { transition: none; }
 }
 .health-dot--green { background: var(--color-green); box-shadow: 0 0 5px oklch(0.48 0.16 150 / 0.4); }
 .health-dot--amber { background: oklch(0.7 0.18 70); box-shadow: 0 0 5px oklch(0.7 0.18 70 / 0.4); }

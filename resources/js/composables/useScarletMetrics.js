@@ -19,6 +19,7 @@ export function useScarletMetrics(options = {}) {
     const boat = ref(initialMetrics?.boat ?? {});
     const gps = ref(initialMetrics?.gps ?? {});
     const weather = ref(initialMetrics?.weather ?? null);
+    const sun = ref(options.initialSun ?? null);
     const lastUpdate = ref(initialMetrics ? new Date() : null);
     const clock = ref('--:--');
     const clockDate = ref('');
@@ -58,7 +59,8 @@ export function useScarletMetrics(options = {}) {
 
     const lastUpdateText = computed(() => {
         if (!lastUpdate.value) return '';
-        return lastUpdate.value.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
+        const tz = weather.value?.timezone || 'UTC';
+        return new Intl.DateTimeFormat('en-GB', { hour: '2-digit', minute: '2-digit', timeZone: tz }).format(lastUpdate.value);
     });
 
     // ── Weather computed ─────────────────────────────────────────────────
@@ -195,6 +197,7 @@ export function useScarletMetrics(options = {}) {
             boat.value = data.boat;
             gps.value = data.gps;
             if (data.weather) weather.value = data.weather;
+            if (data.sun) sun.value = data.sun;
             if (data.settings) {
                 portName.value = data.settings.port_name ?? '';
                 passageFrom.value = data.settings.passage_from ?? '';
@@ -221,7 +224,7 @@ export function useScarletMetrics(options = {}) {
     onUnmounted(cleanup);
 
     return {
-        boat, gps, weather, lastUpdate,
+        boat, gps, weather, sun, lastUpdate,
         clock, clockDate,
         coordText, isOffline, statusText, statusClass, lastUpdateText,
         wxTemp, wxCondition, wxIcon, wxSeaTemp, wxWindSpeed, wxWindDir, wxWaveHeight, wxWavePeriod,
