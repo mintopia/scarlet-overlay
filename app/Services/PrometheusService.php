@@ -234,10 +234,14 @@ class PrometheusService
     public function queryRange(string $promql, ?string $duration, string $step = '15s', ?int $start = null, ?int $end = null): array
     {
         try {
+            $stepSeconds = (int) $step;
+            $rangeStart = $start ?? ($duration ? now()->sub(CarbonInterval::fromString($duration))->timestamp : now()->subDay()->timestamp);
+            $rangeEnd = $end ?? now()->timestamp;
+
             $response = Http::timeout(10)->get("{$this->baseUrl}/api/v1/query_range", [
                 'query' => $promql,
-                'start' => $start ?? ($duration ? now()->sub(CarbonInterval::fromString($duration))->timestamp : now()->subDay()->timestamp),
-                'end' => $end ?? now()->timestamp,
+                'start' => $rangeStart,
+                'end' => $rangeEnd,
                 'step' => $step,
             ]);
 
@@ -250,10 +254,18 @@ class PrometheusService
                 return [];
             }
 
-            return collect($result[0]['values'])->map(fn ($v) => [
-                'timestamp' => (int) $v[0],
-                'value' => (float) $v[1],
-            ])->all();
+            $byTimestamp = collect($result[0]['values'])->keyBy(fn ($v) => (int) $v[0]);
+
+            $filled = [];
+            for ($ts = $rangeStart; $ts <= $rangeEnd; $ts += $stepSeconds) {
+                $point = $byTimestamp->get($ts);
+                $filled[] = [
+                    'timestamp' => $ts,
+                    'value' => $point !== null ? (float) $point[1] : null,
+                ];
+            }
+
+            return $filled;
         } catch (\Throwable $e) {
             Log::warning("Prometheus range query failed [{$promql}]: {$e->getMessage()}");
 
@@ -270,11 +282,12 @@ class PrometheusService
             if (! empty($fallbackData)) {
                 $primaryByTs = collect($data)->keyBy('timestamp');
                 foreach ($fallbackData as $point) {
-                    if (! $primaryByTs->has($point['timestamp'])) {
-                        $data[] = $point;
+                    $existing = $primaryByTs->get($point['timestamp']);
+                    if (! $existing || $existing['value'] === null) {
+                        $primaryByTs[$point['timestamp']] = $point;
                     }
                 }
-                usort($data, fn ($a, $b) => $a['timestamp'] <=> $b['timestamp']);
+                $data = $primaryByTs->sortKeys()->values()->all();
             }
 
             return $data;

@@ -229,9 +229,12 @@ class MetricsService
 
         $raw = [];
         foreach ($latData as $point) {
+            if ($point['value'] === null) {
+                continue;
+            }
             $ts = $point['timestamp'];
             $lng = $lngByTs->get($ts);
-            if (! $lng) {
+            if (! $lng || $lng['value'] === null) {
                 continue;
             }
 
@@ -389,12 +392,15 @@ class MetricsService
 
         $result = [];
         foreach ($aws as $point) {
+            if ($point['value'] === null) {
+                continue;
+            }
             $ts = $point['timestamp'];
             $awaPoint = $awaByTs->get($ts);
             $stwPoint = $stwByTs->get($ts);
             $hdgPoint = $hdgByTs->get($ts);
 
-            if (! $awaPoint || ! $stwPoint || ! $hdgPoint) {
+            if ($awaPoint['value'] === null || $stwPoint['value'] === null || $hdgPoint['value'] === null) {
                 continue;
             }
 
