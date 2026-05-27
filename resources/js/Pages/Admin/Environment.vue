@@ -32,7 +32,10 @@
                 <div v-if="weather.forecast?.length" class="wx-forecast">
                     <div v-for="slot in weather.forecast.slice(0, 8)" :key="slot.time" class="wx-fc-slot">
                         <span class="wx-fc-time">{{ formatHour(slot.time) }}</span>
+                        <span class="wx-fc-icon" :title="wmoLabel(slot.code)">{{ wmoIcon(slot.code) }}</span>
                         <span class="wx-fc-temp">{{ Math.round(slot.temp) }}°</span>
+                        <span class="wx-fc-wind" :title="slot.gusts != null ? `Gusts ${Math.round(slot.gusts)} kn` : ''">{{ slot.wind != null ? Math.round(slot.wind) : '—' }}<span class="wx-fc-wind-unit">kn</span></span>
+                        <span v-if="slot.precip > 0" class="wx-fc-rain">{{ slot.precip.toFixed(1) }}mm</span>
                     </div>
                 </div>
             </div>
@@ -74,26 +77,46 @@
 
         <!-- Sea -->
         <button
-            class="sea-row mb-4"
-            :class="{ 'sea-row--selected': selectedZone === 'sea' }"
+            class="sea-card mb-4"
+            :class="{ 'sea-card--selected': selectedZone === 'sea' }"
             @click="selectZone('sea')"
         >
-            <div class="sea-row__left">
-                <span class="sea-row__label">Sea</span>
-                <span class="sea-row__temp">{{ seaTemp }}</span>
+            <div class="sea-card__header">
+                <span class="sea-card__label">Sea State</span>
+                <span class="sea-card__temp">{{ seaTemp }}</span>
             </div>
-            <div v-if="hasWaves" class="sea-row__waves">
-                <span class="sea-row__wave-stat">{{ wxWaveHeight }} <span class="sea-row__wave-unit">height</span></span>
-                <span class="sea-row__wave-stat">{{ wxWavePeriod }} <span class="sea-row__wave-unit">period</span></span>
-                <span class="sea-row__wave-stat">{{ wxWaveDir }} <span class="sea-row__wave-unit">direction</span></span>
+            <div v-if="hasWaves" class="sea-card__waves">
+                <div class="sea-card__wave-item">
+                    <span class="sea-card__wave-value">{{ wxWaveHeight }}</span>
+                    <span class="sea-card__wave-label">Height</span>
+                </div>
+                <div class="sea-card__wave-divider"></div>
+                <div class="sea-card__wave-item">
+                    <span class="sea-card__wave-value">{{ wxWavePeriod }}</span>
+                    <span class="sea-card__wave-label">Period</span>
+                </div>
+                <div class="sea-card__wave-divider"></div>
+                <div class="sea-card__wave-item">
+                    <span class="sea-card__wave-value">{{ wxWaveDir }}</span>
+                    <span class="sea-card__wave-label">Direction</span>
+                </div>
+                <div v-if="wxCurrentSpeed !== '—'" class="sea-card__wave-divider"></div>
+                <div v-if="wxCurrentSpeed !== '—'" class="sea-card__wave-item">
+                    <span class="sea-card__wave-value">{{ wxCurrentSpeed }}</span>
+                    <span class="sea-card__wave-label">Current</span>
+                </div>
+            </div>
+            <div v-else class="sea-card__calm">
+                <span>Calm seas</span>
             </div>
             <Sparkline
                 v-if="sparklines.sea?.length"
                 :data="sparklines.sea"
                 color="var(--color-blue)"
-                :height="22"
+                :height="28"
+                :fill="true"
                 :showDot="true"
-                class="sea-row__spark"
+                class="sea-card__spark"
             />
         </button>
 
@@ -245,6 +268,46 @@ const hasWaves = computed(() => {
     const h = props.weather?.waves?.height
     return h != null && h > 0
 })
+
+const wxCurrentSpeed = computed(() => {
+    return props.weather?.current?.speed != null ? `${Number(props.weather.current.speed).toFixed(1)} kn` : '—'
+})
+
+const wmoIcons = {
+    0: '☀️', 1: '🌤️', 2: '⛅', 3: '☁️',
+    45: '🌫️', 48: '🌫️',
+    51: '🌦️', 53: '🌦️', 55: '🌧️',
+    56: '🌧️', 57: '🌧️',
+    61: '🌦️', 63: '🌧️', 65: '🌧️',
+    66: '🌧️', 67: '🌧️',
+    71: '🌨️', 73: '🌨️', 75: '❄️',
+    77: '❄️',
+    80: '🌦️', 81: '🌧️', 82: '🌧️',
+    85: '🌨️', 86: '🌨️',
+    95: '⛈️', 96: '⛈️', 99: '⛈️',
+}
+
+const wmoLabels = {
+    0: 'Clear', 1: 'Mostly clear', 2: 'Partly cloudy', 3: 'Overcast',
+    45: 'Fog', 48: 'Rime fog',
+    51: 'Light drizzle', 53: 'Drizzle', 55: 'Heavy drizzle',
+    56: 'Freezing drizzle', 57: 'Heavy freezing drizzle',
+    61: 'Light rain', 63: 'Rain', 65: 'Heavy rain',
+    66: 'Freezing rain', 67: 'Heavy freezing rain',
+    71: 'Light snow', 73: 'Snow', 75: 'Heavy snow',
+    77: 'Snow grains',
+    80: 'Light showers', 81: 'Showers', 82: 'Heavy showers',
+    85: 'Light snow showers', 86: 'Heavy snow showers',
+    95: 'Thunderstorm', 96: 'Thunderstorm w/ hail', 99: 'Severe thunderstorm',
+}
+
+function wmoIcon(code) {
+    return wmoIcons[code] ?? '☁️'
+}
+
+function wmoLabel(code) {
+    return wmoLabels[code] ?? 'Unknown'
+}
 
 function degreesToCompass(deg) {
     if (deg == null) return '—'
@@ -470,8 +533,12 @@ fetchSparklines()
     flex: 1;
     text-align: center;
     background: var(--color-bg);
-    border-radius: 6px;
-    padding: 6px 4px;
+    border-radius: 8px;
+    padding: 8px 4px 6px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
 }
 
 .wx-fc-time {
@@ -483,6 +550,11 @@ fetchSparklines()
     display: block;
 }
 
+.wx-fc-icon {
+    font-size: 16px;
+    line-height: 1;
+}
+
 .wx-fc-temp {
     font-family: var(--font-sans);
     font-size: 14px;
@@ -490,18 +562,43 @@ fetchSparklines()
     color: var(--color-text-secondary);
 }
 
-/* Sea row */
-.sea-row {
+.wx-fc-wind {
+    font-family: var(--font-sans);
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--color-text-dim);
+    font-variant-numeric: tabular-nums;
+}
+
+.wx-fc-wind-unit {
+    font-size: 9px;
+    font-weight: 500;
+    opacity: 0.7;
+    margin-left: 1px;
+}
+
+.wx-fc-rain {
+    font-family: var(--font-sans);
+    font-size: 10px;
+    font-weight: 600;
+    color: var(--color-blue);
+    background: oklch(0.65 0.12 240 / 0.1);
+    border-radius: 3px;
+    padding: 1px 4px;
+}
+
+/* Sea card */
+.sea-card {
     display: flex;
-    align-items: center;
-    gap: 16px;
+    flex-direction: column;
+    gap: 12px;
     width: 100%;
-    background: var(--color-surface);
-    border: 1px solid var(--color-border);
-    border-radius: 12px;
-    padding: 14px 20px;
+    background: linear-gradient(135deg, oklch(0.97 0.02 220), oklch(0.95 0.03 210));
+    border: 1px solid oklch(0.80 0.06 220 / 0.3);
+    border-radius: 14px;
+    padding: 18px 22px;
     cursor: pointer;
-    transition: border-color 0.15s, background 0.15s;
+    transition: border-color 0.15s, box-shadow 0.15s;
     -webkit-appearance: none;
     appearance: none;
     font-family: inherit;
@@ -509,31 +606,32 @@ fetchSparklines()
     text-align: left;
 }
 
-.sea-row:hover {
-    border-color: oklch(0.80 0.01 205);
+.sea-card:hover {
+    border-color: oklch(0.65 0.10 220 / 0.4);
+    box-shadow: 0 2px 12px oklch(0.50 0.10 220 / 0.08);
 }
 
-.sea-row:focus-visible {
+.sea-card:focus-visible {
     outline: 2px solid var(--color-scarlet);
     outline-offset: 2px;
 }
 
-.sea-row--selected {
+.sea-card--selected {
     border-color: oklch(0.48 0.22 25 / 0.3);
-    background: oklch(0.48 0.22 25 / 0.02);
+    background: linear-gradient(135deg, oklch(0.97 0.01 25), oklch(0.95 0.02 30));
 }
 
-.sea-row--selected .sea-row__label {
+.sea-card--selected .sea-card__label {
     color: var(--color-scarlet);
 }
 
-.sea-row__left {
+.sea-card__header {
     display: flex;
     align-items: baseline;
-    gap: 12px;
+    justify-content: space-between;
 }
 
-.sea-row__label {
+.sea-card__label {
     font-family: var(--font-body);
     font-size: 11px;
     font-weight: 800;
@@ -543,39 +641,63 @@ fetchSparklines()
     transition: color 0.15s;
 }
 
-.sea-row__temp {
+.sea-card__temp {
     font-family: var(--font-sans);
-    font-size: 20px;
+    font-size: 26px;
     font-weight: 700;
     color: var(--color-blue);
-    letter-spacing: -0.3px;
+    letter-spacing: -0.5px;
     font-variant-numeric: tabular-nums;
 }
 
-.sea-row__waves {
+.sea-card__waves {
     display: flex;
-    gap: 14px;
-    margin-left: auto;
+    align-items: center;
+    gap: 0;
 }
 
-.sea-row__wave-stat {
+.sea-card__wave-item {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+}
+
+.sea-card__wave-value {
     font-family: var(--font-sans);
-    font-size: 13px;
-    font-weight: 600;
-    color: var(--color-text-secondary);
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--color-text-primary);
     font-variant-numeric: tabular-nums;
 }
 
-.sea-row__wave-unit {
+.sea-card__wave-label {
     font-family: var(--font-body);
-    font-size: 11px;
-    font-weight: 500;
+    font-size: 10px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 1px;
     color: var(--color-text-dim);
 }
 
-.sea-row__spark {
+.sea-card__wave-divider {
+    width: 1px;
+    height: 28px;
+    background: oklch(0.70 0.06 220 / 0.25);
     flex-shrink: 0;
-    margin-left: auto;
+}
+
+.sea-card__calm {
+    font-family: var(--font-body);
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--color-text-dim);
+    font-style: italic;
+}
+
+.sea-card__spark {
+    margin-top: 2px;
 }
 
 /* Detail drawer */
@@ -734,7 +856,12 @@ fetchSparklines()
         gap: 12px;
     }
 
-    .sea-row__waves {
+    .sea-card__waves {
+        flex-wrap: wrap;
+        gap: 8px;
+    }
+
+    .sea-card__wave-divider {
         display: none;
     }
 

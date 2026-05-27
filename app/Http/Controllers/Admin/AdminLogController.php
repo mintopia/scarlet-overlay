@@ -60,6 +60,12 @@ class AdminLogController extends Controller
         return back();
     }
 
+    private function filterNullIsland(?float $lat, ?float $lng): bool
+    {
+        return $lat === null || $lng === null
+            || (abs($lat) < 0.1 && abs($lng) < 0.1);
+    }
+
     private function buildRows($logs, bool $isJourney): array
     {
         $rows = [];
@@ -77,8 +83,8 @@ class AdminLogController extends Controller
                 'wind_direction' => $log->wind_direction !== null ? (float) $log->wind_direction : null,
                 'wind_speed' => $log->wind_speed !== null ? (float) $log->wind_speed : null,
                 'pressure' => $log->pressure !== null ? (float) $log->pressure : null,
-                'latitude' => $log->latitude !== null ? (float) $log->latitude : null,
-                'longitude' => $log->longitude !== null ? (float) $log->longitude : null,
+                'latitude' => $this->filterNullIsland($log->latitude, $log->longitude) ? null : ($log->latitude !== null ? (float) $log->latitude : null),
+                'longitude' => $this->filterNullIsland($log->latitude, $log->longitude) ? null : ($log->longitude !== null ? (float) $log->longitude : null),
                 'wp_distance' => $log->wp_distance !== null ? (float) $log->wp_distance : null,
                 'wp_ttg' => $log->wp_ttg !== null ? (float) $log->wp_ttg : null,
                 'battery_soc' => $log->battery_soc !== null ? (float) $log->battery_soc : null,

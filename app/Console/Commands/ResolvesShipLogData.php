@@ -9,6 +9,11 @@ trait ResolvesShipLogData
         $latitude = $this->nonZero($values['latitude']) ?? $this->nonZero($values['signalk_latitude'] ?? null);
         $longitude = $this->nonZero($values['longitude']) ?? $this->nonZero($values['signalk_longitude'] ?? null);
 
+        if ($latitude !== null && $longitude !== null && abs($latitude) < 0.1 && abs($longitude) < 0.1) {
+            $latitude = null;
+            $longitude = null;
+        }
+
         $trueWind = $this->calculateTrueWind(
             $values['aws'],
             $values['awa'],

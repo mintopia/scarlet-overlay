@@ -10,7 +10,7 @@
                     <th class="col-num group-end" title="Distance run this hour (through water)">Dist<br><span class="th-unit">nm</span></th>
                     <th class="col-num" title="True wind direction">Wind<br><span class="th-unit">dir</span></th>
                     <th class="col-num" title="True wind speed (Beaufort scale)">Wind<br><span class="th-unit">bft</span></th>
-                    <th class="col-num col-baro group-end" title="Barometric pressure (forecast)">Baro<br><span class="th-unit">hPa</span></th>
+                    <th class="col-num col-baro group-end" title="Barometric pressure">Baro<br><span class="th-unit">hPa</span></th>
                     <th class="col-pos group-end" title="Latitude and longitude">Lat<br>Long</th>
                     <th class="col-num" title="Distance to next waypoint">WP<br><span class="th-unit">nm</span></th>
                     <th class="col-num" title="Distance Made Good toward waypoint this hour">DMG<br><span class="th-unit">nm</span></th>
@@ -458,7 +458,7 @@ function knotsToBeaufort(kn) {
 .col-time { text-align: left !important; cursor: default; }
 .col-num { text-align: right; }
 .col-pos { text-align: right; font-size: 11px; }
-.col-baro { font-style: italic; opacity: 0.6; }
+.col-baro { }
 
 .col-note {
     width: 28px;

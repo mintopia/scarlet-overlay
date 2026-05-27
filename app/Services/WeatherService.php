@@ -61,7 +61,7 @@ class WeatherService
             'longitude' => $longitude,
             'latitude' => $latitude,
             'current' => 'weather_code,temperature_2m,is_day,wind_speed_10m,wind_gusts_10m,wind_direction_10m,surface_pressure',
-            'hourly' => 'temperature_2m,weather_code',
+            'hourly' => 'temperature_2m,weather_code,wind_speed_10m,wind_gusts_10m,precipitation',
             'forecast_hours' => 24,
             'wind_speed_unit' => 'kn',
             'timezone' => 'auto',
@@ -100,6 +100,9 @@ class WeatherService
         $hourlyTimes = $forecast['hourly']['time'] ?? [];
         $hourlyTemps = $forecast['hourly']['temperature_2m'] ?? [];
         $hourlyCodes = $forecast['hourly']['weather_code'] ?? [];
+        $hourlyWind = $forecast['hourly']['wind_speed_10m'] ?? [];
+        $hourlyGusts = $forecast['hourly']['wind_gusts_10m'] ?? [];
+        $hourlyPrecip = $forecast['hourly']['precipitation'] ?? [];
         $now = now($weather->timezone);
 
         foreach ($hourlyTimes as $i => $time) {
@@ -111,6 +114,9 @@ class WeatherService
                 'time' => $hour->toIso8601String(),
                 'temp' => $hourlyTemps[$i] ?? null,
                 'code' => $hourlyCodes[$i] ?? 0,
+                'wind' => $hourlyWind[$i] ?? null,
+                'gusts' => $hourlyGusts[$i] ?? null,
+                'precip' => $hourlyPrecip[$i] ?? null,
             ];
         }
 

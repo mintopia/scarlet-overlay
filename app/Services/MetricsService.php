@@ -255,6 +255,11 @@ class MetricsService
             $row['course'] = $row['cog'] !== null ? rad2deg($row['cog']) : ($row['heading'] !== null ? rad2deg($row['heading']) : null);
             unset($row['aws'], $row['awa'], $row['stw'], $row['heading'], $row['cog']);
 
+            if ($this->isNullIsland($row['latitude'] ?? null, $row['longitude'] ?? null)) {
+                $row['latitude'] = null;
+                $row['longitude'] = null;
+            }
+
             $rows[] = $row;
         }
 
