@@ -195,7 +195,7 @@ class MetricsService
         $lngByTs = collect($lngData)->keyBy('timestamp');
         $sogByTs = collect($sogData)->keyBy('timestamp');
 
-        $track = [];
+        $raw = [];
         foreach ($latData as $point) {
             $ts = $point['timestamp'];
             $lng = $lngByTs->get($ts);
@@ -208,15 +208,30 @@ class MetricsService
             }
 
             $sog = $sogByTs->get($ts);
-
-            $track[] = [
-                $point['value'],
-                $lng['value'],
-                $sog['value'] ?? 0,
-            ];
+            $raw[] = [$point['value'], $lng['value'], $sog['value'] ?? 0];
         }
 
-        return $track;
+        return $this->filterTrackOutliers($raw);
+    }
+
+    private function filterTrackOutliers(array $points): array
+    {
+        if (count($points) < 3) {
+            return $points;
+        }
+
+        $lats = array_column($points, 0);
+        sort($lats);
+        $medLat = $lats[intdiv(count($lats), 2)];
+        $lngs = array_column($points, 1);
+        sort($lngs);
+        $medLng = $lngs[intdiv(count($lngs), 2)];
+
+        return array_values(array_filter($points, function ($p) use ($medLat, $medLng) {
+            $d = sqrt(($p[0] - $medLat) ** 2 + ($p[1] - $medLng) ** 2);
+
+            return $d < 2.0;
+        }));
     }
 
     public function getLogData(?string $duration = '24h', string $step = '3600', ?int $start = null, ?int $end = null): array
