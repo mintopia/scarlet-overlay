@@ -62,28 +62,28 @@
                 <div class="helm-reading">
                     <span class="helm-reading__label text-teal">SOG</span>
                     <div class="helm-reading__row">
-                        <span class="helm-reading__value text-teal">{{ fmt(animSog.value) }}</span>
+                        <span class="helm-reading__value text-teal">{{ fmt(animSog) }}</span>
                         <span class="helm-reading__unit">kn</span>
                     </div>
                 </div>
                 <div class="helm-reading">
                     <span class="helm-reading__label text-teal">SOW</span>
                     <div class="helm-reading__row">
-                        <span class="helm-reading__value text-teal">{{ fmt(animStw.value) }}</span>
+                        <span class="helm-reading__value text-teal">{{ fmt(animStw) }}</span>
                         <span class="helm-reading__unit">kn</span>
                     </div>
                 </div>
                 <div class="helm-reading">
                     <span class="helm-reading__label text-blue">Depth</span>
                     <div class="helm-reading__row">
-                        <span class="helm-reading__value text-blue">{{ fmt(animDepth.value) }}</span>
+                        <span class="helm-reading__value text-blue">{{ fmt(animDepth) }}</span>
                         <span class="helm-reading__unit">m</span>
                     </div>
                 </div>
                 <div class="helm-reading">
                     <span class="helm-reading__label">Log</span>
                     <div class="helm-reading__row">
-                        <span class="helm-reading__value">{{ liveBoat?.trip_log != null ? fmt(animLog.value, 0) : '—' }}</span>
+                        <span class="helm-reading__value">{{ liveBoat?.trip_log != null ? fmt(animLog, 0) : '—' }}</span>
                         <span class="helm-reading__unit">nm</span>
                     </div>
                 </div>
@@ -105,25 +105,25 @@
                 <div class="helm-reading">
                     <span class="helm-reading__label" style="color: var(--color-teal)">Heading</span>
                     <div class="helm-reading__row">
-                        <span class="helm-reading__value text-teal">{{ fmt(animHdg.value, 0) }}</span>
+                        <span class="helm-reading__value text-teal">{{ fmt(animHdg, 0) }}</span>
                         <span class="helm-reading__unit">°</span>
                     </div>
                 </div>
                 <div class="helm-reading">
                     <span class="helm-reading__label" style="color: var(--color-amber)">True Wind</span>
                     <div class="helm-reading__row">
-                        <span class="helm-reading__value text-amber">{{ fmt(animTws.value) }}</span>
+                        <span class="helm-reading__value text-amber">{{ fmt(animTws) }}</span>
                         <span class="helm-reading__unit">kn</span>
                     </div>
-                    <div class="helm-reading__sub">{{ twd != null ? fmt(animTwd.value, 0) + '°' : '—' }}</div>
+                    <div class="helm-reading__sub">{{ twd != null ? fmt(animTwd, 0) + '°' : '—' }}</div>
                 </div>
                 <div class="helm-reading">
                     <span class="helm-reading__label" style="color: var(--color-teal); opacity: 0.65">Apparent Wind</span>
                     <div class="helm-reading__row">
-                        <span class="helm-reading__value" style="color: var(--color-teal); opacity: 0.65">{{ fmt(animAws.value) }}</span>
+                        <span class="helm-reading__value" style="color: var(--color-teal); opacity: 0.65">{{ fmt(animAws) }}</span>
                         <span class="helm-reading__unit">kn</span>
                     </div>
-                    <div class="helm-reading__sub">{{ liveBoat?.wind_angle_apparent != null ? fmt(Math.abs(animAwa.value), 0) + '°' : '—' }}</div>
+                    <div class="helm-reading__sub">{{ liveBoat?.wind_angle_apparent != null ? fmt(Math.abs(animAwa), 0) + '°' : '—' }}</div>
                 </div>
                 <div class="helm-pos-badge" :style="{ '--pos-color': pointOfSailColor }" v-if="pointOfSailText">
                     {{ pointOfSailText }}
@@ -191,7 +191,7 @@
         <div class="journey-sidebar p-4 flex flex-col gap-4">
             <div class="journey-reading">
                 <span class="journey-reading__label">DTW</span>
-                <span class="journey-reading__value text-blue">{{ liveBoat?.nav_wp_distance != null ? fmt(animDtw.value, 1) : '—' }}</span>
+                <span class="journey-reading__value text-blue">{{ liveBoat?.nav_wp_distance != null ? fmt(animDtw, 1) : '—' }}</span>
                 <span class="journey-reading__unit">nm</span>
             </div>
             <div class="journey-reading">
