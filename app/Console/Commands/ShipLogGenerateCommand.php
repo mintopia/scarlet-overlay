@@ -28,20 +28,17 @@ class ShipLogGenerateCommand extends Command
         }
 
         $queries = config('scarlet.metrics.mappings.log');
+        $values = [];
 
         try {
-            $values = $prometheus->queryMultipleAt($queries, $timestamp);
+            foreach ($queries as $key => $promql) {
+                $data = $prometheus->queryRange($promql, null, $stepSeconds.'s', $timestamp, $timestamp);
+                $values[$key] = ! empty($data) ? $data[0]['value'] : null;
+            }
         } catch (\Throwable $e) {
-            Log::error('Ship log: Prometheus pool query failed', ['error' => $e->getMessage()]);
+            Log::error('Ship log: Prometheus query failed', ['error' => $e->getMessage()]);
             $this->error('Prometheus query failed: '.$e->getMessage());
             $values = array_fill_keys(array_keys($queries), null);
-        }
-
-        $allNull = collect($values)->every(fn ($v) => $v === null);
-        if ($allNull) {
-            foreach ($queries as $key => $promql) {
-                $values[$key] = $prometheus->queryLastOverTimeAt($promql, $timestamp, '65m');
-            }
         }
 
         $logData = $this->buildLogData($values);
