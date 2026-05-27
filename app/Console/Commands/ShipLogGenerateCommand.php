@@ -6,6 +6,7 @@ use App\Models\Journey;
 use App\Models\ShipLog;
 use App\Services\PrometheusService;
 use Illuminate\Console\Command;
+use Illuminate\Support\Facades\Log;
 
 class ShipLogGenerateCommand extends Command
 {
@@ -27,17 +28,43 @@ class ShipLogGenerateCommand extends Command
         }
 
         $queries = config('scarlet.metrics.mappings.log');
-        $values = $prometheus->queryMultipleAt($queries, $timestamp);
+
+        try {
+            $values = $prometheus->queryMultipleAt($queries, $timestamp);
+        } catch (\Throwable $e) {
+            Log::error('Ship log: Prometheus pool query failed', ['error' => $e->getMessage()]);
+            $this->error('Prometheus query failed: '.$e->getMessage());
+            $values = array_fill_keys(array_keys($queries), null);
+        }
+
+        $allNull = collect($values)->every(fn ($v) => $v === null);
+        if ($allNull) {
+            foreach ($queries as $key => $promql) {
+                $values[$key] = $prometheus->queryLastOverTimeAt($promql, $timestamp, '65m');
+            }
+        }
 
         $logData = $this->buildLogData($values);
         $journey = Journey::current();
 
-        ShipLog::create(array_merge($logData, [
-            'journey_id' => $journey?->id,
-            'recorded_at' => date('Y-m-d H:i:s', $timestamp),
-        ]));
+        try {
+            ShipLog::create(array_merge($logData, [
+                'journey_id' => $journey?->id,
+                'recorded_at' => date('Y-m-d H:i:s', $timestamp),
+            ]));
+        } catch (\Throwable $e) {
+            Log::error('Ship log: failed to create entry', [
+                'timestamp' => date('Y-m-d H:i', $timestamp),
+                'error' => $e->getMessage(),
+                'data' => $logData,
+            ]);
+            $this->error('Failed to create log entry: '.$e->getMessage());
 
-        $this->info('Ship log entry created for '.date('Y-m-d H:i', $timestamp));
+            return self::FAILURE;
+        }
+
+        $filled = collect($logData)->filter(fn ($v) => $v !== null)->count();
+        $this->info('Ship log entry created for '.date('Y-m-d H:i', $timestamp)." ({$filled}/".count($logData).' fields)');
 
         return self::SUCCESS;
     }

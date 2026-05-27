@@ -104,6 +104,8 @@ class ShipLogGenerateCommandTest extends TestCase
                 'water_level' => null,
                 'fuel_level' => null,
             ]);
+        $mock->shouldReceive('queryLastOverTimeAt')
+            ->andReturn(null);
 
         $this->artisan('ship-log:generate')->assertSuccessful();
 
@@ -137,6 +139,39 @@ class ShipLogGenerateCommandTest extends TestCase
         $log = ShipLog::first();
         $this->assertEqualsWithDelta(43.54, (float) $log->latitude, 0.01);
         $this->assertEqualsWithDelta(3.89, (float) $log->longitude, 0.01);
+    }
+
+    public function test_generate_falls_back_to_last_over_time_when_instant_query_returns_all_null(): void
+    {
+        $mock = $this->mock(PrometheusService::class);
+        $mock->shouldReceive('queryMultipleAt')
+            ->once()
+            ->andReturn(array_fill_keys([
+                'latitude', 'longitude', 'signalk_latitude', 'signalk_longitude',
+                'gps_heading', 'trip_log', 'aws', 'awa', 'stw', 'heading', 'cog',
+                'pressure', 'wp_distance', 'wp_ttg', 'battery_soc', 'water_level', 'fuel_level',
+            ], null));
+        $mock->shouldReceive('queryLastOverTimeAt')
+            ->andReturnUsing(function (string $promql) {
+                if (str_contains($promql, 'pressure')) {
+                    return 1015.3;
+                }
+                if (str_contains($promql, 'gps_latitude')) {
+                    return 50.75;
+                }
+                if (str_contains($promql, 'gps_longitude')) {
+                    return -1.54;
+                }
+
+                return null;
+            });
+
+        $this->artisan('ship-log:generate')->assertSuccessful();
+
+        $log = ShipLog::first();
+        $this->assertNotNull($log);
+        $this->assertEquals(1015.3, (float) $log->pressure);
+        $this->assertEqualsWithDelta(50.75, (float) $log->latitude, 0.01);
     }
 
     public function test_generate_falls_back_to_signalk_position_when_gps_null(): void
