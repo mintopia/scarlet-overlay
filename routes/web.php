@@ -27,6 +27,7 @@ Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard
 Route::get('/', fn () => redirect('/dashboard'));
 
 Route::get('/overlay', [OverlayController::class, 'index'])->name('overlay');
+Route::get('/camera', [OverlayController::class, 'camera'])->name('camera');
 Route::get('/snow', [HomeController::class, 'snow'])->name('snow');
 Route::get('/openseamap/{z}/{x}/{y}', [MapTileController::class, 'seamap'])->name('openseamap');
 Route::get('/openseamap-dark/{z}/{x}/{y}', [MapTileController::class, 'seamapDark'])->name('openseamap-dark');
