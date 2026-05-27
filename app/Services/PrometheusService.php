@@ -231,7 +231,7 @@ class PrometheusService
         return $wrapped !== $promql ? $wrapped : null;
     }
 
-    public function queryRange(string $promql, ?string $duration, string $step = '15s', ?int $start = null, ?int $end = null): array
+    public function queryRange(string $promql, ?string $duration, string $step = '15s', ?int $start = null, ?int $end = null, bool $fillGaps = true): array
     {
         try {
             $stepSeconds = (int) $step;
@@ -252,6 +252,13 @@ class PrometheusService
             $result = $response->json('data.result');
             if (empty($result)) {
                 return [];
+            }
+
+            if (! $fillGaps) {
+                return collect($result[0]['values'])->map(fn ($v) => [
+                    'timestamp' => (int) $v[0],
+                    'value' => (float) $v[1],
+                ])->all();
             }
 
             $byTimestamp = collect($result[0]['values'])->keyBy(fn ($v) => (int) $v[0]);

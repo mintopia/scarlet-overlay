@@ -215,26 +215,23 @@ class MetricsService
         $history = config('scarlet.metrics.mappings.history');
         $signalk = config('scarlet.metrics.mappings.signalk_position');
 
-        $latData = $this->prometheus->queryRange($signalk['latitude'], $duration, $step);
-        $lngData = $this->prometheus->queryRange($signalk['longitude'], $duration, $step);
+        $latData = $this->prometheus->queryRange($signalk['latitude'], $duration, $step, fillGaps: false);
+        $lngData = $this->prometheus->queryRange($signalk['longitude'], $duration, $step, fillGaps: false);
 
         if (empty($latData) || empty($lngData)) {
-            $latData = $this->prometheus->queryRange($history['track_latitude'], $duration, $step);
-            $lngData = $this->prometheus->queryRange($history['track_longitude'], $duration, $step);
+            $latData = $this->prometheus->queryRange($history['track_latitude'], $duration, $step, fillGaps: false);
+            $lngData = $this->prometheus->queryRange($history['track_longitude'], $duration, $step, fillGaps: false);
         }
-        $sogData = $this->prometheus->queryRange($history['track_sog'], $duration, $step);
+        $sogData = $this->prometheus->queryRange($history['track_sog'], $duration, $step, fillGaps: false);
 
         $lngByTs = collect($lngData)->keyBy('timestamp');
         $sogByTs = collect($sogData)->keyBy('timestamp');
 
         $raw = [];
         foreach ($latData as $point) {
-            if ($point['value'] === null) {
-                continue;
-            }
             $ts = $point['timestamp'];
             $lng = $lngByTs->get($ts);
-            if (! $lng || $lng['value'] === null) {
+            if (! $lng) {
                 continue;
             }
 
@@ -381,10 +378,10 @@ class MetricsService
 
     public function getTrueWindSeries(string $field, ?string $duration, string $step, ?int $start = null, ?int $end = null): array
     {
-        $aws = $this->prometheus->queryRange('scarlet_signalk_environment_wind_speedApparent', $duration, $step, $start, $end);
-        $awa = $this->prometheus->queryRange('scarlet_signalk_environment_wind_angleApparent', $duration, $step, $start, $end);
-        $stw = $this->prometheus->queryRange('scarlet_signalk_navigation_speedThroughWater', $duration, $step, $start, $end);
-        $hdg = $this->prometheus->queryRange('scarlet_signalk_navigation_headingTrue', $duration, $step, $start, $end);
+        $aws = $this->prometheus->queryRange('scarlet_signalk_environment_wind_speedApparent', $duration, $step, $start, $end, fillGaps: false);
+        $awa = $this->prometheus->queryRange('scarlet_signalk_environment_wind_angleApparent', $duration, $step, $start, $end, fillGaps: false);
+        $stw = $this->prometheus->queryRange('scarlet_signalk_navigation_speedThroughWater', $duration, $step, $start, $end, fillGaps: false);
+        $hdg = $this->prometheus->queryRange('scarlet_signalk_navigation_headingTrue', $duration, $step, $start, $end, fillGaps: false);
 
         $awaByTs = collect($awa)->keyBy('timestamp');
         $stwByTs = collect($stw)->keyBy('timestamp');
@@ -392,15 +389,12 @@ class MetricsService
 
         $result = [];
         foreach ($aws as $point) {
-            if ($point['value'] === null) {
-                continue;
-            }
             $ts = $point['timestamp'];
             $awaPoint = $awaByTs->get($ts);
             $stwPoint = $stwByTs->get($ts);
             $hdgPoint = $hdgByTs->get($ts);
 
-            if ($awaPoint['value'] === null || $stwPoint['value'] === null || $hdgPoint['value'] === null) {
+            if (! $awaPoint || ! $stwPoint || ! $hdgPoint) {
                 continue;
             }
 
