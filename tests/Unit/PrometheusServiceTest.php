@@ -79,4 +79,46 @@ class PrometheusServiceTest extends TestCase
         $result = $service->queryRange('nonexistent', null, '15s', 1716000000, 1716000060);
         $this->assertEmpty($result);
     }
+
+    public function test_query_multiple_returns_values_for_all_keys(): void
+    {
+        Http::fake([
+            '*/api/v1/query*' => Http::response([
+                'status' => 'success',
+                'data' => [
+                    'resultType' => 'vector',
+                    'result' => [['value' => [1716000000, '42.0']]],
+                ],
+            ]),
+        ]);
+
+        $service = new PrometheusService;
+        $result = $service->queryMultiple([
+            'speed' => 'scarlet_speed',
+            'depth' => 'scarlet_depth',
+        ]);
+
+        $this->assertArrayHasKey('speed', $result);
+        $this->assertArrayHasKey('depth', $result);
+        $this->assertEquals(42.0, $result['speed']);
+        $this->assertEquals(42.0, $result['depth']);
+    }
+
+    public function test_query_multiple_returns_null_for_missing_metrics(): void
+    {
+        Http::fake([
+            '*/api/v1/query*' => Http::response([
+                'status' => 'success',
+                'data' => ['resultType' => 'vector', 'result' => []],
+            ]),
+        ]);
+
+        $service = new PrometheusService;
+        $result = $service->queryMultiple([
+            'speed' => 'scarlet_speed',
+        ]);
+
+        $this->assertArrayHasKey('speed', $result);
+        $this->assertNull($result['speed']);
+    }
 }

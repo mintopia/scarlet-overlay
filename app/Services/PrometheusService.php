@@ -305,9 +305,28 @@ class PrometheusService
 
     public function queryMultiple(array $queries): array
     {
+        $responses = Http::pool(function ($pool) use ($queries) {
+            foreach ($queries as $key => $promql) {
+                $pool->as($key)->timeout(5)->get("{$this->baseUrl}/api/v1/query", [
+                    'query' => $promql,
+                ]);
+            }
+        });
+
         $results = [];
         foreach ($queries as $key => $promql) {
-            $results[$key] = $this->query($promql);
+            try {
+                $response = $responses[$key] ?? null;
+                if ($response && $response->ok()) {
+                    $result = $response->json('data.result');
+                    $results[$key] = ! empty($result) ? (float) $result[0]['value'][1] : null;
+                } else {
+                    $results[$key] = null;
+                }
+            } catch (\Throwable $e) {
+                Log::warning("Prometheus query failed [{$promql}]: {$e->getMessage()}");
+                $results[$key] = null;
+            }
         }
 
         return $results;
