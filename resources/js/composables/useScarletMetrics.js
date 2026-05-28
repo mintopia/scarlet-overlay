@@ -146,7 +146,9 @@ export function useScarletMetrics(options = {}) {
         }
 
         if (gps.value?.latitude) {
-            updateSingleMap(target, gps.value, boat.value);
+            const pos = [gps.value.latitude, gps.value.longitude];
+            const heading = boat.value?.cog ?? boat.value?.heading ?? 0;
+            target.marker = L.marker(pos, { icon: makeBoatIcon(heading) }).addTo(target.map);
         }
     }
 
