@@ -85,14 +85,17 @@ class AdminLogController extends Controller
     private function buildRows($logs, bool $isJourney): array
     {
         $rows = [];
-        $tripOffset = $isJourney && $logs->isNotEmpty() ? $logs->first()->trip_log : 0;
+        $firstLog = $logs->isNotEmpty() ? (float) ($logs->first()->trip_log ?? 0) : 0;
+        $tripOffset = $isJourney ? $firstLog : 0;
 
         foreach ($logs as $log) {
             $rows[] = [
                 'id' => $log->id,
                 'timestamp' => $log->recorded_at->timestamp,
                 'course' => $log->course !== null ? (float) $log->course : null,
-                'total_log' => $log->trip_log !== null ? (float) $log->trip_log : null,
+                'total_log' => $log->trip_log !== null
+                    ? (float) $log->trip_log - $firstLog
+                    : null,
                 'trip_log' => $log->trip_log !== null && $tripOffset !== null
                     ? (float) $log->trip_log - (float) $tripOffset
                     : null,
@@ -108,13 +111,6 @@ class AdminLogController extends Controller
                 'fuel_level' => $log->fuel_level !== null ? (float) $log->fuel_level : null,
                 'notes' => $log->notes,
             ];
-        }
-
-        if (! $isJourney) {
-            foreach ($rows as &$row) {
-                $row['total_log'] = $row['trip_log'] ?? null;
-            }
-            unset($row);
         }
 
         $cumDist = 0;
