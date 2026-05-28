@@ -23,7 +23,7 @@ class MetricRegistry
         $primary = $def['query'];
 
         if (isset($def['fallback'])) {
-            $q = "max({$primary}) default max({$def['fallback']})";
+            $q = "({$primary}) or ({$def['fallback']})";
         } else {
             $q = $primary;
         }

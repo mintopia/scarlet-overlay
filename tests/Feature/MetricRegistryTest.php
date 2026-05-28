@@ -90,12 +90,12 @@ class MetricRegistryTest extends TestCase
         $this->assertSame('(scarlet_signalk_environment_water_temperature) - 273.15', $q);
     }
 
-    public function test_instant_query_with_fallback_uses_default_operator(): void
+    public function test_instant_query_with_fallback_uses_or_operator(): void
     {
         $q = $this->registry->instantQuery('gps_latitude');
 
         $this->assertSame(
-            'max(scarlet_gps_latitude_deg{gps_source="signalk"} != 0) default max(scarlet_gps_latitude_deg{gps_source="onboard"} != 0)',
+            '(scarlet_gps_latitude_deg{gps_source="signalk"} != 0) or (scarlet_gps_latitude_deg{gps_source="onboard"} != 0)',
             $q
         );
     }
