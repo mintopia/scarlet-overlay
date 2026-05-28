@@ -16,7 +16,16 @@ class DashboardController extends Controller
             ?? Journey::planned()
             ?? Journey::completed()->whereNotNull('route_waypoints')->orderByDesc('ended_at')->first();
 
-        $gpsTrack = $metrics->getGpsTrack('14d', '60s');
+        $recentJourney = $journey ?? Journey::completed()->orderByDesc('ended_at')->first();
+        $journeyStart = $recentJourney?->started_at?->timestamp;
+
+        if ($journeyStart) {
+            $olderTrack = $metrics->getGpsTrack(null, '60s', now()->subDays(14)->timestamp, $journeyStart);
+            $recentTrack = $metrics->getGpsTrack(null, '15s', $journeyStart);
+            $gpsTrack = array_merge($olderTrack, $recentTrack);
+        } else {
+            $gpsTrack = $metrics->getGpsTrack('14d', '60s');
+        }
 
         return Inertia::render('Public/Dashboard', [
             'initialMetrics' => $metrics->getAllMetrics(),
