@@ -32,7 +32,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted, onUnmounted } from 'vue';
+import { ref, watch, onMounted, onUnmounted } from 'vue';
 import { Head, router } from '@inertiajs/vue3';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
@@ -49,24 +49,33 @@ const props = defineProps({
 const mapEl = ref(null);
 const selectedPeriod = ref(props.period);
 let map = null;
+let trackLayer = null;
 
 function changePeriod() {
     router.get('/admin/tracks', { period: selectedPeriod.value }, { preserveState: true });
 }
 
-onMounted(() => {
-    if (!mapEl.value || !props.gpsTrack.length) return;
+function buildMap() {
+    if (trackLayer) {
+        trackLayer.clearLayers();
+    }
 
-    const firstPt = props.gpsTrack[0];
-    map = L.map(mapEl.value, { zoomControl: true, attributionControl: false })
-        .setView([firstPt[0], firstPt[1]], 14);
-    L.tileLayer('/openseamap/{z}/{x}/{y}', { maxZoom: 18 }).addTo(map);
+    if (!mapEl.value) return;
+
+    if (!map) {
+        map = L.map(mapEl.value, { zoomControl: true, attributionControl: false }).setView([0, 0], 2);
+        L.tileLayer('/openseamap/{z}/{x}/{y}', { maxZoom: 18 }).addTo(map);
+    }
+
+    trackLayer = L.layerGroup().addTo(map);
+
+    if (!props.gpsTrack.length) return;
 
     for (let i = 1; i < props.gpsTrack.length; i++) {
         L.polyline(
             [[props.gpsTrack[i - 1][0], props.gpsTrack[i - 1][1]], [props.gpsTrack[i][0], props.gpsTrack[i][1]]],
             { color: speedToColor(props.gpsTrack[i][2]), weight: 3, opacity: 0.85 }
-        ).addTo(map);
+        ).addTo(trackLayer);
     }
 
     const bounds = L.latLngBounds(props.gpsTrack.map(p => [p[0], p[1]]));
@@ -77,10 +86,18 @@ onMounted(() => {
             addRouteLayer(map, journey.route_waypoints);
         }
     }
+}
+
+watch(() => props.gpsTrack, () => {
+    selectedPeriod.value = props.period;
+    buildMap();
 });
+
+onMounted(buildMap);
 
 onUnmounted(() => {
     map?.remove();
+    map = null;
 });
 </script>
 
