@@ -20,8 +20,15 @@ class DashboardController extends Controller
         $journeyStart = $recentJourney?->started_at?->timestamp;
 
         if ($journeyStart) {
-            $olderTrack = $metrics->getGpsTrack(null, '60s', now()->subDays(14)->timestamp, $journeyStart);
-            $recentTrack = $metrics->getGpsTrack(null, '15s', $journeyStart);
+            $journeyDuration = now()->timestamp - $journeyStart;
+            $recentStep = match (true) {
+                $journeyDuration > 7 * 86400 => '120s',
+                $journeyDuration > 3 * 86400 => '60s',
+                $journeyDuration > 86400 => '30s',
+                default => '15s',
+            };
+            $olderTrack = $metrics->getGpsTrack(null, '120s', now()->subDays(14)->timestamp, $journeyStart);
+            $recentTrack = $metrics->getGpsTrack(null, $recentStep, $journeyStart);
             $gpsTrack = array_merge($olderTrack, $recentTrack);
         } else {
             $gpsTrack = $metrics->getGpsTrack('14d', '60s');
