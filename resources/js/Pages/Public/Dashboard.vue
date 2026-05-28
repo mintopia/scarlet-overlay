@@ -226,6 +226,7 @@ onUnmounted(() => {
                 :passage-to="passageTo"
                 :clock="clock"
                 :clock-date="clockDate"
+                :stale-keys="staleKeys"
             />
         </div>
     </div>

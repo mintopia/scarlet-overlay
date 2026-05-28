@@ -20,7 +20,7 @@ const props = defineProps({
 });
 
 const {
-    boat, gps, weather, lastUpdate,
+    boat, gps, weather, lastUpdate, staleKeys,
     clock, clockDate,
     coordText, isOffline, statusText, statusClass, lastUpdateText,
     wxTemp, wxCondition, wxIcon, wxSeaTemp, wxWindSpeed, wxWindDir, wxWaveHeight, wxWavePeriod,
@@ -176,6 +176,7 @@ onUnmounted(() => {
                 :passage-to="passageTo"
                 :clock="clock"
                 :clock-date="clockDate"
+                :stale-keys="staleKeys"
             />
         </div>
     </div>

@@ -11,6 +11,7 @@ const props = defineProps({
     passageTo: String,
     clock: String,
     clockDate: String,
+    staleKeys: { type: Set, default: () => new Set() },
 });
 
 const animSpeed = useSpringValue(() => props.boat?.speed_sog);
@@ -34,17 +35,17 @@ function fmtHeading(anim, raw) {
             <span class="lt-name">{{ boatName }}</span>
         </div>
         <div class="lt-body">
-            <div class="lt-metric">
+            <div class="lt-metric" :class="{ 'lt-metric--stale': staleKeys.has('speed_sog') }">
                 <div class="lt-label">SPEED</div>
                 <div class="lt-val">{{ fmtSpring(animSpeed, boat?.speed_sog) }} kn</div>
             </div>
             <div class="lt-sep"></div>
-            <div class="lt-metric">
+            <div class="lt-metric" :class="{ 'lt-metric--stale': staleKeys.has('heading') && staleKeys.has('cog') }">
                 <div class="lt-label">HEADING</div>
                 <div class="lt-val">{{ fmtHeading(animHeading, boat?.heading ?? boat?.cog) }}°</div>
             </div>
             <div class="lt-sep"></div>
-            <div class="lt-metric">
+            <div class="lt-metric" :class="{ 'lt-metric--stale': staleKeys.has('depth') }">
                 <div class="lt-label">DEPTH</div>
                 <div class="lt-val">{{ fmtSpring(animDepth, boat?.depth) }} m</div>
             </div>
@@ -239,6 +240,8 @@ function fmtHeading(anim, raw) {
 .lt-passage-sep {
     display: block;
 }
+
+.lt-metric--stale { opacity: 0.4; }
 
 .lt-port-label {
     font-size: 11px;
