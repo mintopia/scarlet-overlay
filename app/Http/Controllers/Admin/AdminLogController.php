@@ -14,19 +14,27 @@ class AdminLogController extends Controller
 {
     public function index(Request $request, MetricsService $metrics)
     {
-        $journey = Journey::current();
-        $period = $request->input('period', $journey ? 'journey' : '24h');
-        $allowed = ['journey', '6h', '12h', '24h', '48h', '168h'];
-        if (! in_array($period, $allowed)) {
-            $period = '24h';
+        $activeJourney = Journey::current();
+        $period = $request->input('period', $activeJourney ? 'journey' : '24h');
+        $timeRanges = ['6h', '12h', '24h', '48h', '168h'];
+
+        $journey = null;
+        $isJourney = false;
+
+        if (str_starts_with($period, 'journey:')) {
+            $journeyId = (int) str_replace('journey:', '', $period);
+            $journey = Journey::find($journeyId);
+        } elseif ($period === 'journey') {
+            $journey = $activeJourney;
         }
 
-        if ($period === 'journey' && $journey?->started_at) {
+        if ($journey?->started_at) {
+            $isJourney = true;
             $logs = ShipLog::where('journey_id', $journey->id)
                 ->orderBy('recorded_at')
                 ->get();
         } else {
-            if ($period === 'journey') {
+            if (! in_array($period, $timeRanges)) {
                 $period = '24h';
             }
             $seconds = CarbonInterval::fromString($period)->totalSeconds;
@@ -36,13 +44,21 @@ class AdminLogController extends Controller
                 ->get();
         }
 
-        $rows = $this->buildRows($logs, $period === 'journey');
+        $rows = $this->buildRows($logs, $isJourney);
+
+        $journeys = Journey::whereNotNull('started_at')
+            ->orderByDesc('started_at')
+            ->get(['id', 'title', 'status'])
+            ->map(fn (Journey $j) => [
+                'id' => $j->id,
+                'title' => $j->title,
+                'active' => $j->status === 'active',
+            ]);
 
         return Inertia::render('Admin/Log', [
             'rows' => $rows,
             'period' => $period,
-            'hasActiveJourney' => $journey !== null,
-            'journeyTitle' => $journey?->title,
+            'journeys' => $journeys,
             'positionTimezone' => Inertia::defer(fn () => ($metrics->getWeatherData())['timezone'] ?? null),
         ]);
     }

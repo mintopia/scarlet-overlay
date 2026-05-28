@@ -125,8 +125,8 @@ class JourneyController extends Controller
             $logRows = $metrics->getLogData(
                 null,
                 (string) $step,
-                $journey->started_at->startOfHour()->timestamp,
-                $journey->ended_at->endOfHour()->timestamp,
+                $journey->started_at->startOfHour()->subHour()->timestamp,
+                $journey->ended_at->endOfHour()->addHour()->timestamp,
             );
         }
 

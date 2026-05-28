@@ -41,17 +41,17 @@ This means every metric has **at least 2 series**. GPS metrics have up to **5 se
 
 All config mappings (`log`, `history`, `explore`) use `max()`. The two ingestion paths can cover different time periods, so without `max()`, `$result[0]` may pick a series that has no data for the queried range while the other series does.
 
-### Position Source: GPS with gps_source priority
+### Source Priority: SignalK first, GPS fallback
 
-**Always split position queries by `gps_source`, preferring signalk over onboard:**
+**SignalK data is ALWAYS more accurate.** Always prefer `scarlet_signalk_*`, falling back to `scarlet_gps_*` only when SignalK is unavailable. For position:
 
 ```
-max(scarlet_gps_latitude_deg{gps_source="signalk"} != 0) default max(scarlet_gps_latitude_deg{gps_source="onboard"} != 0)
+max(keep_last_value(scarlet_signalk_navigation_position_latitude != 0))
+  default max(keep_last_value(scarlet_gps_latitude_deg{gps_source="signalk"} != 0))
+  default max(keep_last_value(scarlet_gps_latitude_deg{gps_source="onboard"} != 0))
 ```
 
-VictoriaMetrics staleness keeps the `onboard` series alive after the tracker switches to `signalk`, so both appear at the same timestamp (~900 overlaps/day). Unfiltered `max()` picks the stale `onboard` value when it's numerically higher — causing spikes up to 6.4km. The `default` operator uses signalk where present and only falls back to onboard when signalk is absent.
-
-Do not combine with `scarlet_signalk_navigation_position_*` — that metric has ~2.75x fewer data points and different precision, causing ~15m jumps at transitions.
+The 3-level chain: direct SignalK position → GPS tracker's signalk-sourced position → GPS tracker's onboard position. `keep_last_value()` fills gaps so the preferred source covers all timestamps. GPS `gps_source` must be split because VictoriaMetrics staleness creates overlapping stale `onboard` values that corrupt `max()`.
 
 ### Data Freshness Policy
 
@@ -83,11 +83,11 @@ The boat-tracker device sends GPS data every ~15 seconds. It has a `gps_source` 
 - `gps_source="signalk"` — GPS position forwarded from SignalK (higher quality, ~2400 points/day)
 - `gps_source="onboard"` — Tracker's internal GPS module (noisy, stale values persist via VM staleness)
 
-**Always split position queries by `gps_source`, preferring signalk via `default`:**
+**Always prefer SignalK metrics, with GPS as fallback via `default`:**
 ```
-max(...{gps_source="signalk"} != 0) default max(...{gps_source="onboard"} != 0)
+max(keep_last_value(scarlet_signalk_*)) default max(keep_last_value(scarlet_gps_*{gps_source="signalk"})) default max(keep_last_value(scarlet_gps_*{gps_source="onboard"}))
 ```
-The `onboard` series has stale values that corrupt `max()` aggregation when both sources overlap. Using `default` ensures signalk takes priority, with onboard as fallback when SignalK is offline.
+SignalK data from the boat's navigation systems is always more accurate. GPS tracker data is a secondary, less precise source. The GPS `gps_source` must be split because stale `onboard` values corrupt `max()` aggregation.
 
 | Metric | Unit | Description | Data since |
 |--------|------|-------------|------------|

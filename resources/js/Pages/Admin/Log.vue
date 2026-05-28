@@ -15,12 +15,16 @@
                 <label class="toolbar-label">
                     <span class="toolbar-label-text">Period</span>
                     <select v-model="selectedPeriod" @change="changePeriod" class="field-input text-[13px] py-1.5 px-3" style="width: auto; height: auto">
-                        <option v-if="hasActiveJourney" value="journey">{{ journeyTitle || 'Current Journey' }}</option>
-                        <option value="6h">Last 6 hours</option>
-                        <option value="12h">Last 12 hours</option>
-                        <option value="24h">Last 24 hours</option>
-                        <option value="48h">Last 48 hours</option>
-                        <option value="168h">Last 7 days</option>
+                        <optgroup v-if="journeys.length" label="Journeys">
+                            <option v-for="j in journeys" :key="j.id" :value="j.active ? 'journey' : `journey:${j.id}`">{{ j.title }}</option>
+                        </optgroup>
+                        <optgroup label="Time Period">
+                            <option value="6h">Last 6 hours</option>
+                            <option value="12h">Last 12 hours</option>
+                            <option value="24h">Last 24 hours</option>
+                            <option value="48h">Last 48 hours</option>
+                            <option value="168h">Last 7 days</option>
+                        </optgroup>
                     </select>
                 </label>
             </div>
@@ -39,8 +43,7 @@ import LogTable from '@/components/LogTable.vue';
 const props = defineProps({
     rows: Array,
     period: String,
-    hasActiveJourney: Boolean,
-    journeyTitle: String,
+    journeys: { type: Array, default: () => [] },
     positionTimezone: String,
 });
 
