@@ -4,7 +4,7 @@ namespace App\Console\Commands;
 
 use App\Models\Journey;
 use App\Models\ShipLog;
-use App\Services\PrometheusService;
+use App\Services\MetricRegistry;
 use Carbon\Carbon;
 use Illuminate\Console\Command;
 
@@ -19,7 +19,7 @@ class ShipLogBackfillCommand extends Command
 
     protected $description = 'Backfill ship log entries from Prometheus history';
 
-    public function handle(PrometheusService $prometheus): int
+    public function handle(MetricRegistry $registry): int
     {
         if ($this->option('truncate')) {
             $count = ShipLog::count();
@@ -42,15 +42,14 @@ class ShipLogBackfillCommand extends Command
         $totalHours = ($alignedEnd - $alignedStart) / $stepSeconds;
         $this->info('Backfilling from '.date('Y-m-d H:i', $alignedStart).' to '.date('Y-m-d H:i', $alignedEnd)." ({$totalHours} hours)");
 
-        $queries = $prometheus->resolveLogQueries();
+        $mapping = $registry->logMapping();
+        $seriesByField = [];
 
-        $seriesByKey = [];
-        foreach ($queries as $key => $promql) {
-            $wrapped = $prometheus->wrapForRange($promql);
-            $this->line("Fetching {$key}: {$wrapped}");
-            $data = $prometheus->queryRange($wrapped, null, $stepSeconds.'s', $alignedStart, $alignedEnd);
-            $this->line("  → {$key}: ".count($data).' data points');
-            $seriesByKey[$key] = collect($data)->keyBy('timestamp');
+        foreach ($mapping as $fieldName => $registryKey) {
+            $this->line("Fetching {$fieldName} ({$registryKey})");
+            $data = $registry->fetchRange($registryKey, $stepSeconds.'s', $alignedStart, $alignedEnd);
+            $this->line("  → {$fieldName}: ".count($data).' data points');
+            $seriesByField[$fieldName] = collect($data)->keyBy('timestamp');
         }
 
         $journeys = Journey::whereNotNull('started_at')
@@ -68,9 +67,9 @@ class ShipLogBackfillCommand extends Command
             $recordedAt = date('Y-m-d H:i:s', $ts);
 
             $values = [];
-            foreach ($queries as $key => $promql) {
-                $point = $seriesByKey[$key]->get($ts);
-                $values[$key] = $point ? $point['value'] : null;
+            foreach ($mapping as $fieldName => $registryKey) {
+                $point = $seriesByField[$fieldName]->get($ts);
+                $values[$fieldName] = $point ? $point['value'] : null;
             }
 
             $logData = $this->buildLogData($values);

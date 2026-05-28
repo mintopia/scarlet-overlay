@@ -4,7 +4,7 @@ namespace Tests\Feature;
 
 use App\Jobs\ImportJourneyFromPrometheus;
 use App\Models\Journey;
-use App\Services\PrometheusService;
+use App\Services\MetricRegistry;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Mockery;
 use Tests\TestCase;
@@ -28,17 +28,16 @@ class ImportJourneyJobTest extends TestCase
             ['timestamp' => now()->subHours(2)->timestamp, 'value' => 50.71],
         ];
 
-        $mock = Mockery::mock(PrometheusService::class);
-        $mock->shouldReceive('wrapForRange')->andReturnUsing(fn (string $q) => "max(keep_last_value({$q}))");
-        $mock->shouldReceive('queryRange')->andReturn($timestamps);
-        $this->app->instance(PrometheusService::class, $mock);
+        $mock = Mockery::mock(MetricRegistry::class);
+        $mock->shouldReceive('fetchRange')->andReturn($timestamps);
+        $this->app->instance(MetricRegistry::class, $mock);
 
         $job = new ImportJourneyFromPrometheus(
             $journey->id,
             now()->subHours(3)->toIso8601String(),
             now()->toIso8601String(),
         );
-        $job->handle(app(PrometheusService::class));
+        $job->handle(app(MetricRegistry::class));
 
         $this->assertGreaterThan(0, $journey->trackPoints()->count());
     }

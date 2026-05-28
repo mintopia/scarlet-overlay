@@ -12,6 +12,7 @@ class MetricsService
     public function __construct(
         protected PrometheusService $prometheus,
         protected WeatherService $weather,
+        protected MetricRegistry $registry,
     ) {}
 
     public function getSettings(): array
@@ -28,33 +29,52 @@ class MetricsService
 
     public function getBoatMetrics(): array
     {
-        $metrics = $this->prometheus->queryMultiple(
-            config('scarlet.metrics.mappings.boat')
+        $keys = [
+            'speed_sog', 'speed_stw', 'heading', 'cog', 'depth', 'heel',
+            'trip_log', 'nav_wp_distance', 'nav_wp_ttg',
+            'wind_speed_apparent', 'wind_angle_apparent',
+            'wind_speed_apparent_raw', 'wind_angle_apparent_raw',
+            'speed_stw_raw', 'heading_raw',
+            'water_temp',
+            'house_battery_voltage', 'house_battery_soc', 'house_battery_current',
+            'house_battery_time_remaining', 'engine_battery_voltage',
+            'fuel_level', 'water_level',
+            'cabin_temp_quarterberth', 'cabin_humidity_quarterberth',
+            'cabin_temp_main', 'cabin_humidity_main',
+            'cabin_temp_forepeak', 'cabin_humidity_forepeak',
+            'cabin_pressure_forepeak',
+        ];
+
+        $metrics = $this->registry->fetchInstant($keys);
+
+        $tw = $this->calculateTrueWind(
+            $metrics['wind_speed_apparent_raw'],
+            $metrics['wind_angle_apparent_raw'],
+            $metrics['speed_stw_raw'],
+            $metrics['heading_raw'],
         );
-
-        if ($metrics['speed_sog'] === null) {
-            $metrics['speed_sog'] = $this->prometheus->query(
-                config('scarlet.metrics.mappings.gps.speed')
-            );
-        }
-
-        $tw = $this->calculateTrueWind($metrics['_aws'], $metrics['_awa'], $metrics['_stw'], $metrics['_heading']);
         $metrics['wind_speed_true'] = $tw['speed'];
         $metrics['wind_direction_true'] = $tw['direction'];
-        unset($metrics['_aws'], $metrics['_awa'], $metrics['_stw'], $metrics['_heading']);
+        unset($metrics['wind_speed_apparent_raw'], $metrics['wind_angle_apparent_raw'], $metrics['speed_stw_raw'], $metrics['heading_raw']);
 
         return $metrics;
     }
 
     public function getTrackerMetrics(): array
     {
-        $metrics = $this->prometheus->queryMultiple(
-            config('scarlet.metrics.mappings.tracker')
-        );
+        $keys = [
+            'tracker_battery', 'tracker_usb', 'tracker_lte_connected',
+            'tracker_lte_rssi', 'tracker_lte_quality', 'tracker_lte_rat',
+            'tracker_wifi_connected', 'tracker_wifi_rssi',
+            'tracker_uptime', 'tracker_heap', 'tracker_mode',
+            'cabin_temp_forepeak', 'cabin_humidity_forepeak', 'tracker_cpu',
+        ];
 
-        $metrics['battery_percent'] = $this->voltageToPct($metrics['battery_voltage'] ?? null);
+        $metrics = $this->registry->fetchInstant($keys);
+
+        $metrics['battery_percent'] = $this->voltageToPct($metrics['tracker_battery'] ?? null);
         $metrics['last_seen'] = $this->prometheus->queryTimestamp(
-            config('scarlet.metrics.mappings.tracker.uptime')
+            $this->registry->instantQuery('tracker_uptime')
         );
 
         return $metrics;
@@ -62,16 +82,27 @@ class MetricsService
 
     public function getGpsMetrics(): array
     {
-        $gps = $this->prometheus->queryMultiple(
-            config('scarlet.metrics.mappings.gps')
-        );
+        $gps = $this->registry->fetchInstant([
+            'gps_latitude', 'gps_longitude', 'gps_altitude',
+            'gps_satellites', 'gps_hdop', 'gps_speed', 'gps_heading',
+        ]);
 
-        if ($this->isNullIsland($gps['latitude'], $gps['longitude'])) {
-            $gps['latitude'] = null;
-            $gps['longitude'] = null;
+        $remapped = [
+            'latitude' => $gps['gps_latitude'],
+            'longitude' => $gps['gps_longitude'],
+            'altitude' => $gps['gps_altitude'],
+            'satellites' => $gps['gps_satellites'],
+            'hdop' => $gps['gps_hdop'],
+            'speed' => $gps['gps_speed'],
+            'heading' => $gps['gps_heading'],
+        ];
+
+        if ($this->isNullIsland($remapped['latitude'], $remapped['longitude'])) {
+            $remapped['latitude'] = null;
+            $remapped['longitude'] = null;
         }
 
-        return $gps;
+        return $remapped;
     }
 
     public function getWeatherData(): ?array
@@ -132,33 +163,55 @@ class MetricsService
 
     public function getAllMetricsAt(int $timestamp): array
     {
-        $boat = $this->prometheus->queryMultipleAt(
-            config('scarlet.metrics.mappings.boat'),
-            $timestamp
-        );
+        $boatKeys = [
+            'speed_sog', 'speed_stw', 'heading', 'cog', 'depth', 'heel',
+            'trip_log', 'nav_wp_distance', 'nav_wp_ttg',
+            'wind_speed_apparent', 'wind_angle_apparent',
+            'wind_speed_apparent_raw', 'wind_angle_apparent_raw',
+            'speed_stw_raw', 'heading_raw',
+            'water_temp',
+            'house_battery_voltage', 'house_battery_soc', 'house_battery_current',
+            'house_battery_time_remaining', 'engine_battery_voltage',
+            'fuel_level', 'water_level',
+            'cabin_temp_quarterberth', 'cabin_humidity_quarterberth',
+            'cabin_temp_main', 'cabin_humidity_main',
+            'cabin_temp_forepeak', 'cabin_humidity_forepeak',
+            'cabin_pressure_forepeak',
+        ];
 
-        if ($boat['speed_sog'] === null) {
-            $boat['speed_sog'] = $this->prometheus->queryAt(
-                config('scarlet.metrics.mappings.gps.speed'),
-                $timestamp
-            );
-        }
+        $boat = $this->registry->fetchInstant($boatKeys, $timestamp);
 
-        $tw = $this->calculateTrueWind($boat['_aws'], $boat['_awa'], $boat['_stw'], $boat['_heading']);
+        $tw = $this->calculateTrueWind($boat['wind_speed_apparent_raw'], $boat['wind_angle_apparent_raw'], $boat['speed_stw_raw'], $boat['heading_raw']);
         $boat['wind_speed_true'] = $tw['speed'];
         $boat['wind_direction_true'] = $tw['direction'];
-        unset($boat['_aws'], $boat['_awa'], $boat['_stw'], $boat['_heading']);
+        unset($boat['wind_speed_apparent_raw'], $boat['wind_angle_apparent_raw'], $boat['speed_stw_raw'], $boat['heading_raw']);
 
-        $tracker = $this->prometheus->queryMultipleAt(
-            config('scarlet.metrics.mappings.tracker'),
-            $timestamp
-        );
-        $tracker['battery_percent'] = $this->voltageToPct($tracker['battery_voltage'] ?? null);
+        $trackerKeys = [
+            'tracker_battery', 'tracker_usb', 'tracker_lte_connected',
+            'tracker_lte_rssi', 'tracker_lte_quality', 'tracker_lte_rat',
+            'tracker_wifi_connected', 'tracker_wifi_rssi',
+            'tracker_uptime', 'tracker_heap', 'tracker_mode',
+            'cabin_temp_forepeak', 'cabin_humidity_forepeak', 'tracker_cpu',
+        ];
 
-        $gps = $this->prometheus->queryMultipleAt(
-            config('scarlet.metrics.mappings.gps'),
-            $timestamp
-        );
+        $tracker = $this->registry->fetchInstant($trackerKeys, $timestamp);
+        $tracker['battery_percent'] = $this->voltageToPct($tracker['tracker_battery'] ?? null);
+
+        $gpsRaw = $this->registry->fetchInstant([
+            'gps_latitude', 'gps_longitude', 'gps_altitude',
+            'gps_satellites', 'gps_hdop', 'gps_speed', 'gps_heading',
+        ], $timestamp);
+
+        $gps = [
+            'latitude' => $gpsRaw['gps_latitude'],
+            'longitude' => $gpsRaw['gps_longitude'],
+            'altitude' => $gpsRaw['gps_altitude'],
+            'satellites' => $gpsRaw['gps_satellites'],
+            'hdop' => $gpsRaw['gps_hdop'],
+            'speed' => $gpsRaw['gps_speed'],
+            'heading' => $gpsRaw['gps_heading'],
+        ];
+
         if ($this->isNullIsland($gps['latitude'] ?? null, $gps['longitude'] ?? null)) {
             $gps['latitude'] = null;
             $gps['longitude'] = null;
@@ -195,12 +248,9 @@ class MetricsService
 
     public function getGpsTrack(?string $duration = '48h', string $step = '30s', ?int $start = null, ?int $end = null): array
     {
-        $track = config('scarlet.metrics.mappings.track');
-        $wrap = fn (string $q) => $this->prometheus->wrapForRange($q);
-
-        $latData = $this->prometheus->queryRange($wrap($track['latitude']), $duration, $step, $start, $end, fillGaps: false);
-        $lngData = $this->prometheus->queryRange($wrap($track['longitude']), $duration, $step, $start, $end, fillGaps: false);
-        $sogData = $this->prometheus->queryRange($wrap($track['sog']), $duration, $step, $start, $end, fillGaps: false);
+        $latData = $this->registry->fetchRange('track_latitude', $step, $start, $end, fillGaps: false);
+        $lngData = $this->registry->fetchRange('track_longitude', $step, $start, $end, fillGaps: false);
+        $sogData = $this->registry->fetchRange('track_sog', $step, $start, $end, fillGaps: false);
 
         $lngByTs = collect($lngData)->keyBy('timestamp');
         $sogByTs = collect($sogData)->keyBy('timestamp');
@@ -258,20 +308,20 @@ class MetricsService
             $alignedStart = (int) ceil($alignedStart / $stepSeconds) * $stepSeconds;
         }
 
-        $queries = $this->prometheus->resolveLogQueries();
+        $mapping = $this->registry->logMapping();
         $seriesByKey = [];
 
-        foreach ($queries as $key => $promql) {
-            $data = $this->prometheus->queryRange($this->prometheus->wrapForRange($promql), null, $step.'s', $alignedStart, $alignedEnd);
-            $seriesByKey[$key] = collect($data)->keyBy('timestamp');
+        foreach ($mapping as $fieldName => $registryKey) {
+            $data = $this->registry->fetchRange($registryKey, $step.'s', $alignedStart, $alignedEnd);
+            $seriesByKey[$fieldName] = collect($data)->keyBy('timestamp');
         }
 
         $rows = [];
         for ($ts = $alignedStart; $ts <= $alignedEnd; $ts += $stepSeconds) {
             $row = ['timestamp' => $ts];
-            foreach ($queries as $key => $promql) {
-                $point = $seriesByKey[$key]->get($ts);
-                $row[$key] = $point ? $point['value'] : null;
+            foreach ($mapping as $fieldName => $registryKey) {
+                $point = $seriesByKey[$fieldName]->get($ts);
+                $row[$fieldName] = $point ? $point['value'] : null;
             }
 
             $tw = $this->calculateTrueWind($row['aws'], $row['awa'], $row['stw'], $row['heading']);
@@ -342,24 +392,27 @@ class MetricsService
 
     public function getLatestTrueWind(): ?array
     {
-        $metrics = $this->prometheus->queryMultiple([
-            'aws' => 'scarlet_signalk_environment_wind_speedApparent',
-            'awa' => 'scarlet_signalk_environment_wind_angleApparent',
-            'stw' => 'scarlet_signalk_navigation_speedThroughWater',
-            'heading' => 'scarlet_signalk_navigation_headingTrue',
+        $metrics = $this->registry->fetchInstant([
+            'wind_speed_apparent_raw', 'wind_angle_apparent_raw',
+            'speed_stw_raw', 'heading_raw',
         ]);
 
-        $tw = $this->calculateTrueWind($metrics['aws'], $metrics['awa'], $metrics['stw'], $metrics['heading']);
+        $tw = $this->calculateTrueWind(
+            $metrics['wind_speed_apparent_raw'],
+            $metrics['wind_angle_apparent_raw'],
+            $metrics['speed_stw_raw'],
+            $metrics['heading_raw'],
+        );
 
         return ($tw['speed'] !== null) ? $tw : null;
     }
 
     public function getTrueWindSeries(string $field, ?string $duration, string $step, ?int $start = null, ?int $end = null): array
     {
-        $aws = $this->prometheus->queryRange('scarlet_signalk_environment_wind_speedApparent', $duration, $step, $start, $end, fillGaps: false);
-        $awa = $this->prometheus->queryRange('scarlet_signalk_environment_wind_angleApparent', $duration, $step, $start, $end, fillGaps: false);
-        $stw = $this->prometheus->queryRange('scarlet_signalk_navigation_speedThroughWater', $duration, $step, $start, $end, fillGaps: false);
-        $hdg = $this->prometheus->queryRange('scarlet_signalk_navigation_headingTrue', $duration, $step, $start, $end, fillGaps: false);
+        $aws = $this->registry->fetchRange('wind_speed_apparent_raw', $step, $start, $end, fillGaps: false);
+        $awa = $this->registry->fetchRange('wind_angle_apparent_raw', $step, $start, $end, fillGaps: false);
+        $stw = $this->registry->fetchRange('speed_stw_raw', $step, $start, $end, fillGaps: false);
+        $hdg = $this->registry->fetchRange('heading_raw', $step, $start, $end, fillGaps: false);
 
         $awaByTs = collect($awa)->keyBy('timestamp');
         $stwByTs = collect($stw)->keyBy('timestamp');

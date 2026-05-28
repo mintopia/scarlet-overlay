@@ -17,10 +17,27 @@ class ExploreMetricRegistryTest extends TestCase
             $this->assertArrayHasKey('unit', $entry, "Metric '{$slug}' missing unit");
             $this->assertArrayHasKey('color', $entry, "Metric '{$slug}' missing color");
             $this->assertTrue(
-                isset($entry['query']) || isset($entry['computed']),
-                "Metric '{$slug}' missing query or computed",
+                isset($entry['metric']) || isset($entry['computed']),
+                "Metric '{$slug}' missing metric or computed",
             );
             $this->assertArrayHasKey('group', $entry, "Metric '{$slug}' missing group");
+        }
+    }
+
+    public function test_explore_config_metric_keys_exist_in_registry(): void
+    {
+        $metrics = config('scarlet.metrics.mappings.explore');
+        $registry = config('scarlet.metrics.registry');
+
+        foreach ($metrics as $slug => $entry) {
+            if (isset($entry['computed'])) {
+                continue;
+            }
+            $this->assertArrayHasKey(
+                $entry['metric'],
+                $registry,
+                "Explore entry '{$slug}' references unknown registry key '{$entry['metric']}'",
+            );
         }
     }
 

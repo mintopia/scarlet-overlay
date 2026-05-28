@@ -4,8 +4,8 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Journey;
+use App\Services\MetricRegistry;
 use App\Services\MetricsService;
-use App\Services\PrometheusService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -27,13 +27,13 @@ class ExploreController extends Controller
         '3d' => 0, '7d' => 0, '30d' => 0,
     ];
 
-    public function index(Request $request, PrometheusService $prometheus, MetricsService $metrics)
+    public function index(Request $request, MetricRegistry $registry, MetricsService $metrics)
     {
         $slug = $request->query('metric');
         $allMetrics = config('scarlet.metrics.mappings.explore');
 
         if (! $slug || ! isset($allMetrics[$slug])) {
-            return $this->dashboard($request, $prometheus, $metrics);
+            return $this->dashboard($request, $registry, $metrics);
         }
 
         $metric = $allMetrics[$slug];
@@ -43,7 +43,7 @@ class ExploreController extends Controller
         $range = $request->query('range', $passage['available'] ? 'passage' : '24h');
         [$start, $end, $step] = $this->resolveTimeRange($request, $range);
 
-        $data = $this->queryMetricRange($prometheus, $metric, null, $step, $start, $end, $metrics);
+        $data = $this->queryMetricRange($registry, $metric, null, $step, $start, $end, $metrics);
 
         $overlays = [];
         $overlayParam = $request->query('overlay', '');
@@ -53,7 +53,7 @@ class ExploreController extends Controller
                 if (isset($allMetrics[$os]) && $os !== $slug) {
                     $overlays[] = [
                         'metric' => array_merge($allMetrics[$os], ['slug' => $os]),
-                        'data' => $this->queryMetricRange($prometheus, $allMetrics[$os], null, $step, $start, $end, $metrics),
+                        'data' => $this->queryMetricRange($registry, $allMetrics[$os], null, $step, $start, $end, $metrics),
                     ];
                 }
             }
@@ -73,7 +73,7 @@ class ExploreController extends Controller
 
         $propulsionData = [];
         if (in_array($slug, ['speed', 'stw']) && isset($allMetrics['battery_current'])) {
-            $propulsionData = $this->queryMetricRange($prometheus, $allMetrics['battery_current'], null, $step, $start, $end, $metrics);
+            $propulsionData = $this->queryMetricRange($registry, $allMetrics['battery_current'], null, $step, $start, $end, $metrics);
         }
 
         return Inertia::render('Admin/Explore', [
@@ -92,7 +92,7 @@ class ExploreController extends Controller
         ]);
     }
 
-    public function series(Request $request, PrometheusService $prometheus, MetricsService $metrics): JsonResponse
+    public function series(Request $request, MetricRegistry $registry, MetricsService $metrics): JsonResponse
     {
         $allMetrics = config('scarlet.metrics.mappings.explore');
         $start = (int) $request->query('start');
@@ -111,7 +111,7 @@ class ExploreController extends Controller
             if (! isset($allMetrics[$slug])) {
                 return response()->json(['error' => "Unknown metric: {$slug}"], 422);
             }
-            $data = $this->queryMetricRange($prometheus, $allMetrics[$slug], null, $step, $start, $end, $metrics);
+            $data = $this->queryMetricRange($registry, $allMetrics[$slug], null, $step, $start, $end, $metrics);
             $values = array_column($data, 'value');
 
             $results[] = [
@@ -178,18 +178,26 @@ class ExploreController extends Controller
         return $step.'s';
     }
 
-    public function current(PrometheusService $prometheus, MetricsService $metrics): JsonResponse
+    public function current(MetricRegistry $registry, MetricsService $metrics): JsonResponse
     {
         $allMetrics = config('scarlet.metrics.mappings.explore');
-        $queries = [];
+        $keys = [];
         foreach ($allMetrics as $slug => $metric) {
             if (! empty($metric['computed'])) {
                 continue;
             }
-            $queries[$slug] = $metric['query'];
+            $keys[] = $metric['metric'];
         }
 
-        $values = $prometheus->queryMultipleAt($queries, now()->timestamp, fallback: true);
+        $registryValues = $registry->fetchInstant(array_unique($keys));
+
+        $values = [];
+        foreach ($allMetrics as $slug => $metric) {
+            if (! empty($metric['computed'])) {
+                continue;
+            }
+            $values[$slug] = $registryValues[$metric['metric']] ?? null;
+        }
 
         $computedWind = $metrics->getLatestTrueWind();
         if ($computedWind) {
@@ -197,10 +205,15 @@ class ExploreController extends Controller
             $values['wind_direction_true'] = $computedWind['direction'] ?? null;
         }
 
+        $batteryPower = $this->computeBatteryPower($registry);
+        if ($batteryPower !== null) {
+            $values['battery_power'] = $batteryPower;
+        }
+
         return response()->json($values);
     }
 
-    private function dashboard(Request $request, PrometheusService $prometheus, MetricsService $metrics)
+    private function dashboard(Request $request, MetricRegistry $registry, MetricsService $metrics)
     {
         $allMetrics = config('scarlet.metrics.mappings.explore');
         $groups = config('scarlet.metrics.mappings.explore_groups');
@@ -211,19 +224,33 @@ class ExploreController extends Controller
             $grouped[$metric['group']][$slug] = $metric;
         }
 
-        $queries = [];
+        $keys = [];
         foreach ($allMetrics as $slug => $metric) {
             if (! empty($metric['computed'])) {
                 continue;
             }
-            $queries[$slug] = $prometheus->stripRangeWrapping($metric['query']);
+            $keys[] = $metric['metric'];
         }
-        $currentValues = $prometheus->queryMultipleAt($queries, now()->timestamp, fallback: true);
+
+        $registryValues = $registry->fetchInstant(array_unique($keys));
+
+        $currentValues = [];
+        foreach ($allMetrics as $slug => $metric) {
+            if (! empty($metric['computed'])) {
+                continue;
+            }
+            $currentValues[$slug] = $registryValues[$metric['metric']] ?? null;
+        }
 
         $computedWind = $metrics->getLatestTrueWind();
         if ($computedWind) {
             $currentValues['wind_speed_true'] = $computedWind['speed'] ?? null;
             $currentValues['wind_direction_true'] = $computedWind['direction'] ?? null;
+        }
+
+        $batteryPower = $this->computeBatteryPower($registry);
+        if ($batteryPower !== null) {
+            $currentValues['battery_power'] = $batteryPower;
         }
 
         return Inertia::render('Admin/ExploreDashboard', [
@@ -233,23 +260,54 @@ class ExploreController extends Controller
         ]);
     }
 
-    private function queryMetricRange(PrometheusService $prometheus, array $metric, ?string $duration, string $step, int $start, int $end, ?MetricsService $metrics = null): array
+    private function queryMetricRange(MetricRegistry $registry, array $metric, ?string $duration, string $step, int $start, int $end, ?MetricsService $metrics = null): array
     {
-        if (! empty($metric['computed']) && $metrics) {
-            $field = match ($metric['computed']) {
-                'true_wind_speed' => 'speed',
-                'true_wind_direction' => 'direction',
-                default => null,
-            };
-            if ($field) {
-                return $metrics->getTrueWindSeries($field, $duration, $step, $start, $end);
+        if (! empty($metric['computed'])) {
+            if ($metrics) {
+                $field = match ($metric['computed']) {
+                    'true_wind_speed' => 'speed',
+                    'true_wind_direction' => 'direction',
+                    default => null,
+                };
+                if ($field) {
+                    return $metrics->getTrueWindSeries($field, $duration, $step, $start, $end);
+                }
+
+                if ($metric['computed'] === 'battery_power') {
+                    $current = $registry->fetchRange('house_battery_current', $step, $start, $end, fillGaps: true);
+                    $voltage = $registry->fetchRange('house_battery_voltage', $step, $start, $end, fillGaps: true);
+                    $voltByTs = collect($voltage)->keyBy('timestamp');
+
+                    return collect($current)->map(function (array $point) use ($voltByTs): array {
+                        $v = $voltByTs->get($point['timestamp']);
+                        $value = ($point['value'] !== null && $v && $v['value'] !== null)
+                            ? $point['value'] * $v['value']
+                            : null;
+
+                        return ['timestamp' => $point['timestamp'], 'value' => $value];
+                    })->all();
+                }
             }
-        }
-        if (! empty($metric['fallback'])) {
-            return $prometheus->queryRangeWithFallback($metric['query'], $metric['fallback'], $duration, $step, $start, $end);
+
+            return [];
         }
 
-        return $prometheus->queryRange($metric['query'] ?? '', $duration, $step, $start, $end);
+        $registryKey = $metric['metric'];
+
+        return $registry->fetchRangeWithFallback($registryKey, $step, $start, $end);
+    }
+
+    private function computeBatteryPower(MetricRegistry $registry): ?float
+    {
+        $values = $registry->fetchInstant(['house_battery_current', 'house_battery_voltage']);
+        $current = $values['house_battery_current'] ?? null;
+        $voltage = $values['house_battery_voltage'] ?? null;
+
+        if ($current === null || $voltage === null) {
+            return null;
+        }
+
+        return $current * $voltage;
     }
 
     private function getPassageData(): array

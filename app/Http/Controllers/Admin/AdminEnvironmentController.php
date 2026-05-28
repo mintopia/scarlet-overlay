@@ -3,8 +3,8 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Services\MetricRegistry;
 use App\Services\MetricsService;
-use App\Services\PrometheusService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -27,7 +27,7 @@ class AdminEnvironmentController extends Controller
         ]);
     }
 
-    public function series(Request $request, PrometheusService $prometheus): JsonResponse
+    public function series(Request $request, MetricRegistry $registry): JsonResponse
     {
         $range = $request->query('range', '24h');
         $config = self::RANGE_MAP[$range] ?? self::RANGE_MAP['24h'];
@@ -45,7 +45,12 @@ class AdminEnvironmentController extends Controller
                 continue;
             }
 
-            $data = $prometheus->queryRange($allMetrics[$slug]['query'], null, $step, $start, $end);
+            $registryKey = $allMetrics[$slug]['metric'] ?? null;
+            if ($registryKey === null) {
+                continue;
+            }
+
+            $data = $registry->fetchRange($registryKey, $step, $start, $end);
             $values = array_column($data, 'value');
 
             $results[$slug] = [

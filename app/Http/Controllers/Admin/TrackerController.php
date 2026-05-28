@@ -3,29 +3,25 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Services\MetricRegistry;
 use App\Services\MetricsService;
-use App\Services\PrometheusService;
 use Inertia\Inertia;
 
 class TrackerController extends Controller
 {
-    public function index(MetricsService $metrics, PrometheusService $prometheus)
+    public function index(MetricsService $metrics, MetricRegistry $registry)
     {
-        $tracker = config('scarlet.metrics.mappings.tracker');
-        $gps = config('scarlet.metrics.mappings.gps');
-        $wrap = fn (string $q) => $prometheus->wrapForRange($q);
-
         return Inertia::render('Admin/Tracker', [
             'tracker' => $metrics->getTrackerMetrics(),
             'gps' => $metrics->getGpsMetrics(),
             'signalHistory' => [
-                'lte' => $prometheus->queryRange($wrap($tracker['lte_rssi']), '1h', '60s'),
-                'wifi' => $prometheus->queryRange($wrap($tracker['wifi_rssi']), '1h', '60s'),
+                'lte' => $registry->fetchRange('tracker_lte_rssi', '60s', start: now()->subHour()->timestamp),
+                'wifi' => $registry->fetchRange('tracker_wifi_rssi', '60s', start: now()->subHour()->timestamp),
             ],
-            'gpsHistory' => $prometheus->queryRange($wrap($gps['satellites']), '1h', '60s'),
-            'cpuHistory' => $prometheus->queryRange($wrap($tracker['cpu_usage']), '1h', '60s'),
-            'tempHistory' => $prometheus->queryRange($wrap($tracker['cabin_temp']), '6h', '120s'),
-            'humidityHistory' => $prometheus->queryRange($wrap($tracker['cabin_humidity']), '6h', '120s'),
+            'gpsHistory' => $registry->fetchRange('gps_satellites', '60s', start: now()->subHour()->timestamp),
+            'cpuHistory' => $registry->fetchRange('tracker_cpu', '60s', start: now()->subHour()->timestamp),
+            'tempHistory' => $registry->fetchRange('cabin_temp_forepeak', '120s', start: now()->subHours(6)->timestamp),
+            'humidityHistory' => $registry->fetchRange('cabin_humidity_forepeak', '120s', start: now()->subHours(6)->timestamp),
         ]);
     }
 }

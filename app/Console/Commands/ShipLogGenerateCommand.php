@@ -4,7 +4,7 @@ namespace App\Console\Commands;
 
 use App\Models\Journey;
 use App\Models\ShipLog;
-use App\Services\PrometheusService;
+use App\Services\MetricRegistry;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Log;
 
@@ -16,7 +16,7 @@ class ShipLogGenerateCommand extends Command
 
     protected $description = 'Generate an hourly ship log entry from current Prometheus metrics';
 
-    public function handle(PrometheusService $prometheus): int
+    public function handle(MetricRegistry $registry): int
     {
         $stepSeconds = 3600;
         $timestamp = (int) floor(now()->timestamp / $stepSeconds) * $stepSeconds;
@@ -27,14 +27,14 @@ class ShipLogGenerateCommand extends Command
             return self::SUCCESS;
         }
 
-        $queries = $prometheus->resolveLogQueries();
+        $mapping = $registry->logMapping();
 
         try {
-            $values = $prometheus->queryMultipleAt($queries, $timestamp, fallback: true);
+            $values = $registry->fetchInstantMapped($mapping, $timestamp);
         } catch (\Throwable $e) {
             Log::error('Ship log: Prometheus query failed', ['error' => $e->getMessage()]);
             $this->error('Prometheus query failed: '.$e->getMessage());
-            $values = array_fill_keys(array_keys($queries), null);
+            $values = array_fill_keys(array_keys($mapping), null);
         }
 
         $logData = $this->buildLogData($values);

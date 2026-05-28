@@ -4,7 +4,7 @@ namespace Tests\Feature;
 
 use App\Models\Journey;
 use App\Models\ShipLog;
-use App\Services\PrometheusService;
+use App\Services\MetricRegistry;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -12,7 +12,7 @@ class ShipLogGenerateCommandTest extends TestCase
 {
     use RefreshDatabase;
 
-    private function mockPrometheus(array $values = []): void
+    private function mockRegistry(array $values = []): void
     {
         $defaults = [
             'latitude' => 50.75,
@@ -34,26 +34,23 @@ class ShipLogGenerateCommandTest extends TestCase
 
         $merged = array_merge($defaults, $values);
 
-        $prom = new PrometheusService;
-        $resolvedQueries = $prom->resolveLogQueries();
-
-        $mock = $this->mock(PrometheusService::class);
-        $mock->shouldReceive('resolveLogQueries')
-            ->andReturn($resolvedQueries);
-        $mock->shouldReceive('queryMultipleAt')
-            ->andReturnUsing(function (array $queries) use ($merged) {
-                $results = [];
-                foreach ($queries as $key => $promql) {
-                    $results[$key] = $merged[$key] ?? null;
+        $mock = $this->mock(MetricRegistry::class);
+        $mock->shouldReceive('logMapping')
+            ->andReturn(config('scarlet.metrics.groups.log'));
+        $mock->shouldReceive('fetchInstantMapped')
+            ->andReturnUsing(function (array $mapping) use ($merged) {
+                $result = [];
+                foreach ($mapping as $fieldName => $registryKey) {
+                    $result[$fieldName] = $merged[$fieldName] ?? null;
                 }
 
-                return $results;
+                return $result;
             });
     }
 
     public function test_generate_creates_ship_log_entry(): void
     {
-        $this->mockPrometheus();
+        $this->mockRegistry();
 
         $this->artisan('ship-log:generate')
             ->assertSuccessful();
@@ -70,7 +67,7 @@ class ShipLogGenerateCommandTest extends TestCase
 
     public function test_generate_is_idempotent(): void
     {
-        $this->mockPrometheus();
+        $this->mockRegistry();
 
         $this->artisan('ship-log:generate')->assertSuccessful();
         $this->artisan('ship-log:generate')->assertSuccessful();
@@ -81,7 +78,7 @@ class ShipLogGenerateCommandTest extends TestCase
     public function test_generate_associates_active_journey(): void
     {
         $journey = Journey::factory()->active()->create();
-        $this->mockPrometheus();
+        $this->mockRegistry();
 
         $this->artisan('ship-log:generate')->assertSuccessful();
 
@@ -91,12 +88,11 @@ class ShipLogGenerateCommandTest extends TestCase
 
     public function test_generate_handles_null_metrics(): void
     {
-        $prom = new PrometheusService;
-        $mock = $this->mock(PrometheusService::class);
-        $mock->shouldReceive('resolveLogQueries')
-            ->andReturn($prom->resolveLogQueries());
-        $mock->shouldReceive('queryMultipleAt')
-            ->andReturnUsing(fn (array $queries) => array_fill_keys(array_keys($queries), null));
+        $mock = $this->mock(MetricRegistry::class);
+        $mock->shouldReceive('logMapping')
+            ->andReturn(config('scarlet.metrics.groups.log'));
+        $mock->shouldReceive('fetchInstantMapped')
+            ->andReturnUsing(fn (array $mapping) => array_fill_keys(array_keys($mapping), null));
 
         $this->artisan('ship-log:generate')->assertSuccessful();
 
@@ -108,7 +104,7 @@ class ShipLogGenerateCommandTest extends TestCase
 
     public function test_generate_falls_back_to_signalk_cog_when_gps_heading_null(): void
     {
-        $this->mockPrometheus(['gps_heading' => null, 'cog' => 4.78]);
+        $this->mockRegistry(['gps_heading' => null, 'cog' => 4.78]);
 
         $this->artisan('ship-log:generate')->assertSuccessful();
 
@@ -118,7 +114,7 @@ class ShipLogGenerateCommandTest extends TestCase
 
     public function test_generate_filters_null_island_position(): void
     {
-        $this->mockPrometheus([
+        $this->mockRegistry([
             'latitude' => 0.0,
             'longitude' => 0.0,
         ]);
@@ -132,7 +128,7 @@ class ShipLogGenerateCommandTest extends TestCase
 
     public function test_generate_stores_valid_position(): void
     {
-        $this->mockPrometheus([
+        $this->mockRegistry([
             'latitude' => 43.54,
             'longitude' => 3.89,
         ]);
