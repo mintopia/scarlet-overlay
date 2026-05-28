@@ -138,7 +138,7 @@ return [
             ],
             'track' => ['track_latitude', 'track_longitude', 'track_sog'],
             'log' => [
-                'track_latitude', 'track_longitude', 'gps_heading',
+                'track_latitude', 'track_longitude',
                 'trip_log', 'wind_speed_apparent_raw', 'wind_angle_apparent_raw',
                 'speed_stw_raw', 'heading_raw', 'cog_raw',
                 'cabin_pressure_forepeak', 'nav_wp_distance', 'nav_wp_ttg',

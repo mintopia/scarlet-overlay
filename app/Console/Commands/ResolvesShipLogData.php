@@ -21,10 +21,9 @@ trait ResolvesShipLogData
             $values['heading_raw'],
         );
 
-        $gpsHeading = $values['gps_heading'];
         $cog = $values['cog_raw'];
         $heading = $values['heading_raw'];
-        $course = $gpsHeading ?? ($cog !== null ? rad2deg($cog) : ($heading !== null ? rad2deg($heading) : null));
+        $course = $cog !== null ? rad2deg($cog) : ($heading !== null ? rad2deg($heading) : null);
 
         return [
             'latitude' => $latitude,

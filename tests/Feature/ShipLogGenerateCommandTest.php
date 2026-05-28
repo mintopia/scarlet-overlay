@@ -17,7 +17,6 @@ class ShipLogGenerateCommandTest extends TestCase
         $defaults = [
             'track_latitude' => 50.75,
             'track_longitude' => -1.54,
-            'gps_heading' => 274.0,
             'trip_log' => 12.3,
             'wind_speed_apparent_raw' => 8.5,
             'wind_angle_apparent_raw' => 0.78,
@@ -63,7 +62,7 @@ class ShipLogGenerateCommandTest extends TestCase
         $this->assertEquals(50.75, (float) $log->latitude);
         $this->assertNotNull($log->wind_speed);
         $this->assertNotNull($log->wind_direction);
-        $this->assertEquals(274.0, (float) $log->course);
+        $this->assertEqualsWithDelta(rad2deg(4.78), (float) $log->course, 0.1);
     }
 
     public function test_generate_is_idempotent(): void
@@ -104,9 +103,9 @@ class ShipLogGenerateCommandTest extends TestCase
         $this->assertNull($log->course);
     }
 
-    public function test_generate_falls_back_to_signalk_cog_when_gps_heading_null(): void
+    public function test_generate_falls_back_to_heading_when_cog_null(): void
     {
-        $this->mockRegistry(['gps_heading' => null, 'cog_raw' => 4.78]);
+        $this->mockRegistry(['cog_raw' => null, 'heading_raw' => 4.78]);
 
         $this->artisan('ship-log:generate')->assertSuccessful();
 
