@@ -221,7 +221,7 @@ class ExploreController extends Controller
             $query = str_replace('keep_last_value(', '(', $query);
             $queries[$slug] = $query;
         }
-        $currentValues = $prometheus->queryMultipleAt($queries, now()->timestamp, fallback: true);
+        $currentValues = $prometheus->queryMultipleAt($queries, now()->timestamp, fallback: true, fallbackLookback: '2h');
 
         $computedWind = $metrics->getLatestTrueWind();
         if ($computedWind) {

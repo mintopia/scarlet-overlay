@@ -65,7 +65,7 @@ class PrometheusService
         }
     }
 
-    public function queryMultipleAt(array $queries, int $timestamp, bool $fallback = false): array
+    public function queryMultipleAt(array $queries, int $timestamp, bool $fallback = false, string $fallbackLookback = '10m'): array
     {
         $responses = Http::pool(function ($pool) use ($queries, $timestamp) {
             foreach ($queries as $key => $promql) {
@@ -98,7 +98,7 @@ class PrometheusService
 
         if (! empty($missingKeys)) {
             foreach ($missingKeys as $key => $promql) {
-                $results[$key] = $this->queryLastOverTimeAt($promql, $timestamp);
+                $results[$key] = $this->queryLastOverTimeAt($promql, $timestamp, $fallbackLookback);
             }
         }
 
@@ -245,7 +245,7 @@ class PrometheusService
         return $this->queryRange($fallback, $duration, $step, $start, $end);
     }
 
-    public function queryMultiple(array $queries): array
+    public function queryMultiple(array $queries, string $fallbackLookback = '2h'): array
     {
         $responses = Http::pool(function ($pool) use ($queries) {
             foreach ($queries as $key => $promql) {
@@ -256,6 +256,7 @@ class PrometheusService
         });
 
         $results = [];
+        $missingKeys = [];
         foreach ($queries as $key => $promql) {
             try {
                 $response = $responses[$key] ?? null;
@@ -268,6 +269,16 @@ class PrometheusService
             } catch (\Throwable $e) {
                 Log::warning("Prometheus query failed [{$promql}]: {$e->getMessage()}");
                 $results[$key] = null;
+            }
+
+            if ($results[$key] === null) {
+                $missingKeys[$key] = $promql;
+            }
+        }
+
+        if (! empty($missingKeys)) {
+            foreach ($missingKeys as $key => $promql) {
+                $results[$key] = $this->queryLastOverTimeAt($promql, now()->timestamp, $fallbackLookback);
             }
         }
 
