@@ -16,7 +16,7 @@ class DashboardController extends Controller
             ?? Journey::planned()
             ?? Journey::completed()->whereNotNull('route_waypoints')->orderByDesc('ended_at')->first();
 
-        $gpsTrack = $metrics->getGpsTrack('14d', '15s');
+        $gpsTrack = $metrics->getGpsTrack('14d', '60s');
 
         return Inertia::render('Public/Dashboard', [
             'initialMetrics' => $metrics->getAllMetrics(),

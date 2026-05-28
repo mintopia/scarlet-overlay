@@ -194,6 +194,11 @@ class MetricsService
 
     public function getGpsTrack(?string $duration = '48h', string $step = '30s', ?int $start = null, ?int $end = null): array
     {
+        if ($start === null && $duration) {
+            $start = now()->sub(CarbonInterval::fromString($duration))->timestamp;
+        }
+        $end = $end ?? now()->timestamp;
+
         $latData = $this->registry->fetchRange('track_latitude', $step, $start, $end, fillGaps: false);
         $lngData = $this->registry->fetchRange('track_longitude', $step, $start, $end, fillGaps: false);
         $sogData = $this->registry->fetchRange('track_sog', $step, $start, $end, fillGaps: false);

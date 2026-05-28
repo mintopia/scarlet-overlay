@@ -33,7 +33,7 @@ return [
         ],
 
         'registry' => [
-            'speed_sog' => ['query' => 'scarlet_signalk_navigation_speedOverGround', 'multiply' => 1.94384, 'fallback' => 'scarlet_gps_speed_kn'],
+            'speed_sog' => ['query' => 'scarlet_signalk_navigation_speedOverGround * 1.94384', 'fallback' => 'scarlet_gps_speed_kn'],
             'speed_stw' => ['query' => 'scarlet_signalk_navigation_speedThroughWater', 'multiply' => 1.94384],
             'heading' => ['query' => 'scarlet_signalk_navigation_headingTrue', 'multiply' => 180, 'divide' => 3.14159265359, 'fallback' => 'scarlet_signalk_navigation_headingMagnetic'],
             'cog' => ['query' => 'scarlet_signalk_navigation_courseOverGroundTrue', 'multiply' => 180, 'divide' => 3.14159265359],
@@ -91,9 +91,8 @@ return [
             'track_latitude' => ['query' => 'scarlet_gps_latitude_deg{device_mode="realtime",gps_source="signalk"} != 0'],
             'track_longitude' => ['query' => 'scarlet_gps_longitude_deg{device_mode="realtime",gps_source="signalk"} != 0'],
             'track_sog' => [
-                'query' => 'scarlet_signalk_navigation_speedOverGround',
+                'query' => 'scarlet_signalk_navigation_speedOverGround * 1.94384',
                 'fallback' => 'scarlet_gps_speed_kn',
-                'multiply' => 1.94384,
             ],
 
             'tracker_battery' => ['query' => 'scarlet_system_battery_voltage_volts'],
