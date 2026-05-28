@@ -41,7 +41,7 @@ class OverlayController extends Controller
             'passageFrom' => $journey?->from_port ?? '',
             'passageTo' => $journey?->to_port ?? '',
             'portName' => Journey::lastPort() ?? '',
-            'feedUrl' => request()->query('url', ''),
+            'feedUrl' => BoatSetting::getValue('camera_url', ''),
         ]);
     }
 }

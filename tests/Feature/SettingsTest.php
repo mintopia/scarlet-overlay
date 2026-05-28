@@ -32,15 +32,15 @@ class SettingsTest extends TestCase
         $this->assertEquals('235117890', BoatSetting::getValue('mmsi'));
     }
 
-    public function test_can_save_trip_settings(): void
+    public function test_can_save_camera_settings(): void
     {
         $user = User::factory()->owner()->create();
 
-        $response = $this->actingAs($user)->put('/admin/settings/port', [
-            'trip_offset' => 5.2,
+        $response = $this->actingAs($user)->put('/admin/settings/camera', [
+            'camera_url' => 'https://cam.example.com/embed',
         ]);
 
         $response->assertRedirect();
-        $this->assertEquals(5.2, BoatSetting::getValue('trip_offset'));
+        $this->assertEquals('https://cam.example.com/embed', BoatSetting::getValue('camera_url'));
     }
 }

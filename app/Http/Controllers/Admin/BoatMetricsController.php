@@ -3,7 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use App\Models\BoatSetting;
+use App\Models\Journey;
 use App\Services\MetricsService;
 use App\Services\PrometheusService;
 use Inertia\Inertia;
@@ -13,6 +13,7 @@ class BoatMetricsController extends Controller
     public function index(MetricsService $metrics, PrometheusService $prometheus)
     {
         $history = config('scarlet.metrics.mappings.history');
+        $journey = Journey::current();
 
         return Inertia::render('Admin/BoatMetrics', [
             'boat' => $metrics->getBoatMetrics(),
@@ -27,7 +28,7 @@ class BoatMetricsController extends Controller
             'humidityHistoryMainCabin' => $prometheus->queryRange($history['humidity_main_cabin'], '24h', '300s'),
             'fuelHistory' => $prometheus->queryRange($history['fuel_level'], '24h', '300s'),
             'waterHistory' => $prometheus->queryRange($history['water_level'], '24h', '300s'),
-            'tripOffset' => (float) BoatSetting::getValue('trip_offset', 0),
+            'tripDistance' => $journey?->distance,
         ]);
     }
 }

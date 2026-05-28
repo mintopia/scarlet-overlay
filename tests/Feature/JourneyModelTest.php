@@ -3,8 +3,8 @@
 namespace Tests\Feature;
 
 use App\Models\Journey;
-use App\Models\JourneyTrackPoint;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Validation\ValidationException;
 use Tests\TestCase;
 
 class JourneyModelTest extends TestCase
@@ -51,7 +51,7 @@ class JourneyModelTest extends TestCase
             'status' => 'active',
         ]);
 
-        $this->expectException(\Illuminate\Validation\ValidationException::class);
+        $this->expectException(ValidationException::class);
 
         Journey::createPlanned('Cowes', 'Portsmouth');
     }
@@ -92,6 +92,65 @@ class JourneyModelTest extends TestCase
 
         $this->assertGreaterThan(59, $journey->distance);
         $this->assertLessThan(61, $journey->distance);
+    }
+
+    public function test_last_port_returns_completed_journey_destination(): void
+    {
+        Journey::create([
+            'from_port' => 'Lymington',
+            'to_port' => 'Yarmouth',
+            'started_at' => now()->subDay(),
+            'ended_at' => now()->subHour(),
+            'status' => 'completed',
+        ]);
+
+        $this->assertEquals('Yarmouth', Journey::lastPort());
+    }
+
+    public function test_last_port_returns_active_journey_destination_when_underway(): void
+    {
+        Journey::create([
+            'from_port' => 'Lymington',
+            'to_port' => 'Yarmouth',
+            'started_at' => now()->subWeek(),
+            'ended_at' => now()->subDay(),
+            'status' => 'completed',
+        ]);
+
+        $active = Journey::create([
+            'from_port' => 'Yarmouth',
+            'to_port' => 'Cowes',
+            'started_at' => now()->subHour(),
+            'status' => 'active',
+        ]);
+
+        $active->trackPoints()->create([
+            'recorded_at' => now(),
+            'latitude' => 50.7,
+            'longitude' => -1.3,
+        ]);
+
+        $this->assertEquals('Cowes', Journey::lastPort());
+    }
+
+    public function test_last_port_returns_completed_destination_when_active_has_no_track(): void
+    {
+        Journey::create([
+            'from_port' => 'Lymington',
+            'to_port' => 'Yarmouth',
+            'started_at' => now()->subWeek(),
+            'ended_at' => now()->subDay(),
+            'status' => 'completed',
+        ]);
+
+        Journey::create([
+            'from_port' => 'Yarmouth',
+            'to_port' => 'Cowes',
+            'started_at' => now()->subHour(),
+            'status' => 'active',
+        ]);
+
+        $this->assertEquals('Yarmouth', Journey::lastPort());
     }
 
     public function test_scopes(): void

@@ -31,17 +31,6 @@ class SettingsController extends Controller
         return back()->with('success', 'Boat identity updated.');
     }
 
-    public function updatePort(Request $request)
-    {
-        $validated = $request->validate([
-            'trip_offset' => ['nullable', 'numeric', 'min:0'],
-        ]);
-
-        BoatSetting::setValue('trip_offset', $validated['trip_offset'] ?? 0);
-
-        return back()->with('success', 'Trip settings updated.');
-    }
-
     public function updateStream(Request $request, MediaMtxService $mediaMtx)
     {
         $validated = $request->validate([
@@ -56,6 +45,17 @@ class SettingsController extends Controller
         $mediaMtx->setPathSource('live', $srtUrl);
 
         return back()->with('success', 'Stream settings updated.');
+    }
+
+    public function updateCamera(Request $request)
+    {
+        $validated = $request->validate([
+            'camera_url' => ['nullable', 'url', 'max:500'],
+        ]);
+
+        BoatSetting::setValue('camera_url', $validated['camera_url'] ?? '');
+
+        return back()->with('success', 'Camera settings updated.');
     }
 
     public function forceReload()

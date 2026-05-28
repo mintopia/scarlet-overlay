@@ -16,9 +16,11 @@ class DashboardController extends Controller
             ?? Journey::planned()
             ?? Journey::completed()->whereNotNull('route_waypoints')->orderByDesc('ended_at')->first();
 
+        $gpsTrack = $metrics->getGpsTrack();
+
         return Inertia::render('Public/Dashboard', [
             'initialMetrics' => $metrics->getAllMetrics(),
-            'gpsTrack' => $metrics->getGpsTrack(),
+            'gpsTrack' => $gpsTrack,
             'boatName' => BoatSetting::getValue('boat_name', config('scarlet.name')),
             'passageFrom' => $journey?->from_port ?? '',
             'passageTo' => $journey?->to_port ?? '',
@@ -26,8 +28,25 @@ class DashboardController extends Controller
             'tileUrl' => '/openseamap/{z}/{x}/{y}',
             'reverb' => config('scarlet.reverb'),
             'reverbKey' => config('broadcasting.connections.reverb.key'),
-            'tripOffset' => (float) BoatSetting::getValue('trip_offset', 0),
+            'tripDistance' => $journey ? $journey->distance : $this->trackDistance($gpsTrack),
             'routeWaypoints' => $routeJourney?->route_waypoints ?? [],
         ]);
+    }
+
+    private function trackDistance(array $track): float
+    {
+        if (count($track) < 2) {
+            return 0;
+        }
+
+        $total = 0;
+        for ($i = 1; $i < count($track); $i++) {
+            $dLat = deg2rad($track[$i][0] - $track[$i - 1][0]);
+            $dLon = deg2rad($track[$i][1] - $track[$i - 1][1]);
+            $a = sin($dLat / 2) ** 2 + cos(deg2rad($track[$i - 1][0])) * cos(deg2rad($track[$i][0])) * sin($dLon / 2) ** 2;
+            $total += 3440.065 * 2 * atan2(sqrt($a), sqrt(1 - $a));
+        }
+
+        return round($total, 1);
     }
 }

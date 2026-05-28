@@ -376,7 +376,7 @@ const props = defineProps({
     humidityHistoryMainCabin: Array,
     fuelHistory: Array,
     waterHistory: Array,
-    tripOffset: { type: Number, default: 0 },
+    tripDistance: { type: Number, default: null },
 });
 
 const metrics = ref(null);
@@ -390,11 +390,7 @@ if (window.Echo) {
     });
 }
 const live = computed(() => metrics.value?.boat ?? props.boat);
-const adjustedTrip = computed(() => {
-    const raw = live.value?.trip_log;
-    if (raw == null) return null;
-    return Math.max(0, raw - props.tripOffset);
-});
+const adjustedTrip = computed(() => props.tripDistance);
 
 const now = ref(Date.now());
 let ticker = null;

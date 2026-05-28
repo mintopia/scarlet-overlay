@@ -61,8 +61,8 @@ Route::middleware('auth')->prefix('admin')->group(function () {
     Route::get('/', [AdminDashboardController::class, 'index'])->name('admin.dashboard');
     Route::get('/settings', [SettingsController::class, 'index'])->name('admin.settings');
     Route::put('/settings/identity', [SettingsController::class, 'updateIdentity'])->name('admin.settings.identity');
-    Route::put('/settings/port', [SettingsController::class, 'updatePort'])->name('admin.settings.port');
     Route::put('/settings/stream', [SettingsController::class, 'updateStream'])->name('admin.settings.stream');
+    Route::put('/settings/camera', [SettingsController::class, 'updateCamera'])->name('admin.settings.camera');
     Route::post('/settings/force-reload', [SettingsController::class, 'forceReload'])->name('admin.settings.force-reload');
     Route::get('broadcast', [StreamMonitorController::class, 'index'])->name('admin.broadcast');
     Route::redirect('stream', 'broadcast');

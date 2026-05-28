@@ -41,11 +41,21 @@ This means every metric has **at least 2 series**. GPS metrics have up to **5 se
 
 The `log` and `history` config mappings already use `max()`. The `explore` mapping does not need it because its queries go through `queryRangeWithFallback()` which also reads only `$result[0]` but the explore charts are less sensitive to gaps.
 
+### Multi-Source Position Fallback
+
+Position queries combine SignalK (preferred, higher density) and GPS (fallback). **Never use `or` to combine different metrics** — `or` is a set union, not a fallback. It returns ALL series from both sources, and `max()` then picks the numerically highest value at each timestamp, causing position jumps.
+
+**Rule: Use `max(A) default max(B)` for cross-source fallback.** The `max()` on each side collapses dual-ingestion series and strips labels. MetricsQL's `default` then provides true per-datapoint fallback: use SignalK where it has data, GPS where SignalK is missing.
+
+```
+max(scarlet_signalk_navigation_position_latitude != 0) default max(scarlet_gps_latitude_deg != 0)
+```
+
 ### Zero Filtering
 
-GPS position metrics (`scarlet_gps_latitude_deg`, `scarlet_gps_longitude_deg`) can report `0` when the GPS has no fix. **Do not filter zeros in PromQL** (`!= 0`) — this breaks instant queries by returning empty when the current value is 0. Instead, filter zeros in PHP:
+GPS position metrics can report `0` when the GPS has no fix. Position queries use `!= 0` inside `max()` to filter zeros at the query level. If both sources are zero/missing, the query returns empty and PHP null-handling takes over. Additional PHP-side filtering as a safety net:
 
-- Ship log: `ResolvesShipLogData::nonZero()` trait method
+- MetricsService: `isNullIsland()` check (abs < 0.1)
 - GPS service: `GpsService::getLocation()` Null Island check (abs < 0.1)
 - Journey import: explicit `abs() < 0.1` filter
 
@@ -176,8 +186,8 @@ The ship log (`ship_logs` table) records hourly snapshots. Config is at `config(
 
 | DB Field | PromQL | Source | Fallback | Notes |
 |----------|--------|--------|----------|-------|
-| `latitude` | `max(scarlet_gps_latitude_deg)` | GPS | SignalK position | Zeros filtered in PHP |
-| `longitude` | `max(scarlet_gps_longitude_deg)` | GPS | SignalK position | Zeros filtered in PHP |
+| `latitude` | `max(signalk_lat != 0) default max(gps_lat != 0)` | SignalK | GPS position | Zeros filtered in query + PHP |
+| `longitude` | `max(signalk_lng != 0) default max(gps_lng != 0)` | SignalK | GPS position | Zeros filtered in query + PHP |
 | `course` | `max(scarlet_gps_heading_deg)` | GPS compass | SignalK COG → SignalK heading | Fallback chain in PHP; COG/heading converted from radians |
 | `trip_log` | `max(scarlet_signalk_navigation_trip_log) / 1852` | SignalK | none | Cumulative, in nautical miles |
 | `wind_speed` | computed | SignalK | none | True wind calculated from AWS, AWA, STW, heading |
@@ -221,6 +231,16 @@ max(scarlet_gps_latitude_deg)
 max(scarlet_signalk_navigation_trip_log) / 1852
 max(scarlet_mqtt_pressure{topic="zigbee2mqtt/Forepeak cabin"})
 ```
+
+### For multi-source fallback (position queries)
+
+Aggregate each source independently with `max()`, then use `default` for fallback:
+
+```
+max(scarlet_signalk_navigation_position_latitude != 0) default max(scarlet_gps_latitude_deg != 0)
+```
+
+**Never use `max(A or B)` for different metrics** — `or` is a set union, and `max()` picks the numerically largest value, not the preferred source.
 
 ### Unit conversions in PromQL
 

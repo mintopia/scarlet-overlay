@@ -80,6 +80,11 @@ class Journey extends Model
 
     public static function lastPort(): ?string
     {
+        $active = static::current();
+        if ($active && $active->trackPoints()->exists()) {
+            return $active->to_port;
+        }
+
         return static::completed()
             ->orderByDesc('ended_at')
             ->value('to_port');

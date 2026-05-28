@@ -24,20 +24,6 @@
             </div>
         </form>
 
-        <!-- Trip Settings -->
-        <form @submit.prevent="portForm.put(route('admin.settings.port'))" class="panel p-6 mb-6">
-            <h2 class="text-[15px] font-semibold mb-4">Trip Settings</h2>
-            <div>
-                <label class="field-label">Trip Offset (nm)</label>
-                <input v-model.number="portForm.trip_offset" type="number" step="0.1" min="0" placeholder="0" class="field-input tabular-nums sm:max-w-[200px]" />
-                <p class="mt-1 text-[12px] text-text-secondary">Subtracted from the trip log when displayed on the dashboard and stream.</p>
-            </div>
-            <div class="flex items-center gap-3 mt-5">
-                <button type="submit" :disabled="portForm.processing" class="btn btn--primary">Save</button>
-                <Transition name="saved-fade"><SavedCheck v-if="portForm.wasSuccessful" /></Transition>
-            </div>
-        </form>
-
         <!-- Stream -->
         <form @submit.prevent="streamForm.put(route('admin.settings.stream'))" class="panel p-6 mb-6">
             <h2 class="text-[15px] font-semibold mb-4">Stream</h2>
@@ -58,6 +44,21 @@
             <div class="flex items-center gap-3 mt-5">
                 <button type="submit" :disabled="streamForm.processing" class="btn btn--primary">Save</button>
                 <Transition name="saved-fade"><SavedCheck v-if="streamForm.wasSuccessful" /></Transition>
+            </div>
+        </form>
+
+        <!-- Camera -->
+        <form @submit.prevent="cameraForm.put(route('admin.settings.camera'))" class="panel p-6 mb-6">
+            <h2 class="text-[15px] font-semibold mb-4">Camera</h2>
+            <div>
+                <label class="field-label">Camera Feed URL</label>
+                <input v-model="cameraForm.camera_url" type="url" placeholder="e.g. https://cam.example.com/embed" class="field-input" />
+                <p class="mt-1 text-[12px] text-text-secondary">URL of the camera feed to embed in the camera overlay page.</p>
+                <p v-if="cameraForm.errors.camera_url" class="field-error">{{ cameraForm.errors.camera_url }}</p>
+            </div>
+            <div class="flex items-center gap-3 mt-5">
+                <button type="submit" :disabled="cameraForm.processing" class="btn btn--primary">Save</button>
+                <Transition name="saved-fade"><SavedCheck v-if="cameraForm.wasSuccessful" /></Transition>
             </div>
         </form>
 
@@ -98,13 +99,13 @@ const identityForm = useForm({
     mmsi: props.settings?.mmsi ?? '',
 });
 
-const portForm = useForm({
-    trip_offset: props.settings?.trip_offset ?? 0,
-});
-
 const streamForm = useForm({
     srt_url: props.settings?.srt_url ?? '',
     srt_stats_url: props.settings?.srt_stats_url ?? '',
+});
+
+const cameraForm = useForm({
+    camera_url: props.settings?.camera_url ?? '',
 });
 
 const showReloadModal = ref(false);
