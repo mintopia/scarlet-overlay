@@ -114,45 +114,45 @@ class MetricRegistryTest extends TestCase
         $this->assertSame('nonexistent', $q);
     }
 
-    public function test_range_query_wraps_metric_with_keep_last_value(): void
+    public function test_range_query_non_sticky_uses_max_only(): void
     {
         $q = $this->registry->rangeQuery('plain_metric');
 
-        $this->assertSame('max(keep_last_value(scarlet_some_plain_metric))', $q);
+        $this->assertSame('max(scarlet_some_plain_metric)', $q);
     }
 
-    public function test_range_query_wraps_and_applies_multiply(): void
+    public function test_range_query_non_sticky_applies_multiply(): void
     {
         $q = $this->registry->rangeQuery('speed_sog');
 
-        $this->assertSame('(max(keep_last_value(scarlet_signalk_navigation_speedOverGround))) * 1.94384', $q);
+        $this->assertSame('(max(scarlet_signalk_navigation_speedOverGround)) * 1.94384', $q);
     }
 
-    public function test_range_query_wraps_and_applies_multiply_then_divide(): void
+    public function test_range_query_non_sticky_applies_multiply_then_divide(): void
     {
         $q = $this->registry->rangeQuery('heading');
 
-        $this->assertSame('((max(keep_last_value(scarlet_signalk_navigation_headingTrue))) * 180) / 3.14159265359', $q);
+        $this->assertSame('((max(scarlet_signalk_navigation_headingTrue)) * 180) / 3.14159265359', $q);
     }
 
-    public function test_range_query_wraps_and_applies_subtract(): void
+    public function test_range_query_non_sticky_applies_subtract(): void
     {
         $q = $this->registry->rangeQuery('water_temp');
 
-        $this->assertSame('(max(keep_last_value(scarlet_signalk_environment_water_temperature))) - 273.15', $q);
+        $this->assertSame('(max(scarlet_signalk_environment_water_temperature)) - 273.15', $q);
     }
 
-    public function test_range_query_with_fallback_wraps_each_side_independently(): void
+    public function test_range_query_non_sticky_fallback_wraps_each_side(): void
     {
         $q = $this->registry->rangeQuery('gps_latitude');
 
         $this->assertSame(
-            '(max(keep_last_value(scarlet_gps_latitude_deg{gps_source="signalk"})) != 0) default (max(keep_last_value(scarlet_gps_latitude_deg{gps_source="onboard"})) != 0)',
+            '(max(scarlet_gps_latitude_deg{gps_source="signalk"}) != 0) default (max(scarlet_gps_latitude_deg{gps_source="onboard"}) != 0)',
             $q
         );
     }
 
-    public function test_range_query_with_label_filter_wraps_correctly(): void
+    public function test_range_query_sticky_uses_keep_last_value(): void
     {
         $q = $this->registry->rangeQuery('cabin_temp_main');
 
@@ -206,7 +206,7 @@ class MetricRegistryTest extends TestCase
             ->expects($this->once())
             ->method('queryRange')
             ->with(
-                '(max(keep_last_value(scarlet_signalk_navigation_speedOverGround))) * 1.94384',
+                '(max(scarlet_signalk_navigation_speedOverGround)) * 1.94384',
                 null,
                 '30s',
                 1000,
@@ -226,8 +226,8 @@ class MetricRegistryTest extends TestCase
             ->expects($this->once())
             ->method('queryRangeWithFallback')
             ->with(
-                'max(keep_last_value(scarlet_gps_latitude_deg{gps_source="signalk"})) != 0',
-                'max(keep_last_value(scarlet_gps_latitude_deg{gps_source="onboard"})) != 0',
+                'max(scarlet_gps_latitude_deg{gps_source="signalk"}) != 0',
+                'max(scarlet_gps_latitude_deg{gps_source="onboard"}) != 0',
                 null,
                 '15s',
                 1000,
@@ -246,7 +246,7 @@ class MetricRegistryTest extends TestCase
             ->expects($this->once())
             ->method('queryRange')
             ->with(
-                '(max(keep_last_value(scarlet_signalk_navigation_speedOverGround))) * 1.94384',
+                '(max(scarlet_signalk_navigation_speedOverGround)) * 1.94384',
                 null,
                 '15s',
                 null,

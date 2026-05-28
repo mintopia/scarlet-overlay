@@ -38,11 +38,12 @@ class MetricRegistry
             return $key;
         }
 
-        $wrappedPrimary = $this->wrapMetric($def['query']);
+        $sticky = $def['sticky'] ?? false;
+        $wrappedPrimary = $sticky ? $this->wrapMetricSticky($def['query']) : $this->wrapMetric($def['query']);
         $wrappedPrimary = $this->applyArithmetic($wrappedPrimary, $def);
 
         if (isset($def['fallback'])) {
-            $wrappedFallback = $this->wrapMetric($def['fallback']);
+            $wrappedFallback = $sticky ? $this->wrapMetricSticky($def['fallback']) : $this->wrapMetric($def['fallback']);
             $wrappedFallback = $this->applyArithmetic($wrappedFallback, $def);
 
             return "({$wrappedPrimary}) default ({$wrappedFallback})";
@@ -61,6 +62,18 @@ class MetricRegistry
         return $this->prometheus->queryMultipleAt($queries, $timestamp ?? now()->timestamp, fallback: true);
     }
 
+    public function fetchInstantWithAge(array $keys): array
+    {
+        $results = [];
+        foreach ($keys as $key) {
+            $query = $this->instantQuery($key);
+            $data = $this->prometheus->queryWithTimestamp($query);
+            $results[$key] = $data;
+        }
+
+        return $results;
+    }
+
     public function fetchRange(string $key, string $step, ?int $start = null, ?int $end = null, bool $fillGaps = true): array
     {
         return $this->prometheus->queryRange($this->rangeQuery($key), null, $step, $start, $end, $fillGaps);
@@ -71,11 +84,11 @@ class MetricRegistry
         $def = $this->definition($key);
 
         if ($def !== null && isset($def['fallback'])) {
-            $primaryWrapped = $this->wrapMetric($def['query']);
-            $primaryWrapped = $this->applyArithmetic($primaryWrapped, $def);
+            $sticky = $def['sticky'] ?? false;
+            $wrap = fn (string $q) => $sticky ? $this->wrapMetricSticky($q) : $this->wrapMetric($q);
 
-            $fallbackWrapped = $this->wrapMetric($def['fallback']);
-            $fallbackWrapped = $this->applyArithmetic($fallbackWrapped, $def);
+            $primaryWrapped = $this->applyArithmetic($wrap($def['query']), $def);
+            $fallbackWrapped = $this->applyArithmetic($wrap($def['fallback']), $def);
 
             return $this->prometheus->queryRangeWithFallback($primaryWrapped, $fallbackWrapped, null, $step, $start, $end);
         }
@@ -92,7 +105,16 @@ class MetricRegistry
     {
         return preg_replace_callback(
             '/\b(scarlet_[a-zA-Z0-9_:]*)(\{[^}]*\})?( != 0)?/',
-            fn (array $m) => "max(keep_last_value({$m[1]}".($m[2] ?? '').'))'.($m[3] ?? ''),
+            fn (array $m) => 'max('.$m[1].($m[2] ?? '').')'.($m[3] ?? ''),
+            $query,
+        );
+    }
+
+    protected function wrapMetricSticky(string $query): string
+    {
+        return preg_replace_callback(
+            '/\b(scarlet_[a-zA-Z0-9_:]*)(\{[^}]*\})?( != 0)?/',
+            fn (array $m) => 'max(keep_last_value('.$m[1].($m[2] ?? '').'))'.($m[3] ?? ''),
             $query,
         );
     }

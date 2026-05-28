@@ -129,7 +129,7 @@ class PrometheusService
         return $result['timestamp'] ?? null;
     }
 
-    protected function queryWithTimestamp(string $promql, string $lookback = '24h'): ?array
+    public function queryWithTimestamp(string $promql, string $lookback = '7d'): ?array
     {
         $wrapped = preg_replace_callback(
             '/\b(scarlet_[a-zA-Z0-9_:]*)(\{[^}]*\})?/',
