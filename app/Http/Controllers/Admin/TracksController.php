@@ -38,11 +38,8 @@ class TracksController extends Controller
         }
 
         $duration = $end - $start;
-        $step = match (true) {
-            $duration > 14 * 86400 => '120s',
-            $duration > 7 * 86400 => '60s',
-            default => '30s',
-        };
+        $targetPoints = 8000;
+        $step = max(15, (int) ceil($duration / $targetPoints)).'s';
 
         $gpsTrack = $metrics->getGpsTrack(null, $step, $start, $end);
 
