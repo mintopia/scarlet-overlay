@@ -24,6 +24,7 @@
                 <NavLink href="/admin" icon="home" :active="currentPage === 'Admin/Dashboard'" @click="sidebarOpen = false">Dashboard</NavLink>
                 <NavLink href="/admin/journeys" icon="compass" :active="currentPage?.startsWith('Admin/Journey')" @click="sidebarOpen = false">Journeys</NavLink>
                 <NavLink href="/admin/log" icon="clipboard" :active="currentPage === 'Admin/Log'" @click="sidebarOpen = false">Ship's Log</NavLink>
+                <NavLink href="/admin/tracks" icon="map" :active="currentPage === 'Admin/Tracks'" @click="sidebarOpen = false">Tracks</NavLink>
                 <NavLink href="/admin/environment" icon="thermometer" :active="currentPage === 'Admin/Environment'" @click="sidebarOpen = false">Environment</NavLink>
                 <NavLink href="/admin/explore" icon="search" :active="currentPage?.startsWith('Admin/Explore')" @click="sidebarOpen = false">Explore</NavLink>
 

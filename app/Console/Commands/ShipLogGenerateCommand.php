@@ -27,14 +27,14 @@ class ShipLogGenerateCommand extends Command
             return self::SUCCESS;
         }
 
-        $queries = config('scarlet.metrics.mappings.log');
-        $values = [];
+        $queries = collect(config('scarlet.metrics.mappings.log'))->map(function ($q) {
+            $q = preg_replace('/\bmax\(/', '(', $q);
+
+            return str_replace('keep_last_value(', '(', $q);
+        })->all();
 
         try {
-            foreach ($queries as $key => $promql) {
-                $data = $prometheus->queryRange($promql, null, $stepSeconds.'s', $timestamp, $timestamp);
-                $values[$key] = ! empty($data) ? $data[0]['value'] : null;
-            }
+            $values = $prometheus->queryMultipleAt($queries, $timestamp, fallback: true);
         } catch (\Throwable $e) {
             Log::error('Ship log: Prometheus query failed', ['error' => $e->getMessage()]);
             $this->error('Prometheus query failed: '.$e->getMessage());

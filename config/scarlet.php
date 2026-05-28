@@ -95,8 +95,8 @@ return [
             ],
 
             'gps' => [
-                'latitude' => 'max(scarlet_signalk_navigation_position_latitude != 0) default max(scarlet_gps_latitude_deg{gps_source="signalk"} != 0) default max(scarlet_gps_latitude_deg{gps_source="onboard"} != 0)',
-                'longitude' => 'max(scarlet_signalk_navigation_position_longitude != 0) default max(scarlet_gps_longitude_deg{gps_source="signalk"} != 0) default max(scarlet_gps_longitude_deg{gps_source="onboard"} != 0)',
+                'latitude' => 'max(scarlet_gps_latitude_deg{gps_source="signalk"} != 0) default max(scarlet_gps_latitude_deg{gps_source="onboard"} != 0)',
+                'longitude' => 'max(scarlet_gps_longitude_deg{gps_source="signalk"} != 0) default max(scarlet_gps_longitude_deg{gps_source="onboard"} != 0)',
                 'altitude' => 'scarlet_gps_altitude_meters',
                 'satellites' => 'scarlet_gps_satellites',
                 'hdop' => 'scarlet_gps_hdop',
@@ -105,8 +105,8 @@ return [
             ],
 
             'history' => [
-                'track_latitude' => 'max(keep_last_value(scarlet_signalk_navigation_position_latitude != 0)) default max(keep_last_value(scarlet_gps_latitude_deg{gps_source="signalk"} != 0)) default max(keep_last_value(scarlet_gps_latitude_deg{gps_source="onboard"} != 0))',
-                'track_longitude' => 'max(keep_last_value(scarlet_signalk_navigation_position_longitude != 0)) default max(keep_last_value(scarlet_gps_longitude_deg{gps_source="signalk"} != 0)) default max(keep_last_value(scarlet_gps_longitude_deg{gps_source="onboard"} != 0))',
+                'track_latitude' => 'max(keep_last_value(scarlet_gps_latitude_deg{device_mode="realtime",gps_source="signalk"} != 0))',
+                'track_longitude' => 'max(keep_last_value(scarlet_gps_longitude_deg{device_mode="realtime",gps_source="signalk"} != 0))',
                 'track_sog' => '(max(keep_last_value(scarlet_signalk_navigation_speedOverGround)) * 1.94384) default max(keep_last_value(scarlet_gps_speed_kn))',
                 'battery' => 'max(scarlet_signalk_electrical_batteries_0_voltage)',
                 'speed' => 'max(scarlet_signalk_navigation_speedOverGround) * 1.94384',
@@ -488,9 +488,9 @@ return [
             ],
 
             'log' => [
-                'latitude' => 'max(keep_last_value(scarlet_signalk_navigation_position_latitude != 0)) default max(keep_last_value(scarlet_gps_latitude_deg{gps_source="signalk"} != 0)) default max(keep_last_value(scarlet_gps_latitude_deg{gps_source="onboard"} != 0))',
-                'longitude' => 'max(keep_last_value(scarlet_signalk_navigation_position_longitude != 0)) default max(keep_last_value(scarlet_gps_longitude_deg{gps_source="signalk"} != 0)) default max(keep_last_value(scarlet_gps_longitude_deg{gps_source="onboard"} != 0))',
-                'gps_heading' => 'max(keep_last_value(scarlet_signalk_navigation_headingTrue)) * 180 / 3.14159265359 default max(keep_last_value(scarlet_gps_heading_deg))',
+                'latitude' => 'max(keep_last_value(scarlet_gps_latitude_deg{device_mode="realtime",gps_source="signalk"} != 0))',
+                'longitude' => 'max(keep_last_value(scarlet_gps_longitude_deg{device_mode="realtime",gps_source="signalk"} != 0))',
+                'gps_heading' => 'max(keep_last_value(scarlet_gps_heading_deg))',
                 'trip_log' => 'max(keep_last_value(scarlet_signalk_navigation_trip_log)) / 1852',
                 'aws' => 'max(keep_last_value(scarlet_signalk_environment_wind_speedApparent))',
                 'awa' => 'max(keep_last_value(scarlet_signalk_environment_wind_angleApparent))',

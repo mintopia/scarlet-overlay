@@ -193,13 +193,13 @@ class MetricsService
         ];
     }
 
-    public function getGpsTrack(string $duration = '48h', string $step = '30s'): array
+    public function getGpsTrack(?string $duration = '48h', string $step = '30s', ?int $start = null, ?int $end = null): array
     {
         $history = config('scarlet.metrics.mappings.history');
 
-        $latData = $this->prometheus->queryRange($history['track_latitude'], $duration, $step, fillGaps: false);
-        $lngData = $this->prometheus->queryRange($history['track_longitude'], $duration, $step, fillGaps: false);
-        $sogData = $this->prometheus->queryRange($history['track_sog'], $duration, $step, fillGaps: false);
+        $latData = $this->prometheus->queryRange($history['track_latitude'], $duration, $step, $start, $end, fillGaps: false);
+        $lngData = $this->prometheus->queryRange($history['track_longitude'], $duration, $step, $start, $end, fillGaps: false);
+        $sogData = $this->prometheus->queryRange($history['track_sog'], $duration, $step, $start, $end, fillGaps: false);
 
         $lngByTs = collect($lngData)->keyBy('timestamp');
         $sogByTs = collect($sogData)->keyBy('timestamp');

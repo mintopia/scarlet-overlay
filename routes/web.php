@@ -11,6 +11,7 @@ use App\Http\Controllers\Admin\SettingsController;
 use App\Http\Controllers\Admin\StreamMonitorController;
 use App\Http\Controllers\Admin\TeamController;
 use App\Http\Controllers\Admin\TrackerController;
+use App\Http\Controllers\Admin\TracksController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\PasskeyController;
 use App\Http\Controllers\Auth\RegisterController;
@@ -75,6 +76,7 @@ Route::middleware('auth')->prefix('admin')->group(function () {
     Route::get('/environment/series', [AdminEnvironmentController::class, 'series'])->name('admin.environment.series');
     Route::redirect('/weather', '/admin/environment');
     Route::get('/log', [AdminLogController::class, 'index'])->name('admin.log');
+    Route::get('/tracks', [TracksController::class, 'index'])->name('admin.tracks');
     Route::patch('/ship-log/{shipLog}', [AdminLogController::class, 'update'])->name('admin.ship-log.update');
     Route::get('/profile', [ProfileController::class, 'index'])->name('admin.profile');
     Route::put('/profile', [ProfileController::class, 'update'])->name('admin.profile.update');

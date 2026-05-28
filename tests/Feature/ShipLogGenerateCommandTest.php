@@ -35,15 +35,26 @@ class ShipLogGenerateCommandTest extends TestCase
         $merged = array_merge($defaults, $values);
 
         $mock = $this->mock(PrometheusService::class);
-        $mock->shouldReceive('queryRange')
-            ->andReturnUsing(function (string $promql) use ($merged) {
-                $queries = config('scarlet.metrics.mappings.log');
-                $key = array_search($promql, $queries);
-                if ($key === false || $merged[$key] === null) {
-                    return [];
+        $mock->shouldReceive('queryMultipleAt')
+            ->andReturnUsing(function (array $queries) use ($merged) {
+                $logQueries = config('scarlet.metrics.mappings.log');
+                $results = [];
+                foreach ($queries as $key => $promql) {
+                    $logKey = array_search($promql, $logQueries);
+                    if ($logKey === false) {
+                        foreach ($logQueries as $lk => $lq) {
+                            $stripped = preg_replace('/\bmax\(/', '(', $lq);
+                            $stripped = str_replace('keep_last_value(', '(', $stripped);
+                            if ($stripped === $promql) {
+                                $logKey = $lk;
+                                break;
+                            }
+                        }
+                    }
+                    $results[$key] = ($logKey !== false) ? $merged[$logKey] : null;
                 }
 
-                return [['timestamp' => time(), 'value' => $merged[$key]]];
+                return $results;
             });
     }
 
@@ -88,8 +99,8 @@ class ShipLogGenerateCommandTest extends TestCase
     public function test_generate_handles_null_metrics(): void
     {
         $mock = $this->mock(PrometheusService::class);
-        $mock->shouldReceive('queryRange')
-            ->andReturn([]);
+        $mock->shouldReceive('queryMultipleAt')
+            ->andReturnUsing(fn (array $queries) => array_fill_keys(array_keys($queries), null));
 
         $this->artisan('ship-log:generate')->assertSuccessful();
 
