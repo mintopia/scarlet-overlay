@@ -9,6 +9,7 @@ use App\Services\GpxService;
 use App\Services\JourneyService;
 use App\Services\MetricsService;
 use Illuminate\Http\Request;
+use Illuminate\Validation\ValidationException;
 use Inertia\Inertia;
 
 class JourneyController extends Controller
@@ -52,7 +53,7 @@ class JourneyController extends Controller
             $journey = Journey::createPlanned($validated['from_port'], $validated['to_port'], [
                 'notes' => $validated['notes'] ?? null,
             ]);
-        } catch (\Illuminate\Validation\ValidationException $e) {
+        } catch (ValidationException $e) {
             return back()->withErrors($e->errors());
         }
 
@@ -124,8 +125,8 @@ class JourneyController extends Controller
             $logRows = $metrics->getLogData(
                 null,
                 (string) $step,
-                $journey->started_at->timestamp,
-                $journey->ended_at->timestamp,
+                $journey->started_at->startOfHour()->timestamp,
+                $journey->ended_at->endOfHour()->timestamp,
             );
         }
 
@@ -146,7 +147,7 @@ class JourneyController extends Controller
     {
         $validated = $request->validate([
             'title' => ['required', 'string', 'max:200'],
-            'slug' => ['required', 'string', 'max:200', 'unique:journeys,slug,' . $journey->id],
+            'slug' => ['required', 'string', 'max:200', 'unique:journeys,slug,'.$journey->id],
             'from_port' => ['required', 'string', 'max:100'],
             'to_port' => ['required', 'string', 'max:100'],
             'is_public' => ['boolean'],
@@ -169,7 +170,7 @@ class JourneyController extends Controller
     {
         try {
             $journey->activate();
-        } catch (\Illuminate\Validation\ValidationException $e) {
+        } catch (ValidationException $e) {
             return back()->withErrors($e->errors());
         }
 
@@ -185,7 +186,7 @@ class JourneyController extends Controller
 
     public function reimport(Journey $journey)
     {
-        if (!$journey->started_at || !$journey->ended_at) {
+        if (! $journey->started_at || ! $journey->ended_at) {
             return back()->withErrors(['reimport' => 'Journey must have start and end times to import track data.']);
         }
 
