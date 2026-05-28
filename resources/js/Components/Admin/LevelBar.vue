@@ -6,15 +6,15 @@ const props = defineProps({
 })
 
 const gradients = {
-    green: 'linear-gradient(90deg, oklch(0.4 0.14 150), oklch(0.48 0.16 150))',
-    amber: 'linear-gradient(90deg, oklch(0.48 0.14 70), oklch(0.56 0.17 70))',
-    blue: 'linear-gradient(90deg, oklch(0.38 0.11 245), oklch(0.45 0.14 245))',
+    green: 'linear-gradient(90deg, var(--color-green), color-mix(in oklch, var(--color-green) 80%, white))',
+    amber: 'linear-gradient(90deg, var(--color-amber), color-mix(in oklch, var(--color-amber) 80%, white))',
+    blue: 'linear-gradient(90deg, var(--color-blue), color-mix(in oklch, var(--color-blue) 80%, white))',
 }
 
 const glows = {
-    green: '0 0 6px oklch(0.48 0.16 150 / 0.15)',
-    amber: '0 0 6px oklch(0.56 0.17 70 / 0.12)',
-    blue: '0 0 6px oklch(0.45 0.14 245 / 0.12)',
+    green: '0 0 6px color-mix(in oklch, var(--color-green) 15%, transparent)',
+    amber: '0 0 6px color-mix(in oklch, var(--color-amber) 12%, transparent)',
+    blue: '0 0 6px color-mix(in oklch, var(--color-blue) 12%, transparent)',
 }
 </script>
 
@@ -51,7 +51,7 @@ const glows = {
 .level-bar__track {
     flex: 1;
     height: 10px;
-    background: oklch(0.93 0.01 205);
+    background: var(--color-bg);
     border-radius: 5px;
     overflow: hidden;
 }

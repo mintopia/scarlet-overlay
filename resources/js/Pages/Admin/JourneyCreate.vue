@@ -3,8 +3,8 @@
         <Head title="Plan Journey" />
         <h1 class="text-[22px] font-bold mb-6">Plan Journey</h1>
 
-        <div v-if="hasActiveOrPlanned" class="panel mb-6 border-amber-200 bg-amber-50">
-            <p class="text-[13px] text-amber-800">A journey is already planned or active. End or delete it first.</p>
+        <div v-if="hasActiveOrPlanned" class="panel mb-6 border-border bg-amber-bg p-4">
+            <p class="text-[13px] text-amber">A journey is already planned or active. End or delete it first.</p>
         </div>
 
         <form @submit.prevent="form.post('/admin/journeys')" class="panel p-6">

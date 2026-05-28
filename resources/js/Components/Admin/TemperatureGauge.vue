@@ -94,7 +94,7 @@ const sparkPath = computed(() => {
 }
 
 .gauge:hover {
-    border-color: oklch(0.80 0.01 205);
+    border-color: var(--color-text-dim);
 }
 
 .gauge:focus-visible {
@@ -103,8 +103,8 @@ const sparkPath = computed(() => {
 }
 
 .gauge--selected {
-    border-color: oklch(0.48 0.22 25 / 0.3);
-    background: oklch(0.48 0.22 25 / 0.02);
+    border-color: var(--color-scarlet-light);
+    background: color-mix(in oklch, var(--color-scarlet) 3%, transparent);
 }
 
 .gauge--selected .gauge__label {

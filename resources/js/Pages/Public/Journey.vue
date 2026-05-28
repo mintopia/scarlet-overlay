@@ -5,6 +5,7 @@ import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import { speedToColor, makeBoatIcon, formatCoord, addRouteLayer } from '../../scarlet';
 import { fmt, fmtDuration } from '@/composables/useFormatters.js';
+import { theme } from '@/composables/useTheme.js';
 
 const props = defineProps({
     journey: Object,
@@ -113,9 +114,20 @@ onMounted(() => {
     if (!mapEl.value || !props.gpsTrack.length) return;
 
     const firstPt = props.gpsTrack[0];
+    const tileUrl = theme.value === 'dark' || theme.value === 'night'
+        ? '/openseamap-dark/{z}/{x}/{y}'
+        : '/openseamap/{z}/{x}/{y}';
     map = L.map(mapEl.value, { zoomControl: false, attributionControl: false })
         .setView([firstPt[0], firstPt[1]], 14);
-    L.tileLayer('/openseamap/{z}/{x}/{y}', { maxZoom: 18 }).addTo(map);
+    let tileLayer = L.tileLayer(tileUrl, { maxZoom: 18 }).addTo(map);
+
+    watch(theme, (t) => {
+        const url = t === 'dark' || t === 'night'
+            ? '/openseamap-dark/{z}/{x}/{y}'
+            : '/openseamap/{z}/{x}/{y}';
+        map.removeLayer(tileLayer);
+        tileLayer = L.tileLayer(url, { maxZoom: 18 }).addTo(map);
+    });
 
     for (let i = 1; i < props.gpsTrack.length; i++) {
         L.polyline(

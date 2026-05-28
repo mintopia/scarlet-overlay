@@ -48,7 +48,7 @@ const { toasts, dismiss } = useToast();
     background: var(--color-surface);
     border: 1px solid var(--color-border);
     border-radius: 8px;
-    box-shadow: 0 4px 20px oklch(0.2 0.02 205 / 0.14);
+    box-shadow: var(--shadow-sm), 0 4px 20px oklch(0.0 0.0 0 / 0.14);
     font-size: 13px;
     font-weight: 500;
     font-family: var(--font-body);

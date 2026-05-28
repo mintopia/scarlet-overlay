@@ -38,6 +38,7 @@ import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import AdminLayout from '@/Layouts/AdminLayout.vue';
 import { speedToColor, addRouteLayer } from '../../scarlet.js';
+import { theme } from '@/composables/useTheme.js';
 
 const props = defineProps({
     gpsTrack: { type: Array, default: () => [] },
@@ -50,6 +51,7 @@ const mapEl = ref(null);
 const selectedPeriod = ref(props.period);
 let map = null;
 let trackLayer = null;
+let tileLayer = null;
 
 function changePeriod() {
     router.get('/admin/tracks', { period: selectedPeriod.value }, { preserveState: true });
@@ -63,8 +65,19 @@ function buildMap() {
     if (!mapEl.value) return;
 
     if (!map) {
+        const tileUrl = theme.value === 'dark' || theme.value === 'night'
+            ? '/openseamap-dark/{z}/{x}/{y}'
+            : '/openseamap/{z}/{x}/{y}';
         map = L.map(mapEl.value, { zoomControl: true, attributionControl: false }).setView([0, 0], 2);
-        L.tileLayer('/openseamap/{z}/{x}/{y}', { maxZoom: 18 }).addTo(map);
+        tileLayer = L.tileLayer(tileUrl, { maxZoom: 18 }).addTo(map);
+
+        watch(theme, (t) => {
+            const url = t === 'dark' || t === 'night'
+                ? '/openseamap-dark/{z}/{x}/{y}'
+                : '/openseamap/{z}/{x}/{y}';
+            map.removeLayer(tileLayer);
+            tileLayer = L.tileLayer(url, { maxZoom: 18 }).addTo(map);
+        });
     }
 
     trackLayer = L.layerGroup().addTo(map);
@@ -112,7 +125,7 @@ onUnmounted(() => {
 
 .toolbar {
     padding: 12px 16px;
-    border-bottom: 1px solid oklch(0.90 0.005 70);
+    border-bottom: 1px solid var(--color-border-light);
     flex-shrink: 0;
 }
 
@@ -130,7 +143,7 @@ onUnmounted(() => {
 
 .toolbar-label-text {
     font-size: 12px;
-    color: oklch(0.55 0.01 70);
+    color: var(--color-text-dim);
     text-transform: uppercase;
     letter-spacing: 0.05em;
     font-weight: 600;
@@ -149,7 +162,7 @@ onUnmounted(() => {
     align-items: center;
     justify-content: center;
     font-size: 14px;
-    color: oklch(0.55 0.01 70);
+    color: var(--color-text-dim);
 }
 
 .speed-legend {
@@ -160,18 +173,18 @@ onUnmounted(() => {
     display: flex;
     align-items: center;
     gap: 6px;
-    background: white;
+    background: var(--color-surface);
     border-radius: 8px;
     padding: 6px 12px;
     font-size: 11px;
-    color: oklch(0.45 0.01 70);
-    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
+    color: var(--color-text-secondary);
+    box-shadow: var(--shadow-sm);
 }
 
 .legend-gradient {
     width: 60px;
     height: 8px;
     border-radius: 4px;
-    background: linear-gradient(to right, oklch(0.50 0.14 265), oklch(0.64 0.20 155), oklch(0.54 0.24 27));
+    background: linear-gradient(to right, var(--color-blue), var(--color-green), var(--color-scarlet));
 }
 </style>

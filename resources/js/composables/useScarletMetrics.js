@@ -1,8 +1,9 @@
 // resources/js/composables/useScarletMetrics.js
-import { ref, computed, unref, onUnmounted } from 'vue';
+import { ref, computed, unref, watch, onUnmounted } from 'vue';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import { speedToColor, makeBoatIcon, formatCoord, getWeatherIcon, getWeatherLabel, addRouteLayer } from '../scarlet';
+import { theme } from './useTheme.js';
 
 export function useScarletMetrics(options = {}) {
     const {
@@ -93,6 +94,12 @@ export function useScarletMetrics(options = {}) {
     const mapTargets = [];
     const trackPoints = [];
 
+    function tileUrlForTheme(t) {
+        return t === 'dark' || t === 'night'
+            ? '/openseamap-dark/{z}/{x}/{y}'
+            : '/openseamap/{z}/{x}/{y}';
+    }
+
     function initMap(el, opts = {}) {
         const interactive = opts.interactive !== false;
         const mapOpts = {
@@ -112,7 +119,13 @@ export function useScarletMetrics(options = {}) {
             ? [gps.value.latitude, gps.value.longitude]
             : [50.6931, -1.6433];
         const map = L.map(el, mapOpts).setView(initialPos, 16);
-        L.tileLayer('/openseamap/{z}/{x}/{y}', { maxZoom: 18 }).addTo(map);
+        let tileLayer = L.tileLayer(tileUrlForTheme(theme.value), { maxZoom: 18 }).addTo(map);
+
+        watch(theme, (t) => {
+            map.removeLayer(tileLayer);
+            tileLayer = L.tileLayer(tileUrlForTheme(t), { maxZoom: 18 }).addTo(map);
+        });
+
         return map;
     }
 

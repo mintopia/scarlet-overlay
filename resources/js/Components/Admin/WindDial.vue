@@ -67,23 +67,23 @@ const feathers = computed(() => {
     <svg :width="size" :height="size" viewBox="0 0 190 190">
         <!-- Face -->
         <circle cx="95" cy="95" r="89" fill="var(--color-surface)" stroke="var(--color-border)" stroke-width="0.75"/>
-        <circle cx="95" cy="95" r="85" fill="none" stroke="oklch(0.92 0.008 205)" stroke-width="0.5"/>
+        <circle cx="95" cy="95" r="85" fill="none" stroke="var(--color-border-light)" stroke-width="0.5"/>
 
         <!-- Point of sail zones (all endpoints on r=85 circle centered at 95,95) -->
-        <path d="M95,95 L34.90,34.90 A85,85 0 0,1 155.10,34.90 Z" fill="oklch(0.48 0.22 25 / 0.14)"/>
-        <path d="M95,95 L155.10,34.90 A85,85 0 0,1 168.61,52.50 Z" fill="oklch(0.42 0.14 178 / 0.12)"/>
-        <path d="M95,95 L21.39,52.50 A85,85 0 0,1 34.90,34.90 Z" fill="oklch(0.42 0.14 178 / 0.12)"/>
-        <path d="M95,95 L168.61,52.50 A85,85 0 0,1 178.71,80.24 Z" fill="oklch(0.42 0.14 178 / 0.08)"/>
-        <path d="M95,95 L11.29,80.24 A85,85 0 0,1 21.39,52.50 Z" fill="oklch(0.42 0.14 178 / 0.08)"/>
-        <path d="M95,95 L178.71,80.24 A85,85 0 0,1 178.71,109.76 Z" fill="oklch(0.48 0.17 70 / 0.1)"/>
-        <path d="M95,95 L11.29,109.76 A85,85 0 0,1 11.29,80.24 Z" fill="oklch(0.48 0.17 70 / 0.1)"/>
-        <path d="M95,95 L178.71,109.76 A85,85 0 0,1 137.50,168.61 Z" fill="oklch(0.48 0.17 70 / 0.14)"/>
-        <path d="M95,95 L52.50,168.61 A85,85 0 0,1 11.29,109.76 Z" fill="oklch(0.48 0.17 70 / 0.14)"/>
-        <path d="M95,95 L137.50,168.61 A85,85 0 0,1 95.00,180.00 Z" fill="oklch(0.45 0.12 90 / 0.1)"/>
-        <path d="M95,95 L95.00,180.00 A85,85 0 0,1 52.50,168.61 Z" fill="oklch(0.45 0.12 90 / 0.1)"/>
+        <path d="M95,95 L34.90,34.90 A85,85 0 0,1 155.10,34.90 Z" fill="var(--color-scarlet)" fill-opacity="0.14"/>
+        <path d="M95,95 L155.10,34.90 A85,85 0 0,1 168.61,52.50 Z" fill="var(--color-teal)" fill-opacity="0.12"/>
+        <path d="M95,95 L21.39,52.50 A85,85 0 0,1 34.90,34.90 Z" fill="var(--color-teal)" fill-opacity="0.12"/>
+        <path d="M95,95 L168.61,52.50 A85,85 0 0,1 178.71,80.24 Z" fill="var(--color-teal)" fill-opacity="0.08"/>
+        <path d="M95,95 L11.29,80.24 A85,85 0 0,1 21.39,52.50 Z" fill="var(--color-teal)" fill-opacity="0.08"/>
+        <path d="M95,95 L178.71,80.24 A85,85 0 0,1 178.71,109.76 Z" fill="var(--color-amber)" fill-opacity="0.1"/>
+        <path d="M95,95 L11.29,109.76 A85,85 0 0,1 11.29,80.24 Z" fill="var(--color-amber)" fill-opacity="0.1"/>
+        <path d="M95,95 L178.71,109.76 A85,85 0 0,1 137.50,168.61 Z" fill="var(--color-amber)" fill-opacity="0.14"/>
+        <path d="M95,95 L52.50,168.61 A85,85 0 0,1 11.29,109.76 Z" fill="var(--color-amber)" fill-opacity="0.14"/>
+        <path d="M95,95 L137.50,168.61 A85,85 0 0,1 95.00,180.00 Z" fill="var(--color-green)" fill-opacity="0.1"/>
+        <path d="M95,95 L95.00,180.00 A85,85 0 0,1 52.50,168.61 Z" fill="var(--color-green)" fill-opacity="0.1"/>
 
         <!-- Tick marks -->
-        <g stroke="oklch(0.82 0.006 205)" stroke-width="0.5">
+        <g stroke="var(--color-border)" stroke-width="0.5">
             <line x1="95" y1="6" x2="95" y2="13"/><line x1="95" y1="177" x2="95" y2="184"/>
             <line x1="6" y1="95" x2="13" y2="95"/><line x1="177" y1="95" x2="184" y2="95"/>
             <line x1="30" y1="30" x2="35" y2="35"/><line x1="160" y1="30" x2="155" y2="35"/>
@@ -91,12 +91,12 @@ const feathers = computed(() => {
         </g>
 
         <!-- Labels -->
-        <text x="95" y="22" text-anchor="middle" fill="oklch(0.65 0.01 205)" font-size="8" font-family="Nunito Sans" font-weight="700">0°</text>
-        <text x="173" y="98" text-anchor="middle" fill="oklch(0.65 0.01 205)" font-size="8" font-family="Nunito Sans" font-weight="700">90°</text>
-        <text x="95" y="178" text-anchor="middle" fill="oklch(0.65 0.01 205)" font-size="8" font-family="Nunito Sans" font-weight="700">180°</text>
-        <text x="17" y="98" text-anchor="middle" fill="oklch(0.65 0.01 205)" font-size="8" font-family="Nunito Sans" font-weight="700">90°</text>
-        <text x="26" y="70" text-anchor="middle" fill="oklch(0.7 0.008 205)" font-size="7" font-family="DM Sans" font-weight="800">PORT</text>
-        <text x="164" y="70" text-anchor="middle" fill="oklch(0.7 0.008 205)" font-size="7" font-family="DM Sans" font-weight="800">STBD</text>
+        <text x="95" y="22" text-anchor="middle" fill="var(--color-text-dim)" font-size="8" font-family="Nunito Sans" font-weight="700">0°</text>
+        <text x="173" y="98" text-anchor="middle" fill="var(--color-text-dim)" font-size="8" font-family="Nunito Sans" font-weight="700">90°</text>
+        <text x="95" y="178" text-anchor="middle" fill="var(--color-text-dim)" font-size="8" font-family="Nunito Sans" font-weight="700">180°</text>
+        <text x="17" y="98" text-anchor="middle" fill="var(--color-text-dim)" font-size="8" font-family="Nunito Sans" font-weight="700">90°</text>
+        <text x="26" y="70" text-anchor="middle" fill="var(--color-text-dim)" font-size="7" font-family="DM Sans" font-weight="800">PORT</text>
+        <text x="164" y="70" text-anchor="middle" fill="var(--color-text-dim)" font-size="7" font-family="DM Sans" font-weight="800">STBD</text>
 
         <!-- Bow marker + boat -->
         <polygon points="95,10 91,22 99,22" fill="var(--color-teal)" opacity="0.4"/>

@@ -1034,8 +1034,8 @@ onUnmounted(() => {
 .band-swatch { width: 12px; height: 8px; border-radius: 2px; }
 .band-swatch--sailing { background: rgba(30, 165, 155, 0.25); }
 .band-swatch--motoring { background: rgba(205, 155, 35, 0.25); }
-.propulsion-sailing { color: oklch(0.55 0.14 178); }
-.propulsion-motoring { color: oklch(0.65 0.15 65); }
+.propulsion-sailing { color: var(--color-teal); }
+.propulsion-motoring { color: var(--color-amber); }
 
 /* Related panel */
 .related-panel {
@@ -1087,7 +1087,7 @@ onUnmounted(() => {
 .overlay-remove { color: var(--color-scarlet); cursor: pointer; font-size: 14px; background: none; border: none; padding: 0 2px; line-height: 1; }
 
 :deep(.u-wrap) { position: relative !important; }
-:deep(.u-select) { background: oklch(0.48 0.22 25 / 0.1) !important; }
+:deep(.u-select) { background: var(--color-scarlet-light) !important; }
 :deep(.u-cursor-x) { border-right: 1px dashed var(--color-scarlet) !important; }
 
 @media (max-width: 767px) {

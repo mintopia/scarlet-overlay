@@ -37,9 +37,33 @@ Each semantic color has a base, a bg (8-15% opacity wash for backgrounds), and a
 | **Green** | `oklch(0.45 0.16 150)` | Positive state: charging, healthy, online, battery OK |
 | **Scarlet** | `oklch(0.48 0.22 25)` | Brand accent: compass north, boat name, discharge/negative power, errors |
 
+### Dark Mode Overrides
+
+Dark mode (`data-theme="dark"`) adjusts all tokens. Key principles:
+
+- **Neutrals lose chroma** as lightness drops (0.010-0.012), preventing a cold blue tint
+- **Semantic colors maintain full chroma** for readability against dark surfaces
+- **Bg washes use 12% alpha** (vs 8% in light mode) for visibility on dark backgrounds
+
+| Token | Light | Dark | Notes |
+|---|---|---|---|
+| `--color-bg` | `oklch(0.96 0.01 205)` | `oklch(0.15 0.010 205)` | Lower chroma in dark |
+| `--color-surface` | `oklch(0.99 0.004 205)` | `oklch(0.21 0.012 205)` | 0.06 gap from bg for layer separation |
+| `--color-border` | `oklch(0.89 0.012 205)` | `oklch(0.28 0.010 205)` | |
+| `--color-text-primary` | `oklch(0.15 0.025 205)` | `oklch(0.93 0.005 205)` | Minimal chroma avoids blue-tinted text |
+| `--color-teal` | `oklch(0.42 0.14 178)` | `oklch(0.66 0.14 178)` | Full chroma preserved |
+| `--color-amber` | `oklch(0.48 0.17 70)` | `oklch(0.76 0.17 70)` | Full chroma preserved |
+| `--color-blue` | `oklch(0.42 0.14 245)` | `oklch(0.64 0.14 245)` | Full chroma preserved |
+
 ### Shadow
 
-One shadow scale: `0 1px 5px oklch(0.2 0.02 205 / 0.08)` for panels. No elevation hierarchy needed; panels sit flat on the page.
+| Theme | Value |
+|---|---|
+| Light | `0 1px 5px oklch(0.2 0.02 205 / 0.08)` |
+| Dark | `0 2px 8px oklch(0.0 0.0 0 / 0.4)` |
+| Night | `0 2px 8px oklch(0.0 0.0 0 / 0.5)` |
+
+No elevation hierarchy needed; panels sit flat on the page.
 
 ## Typography
 

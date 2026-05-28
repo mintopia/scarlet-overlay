@@ -91,34 +91,34 @@ const fineTicks = computed(() => {
 const zoneArcs = computed(() => {
     const r = 89
     return [
-        { d: arcPath(-45, 45, r), color: 'oklch(0.48 0.22 25 / 0.45)' },
-        { d: arcPath(45, 60, r), color: 'oklch(0.42 0.14 178 / 0.55)' },
-        { d: arcPath(-60, -45, r), color: 'oklch(0.42 0.14 178 / 0.55)' },
-        { d: arcPath(60, 80, r), color: 'oklch(0.42 0.14 178 / 0.35)' },
-        { d: arcPath(-80, -60, r), color: 'oklch(0.42 0.14 178 / 0.35)' },
-        { d: arcPath(80, 100, r), color: 'oklch(0.48 0.17 70 / 0.5)' },
-        { d: arcPath(-100, -80, r), color: 'oklch(0.48 0.17 70 / 0.5)' },
-        { d: arcPath(100, 150, r), color: 'oklch(0.48 0.17 70 / 0.65)' },
-        { d: arcPath(-150, -100, r), color: 'oklch(0.48 0.17 70 / 0.65)' },
-        { d: arcPath(150, 180, r), color: 'oklch(0.45 0.16 150 / 0.5)' },
-        { d: arcPath(-180, -150, r), color: 'oklch(0.45 0.16 150 / 0.5)' },
+        { d: arcPath(-45, 45, r), color: 'var(--color-scarlet)', opacity: 0.45 },
+        { d: arcPath(45, 60, r), color: 'var(--color-teal)', opacity: 0.55 },
+        { d: arcPath(-60, -45, r), color: 'var(--color-teal)', opacity: 0.55 },
+        { d: arcPath(60, 80, r), color: 'var(--color-teal)', opacity: 0.35 },
+        { d: arcPath(-80, -60, r), color: 'var(--color-teal)', opacity: 0.35 },
+        { d: arcPath(80, 100, r), color: 'var(--color-amber)', opacity: 0.5 },
+        { d: arcPath(-100, -80, r), color: 'var(--color-amber)', opacity: 0.5 },
+        { d: arcPath(100, 150, r), color: 'var(--color-amber)', opacity: 0.65 },
+        { d: arcPath(-150, -100, r), color: 'var(--color-amber)', opacity: 0.65 },
+        { d: arcPath(150, 180, r), color: 'var(--color-green)', opacity: 0.5 },
+        { d: arcPath(-180, -150, r), color: 'var(--color-green)', opacity: 0.5 },
     ]
 })
 
 const zoneLabels = computed(() => {
     const r = 98
     const defs = [
-        { start: -45, end: 45, label: 'NO GO', color: 'oklch(0.48 0.22 25)' },
-        { start: 45, end: 60, label: 'CH', color: 'oklch(0.42 0.14 178)' },
-        { start: 60, end: 80, label: 'CR', color: 'oklch(0.42 0.14 178)' },
-        { start: 80, end: 100, label: 'BEAM', color: 'oklch(0.48 0.17 70)' },
-        { start: 100, end: 150, label: 'BROAD REACH', color: 'oklch(0.48 0.17 70)' },
-        { start: 150, end: 180, label: 'RUN', color: 'oklch(0.45 0.16 150)' },
-        { start: -60, end: -45, label: 'CH', color: 'oklch(0.42 0.14 178)' },
-        { start: -80, end: -60, label: 'CR', color: 'oklch(0.42 0.14 178)' },
-        { start: -100, end: -80, label: 'BEAM', color: 'oklch(0.48 0.17 70)' },
-        { start: -150, end: -100, label: 'BROAD REACH', color: 'oklch(0.48 0.17 70)' },
-        { start: -180, end: -150, label: 'RUN', color: 'oklch(0.45 0.16 150)' },
+        { start: -45, end: 45, label: 'NO GO', color: 'var(--color-scarlet)' },
+        { start: 45, end: 60, label: 'CH', color: 'var(--color-teal)' },
+        { start: 60, end: 80, label: 'CR', color: 'var(--color-teal)' },
+        { start: 80, end: 100, label: 'BEAM', color: 'var(--color-amber)' },
+        { start: 100, end: 150, label: 'BROAD REACH', color: 'var(--color-amber)' },
+        { start: 150, end: 180, label: 'RUN', color: 'var(--color-green)' },
+        { start: -60, end: -45, label: 'CH', color: 'var(--color-teal)' },
+        { start: -80, end: -60, label: 'CR', color: 'var(--color-teal)' },
+        { start: -100, end: -80, label: 'BEAM', color: 'var(--color-amber)' },
+        { start: -150, end: -100, label: 'BROAD REACH', color: 'var(--color-amber)' },
+        { start: -180, end: -150, label: 'RUN', color: 'var(--color-green)' },
     ]
     return defs.map(z => {
         const mid = (z.start + z.end) / 2
@@ -136,7 +136,7 @@ const zoneLabels = computed(() => {
         <circle cx="90" cy="90" r="84" fill="var(--color-surface)" stroke="var(--color-border)" stroke-width="0.75"/>
 
         <!-- Point of sail zone arcs (fixed relative to boat) -->
-        <path v-for="(z, i) in zoneArcs" :key="'zone'+i" :d="z.d" fill="none" :stroke="z.color" stroke-width="5" stroke-linecap="butt"/>
+        <path v-for="(z, i) in zoneArcs" :key="'zone'+i" :d="z.d" fill="none" :stroke="z.color" :stroke-opacity="z.opacity" stroke-width="5" stroke-linecap="butt"/>
 
         <!-- Zone labels -->
         <text v-for="(l, i) in zoneLabels" :key="'zl'+i"
@@ -150,27 +150,27 @@ const zoneLabels = computed(() => {
 
         <!-- Rotating compass ring -->
         <g :style="{ transform: `rotate(${-heading}deg)`, transformOrigin: '90px 90px', transition: 'transform 0.8s cubic-bezier(0.4, 0, 0.2, 1)' }">
-            <circle cx="90" cy="90" r="80" fill="none" stroke="oklch(0.92 0.008 205)" stroke-width="0.5"/>
-            <circle cx="90" cy="90" r="55" fill="none" stroke="oklch(0.94 0.005 205)" stroke-width="0.3" stroke-dasharray="2 3"/>
+            <circle cx="90" cy="90" r="80" fill="none" stroke="var(--color-border-light)" stroke-width="0.5"/>
+            <circle cx="90" cy="90" r="55" fill="none" stroke="var(--color-border-light)" stroke-width="0.3" stroke-dasharray="2 3"/>
 
             <!-- Major ticks -->
-            <line v-for="(t, i) in majorTicks" :key="'maj'+i" :x1="t.x1" :y1="t.y1" :x2="t.x2" :y2="t.y2" stroke="oklch(0.72 0.012 205)" stroke-width="1.2"/>
+            <line v-for="(t, i) in majorTicks" :key="'maj'+i" :x1="t.x1" :y1="t.y1" :x2="t.x2" :y2="t.y2" stroke="var(--color-text-dim)" stroke-width="1.2"/>
             <!-- Minor ticks -->
-            <line v-for="(t, i) in minorTicks" :key="'min'+i" :x1="t.x1" :y1="t.y1" :x2="t.x2" :y2="t.y2" stroke="oklch(0.82 0.006 205)" stroke-width="0.5"/>
+            <line v-for="(t, i) in minorTicks" :key="'min'+i" :x1="t.x1" :y1="t.y1" :x2="t.x2" :y2="t.y2" stroke="var(--color-border)" stroke-width="0.5"/>
             <!-- Fine ticks -->
-            <line v-for="(t, i) in fineTicks" :key="'fine'+i" :x1="t.x1" :y1="t.y1" :x2="t.x2" :y2="t.y2" stroke="oklch(0.88 0.004 205)" stroke-width="0.3"/>
+            <line v-for="(t, i) in fineTicks" :key="'fine'+i" :x1="t.x1" :y1="t.y1" :x2="t.x2" :y2="t.y2" stroke="var(--color-border-light)" stroke-width="0.3"/>
 
             <!-- Cardinals -->
             <text x="90" y="30" text-anchor="middle" fill="var(--color-scarlet)" font-size="12" font-weight="800" font-family="Nunito Sans" dominant-baseline="central">N</text>
-            <text x="153" y="93" text-anchor="middle" fill="oklch(0.6 0.012 205)" font-size="9" font-family="Nunito Sans" font-weight="600" dominant-baseline="central">E</text>
-            <text x="90" y="158" text-anchor="middle" fill="oklch(0.6 0.012 205)" font-size="9" font-family="Nunito Sans" font-weight="600" dominant-baseline="central">S</text>
-            <text x="27" y="93" text-anchor="middle" fill="oklch(0.6 0.012 205)" font-size="9" font-family="Nunito Sans" font-weight="600" dominant-baseline="central">W</text>
+            <text x="153" y="93" text-anchor="middle" fill="var(--color-text-dim)" font-size="9" font-family="Nunito Sans" font-weight="600" dominant-baseline="central">E</text>
+            <text x="90" y="158" text-anchor="middle" fill="var(--color-text-dim)" font-size="9" font-family="Nunito Sans" font-weight="600" dominant-baseline="central">S</text>
+            <text x="27" y="93" text-anchor="middle" fill="var(--color-text-dim)" font-size="9" font-family="Nunito Sans" font-weight="600" dominant-baseline="central">W</text>
 
             <!-- Intercardinals -->
-            <text x="140.9" y="39.1" text-anchor="middle" fill="oklch(0.6 0.012 205)" font-size="7" font-family="Nunito Sans" font-weight="600" dominant-baseline="central">NE</text>
-            <text x="140.9" y="140.9" text-anchor="middle" fill="oklch(0.6 0.012 205)" font-size="7" font-family="Nunito Sans" font-weight="600" dominant-baseline="central">SE</text>
-            <text x="39.1" y="140.9" text-anchor="middle" fill="oklch(0.6 0.012 205)" font-size="7" font-family="Nunito Sans" font-weight="600" dominant-baseline="central">SW</text>
-            <text x="39.1" y="39.1" text-anchor="middle" fill="oklch(0.6 0.012 205)" font-size="7" font-family="Nunito Sans" font-weight="600" dominant-baseline="central">NW</text>
+            <text x="140.9" y="39.1" text-anchor="middle" fill="var(--color-text-dim)" font-size="7" font-family="Nunito Sans" font-weight="600" dominant-baseline="central">NE</text>
+            <text x="140.9" y="140.9" text-anchor="middle" fill="var(--color-text-dim)" font-size="7" font-family="Nunito Sans" font-weight="600" dominant-baseline="central">SE</text>
+            <text x="39.1" y="140.9" text-anchor="middle" fill="var(--color-text-dim)" font-size="7" font-family="Nunito Sans" font-weight="600" dominant-baseline="central">SW</text>
+            <text x="39.1" y="39.1" text-anchor="middle" fill="var(--color-text-dim)" font-size="7" font-family="Nunito Sans" font-weight="600" dominant-baseline="central">NW</text>
         </g>
 
         <!-- Fixed elements: boat and COG -->
@@ -183,8 +183,8 @@ const zoneLabels = computed(() => {
 
         <!-- AWA arrow (relative to boat, pink — shorter, behind TWA) -->
         <g v-if="awaArrow">
-            <line x1="90" y1="90" :x2="awaArrow.line.x" :y2="awaArrow.line.y" stroke="oklch(0.55 0.18 330)" stroke-width="1.5" stroke-dasharray="4 3" opacity="0.45"/>
-            <polygon :points="`${awaArrow.tip.x},${awaArrow.tip.y} ${awaArrow.left.x},${awaArrow.left.y} ${awaArrow.right.x},${awaArrow.right.y}`" fill="oklch(0.55 0.18 330)" opacity="0.6"/>
+            <line x1="90" y1="90" :x2="awaArrow.line.x" :y2="awaArrow.line.y" stroke="var(--color-pink)" stroke-width="1.5" stroke-dasharray="4 3" opacity="0.45"/>
+            <polygon :points="`${awaArrow.tip.x},${awaArrow.tip.y} ${awaArrow.left.x},${awaArrow.left.y} ${awaArrow.right.x},${awaArrow.right.y}`" fill="var(--color-pink)" opacity="0.6"/>
         </g>
 
         <!-- TWA wind arrow (relative to boat, amber) -->

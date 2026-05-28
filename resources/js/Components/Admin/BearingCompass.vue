@@ -32,7 +32,7 @@ const speedText = computed(() => {
     <svg :width="size" :height="size" viewBox="0 0 100 100">
         <!-- Face -->
         <circle cx="50" cy="50" r="46" fill="var(--color-surface)" stroke="var(--color-border)" stroke-width="0.8"/>
-        <circle cx="50" cy="50" r="42" fill="none" stroke="oklch(0.92 0.008 205)" stroke-width="0.4"/>
+        <circle cx="50" cy="50" r="42" fill="none" stroke="var(--color-border-light)" stroke-width="0.4"/>
 
         <!-- Tick marks every 30° -->
         <line v-for="a in [0,30,60,90,120,150,180,210,240,270,300,330]" :key="a"
@@ -40,14 +40,14 @@ const speedText = computed(() => {
               :y1="polarToXY(50,50, a % 90 === 0 ? 38 : 40, a).y"
               :x2="polarToXY(50,50,44, a).x"
               :y2="polarToXY(50,50,44, a).y"
-              :stroke="a % 90 === 0 ? 'oklch(0.65 0.01 205)' : 'oklch(0.82 0.006 205)'"
+              :stroke="a % 90 === 0 ? 'var(--color-text-dim)' : 'var(--color-border)'"
               :stroke-width="a % 90 === 0 ? '1' : '0.5'"/>
 
         <!-- Cardinals -->
         <text x="50" y="14" text-anchor="middle" fill="var(--color-scarlet)" font-size="7" font-weight="800" font-family="Nunito Sans" dominant-baseline="central">N</text>
-        <text x="88" y="52" text-anchor="middle" fill="oklch(0.65 0.01 205)" font-size="5.5" font-family="Nunito Sans" font-weight="600" dominant-baseline="central">E</text>
-        <text x="50" y="90" text-anchor="middle" fill="oklch(0.65 0.01 205)" font-size="5.5" font-family="Nunito Sans" font-weight="600" dominant-baseline="central">S</text>
-        <text x="12" y="52" text-anchor="middle" fill="oklch(0.65 0.01 205)" font-size="5.5" font-family="Nunito Sans" font-weight="600" dominant-baseline="central">W</text>
+        <text x="88" y="52" text-anchor="middle" fill="var(--color-text-dim)" font-size="5.5" font-family="Nunito Sans" font-weight="600" dominant-baseline="central">E</text>
+        <text x="50" y="90" text-anchor="middle" fill="var(--color-text-dim)" font-size="5.5" font-family="Nunito Sans" font-weight="600" dominant-baseline="central">S</text>
+        <text x="12" y="52" text-anchor="middle" fill="var(--color-text-dim)" font-size="5.5" font-family="Nunito Sans" font-weight="600" dominant-baseline="central">W</text>
 
         <!-- Wind arrow -->
         <template v-if="arrow">

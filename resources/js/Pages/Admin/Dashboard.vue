@@ -14,7 +14,7 @@
                 </template>
                 <template v-else-if="props.plannedJourney">
                     &nbsp;·&nbsp;{{ props.plannedJourney.from_port }} → {{ props.plannedJourney.to_port }}
-                    <span class="ml-2 text-[10px] font-semibold tracking-wide px-2 py-0.5 rounded bg-amber-100 text-amber-700">PLANNED</span>
+                    <span class="ml-2 text-[10px] font-semibold tracking-wide px-2 py-0.5 rounded bg-amber-bg text-amber">PLANNED</span>
                 </template>
                 <template v-else>
                     &nbsp;·&nbsp;<span class="text-text-dim">No active journey</span>
@@ -344,10 +344,10 @@ const pointOfSailText = computed(() => {
 
 const pointOfSailColor = computed(() => {
     const t = pointOfSailText.value;
-    if (t === 'In Irons') return 'oklch(0.48 0.22 25)';
-    if (t === 'Close Hauled' || t === 'Close Reach') return 'oklch(0.42 0.14 178)';
-    if (t === 'Beam Reach' || t === 'Broad Reach') return 'oklch(0.48 0.17 70)';
-    if (t === 'Running' || t === 'Dead Run') return 'oklch(0.45 0.16 150)';
+    if (t === 'In Irons') return 'var(--color-scarlet)';
+    if (t === 'Close Hauled' || t === 'Close Reach') return 'var(--color-teal)';
+    if (t === 'Beam Reach' || t === 'Broad Reach') return 'var(--color-amber)';
+    if (t === 'Running' || t === 'Dead Run') return 'var(--color-green)';
     return 'var(--color-text-dim)';
 });
 
@@ -441,8 +441,8 @@ const wxGradient = computed(() => {
     display: flex;
     align-items: center;
     gap: 7px;
-    background: linear-gradient(135deg, oklch(0.9 0.06 150), oklch(0.85 0.07 160));
-    color: oklch(0.24 0.1 150);
+    background: var(--color-green-bg);
+    color: var(--color-green);
     padding: 5px 16px 5px 12px;
     border-radius: 20px;
     font-size: 12px;
@@ -454,7 +454,7 @@ const wxGradient = computed(() => {
     content: '';
     width: 7px;
     height: 7px;
-    background: oklch(0.48 0.16 150);
+    background: var(--color-green);
     border-radius: 50%;
 }
 

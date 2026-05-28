@@ -74,7 +74,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted, onUnmounted } from 'vue';
+import { ref, watch, onMounted, onUnmounted } from 'vue';
 import { Head, Link } from '@inertiajs/vue3';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
@@ -83,6 +83,7 @@ import 'uplot/dist/uPlot.min.css';
 import AdminLayout from '@/Layouts/AdminLayout.vue';
 import LogTable from '@/components/LogTable.vue';
 import { speedToColor, addRouteLayer } from '../../scarlet.js';
+import { theme } from '@/composables/useTheme.js';
 
 const props = defineProps({
     journey: Object,
@@ -212,8 +213,19 @@ function buildMap() {
     if (!mapEl.value) return;
 
     if (!map) {
+        const tileUrl = theme.value === 'dark' || theme.value === 'night'
+            ? '/openseamap-dark/{z}/{x}/{y}'
+            : '/openseamap/{z}/{x}/{y}';
         map = L.map(mapEl.value, { zoomControl: true, attributionControl: false }).setView([0, 0], 2);
-        L.tileLayer('/openseamap/{z}/{x}/{y}', { maxZoom: 18 }).addTo(map);
+        let tileLayer = L.tileLayer(tileUrl, { maxZoom: 18 }).addTo(map);
+
+        watch(theme, (t) => {
+            const url = t === 'dark' || t === 'night'
+                ? '/openseamap-dark/{z}/{x}/{y}'
+                : '/openseamap/{z}/{x}/{y}';
+            map.removeLayer(tileLayer);
+            tileLayer = L.tileLayer(url, { maxZoom: 18 }).addTo(map);
+        });
     }
 
     if (!props.gpsTrack?.length) return;
