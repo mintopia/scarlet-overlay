@@ -113,8 +113,9 @@ class JourneyController extends Controller
     public function edit(Journey $journey, MetricsService $metrics)
     {
         $logRows = [];
-        if ($journey->started_at && $journey->ended_at) {
-            $durationHours = $journey->started_at->diffInHours($journey->ended_at);
+        if ($journey->started_at) {
+            $end = $journey->ended_at ?? now();
+            $durationHours = $journey->started_at->diffInHours($end);
             if ($durationHours > 168) {
                 $step = 14400;
             } elseif ($durationHours > 72) {
@@ -126,7 +127,7 @@ class JourneyController extends Controller
                 null,
                 (string) $step,
                 $journey->started_at->startOfHour()->subHour()->timestamp,
-                $journey->ended_at->endOfHour()->addHour()->timestamp,
+                $end->endOfHour()->addHour()->timestamp,
             );
         }
 
