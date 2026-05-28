@@ -161,10 +161,10 @@
             <div v-if="liveWeather" class="panel flex flex-col flex-1 overflow-hidden">
                 <div class="wx-hero rounded-t-[15px]" :style="{ background: wxGradient }">
                     <div>
-                        <div class="font-sans text-[44px] font-bold tracking-tight leading-none text-white tabular-nums">
+                        <div class="wx-hero__temp font-sans text-[44px] font-bold tracking-tight leading-none tabular-nums">
                             {{ wxTemp }}
                         </div>
-                        <div class="text-sm font-body font-medium text-white/80 mt-1">{{ wxCondition }}</div>
+                        <div class="wx-hero__cond text-sm font-body font-medium mt-1">{{ wxCondition }}</div>
                     </div>
                     <div class="text-[36px] leading-none" aria-hidden="true">{{ wxIcon }}</div>
                 </div>

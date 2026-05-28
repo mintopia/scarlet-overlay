@@ -102,6 +102,10 @@ html[data-theme="night"] .custom-picker-apply {
     color: oklch(0.78 0.06 27);
 }
 
+/* Weather hero text — white on gradient, overridden in night watch */
+.wx-hero__temp { color: white; }
+.wx-hero__cond { color: oklch(1 0 0 / 0.8); }
+
 /* Night watch: weather hero — override inline gradient + white text */
 html[data-theme="night"] .wx-hero {
     background: linear-gradient(135deg, oklch(0.12 0.04 27), oklch(0.08 0.02 27)) !important;
