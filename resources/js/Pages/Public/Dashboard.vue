@@ -28,7 +28,7 @@ const autoCenter = ref(true);
 let map = null;
 
 const {
-    boat, gps, weather,
+    boat, gps, weather, staleKeys,
     clock, clockDate,
     coordText, statusText, statusClass, lastUpdateText,
     wxTemp, wxCondition, wxIcon, wxSeaTemp, wxWindSpeed, wxWindDir, wxWaveHeight, wxWavePeriod,
@@ -97,6 +97,10 @@ function fmtSpring(anim, raw, decimals = 1) {
 
 function fmtNav(v) {
     return v != null ? v.toFixed(1) : '—';
+}
+
+function isStale(key) {
+    return staleKeys.value.has(key);
 }
 
 function formatEta(seconds) {
@@ -188,7 +192,7 @@ onUnmounted(() => {
                     <div v-if="etaInfo.days > 0" class="pill-sub">+{{ etaInfo.days }} day{{ etaInfo.days > 1 ? 's' : '' }}</div>
                 </div>
             </div>
-            <div class="pill pill--compound">
+            <div class="pill pill--compound" :class="{ 'pill--stale': isStale('wind_speed_apparent') }">
                 <div class="pill-cell">
                     <div class="pill-lbl">APP. WIND</div>
                     <div class="pill-val">{{ fmtSpring(animAppWind, boat?.wind_speed_apparent) }} kn</div>
@@ -199,7 +203,7 @@ onUnmounted(() => {
                     <div class="pill-sub">{{ windAngleSide }}</div>
                 </div>
             </div>
-            <div class="pill">
+            <div class="pill" :class="{ 'pill--stale': isStale('heel') }">
                 <div class="pill-lbl">HEEL</div>
                 <div class="pill-val">{{ fmtSpring(animHeel, boat?.heel, 0) }}°</div>
                 <div class="pill-sub">{{ heelSide }}</div>
@@ -426,6 +430,16 @@ onUnmounted(() => {
 
 .pill-cell + .pill-cell {
     border-left: 1px solid oklch(0.32 0.01 40 / 0.18);
+}
+
+.pill--stale {
+    opacity: 0.45;
+    border-color: oklch(0.54 0.22 27 / 0.3);
+}
+.pill--stale .pill-lbl::after {
+    content: ' (stale)';
+    font-style: italic;
+    font-weight: 400;
 }
 
 /* LOWER THIRD positioning */

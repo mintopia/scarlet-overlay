@@ -622,9 +622,10 @@ function buildChartOpts(width) {
         });
     }
 
-    if (isSigned.value) {
-        hooks.draw.push((u) => {
-            const ctx = u.ctx;
+    hooks.draw.push((u) => {
+        const ctx = u.ctx;
+
+        if (isSigned.value) {
             const zeroY = u.valToPos(0, 'y');
             ctx.save();
             ctx.strokeStyle = cssVar('--color-text-dim');
@@ -635,8 +636,39 @@ function buildChartOpts(width) {
             ctx.lineTo(u.bbox.left + u.bbox.width, zeroY);
             ctx.stroke();
             ctx.restore();
-        });
-    }
+        }
+
+        for (let si = 1; si < u.data.length; si++) {
+            const ydata = u.data[si];
+            if (!ydata) continue;
+            const xdata = u.data[0];
+            const color = typeof u.series[si].stroke === 'function'
+                ? props.metric.color
+                : u.series[si].stroke;
+            const scale = u.series[si].scale || 'y';
+
+            ctx.save();
+            ctx.strokeStyle = color;
+            ctx.lineWidth = 1;
+            ctx.setLineDash([4, 4]);
+            ctx.globalAlpha = 0.35;
+            ctx.beginPath();
+
+            let lastReal = null;
+            for (let i = 0; i < ydata.length; i++) {
+                if (ydata[i] != null) {
+                    if (lastReal != null && i - lastReal > 1) {
+                        ctx.moveTo(u.valToPos(xdata[lastReal], 'x', true), u.valToPos(ydata[lastReal], scale, true));
+                        ctx.lineTo(u.valToPos(xdata[i], 'x', true), u.valToPos(ydata[i], scale, true));
+                    }
+                    lastReal = i;
+                }
+            }
+
+            ctx.stroke();
+            ctx.restore();
+        }
+    });
 
     let series;
     if (isSigned.value) {

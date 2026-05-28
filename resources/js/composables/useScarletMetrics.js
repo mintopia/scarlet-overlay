@@ -21,6 +21,7 @@ export function useScarletMetrics(options = {}) {
     const weather = ref(initialMetrics?.weather ?? null);
     const sun = ref(options.initialSun ?? null);
     const lastUpdate = ref(initialMetrics ? new Date() : null);
+    const staleKeys = ref(new Set());
     const clock = ref('--:--');
     const clockDate = ref('');
 
@@ -196,7 +197,17 @@ export function useScarletMetrics(options = {}) {
     if (window.Echo) {
         echoChannel = window.Echo.channel('metrics');
         echoChannel.listen('.metrics.updated', (data) => {
-            boat.value = data.boat;
+            const newStale = new Set();
+            const merged = { ...boat.value };
+            for (const [k, v] of Object.entries(data.boat ?? {})) {
+                if (v != null) {
+                    merged[k] = v;
+                } else if (merged[k] != null) {
+                    newStale.add(k);
+                }
+            }
+            boat.value = merged;
+            staleKeys.value = newStale;
             gps.value = data.gps;
             if (data.weather) weather.value = data.weather;
             if (data.sun) sun.value = data.sun;
@@ -226,7 +237,7 @@ export function useScarletMetrics(options = {}) {
     onUnmounted(cleanup);
 
     return {
-        boat, gps, weather, sun, lastUpdate,
+        boat, gps, weather, sun, lastUpdate, staleKeys,
         clock, clockDate,
         coordText, isOffline, statusText, statusClass, lastUpdateText,
         wxTemp, wxCondition, wxIcon, wxSeaTemp, wxWindSpeed, wxWindDir, wxWaveHeight, wxWavePeriod,
