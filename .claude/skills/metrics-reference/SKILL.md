@@ -53,6 +53,19 @@ VictoriaMetrics staleness keeps the `onboard` series alive after the tracker swi
 
 Do not combine with `scarlet_signalk_navigation_position_*` — that metric has ~2.75x fewer data points and different precision, causing ~15m jumps at transitions.
 
+### Data Freshness Policy
+
+All instant queries use a `7d` `last_over_time()` fallback to always return the last known value:
+
+| Source | Policy | Rationale |
+|--------|--------|-----------|
+| **GPS** | Always show last known | Last known position is always valid. Prefer `gps_source="signalk"`, fall back to `onboard` |
+| **MQTT sensors** | Always show last known | Report on change only — stale data means value hasn't changed |
+| **SignalK instruments** | Always show last known | Staleness indicated separately by frontend via `lastUpdate` timestamp |
+| **Stream status** | Time-sensitive (`queryFresh`, 120s maxAge) | Stream UP/DOWN must reflect current state, not historical |
+
+`queryMultiple()` tries instant query first (fast for fresh data), then falls back to `last_over_time([7d])` for sensors that haven't reported recently.
+
 ### Zero Filtering
 
 GPS position metrics can report `0` when the GPS has no fix. Position queries use `!= 0` to filter zeros at the query level. If the value is zero/missing, the query returns empty and PHP null-handling takes over. Additional PHP-side filtering as a safety net:

@@ -35,7 +35,7 @@ class PrometheusService
         }
     }
 
-    public function queryLastOverTimeAt(string $promql, int $timestamp, string $lookback = '10m'): ?float
+    public function queryLastOverTimeAt(string $promql, int $timestamp, string $lookback = '7d'): ?float
     {
         $wrapped = preg_replace_callback(
             '/\b(scarlet_[a-zA-Z0-9_:]*)(\{[^}]*\})?/',
@@ -65,7 +65,7 @@ class PrometheusService
         }
     }
 
-    public function queryMultipleAt(array $queries, int $timestamp, bool $fallback = false, string $fallbackLookback = '10m'): array
+    public function queryMultipleAt(array $queries, int $timestamp, bool $fallback = false, string $fallbackLookback = '7d'): array
     {
         $responses = Http::pool(function ($pool) use ($queries, $timestamp) {
             foreach ($queries as $key => $promql) {
@@ -107,14 +107,14 @@ class PrometheusService
 
     public function query(string $promql): ?float
     {
-        $result = $this->queryWithTimestamp($promql, '24h');
+        $result = $this->queryWithTimestamp($promql, '7d');
 
         return $result['value'] ?? null;
     }
 
     public function queryFresh(string $promql, int $maxAge = 120): ?float
     {
-        $result = $this->queryWithTimestamp($promql, '24h');
+        $result = $this->queryWithTimestamp($promql, '7d');
         if ($result === null) {
             return null;
         }
@@ -124,7 +124,7 @@ class PrometheusService
 
     public function queryTimestamp(string $promql): ?int
     {
-        $result = $this->queryWithTimestamp($promql, '24h');
+        $result = $this->queryWithTimestamp($promql, '7d');
 
         return $result['timestamp'] ?? null;
     }
@@ -245,7 +245,7 @@ class PrometheusService
         return $this->queryRange($fallback, $duration, $step, $start, $end);
     }
 
-    public function queryMultiple(array $queries, string $fallbackLookback = '2h'): array
+    public function queryMultiple(array $queries, string $fallbackLookback = '7d'): array
     {
         $responses = Http::pool(function ($pool) use ($queries) {
             foreach ($queries as $key => $promql) {
