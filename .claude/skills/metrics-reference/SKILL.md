@@ -41,13 +41,17 @@ This means every metric has **at least 2 series**. GPS metrics have up to **5 se
 
 The `log` and `history` config mappings already use `max()`. The `explore` mapping does not need it because its queries go through `queryRangeWithFallback()` which also reads only `$result[0]` but the explore charts are less sensitive to gaps.
 
-### Position Source: GPS with `gps_source="signalk"` filter
+### Position Source: GPS with gps_source priority
 
-**Always filter position queries by `{gps_source="signalk"}`.**
+**Always split position queries by `gps_source`, preferring signalk over onboard:**
 
-Despite the tracker selecting one source at a time, VictoriaMetrics staleness keeps `onboard` series alive after the tracker switches to `signalk`. This means `max()` sees both at the same timestamp (~900 overlapping timestamps per day) and picks the stale `onboard` value when it's numerically higher. The `onboard` GPS is very noisy (48 jumps >111m/day, stale values persisting for minutes) while `signalk` is clean (12 jumps/day).
+```
+max(scarlet_gps_latitude_deg{gps_source="signalk"} != 0) default max(scarlet_gps_latitude_deg{gps_source="onboard"} != 0)
+```
 
-Do not combine with `scarlet_signalk_navigation_position_*` either — that metric has ~2.75x fewer data points and different precision, causing ~15m jumps at transitions.
+VictoriaMetrics staleness keeps the `onboard` series alive after the tracker switches to `signalk`, so both appear at the same timestamp (~900 overlaps/day). Unfiltered `max()` picks the stale `onboard` value when it's numerically higher — causing spikes up to 6.4km. The `default` operator uses signalk where present and only falls back to onboard when signalk is absent.
+
+Do not combine with `scarlet_signalk_navigation_position_*` — that metric has ~2.75x fewer data points and different precision, causing ~15m jumps at transitions.
 
 ### Zero Filtering
 
@@ -66,7 +70,11 @@ The boat-tracker device sends GPS data every ~15 seconds. It has a `gps_source` 
 - `gps_source="signalk"` — GPS position forwarded from SignalK (higher quality, ~2400 points/day)
 - `gps_source="onboard"` — Tracker's internal GPS module (noisy, stale values persist via VM staleness)
 
-**Always filter by `{gps_source="signalk"}` for position queries.** The `onboard` series has stale values and large spikes that corrupt `max()` aggregation. When SignalK is unavailable, position will be absent — preferable to showing incorrect positions from the noisy onboard GPS.
+**Always split position queries by `gps_source`, preferring signalk via `default`:**
+```
+max(...{gps_source="signalk"} != 0) default max(...{gps_source="onboard"} != 0)
+```
+The `onboard` series has stale values that corrupt `max()` aggregation when both sources overlap. Using `default` ensures signalk takes priority, with onboard as fallback when SignalK is offline.
 
 | Metric | Unit | Description | Data since |
 |--------|------|-------------|------------|
