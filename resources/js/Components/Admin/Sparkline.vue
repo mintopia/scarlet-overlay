@@ -106,7 +106,7 @@ const pathData = computed(() => {
             <path v-for="(seg, i) in pathData.gapPaths" :key="'g'+i" :d="seg" fill="none" :stroke="color" stroke-width="1" stroke-dasharray="3 3" opacity="0.3"/>
 
             <!-- Current value dot -->
-            <circle v-if="showDot && pathData.lastPoint" :cx="pathData.lastPoint.x" :cy="pathData.lastPoint.y" r="3" :fill="color" stroke="white" stroke-width="1.5"/>
+            <circle v-if="showDot && pathData.lastPoint" :cx="pathData.lastPoint.x" :cy="pathData.lastPoint.y" r="3" :fill="color" stroke="var(--color-surface)" stroke-width="1.5"/>
         </template>
     </svg>
 </template>

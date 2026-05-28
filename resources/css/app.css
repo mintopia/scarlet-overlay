@@ -63,31 +63,129 @@ html[data-theme="dark"] {
 }
 
 /* ── Night watch (scotopic vision preservation) ─────────── */
+/* Red light (>620nm) has minimal impact on rhodopsin in rod cells.
+   ALL colors are mapped to OKLCH hue 27 (deep red) and differentiated
+   by brightness/chroma only. No blue, green, or white wavelengths. */
 
 html[data-theme="night"] {
-    --color-surface: oklch(0.08 0.01 27);
-    --color-bg: oklch(0.05 0.005 27);
-    --color-border: oklch(0.15 0.05 27);
-    --color-border-light: oklch(0.12 0.03 27);
-    --color-text-primary: oklch(0.48 0.12 27);
-    --color-text-secondary: oklch(0.36 0.10 27);
+    --color-surface: oklch(0.08 0.008 27);
+    --color-bg: oklch(0.05 0.004 27);
+    --color-border: oklch(0.16 0.04 27);
+    --color-border-light: oklch(0.12 0.02 27);
+    --color-text-primary: oklch(0.50 0.14 27);
+    --color-text-secondary: oklch(0.38 0.10 27);
     --color-text-dim: oklch(0.26 0.06 27);
-    --color-scarlet: oklch(0.42 0.18 27);
-    --color-scarlet-hover: oklch(0.36 0.16 27);
-    --color-scarlet-light: oklch(0.42 0.18 27 / 0.15);
-    --color-green: oklch(0.42 0.10 50);
-    --color-green-bg: oklch(0.42 0.10 50 / 0.15);
-    --color-amber: oklch(0.48 0.14 45);
-    --color-amber-bg: oklch(0.48 0.14 45 / 0.15);
-    --color-error: oklch(0.34 0.14 27);
-    --color-error-bg: oklch(0.34 0.14 27 / 0.15);
-    --color-blue: oklch(0.38 0.08 35);
-    --color-blue-bg: oklch(0.38 0.08 35 / 0.15);
-    --color-teal: oklch(0.38 0.08 40);
-    --color-teal-bg: oklch(0.38 0.08 40 / 0.15);
-    --color-pink: oklch(0.44 0.12 20);
+    --color-scarlet: oklch(0.44 0.18 27);
+    --color-scarlet-hover: oklch(0.38 0.16 27);
+    --color-scarlet-light: oklch(0.44 0.18 27 / 0.15);
+    --color-green: oklch(0.38 0.10 27);
+    --color-green-bg: oklch(0.38 0.10 27 / 0.15);
+    --color-amber: oklch(0.46 0.14 27);
+    --color-amber-bg: oklch(0.46 0.14 27 / 0.15);
+    --color-error: oklch(0.38 0.16 27);
+    --color-error-bg: oklch(0.38 0.16 27 / 0.15);
+    --color-blue: oklch(0.34 0.10 27);
+    --color-blue-bg: oklch(0.34 0.10 27 / 0.15);
+    --color-teal: oklch(0.42 0.12 27);
+    --color-teal-bg: oklch(0.42 0.12 27 / 0.15);
+    --color-pink: oklch(0.40 0.12 25);
     --shadow-sm: 0 2px 8px oklch(0.0 0.0 0 / 0.5);
     color-scheme: dark;
+}
+
+/* Night watch: replace white text with light red on filled buttons */
+html[data-theme="night"] .btn--primary,
+html[data-theme="night"] .btn--danger,
+html[data-theme="night"] .pill--active,
+html[data-theme="night"] .range-btn--active,
+html[data-theme="night"] .custom-picker-apply {
+    color: oklch(0.78 0.06 27);
+}
+
+/* Night watch: weather hero — override inline gradient + white text */
+html[data-theme="night"] .wx-hero {
+    background: linear-gradient(135deg, oklch(0.12 0.04 27), oklch(0.08 0.02 27)) !important;
+}
+
+html[data-theme="night"] .wx-hero__temp {
+    color: oklch(0.50 0.14 27);
+}
+
+html[data-theme="night"] .wx-hero__cond {
+    color: oklch(0.38 0.10 27);
+}
+
+html[data-theme="night"] .wx-hero::after {
+    background: oklch(0.20 0.06 27 / 0.15);
+}
+
+/* Night watch: health dots with hardcoded hues */
+html[data-theme="night"] .health-dot--green {
+    box-shadow: 0 0 5px oklch(0.38 0.10 27 / 0.4);
+}
+
+html[data-theme="night"] .health-dot--amber {
+    background: var(--color-amber);
+    box-shadow: 0 0 5px oklch(0.46 0.14 27 / 0.4);
+}
+
+/* Night watch: chart tooltips */
+html[data-theme="night"] .chart-tooltip {
+    background: oklch(0.05 0.008 27 / 0.95);
+    color: oklch(0.50 0.14 27);
+}
+
+html[data-theme="night"] .chart-tooltip-hint {
+    color: oklch(0.30 0.06 27);
+}
+
+/* Night watch: Explore propulsion bands */
+html[data-theme="night"] .band-swatch--sailing {
+    background: oklch(0.42 0.12 27 / 0.25);
+}
+
+html[data-theme="night"] .band-swatch--motoring {
+    background: oklch(0.46 0.14 27 / 0.25);
+}
+
+/* Night watch: Environment sea cards + rain badges */
+html[data-theme="night"] .sea-card {
+    background: var(--color-surface);
+    border-color: var(--color-border);
+}
+
+html[data-theme="night"] .sea-card:hover {
+    border-color: oklch(0.26 0.06 27);
+    box-shadow: 0 2px 12px oklch(0.10 0.04 27 / 0.2);
+}
+
+html[data-theme="night"] .sea-card--selected {
+    border-color: oklch(0.44 0.18 27 / 0.3);
+    background: oklch(0.10 0.02 27);
+}
+
+html[data-theme="night"] .wx-fc-rain {
+    background: oklch(0.34 0.10 27 / 0.15);
+}
+
+/* Night watch: JourneyView map overlays */
+html[data-theme="night"] .legend-badge {
+    background: var(--color-surface);
+    color: var(--color-text-secondary);
+    box-shadow: 0 1px 4px oklch(0.0 0.0 0 / 0.3);
+}
+
+html[data-theme="night"] .legend-gradient {
+    background: linear-gradient(to right, oklch(0.26 0.06 27), oklch(0.38 0.10 27), oklch(0.50 0.14 27));
+}
+
+html[data-theme="night"] .chart-panel {
+    background: var(--color-surface);
+    border-color: var(--color-border);
+}
+
+html[data-theme="night"] .chart-label {
+    color: var(--color-text-secondary);
 }
 
 /* ── Theme transition ───────────────────────────────────── */

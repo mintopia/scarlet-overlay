@@ -398,7 +398,7 @@ onUnmounted(() => {
     align-items: center;
     justify-content: center;
     font-size: 14px;
-    color: oklch(0.55 0.01 70);
+    color: var(--color-text-dim);
 }
 
 .speed-legend {
@@ -409,11 +409,11 @@ onUnmounted(() => {
     display: flex;
     align-items: center;
     gap: 6px;
-    background: white;
+    background: var(--color-surface);
     border-radius: 8px;
     padding: 6px 12px;
     font-size: 11px;
-    color: oklch(0.45 0.01 70);
+    color: var(--color-text-secondary);
     box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
 }
 
@@ -437,16 +437,16 @@ onUnmounted(() => {
 }
 
 .chart-panel {
-    border: 1px solid oklch(0.90 0.005 70);
+    border: 1px solid var(--color-border);
     border-radius: 8px;
     padding: 16px;
-    background: white;
+    background: var(--color-surface);
 }
 
 .chart-label {
     font-size: 12px;
     font-weight: 600;
-    color: oklch(0.45 0.01 70);
+    color: var(--color-text-secondary);
     margin-bottom: 8px;
 }
 

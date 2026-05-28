@@ -55,6 +55,32 @@ Dark mode (`data-theme="dark"`) adjusts all tokens. Key principles:
 | `--color-amber` | `oklch(0.48 0.17 70)` | `oklch(0.76 0.17 70)` | Full chroma preserved |
 | `--color-blue` | `oklch(0.42 0.14 245)` | `oklch(0.64 0.14 245)` | Full chroma preserved |
 
+### Night Watch Overrides
+
+Night Watch (`data-theme="night"`) is a scotopic vision preservation mode for use at sea after dark. Red light (>620nm) has minimal impact on rhodopsin in rod cells, so ALL colors are mapped to OKLCH hue 27 (deep red). Semantic meaning shifts from color to brightness/chroma + position.
+
+Key principles:
+
+- **Every color uses hue 27** — no blue, green, amber, or white wavelengths
+- **Semantic colors differentiated by brightness/chroma only** — amber (wind) brightest, blue (depth) dimmest
+- **Hardcoded whites replaced** — buttons, tooltips, weather hero, modals all use red-spectrum equivalents
+- **Bg washes use 15% alpha** for visibility on near-black backgrounds
+- **Inline gradient overrides** use `!important` where necessary to beat inline styles
+
+| Token | Dark | Night | Notes |
+|---|---|---|---|
+| `--color-bg` | `oklch(0.15 0.010 205)` | `oklch(0.05 0.004 27)` | Near-black, red tint |
+| `--color-surface` | `oklch(0.21 0.012 205)` | `oklch(0.08 0.008 27)` | Very dark |
+| `--color-border` | `oklch(0.28 0.010 205)` | `oklch(0.16 0.04 27)` | Subtle red |
+| `--color-text-primary` | `oklch(0.93 0.005 205)` | `oklch(0.50 0.14 27)` | Dim red, readable |
+| `--color-teal` | `oklch(0.66 0.14 178)` | `oklch(0.42 0.12 27)` | Nav data |
+| `--color-amber` | `oklch(0.76 0.17 70)` | `oklch(0.46 0.14 27)` | Wind data, brightest semantic |
+| `--color-green` | `oklch(0.66 0.16 150)` | `oklch(0.38 0.10 27)` | Positive state |
+| `--color-blue` | `oklch(0.64 0.14 245)` | `oklch(0.34 0.10 27)` | Depth/water, dimmest |
+| `--color-scarlet` | `oklch(0.64 0.22 25)` | `oklch(0.44 0.18 27)` | Brand accent, highest chroma |
+
+Button text in night mode uses `oklch(0.78 0.06 27)` instead of white.
+
 ### Shadow
 
 | Theme | Value |
