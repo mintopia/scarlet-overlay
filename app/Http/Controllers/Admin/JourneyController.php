@@ -7,7 +7,6 @@ use App\Jobs\ImportJourneyFromPrometheus;
 use App\Models\Journey;
 use App\Services\GpxService;
 use App\Services\JourneyService;
-use App\Services\MetricsService;
 use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
 use Inertia\Inertia;
@@ -110,27 +109,8 @@ class JourneyController extends Controller
         return redirect()->route('admin.journeys')->with('success', 'Import started. Track data will appear shortly.');
     }
 
-    public function edit(Journey $journey, MetricsService $metrics)
+    public function edit(Journey $journey)
     {
-        $logRows = [];
-        if ($journey->started_at) {
-            $end = $journey->ended_at ?? now();
-            $durationHours = $journey->started_at->diffInHours($end);
-            if ($durationHours > 168) {
-                $step = 14400;
-            } elseif ($durationHours > 72) {
-                $step = 7200;
-            } else {
-                $step = 3600;
-            }
-            $logRows = $metrics->getLogData(
-                null,
-                (string) $step,
-                $journey->started_at->startOfHour()->subHour()->timestamp,
-                $end->endOfHour()->addHour()->timestamp,
-            );
-        }
-
         return Inertia::render('Admin/JourneyEdit', [
             'journey' => array_merge(
                 $journey->only('id', 'slug', 'title', 'from_port', 'to_port', 'is_public', 'notes', 'status', 'gpx_route_path'),
@@ -140,7 +120,6 @@ class JourneyController extends Controller
                     'track_point_count' => $journey->trackPoints()->count(),
                 ],
             ),
-            'logRows' => $logRows,
         ]);
     }
 

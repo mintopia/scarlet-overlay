@@ -6,6 +6,7 @@ use App\Http\Controllers\Admin\AdminLogController;
 use App\Http\Controllers\Admin\BoatMetricsController;
 use App\Http\Controllers\Admin\ExploreController;
 use App\Http\Controllers\Admin\JourneyController;
+use App\Http\Controllers\Admin\JourneyViewController as AdminJourneyViewController;
 use App\Http\Controllers\Admin\ProfileController;
 use App\Http\Controllers\Admin\SettingsController;
 use App\Http\Controllers\Admin\StreamMonitorController;
@@ -93,6 +94,7 @@ Route::middleware('auth')->prefix('admin')->group(function () {
     Route::get('/journeys/import', [JourneyController::class, 'importForm'])->name('admin.journeys.import');
     Route::post('/journeys', [JourneyController::class, 'store'])->name('admin.journeys.store');
     Route::post('/journeys/import', [JourneyController::class, 'import'])->name('admin.journeys.import.store');
+    Route::get('/journeys/{journey}', [AdminJourneyViewController::class, 'show'])->name('admin.journeys.show');
     Route::get('/journeys/{journey}/edit', [JourneyController::class, 'edit'])->name('admin.journeys.edit');
     Route::put('/journeys/{journey}', [JourneyController::class, 'update'])->name('admin.journeys.update');
     Route::delete('/journeys/{journey}', [JourneyController::class, 'destroy'])->name('admin.journeys.destroy');

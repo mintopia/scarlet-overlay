@@ -44,6 +44,7 @@ return [
             'trip_log' => ['query' => 'scarlet_signalk_navigation_trip_log', 'divide' => 1852],
             'nav_wp_distance' => ['query' => 'scarlet_signalk_navigation_courseGreatCircle_nextPoint_distance', 'divide' => 1852],
             'nav_wp_ttg' => ['query' => 'scarlet_signalk_navigation_courseGreatCircle_nextPoint_timeToGo'],
+            'vmg' => ['query' => 'scarlet_signalk_navigation_courseGreatCircle_nextPoint_velocityMadeGood', 'multiply' => 1.94384],
 
             'wind_speed_apparent_raw' => ['query' => 'scarlet_signalk_environment_wind_speedApparent'],
             'wind_angle_apparent_raw' => ['query' => 'scarlet_signalk_environment_wind_angleApparent'],
@@ -109,7 +110,7 @@ return [
         'groups' => [
             'boat' => [
                 'speed_sog', 'speed_stw', 'heading', 'cog', 'depth', 'heel',
-                'trip_log', 'nav_wp_distance', 'nav_wp_ttg',
+                'trip_log', 'nav_wp_distance', 'nav_wp_ttg', 'vmg',
                 'wind_speed_apparent', 'wind_angle_apparent',
                 'wind_speed_apparent_raw', 'wind_angle_apparent_raw',
                 'speed_stw_raw', 'heading_raw',
@@ -243,6 +244,15 @@ return [
                     'group' => 'navigation',
                     'type' => 'duration',
                     'related' => ['nav_wp_distance'],
+                ],
+                'vmg' => [
+                    'label' => 'VMG',
+                    'unit' => 'kn',
+                    'color' => 'oklch(0.58 0.18 160)',
+                    'metric' => 'vmg',
+                    'group' => 'navigation',
+                    'type' => 'standard',
+                    'related' => ['speed', 'nav_wp_distance'],
                 ],
 
                 'wind_speed_true' => [

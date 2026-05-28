@@ -46,8 +46,8 @@
                             <div class="flex gap-2 justify-end">
                                 <button v-if="j.status === 'planned'" @click="confirmStart(j)" class="text-[12px] text-green font-medium hover:underline">Start</button>
                                 <button v-if="j.status === 'active'" @click="confirmEnd(j)" class="text-[12px] text-error font-medium hover:underline">End</button>
-                                <Link :href="`/admin/journeys/${j.id}/edit`" class="text-[12px] text-scarlet font-medium hover:underline">Edit</Link>
-                                <a v-if="j.status !== 'planned'" :href="`/journey/${j.slug}`" target="_blank" class="text-[12px] text-text-dim font-medium hover:underline">View</a>
+                                <Link v-if="j.status !== 'planned'" :href="`/admin/journeys/${j.id}`" class="text-[12px] text-scarlet font-medium hover:underline">View</Link>
+                                <Link :href="`/admin/journeys/${j.id}/edit`" class="text-[12px] text-text-dim font-medium hover:underline">Edit</Link>
                             </div>
                         </td>
                     </tr>
