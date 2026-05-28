@@ -35,24 +35,11 @@ class ImportJourneyFromPrometheus implements ShouldQueue
         $lngByTs = collect($lngData)->keyBy('timestamp');
 
         $metricKeys = [
-            'gps_speed', 'gps_heading', 'depth',
+            'depth',
             'wind_speed_apparent', 'wind_angle_apparent',
             'speed_stw', 'cog',
             'house_battery_voltage', 'house_battery_current',
             'heel',
-        ];
-
-        $metricAliases = [
-            'gps_speed' => 'speed_sog',
-            'gps_heading' => 'heading',
-            'depth' => 'depth',
-            'wind_speed_apparent' => 'wind_speed_apparent',
-            'wind_angle_apparent' => 'wind_angle_apparent',
-            'speed_stw' => 'speed_stw',
-            'cog' => 'cog',
-            'house_battery_voltage' => 'house_battery_voltage',
-            'house_battery_current' => 'house_battery_current',
-            'heel' => 'heel',
         ];
 
         $data = [];
@@ -72,13 +59,28 @@ class ImportJourneyFromPrometheus implements ShouldQueue
             ];
         }
 
+        $headingData = $registry->fetchRange('gps_heading', $step, $start, $end, fillGaps: false);
+        foreach ($headingData as $point) {
+            $ts = $point['timestamp'];
+            if (isset($data[$ts])) {
+                $data[$ts]['heading'] = $point['value'];
+            }
+        }
+
+        $speedData = $registry->fetchRange('gps_speed', $step, $start, $end, fillGaps: false);
+        foreach ($speedData as $point) {
+            $ts = $point['timestamp'];
+            if (isset($data[$ts])) {
+                $data[$ts]['speed_sog'] = $point['value'];
+            }
+        }
+
         foreach ($metricKeys as $registryKey) {
             $results = $registry->fetchRange($registryKey, $step, $start, $end, fillGaps: false);
-            $alias = $metricAliases[$registryKey];
             foreach ($results as $point) {
                 $ts = $point['timestamp'];
                 if (isset($data[$ts])) {
-                    $data[$ts][$alias] = $point['value'];
+                    $data[$ts][$registryKey] = $point['value'];
                 }
             }
         }

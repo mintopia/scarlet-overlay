@@ -6,8 +6,8 @@ trait ResolvesShipLogData
 {
     private function buildLogData(array $values): array
     {
-        $latitude = $this->nonZero($values['latitude']);
-        $longitude = $this->nonZero($values['longitude']);
+        $latitude = $this->nonZero($values['track_latitude']);
+        $longitude = $this->nonZero($values['track_longitude']);
 
         if ($latitude !== null && $longitude !== null && abs($latitude) < 0.1 && abs($longitude) < 0.1) {
             $latitude = null;
@@ -15,15 +15,15 @@ trait ResolvesShipLogData
         }
 
         $trueWind = $this->calculateTrueWind(
-            $values['aws'],
-            $values['awa'],
-            $values['stw'],
-            $values['heading'],
+            $values['wind_speed_apparent_raw'],
+            $values['wind_angle_apparent_raw'],
+            $values['speed_stw_raw'],
+            $values['heading_raw'],
         );
 
         $gpsHeading = $values['gps_heading'];
-        $cog = $values['cog'];
-        $heading = $values['heading'];
+        $cog = $values['cog_raw'];
+        $heading = $values['heading_raw'];
         $course = $gpsHeading ?? ($cog !== null ? rad2deg($cog) : ($heading !== null ? rad2deg($heading) : null));
 
         return [
@@ -33,10 +33,10 @@ trait ResolvesShipLogData
             'trip_log' => $values['trip_log'],
             'wind_speed' => $trueWind['speed'],
             'wind_direction' => $trueWind['direction'],
-            'pressure' => $values['pressure'],
-            'wp_distance' => $values['wp_distance'],
-            'wp_ttg' => $values['wp_ttg'],
-            'battery_soc' => $values['battery_soc'],
+            'pressure' => $values['cabin_pressure_forepeak'],
+            'wp_distance' => $values['nav_wp_distance'],
+            'wp_ttg' => $values['nav_wp_ttg'],
+            'battery_soc' => $values['house_battery_soc'],
             'water_level' => $values['water_level'],
             'fuel_level' => $values['fuel_level'],
         ];

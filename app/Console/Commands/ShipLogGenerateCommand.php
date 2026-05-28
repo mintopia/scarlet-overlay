@@ -27,14 +27,14 @@ class ShipLogGenerateCommand extends Command
             return self::SUCCESS;
         }
 
-        $mapping = $registry->logMapping();
+        $keys = $registry->groupKeys('log');
 
         try {
-            $values = $registry->fetchInstantMapped($mapping, $timestamp);
+            $values = $registry->fetchInstant($keys, $timestamp);
         } catch (\Throwable $e) {
             Log::error('Ship log: Prometheus query failed', ['error' => $e->getMessage()]);
             $this->error('Prometheus query failed: '.$e->getMessage());
-            $values = array_fill_keys(array_keys($mapping), null);
+            $values = array_fill_keys($keys, null);
         }
 
         $logData = $this->buildLogData($values);

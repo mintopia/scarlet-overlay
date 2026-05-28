@@ -29,23 +29,7 @@ class MetricsService
 
     public function getBoatMetrics(): array
     {
-        $keys = [
-            'speed_sog', 'speed_stw', 'heading', 'cog', 'depth', 'heel',
-            'trip_log', 'nav_wp_distance', 'nav_wp_ttg',
-            'wind_speed_apparent', 'wind_angle_apparent',
-            'wind_speed_apparent_raw', 'wind_angle_apparent_raw',
-            'speed_stw_raw', 'heading_raw',
-            'water_temp',
-            'house_battery_voltage', 'house_battery_soc', 'house_battery_current',
-            'house_battery_time_remaining', 'engine_battery_voltage',
-            'fuel_level', 'water_level',
-            'cabin_temp_quarterberth', 'cabin_humidity_quarterberth',
-            'cabin_temp_main', 'cabin_humidity_main',
-            'cabin_temp_forepeak', 'cabin_humidity_forepeak',
-            'cabin_pressure_forepeak',
-        ];
-
-        $metrics = $this->registry->fetchInstant($keys);
+        $metrics = $this->registry->fetchInstant($this->registry->groupKeys('boat'));
 
         $tw = $this->calculateTrueWind(
             $metrics['wind_speed_apparent_raw'],
@@ -62,15 +46,7 @@ class MetricsService
 
     public function getTrackerMetrics(): array
     {
-        $keys = [
-            'tracker_battery', 'tracker_usb', 'tracker_lte_connected',
-            'tracker_lte_rssi', 'tracker_lte_quality', 'tracker_lte_rat',
-            'tracker_wifi_connected', 'tracker_wifi_rssi',
-            'tracker_uptime', 'tracker_heap', 'tracker_mode',
-            'cabin_temp_forepeak', 'cabin_humidity_forepeak', 'tracker_cpu',
-        ];
-
-        $metrics = $this->registry->fetchInstant($keys);
+        $metrics = $this->registry->fetchInstant($this->registry->groupKeys('tracker'));
 
         $metrics['battery_percent'] = $this->voltageToPct($metrics['tracker_battery'] ?? null);
         $metrics['last_seen'] = $this->prometheus->queryTimestamp(
@@ -82,12 +58,9 @@ class MetricsService
 
     public function getGpsMetrics(): array
     {
-        $gps = $this->registry->fetchInstant([
-            'gps_latitude', 'gps_longitude', 'gps_altitude',
-            'gps_satellites', 'gps_hdop', 'gps_speed', 'gps_heading',
-        ]);
+        $gps = $this->registry->fetchInstant($this->registry->groupKeys('gps'));
 
-        $remapped = [
+        $result = [
             'latitude' => $gps['gps_latitude'],
             'longitude' => $gps['gps_longitude'],
             'altitude' => $gps['gps_altitude'],
@@ -97,12 +70,12 @@ class MetricsService
             'heading' => $gps['gps_heading'],
         ];
 
-        if ($this->isNullIsland($remapped['latitude'], $remapped['longitude'])) {
-            $remapped['latitude'] = null;
-            $remapped['longitude'] = null;
+        if ($this->isNullIsland($result['latitude'], $result['longitude'])) {
+            $result['latitude'] = null;
+            $result['longitude'] = null;
         }
 
-        return $remapped;
+        return $result;
     }
 
     public function getWeatherData(): ?array
@@ -163,44 +136,17 @@ class MetricsService
 
     public function getAllMetricsAt(int $timestamp): array
     {
-        $boatKeys = [
-            'speed_sog', 'speed_stw', 'heading', 'cog', 'depth', 'heel',
-            'trip_log', 'nav_wp_distance', 'nav_wp_ttg',
-            'wind_speed_apparent', 'wind_angle_apparent',
-            'wind_speed_apparent_raw', 'wind_angle_apparent_raw',
-            'speed_stw_raw', 'heading_raw',
-            'water_temp',
-            'house_battery_voltage', 'house_battery_soc', 'house_battery_current',
-            'house_battery_time_remaining', 'engine_battery_voltage',
-            'fuel_level', 'water_level',
-            'cabin_temp_quarterberth', 'cabin_humidity_quarterberth',
-            'cabin_temp_main', 'cabin_humidity_main',
-            'cabin_temp_forepeak', 'cabin_humidity_forepeak',
-            'cabin_pressure_forepeak',
-        ];
-
-        $boat = $this->registry->fetchInstant($boatKeys, $timestamp);
+        $boat = $this->registry->fetchInstant($this->registry->groupKeys('boat'), $timestamp);
 
         $tw = $this->calculateTrueWind($boat['wind_speed_apparent_raw'], $boat['wind_angle_apparent_raw'], $boat['speed_stw_raw'], $boat['heading_raw']);
         $boat['wind_speed_true'] = $tw['speed'];
         $boat['wind_direction_true'] = $tw['direction'];
         unset($boat['wind_speed_apparent_raw'], $boat['wind_angle_apparent_raw'], $boat['speed_stw_raw'], $boat['heading_raw']);
 
-        $trackerKeys = [
-            'tracker_battery', 'tracker_usb', 'tracker_lte_connected',
-            'tracker_lte_rssi', 'tracker_lte_quality', 'tracker_lte_rat',
-            'tracker_wifi_connected', 'tracker_wifi_rssi',
-            'tracker_uptime', 'tracker_heap', 'tracker_mode',
-            'cabin_temp_forepeak', 'cabin_humidity_forepeak', 'tracker_cpu',
-        ];
-
-        $tracker = $this->registry->fetchInstant($trackerKeys, $timestamp);
+        $tracker = $this->registry->fetchInstant($this->registry->groupKeys('tracker'), $timestamp);
         $tracker['battery_percent'] = $this->voltageToPct($tracker['tracker_battery'] ?? null);
 
-        $gpsRaw = $this->registry->fetchInstant([
-            'gps_latitude', 'gps_longitude', 'gps_altitude',
-            'gps_satellites', 'gps_hdop', 'gps_speed', 'gps_heading',
-        ], $timestamp);
+        $gpsRaw = $this->registry->fetchInstant($this->registry->groupKeys('gps'), $timestamp);
 
         $gps = [
             'latitude' => $gpsRaw['gps_latitude'],
@@ -308,27 +254,39 @@ class MetricsService
             $alignedStart = (int) ceil($alignedStart / $stepSeconds) * $stepSeconds;
         }
 
-        $mapping = $this->registry->logMapping();
+        $keys = $this->registry->groupKeys('log');
         $seriesByKey = [];
 
-        foreach ($mapping as $fieldName => $registryKey) {
+        foreach ($keys as $registryKey) {
             $data = $this->registry->fetchRange($registryKey, $step.'s', $alignedStart, $alignedEnd);
-            $seriesByKey[$fieldName] = collect($data)->keyBy('timestamp');
+            $seriesByKey[$registryKey] = collect($data)->keyBy('timestamp');
         }
 
         $rows = [];
         for ($ts = $alignedStart; $ts <= $alignedEnd; $ts += $stepSeconds) {
             $row = ['timestamp' => $ts];
-            foreach ($mapping as $fieldName => $registryKey) {
-                $point = $seriesByKey[$fieldName]->get($ts);
-                $row[$fieldName] = $point ? $point['value'] : null;
+            foreach ($keys as $registryKey) {
+                $point = $seriesByKey[$registryKey]->get($ts);
+                $row[$registryKey] = $point ? $point['value'] : null;
             }
 
-            $tw = $this->calculateTrueWind($row['aws'], $row['awa'], $row['stw'], $row['heading']);
+            $tw = $this->calculateTrueWind($row['wind_speed_apparent_raw'], $row['wind_angle_apparent_raw'], $row['speed_stw_raw'], $row['heading_raw']);
             $row['wind_speed'] = $tw['speed'];
             $row['wind_direction'] = $tw['direction'];
-            $row['course'] = $row['cog'] !== null ? rad2deg($row['cog']) : ($row['heading'] !== null ? rad2deg($row['heading']) : null);
-            unset($row['aws'], $row['awa'], $row['stw'], $row['heading'], $row['cog']);
+            $row['course'] = $row['cog_raw'] !== null ? rad2deg($row['cog_raw']) : ($row['heading_raw'] !== null ? rad2deg($row['heading_raw']) : null);
+            $row['latitude'] = $row['track_latitude'];
+            $row['longitude'] = $row['track_longitude'];
+            $row['pressure'] = $row['cabin_pressure_forepeak'];
+            $row['wp_distance'] = $row['nav_wp_distance'];
+            $row['wp_ttg'] = $row['nav_wp_ttg'];
+            $row['battery_soc'] = $row['house_battery_soc'];
+            unset(
+                $row['wind_speed_apparent_raw'], $row['wind_angle_apparent_raw'],
+                $row['speed_stw_raw'], $row['heading_raw'], $row['cog_raw'],
+                $row['track_latitude'], $row['track_longitude'],
+                $row['cabin_pressure_forepeak'], $row['nav_wp_distance'],
+                $row['nav_wp_ttg'], $row['house_battery_soc'],
+            );
 
             if ($this->isNullIsland($row['latitude'] ?? null, $row['longitude'] ?? null)) {
                 $row['latitude'] = null;

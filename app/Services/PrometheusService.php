@@ -176,7 +176,6 @@ class PrometheusService
             $rangeStart = $start ?? ($duration ? now()->sub(CarbonInterval::fromString($duration))->timestamp : now()->subDay()->timestamp);
             $rangeEnd = $end ?? now()->timestamp;
 
-            // VictoriaMetrics aligns range query timestamps to epoch step boundaries
             $rangeStart = (int) floor($rangeStart / $stepSeconds) * $stepSeconds;
             $rangeEnd = (int) ceil($rangeEnd / $stepSeconds) * $stepSeconds;
 
@@ -285,12 +284,6 @@ class PrometheusService
         return $results;
     }
 
-    /**
-     * Run multiple queries and also report whether a fetch error occurred.
-     * Returns ['values' => [...], 'fetchError' => bool].
-     * fetchError is true when a network/HTTP exception was thrown; it is false
-     * when the fetch succeeded but Prometheus returned no data (publisher offline).
-     */
     public function queryMultipleWithStatus(array $queries, int $maxAge = 120): array
     {
         $results = [];

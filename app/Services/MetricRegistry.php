@@ -83,27 +83,9 @@ class MetricRegistry
         return $this->fetchRange($key, $step, $start, $end);
     }
 
-    public function fetchInstantMapped(array $mapping, ?int $timestamp = null): array
-    {
-        $registryKeys = array_unique(array_values($mapping));
-        $values = $this->fetchInstant($registryKeys, $timestamp);
-
-        $result = [];
-        foreach ($mapping as $fieldName => $registryKey) {
-            $result[$fieldName] = $values[$registryKey] ?? null;
-        }
-
-        return $result;
-    }
-
     public function groupKeys(string $group): array
     {
         return config("scarlet.metrics.groups.{$group}") ?? [];
-    }
-
-    public function logMapping(): array
-    {
-        return config('scarlet.metrics.groups.log') ?? [];
     }
 
     protected function wrapMetric(string $query): string

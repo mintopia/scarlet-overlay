@@ -15,19 +15,19 @@ class ShipLogGenerateCommandTest extends TestCase
     private function mockRegistry(array $values = []): void
     {
         $defaults = [
-            'latitude' => 50.75,
-            'longitude' => -1.54,
+            'track_latitude' => 50.75,
+            'track_longitude' => -1.54,
             'gps_heading' => 274.0,
             'trip_log' => 12.3,
-            'aws' => 8.5,
-            'awa' => 0.78,
-            'stw' => 3.1,
-            'heading' => 4.78,
-            'cog' => 4.78,
-            'pressure' => 1013.2,
-            'wp_distance' => 8.2,
-            'wp_ttg' => 10800.0,
-            'battery_soc' => 87.0,
+            'wind_speed_apparent_raw' => 8.5,
+            'wind_angle_apparent_raw' => 0.78,
+            'speed_stw_raw' => 3.1,
+            'heading_raw' => 4.78,
+            'cog_raw' => 4.78,
+            'cabin_pressure_forepeak' => 1013.2,
+            'nav_wp_distance' => 8.2,
+            'nav_wp_ttg' => 10800.0,
+            'house_battery_soc' => 87.0,
             'water_level' => 62.0,
             'fuel_level' => 95.0,
         ];
@@ -35,13 +35,14 @@ class ShipLogGenerateCommandTest extends TestCase
         $merged = array_merge($defaults, $values);
 
         $mock = $this->mock(MetricRegistry::class);
-        $mock->shouldReceive('logMapping')
+        $mock->shouldReceive('groupKeys')
+            ->with('log')
             ->andReturn(config('scarlet.metrics.groups.log'));
-        $mock->shouldReceive('fetchInstantMapped')
-            ->andReturnUsing(function (array $mapping) use ($merged) {
+        $mock->shouldReceive('fetchInstant')
+            ->andReturnUsing(function (array $keys) use ($merged) {
                 $result = [];
-                foreach ($mapping as $fieldName => $registryKey) {
-                    $result[$fieldName] = $merged[$fieldName] ?? null;
+                foreach ($keys as $key) {
+                    $result[$key] = $merged[$key] ?? null;
                 }
 
                 return $result;
@@ -89,10 +90,11 @@ class ShipLogGenerateCommandTest extends TestCase
     public function test_generate_handles_null_metrics(): void
     {
         $mock = $this->mock(MetricRegistry::class);
-        $mock->shouldReceive('logMapping')
+        $mock->shouldReceive('groupKeys')
+            ->with('log')
             ->andReturn(config('scarlet.metrics.groups.log'));
-        $mock->shouldReceive('fetchInstantMapped')
-            ->andReturnUsing(fn (array $mapping) => array_fill_keys(array_keys($mapping), null));
+        $mock->shouldReceive('fetchInstant')
+            ->andReturnUsing(fn (array $keys) => array_fill_keys($keys, null));
 
         $this->artisan('ship-log:generate')->assertSuccessful();
 
@@ -104,7 +106,7 @@ class ShipLogGenerateCommandTest extends TestCase
 
     public function test_generate_falls_back_to_signalk_cog_when_gps_heading_null(): void
     {
-        $this->mockRegistry(['gps_heading' => null, 'cog' => 4.78]);
+        $this->mockRegistry(['gps_heading' => null, 'cog_raw' => 4.78]);
 
         $this->artisan('ship-log:generate')->assertSuccessful();
 
@@ -115,8 +117,8 @@ class ShipLogGenerateCommandTest extends TestCase
     public function test_generate_filters_null_island_position(): void
     {
         $this->mockRegistry([
-            'latitude' => 0.0,
-            'longitude' => 0.0,
+            'track_latitude' => 0.0,
+            'track_longitude' => 0.0,
         ]);
 
         $this->artisan('ship-log:generate')->assertSuccessful();
@@ -129,8 +131,8 @@ class ShipLogGenerateCommandTest extends TestCase
     public function test_generate_stores_valid_position(): void
     {
         $this->mockRegistry([
-            'latitude' => 43.54,
-            'longitude' => 3.89,
+            'track_latitude' => 43.54,
+            'track_longitude' => 3.89,
         ]);
 
         $this->artisan('ship-log:generate')->assertSuccessful();

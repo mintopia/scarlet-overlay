@@ -42,14 +42,14 @@ class ShipLogBackfillCommand extends Command
         $totalHours = ($alignedEnd - $alignedStart) / $stepSeconds;
         $this->info('Backfilling from '.date('Y-m-d H:i', $alignedStart).' to '.date('Y-m-d H:i', $alignedEnd)." ({$totalHours} hours)");
 
-        $mapping = $registry->logMapping();
-        $seriesByField = [];
+        $keys = $registry->groupKeys('log');
+        $seriesByKey = [];
 
-        foreach ($mapping as $fieldName => $registryKey) {
-            $this->line("Fetching {$fieldName} ({$registryKey})");
+        foreach ($keys as $registryKey) {
+            $this->line("Fetching {$registryKey}");
             $data = $registry->fetchRange($registryKey, $stepSeconds.'s', $alignedStart, $alignedEnd);
-            $this->line("  → {$fieldName}: ".count($data).' data points');
-            $seriesByField[$fieldName] = collect($data)->keyBy('timestamp');
+            $this->line("  → {$registryKey}: ".count($data).' data points');
+            $seriesByKey[$registryKey] = collect($data)->keyBy('timestamp');
         }
 
         $journeys = Journey::whereNotNull('started_at')
@@ -67,9 +67,9 @@ class ShipLogBackfillCommand extends Command
             $recordedAt = date('Y-m-d H:i:s', $ts);
 
             $values = [];
-            foreach ($mapping as $fieldName => $registryKey) {
-                $point = $seriesByField[$fieldName]->get($ts);
-                $values[$fieldName] = $point ? $point['value'] : null;
+            foreach ($keys as $registryKey) {
+                $point = $seriesByKey[$registryKey]->get($ts);
+                $values[$registryKey] = $point ? $point['value'] : null;
             }
 
             $logData = $this->buildLogData($values);
