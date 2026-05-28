@@ -176,6 +176,10 @@ class PrometheusService
             $rangeStart = $start ?? ($duration ? now()->sub(CarbonInterval::fromString($duration))->timestamp : now()->subDay()->timestamp);
             $rangeEnd = $end ?? now()->timestamp;
 
+            // VictoriaMetrics aligns range query timestamps to epoch step boundaries
+            $rangeStart = (int) floor($rangeStart / $stepSeconds) * $stepSeconds;
+            $rangeEnd = (int) ceil($rangeEnd / $stepSeconds) * $stepSeconds;
+
             $response = Http::timeout(10)->get("{$this->baseUrl}/api/v1/query_range", [
                 'query' => $promql,
                 'start' => $rangeStart,

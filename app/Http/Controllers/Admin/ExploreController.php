@@ -216,7 +216,10 @@ class ExploreController extends Controller
             if (! empty($metric['computed'])) {
                 continue;
             }
-            $queries[$slug] = $metric['query'];
+            $query = $metric['query'];
+            $query = preg_replace('/\bmax\(/', '(', $query);
+            $query = str_replace('keep_last_value(', '(', $query);
+            $queries[$slug] = $query;
         }
         $currentValues = $prometheus->queryMultipleAt($queries, now()->timestamp, fallback: true);
 
