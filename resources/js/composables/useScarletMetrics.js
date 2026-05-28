@@ -157,7 +157,7 @@ export function useScarletMetrics(options = {}) {
 
     function updateSingleMap(target, newGps, newBoat) {
         const pos = [newGps.latitude, newGps.longitude];
-        const heading = newBoat?.heading ?? newBoat?.cog ?? 0;
+        const heading = newBoat?.cog ?? newBoat?.heading ?? 0;
         const icon = makeBoatIcon(heading);
 
         if (target.marker) {
