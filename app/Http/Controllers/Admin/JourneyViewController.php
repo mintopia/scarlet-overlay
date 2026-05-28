@@ -4,12 +4,15 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Journey;
+use App\Models\ShipLog;
 use App\Services\MetricRegistry;
 use App\Services\MetricsService;
 use Inertia\Inertia;
 
 class JourneyViewController extends Controller
 {
+    use BuildsLogRows;
+
     public function show(Journey $journey, MetricsService $metrics, MetricRegistry $registry)
     {
         $start = $journey->started_at?->timestamp;
@@ -43,9 +46,11 @@ class JourneyViewController extends Controller
 
         $gpsTrack = $metrics->getGpsTrack(null, $step, $start, $end);
 
-        $logStart = $journey->started_at->startOfHour()->subHour()->timestamp;
-        $logEnd = ($journey->ended_at ?? now())->endOfHour()->addHour()->timestamp;
-        $logRows = $metrics->getLogData(null, '3600', $logStart, $logEnd);
+        $logRows = $this->buildLogRows(
+            ShipLog::where('journey_id', $journey->id)
+                ->orderBy('recorded_at')
+                ->get()
+        );
 
         $exploreConfig = config('scarlet.metrics.mappings.explore');
 
