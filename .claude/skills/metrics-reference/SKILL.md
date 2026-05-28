@@ -39,7 +39,7 @@ This means every metric has **at least 2 series**. GPS metrics have up to **5 se
 
 **Rule: Always wrap range-queried metrics in `max()` to collapse duplicate series into one.** Instant queries (`query()`, `queryMultipleAt()`) are not affected — Prometheus resolves to a single current value.
 
-The `log` and `history` config mappings already use `max()`. The `explore` mapping does not need it because its queries go through `queryRangeWithFallback()` which also reads only `$result[0]` but the explore charts are less sensitive to gaps.
+All config mappings (`log`, `history`, `explore`) use `max()`. The two ingestion paths can cover different time periods, so without `max()`, `$result[0]` may pick a series that has no data for the queried range while the other series does.
 
 ### Position Source: GPS with gps_source priority
 
