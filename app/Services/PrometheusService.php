@@ -169,6 +169,38 @@ class PrometheusService
         }
     }
 
+    public function resolveLogQueries(): array
+    {
+        $log = config('scarlet.metrics.mappings.log');
+        $resolved = [];
+        foreach ($log as $key => $ref) {
+            if (str_contains($ref, ':')) {
+                [$group, $metricKey] = explode(':', $ref, 2);
+                $resolved[$key] = config("scarlet.metrics.mappings.{$group}.{$metricKey}");
+            } else {
+                $resolved[$key] = $ref;
+            }
+        }
+
+        return $resolved;
+    }
+
+    public function wrapForRange(string $query): string
+    {
+        return preg_replace_callback(
+            '/\b(scarlet_[a-zA-Z0-9_:]*)(\{[^}]*\})?/',
+            fn ($m) => "max(keep_last_value({$m[0]}))",
+            $query,
+        );
+    }
+
+    public function stripRangeWrapping(string $query): string
+    {
+        $query = preg_replace('/\bmax\(/', '(', $query);
+
+        return str_replace('keep_last_value(', '(', $query);
+    }
+
     public function queryRange(string $promql, ?string $duration, string $step = '15s', ?int $start = null, ?int $end = null, bool $fillGaps = true): array
     {
         try {

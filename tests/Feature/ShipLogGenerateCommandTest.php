@@ -34,24 +34,17 @@ class ShipLogGenerateCommandTest extends TestCase
 
         $merged = array_merge($defaults, $values);
 
+        $prom = new PrometheusService;
+        $resolvedQueries = $prom->resolveLogQueries();
+
         $mock = $this->mock(PrometheusService::class);
+        $mock->shouldReceive('resolveLogQueries')
+            ->andReturn($resolvedQueries);
         $mock->shouldReceive('queryMultipleAt')
             ->andReturnUsing(function (array $queries) use ($merged) {
-                $logQueries = config('scarlet.metrics.mappings.log');
                 $results = [];
                 foreach ($queries as $key => $promql) {
-                    $logKey = array_search($promql, $logQueries);
-                    if ($logKey === false) {
-                        foreach ($logQueries as $lk => $lq) {
-                            $stripped = preg_replace('/\bmax\(/', '(', $lq);
-                            $stripped = str_replace('keep_last_value(', '(', $stripped);
-                            if ($stripped === $promql) {
-                                $logKey = $lk;
-                                break;
-                            }
-                        }
-                    }
-                    $results[$key] = ($logKey !== false) ? $merged[$logKey] : null;
+                    $results[$key] = $merged[$key] ?? null;
                 }
 
                 return $results;
@@ -98,7 +91,10 @@ class ShipLogGenerateCommandTest extends TestCase
 
     public function test_generate_handles_null_metrics(): void
     {
+        $prom = new PrometheusService;
         $mock = $this->mock(PrometheusService::class);
+        $mock->shouldReceive('resolveLogQueries')
+            ->andReturn($prom->resolveLogQueries());
         $mock->shouldReceive('queryMultipleAt')
             ->andReturnUsing(fn (array $queries) => array_fill_keys(array_keys($queries), null));
 

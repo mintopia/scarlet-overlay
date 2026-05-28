@@ -42,12 +42,13 @@ class ShipLogBackfillCommand extends Command
         $totalHours = ($alignedEnd - $alignedStart) / $stepSeconds;
         $this->info('Backfilling from '.date('Y-m-d H:i', $alignedStart).' to '.date('Y-m-d H:i', $alignedEnd)." ({$totalHours} hours)");
 
-        $queries = config('scarlet.metrics.mappings.log');
+        $queries = $prometheus->resolveLogQueries();
 
         $seriesByKey = [];
         foreach ($queries as $key => $promql) {
-            $this->line("Fetching {$key}: {$promql}");
-            $data = $prometheus->queryRange($promql, null, $stepSeconds.'s', $alignedStart, $alignedEnd);
+            $wrapped = $prometheus->wrapForRange($promql);
+            $this->line("Fetching {$key}: {$wrapped}");
+            $data = $prometheus->queryRange($wrapped, null, $stepSeconds.'s', $alignedStart, $alignedEnd);
             $this->line("  → {$key}: ".count($data).' data points');
             $seriesByKey[$key] = collect($data)->keyBy('timestamp');
         }

@@ -29,6 +29,7 @@ class ImportJourneyJobTest extends TestCase
         ];
 
         $mock = Mockery::mock(PrometheusService::class);
+        $mock->shouldReceive('wrapForRange')->andReturnUsing(fn (string $q) => "max(keep_last_value({$q}))");
         $mock->shouldReceive('queryRange')->andReturn($timestamps);
         $this->app->instance(PrometheusService::class, $mock);
 

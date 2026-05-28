@@ -195,11 +195,12 @@ class MetricsService
 
     public function getGpsTrack(?string $duration = '48h', string $step = '30s', ?int $start = null, ?int $end = null): array
     {
-        $history = config('scarlet.metrics.mappings.history');
+        $track = config('scarlet.metrics.mappings.track');
+        $wrap = fn (string $q) => $this->prometheus->wrapForRange($q);
 
-        $latData = $this->prometheus->queryRange($history['track_latitude'], $duration, $step, $start, $end, fillGaps: false);
-        $lngData = $this->prometheus->queryRange($history['track_longitude'], $duration, $step, $start, $end, fillGaps: false);
-        $sogData = $this->prometheus->queryRange($history['track_sog'], $duration, $step, $start, $end, fillGaps: false);
+        $latData = $this->prometheus->queryRange($wrap($track['latitude']), $duration, $step, $start, $end, fillGaps: false);
+        $lngData = $this->prometheus->queryRange($wrap($track['longitude']), $duration, $step, $start, $end, fillGaps: false);
+        $sogData = $this->prometheus->queryRange($wrap($track['sog']), $duration, $step, $start, $end, fillGaps: false);
 
         $lngByTs = collect($lngData)->keyBy('timestamp');
         $sogByTs = collect($sogData)->keyBy('timestamp');
@@ -257,11 +258,11 @@ class MetricsService
             $alignedStart = (int) ceil($alignedStart / $stepSeconds) * $stepSeconds;
         }
 
-        $queries = config('scarlet.metrics.mappings.log');
+        $queries = $this->prometheus->resolveLogQueries();
         $seriesByKey = [];
 
         foreach ($queries as $key => $promql) {
-            $data = $this->prometheus->queryRange($promql, null, $step.'s', $alignedStart, $alignedEnd);
+            $data = $this->prometheus->queryRange($this->prometheus->wrapForRange($promql), null, $step.'s', $alignedStart, $alignedEnd);
             $seriesByKey[$key] = collect($data)->keyBy('timestamp');
         }
 

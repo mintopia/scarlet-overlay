@@ -30,9 +30,10 @@ class ImportJourneyFromPrometheus implements ShouldQueue
         $end = Carbon::parse($this->endTime)->timestamp;
         $step = '30s';
 
-        $history = config('scarlet.metrics.mappings.history');
-        $latData = $prometheus->queryRange($history['track_latitude'], '', $step, $start, $end, fillGaps: false);
-        $lngData = $prometheus->queryRange($history['track_longitude'], '', $step, $start, $end, fillGaps: false);
+        $track = config('scarlet.metrics.mappings.track');
+        $wrap = fn (string $q) => $prometheus->wrapForRange($q);
+        $latData = $prometheus->queryRange($wrap($track['latitude']), '', $step, $start, $end, fillGaps: false);
+        $lngData = $prometheus->queryRange($wrap($track['longitude']), '', $step, $start, $end, fillGaps: false);
         $lngByTs = collect($lngData)->keyBy('timestamp');
 
         $metrics = [

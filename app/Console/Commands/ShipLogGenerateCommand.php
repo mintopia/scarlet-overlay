@@ -27,11 +27,7 @@ class ShipLogGenerateCommand extends Command
             return self::SUCCESS;
         }
 
-        $queries = collect(config('scarlet.metrics.mappings.log'))->map(function ($q) {
-            $q = preg_replace('/\bmax\(/', '(', $q);
-
-            return str_replace('keep_last_value(', '(', $q);
-        })->all();
+        $queries = $prometheus->resolveLogQueries();
 
         try {
             $values = $prometheus->queryMultipleAt($queries, $timestamp, fallback: true);
