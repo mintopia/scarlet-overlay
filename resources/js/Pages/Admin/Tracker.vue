@@ -23,7 +23,7 @@
                         <span class="w-1.5 h-1.5 rounded-full inline-block" :class="isConnected ? 'bg-green' : 'bg-amber'"></span>
                         {{ isConnected ? 'Connected' : 'Disconnected' }}
                     </span>
-                    <span class="text-[13px] font-body text-text-secondary tabular-nums">{{ formatUptime(live?.uptime) }}</span>
+                    <span class="text-[13px] font-body text-text-secondary tabular-nums">{{ formatUptime(live?.tracker_uptime) }}</span>
                 </div>
 
                 <!-- Connection -->
@@ -34,8 +34,8 @@
                         <span v-else class="text-blue">WiFi</span>
                         <span class="text-text-dim font-normal ml-1">
                             {{ primaryConnection === 'lte'
-                                ? (live?.lte_rssi != null ? live.lte_rssi.toFixed(0) + ' dBm' : '—')
-                                : (live?.wifi_rssi != null ? live.wifi_rssi.toFixed(0) + ' dBm' : '—')
+                                ? (live?.tracker_lte_rssi != null ? live.tracker_lte_rssi.toFixed(0) + ' dBm' : '—')
+                                : (live?.tracker_wifi_rssi != null ? live.tracker_wifi_rssi.toFixed(0) + ' dBm' : '—')
                             }}
                         </span>
                     </div>
@@ -45,10 +45,10 @@
                 <div class="pr-6 border-r border-border-light">
                     <div class="text-[10px] font-body font-bold text-text-dim uppercase tracking-wide mb-0.5">Mode</div>
                     <div class="text-[14px] font-sans font-semibold">
-                        <span v-if="live?.lte_rssi != null" class="text-green">Realtime</span>
+                        <span v-if="isRealtime" class="text-green">Realtime</span>
                         <span v-else class="text-amber">Saver</span>
                         <span class="text-text-dim font-normal ml-1 text-[12px]">
-                            {{ live?.lte_rssi != null ? '15s' : '60s' }}
+                            {{ isRealtime ? '15s' : '60s' }}
                         </span>
                     </div>
                 </div>
@@ -74,7 +74,7 @@
                 <div>
                     <div class="text-[10px] font-body font-bold text-text-dim uppercase tracking-wide mb-0.5">CPU</div>
                     <div class="text-[18px] font-sans font-bold tabular-nums" :class="cpuColor">
-                        {{ live?.cpu_usage != null ? live.cpu_usage.toFixed(0) + '%' : '—' }}
+                        {{ live?.tracker_cpu != null ? live.tracker_cpu.toFixed(0) + '%' : '—' }}
                     </div>
                 </div>
             </div>
@@ -89,9 +89,9 @@
                 </div>
                 <div class="text-[12px] font-body text-text-dim mb-3 tabular-nums">
                     LTE
-                    <span class="text-scarlet font-sans font-semibold">{{ live?.lte_rssi != null ? live.lte_rssi.toFixed(0) + ' dBm' : '—' }}</span>
+                    <span class="text-scarlet font-sans font-semibold">{{ live?.tracker_lte_rssi != null ? live.tracker_lte_rssi.toFixed(0) + ' dBm' : '—' }}</span>
                     &nbsp;&middot;&nbsp;WiFi
-                    <span class="font-sans font-semibold text-blue">{{ live?.wifi_rssi != null ? live.wifi_rssi.toFixed(0) + ' dBm' : '—' }}</span>
+                    <span class="font-sans font-semibold text-blue">{{ live?.tracker_wifi_rssi != null ? live.tracker_wifi_rssi.toFixed(0) + ' dBm' : '—' }}</span>
                 </div>
                 <Sparkline :data="lteHistoryValues" color="var(--color-scarlet)" :height="44" :fill="true" :showDot="true" />
                 <div class="mt-2">
@@ -127,7 +127,7 @@
                     <div class="text-[11px] font-body font-extrabold tracking-[2.5px] uppercase text-amber">CPU Usage</div>
                 </div>
                 <div class="text-[12px] font-body text-text-dim mb-3 tabular-nums">
-                    <span class="font-sans font-semibold text-amber">{{ live?.cpu_usage != null ? live.cpu_usage.toFixed(0) + '%' : '—' }}</span>
+                    <span class="font-sans font-semibold text-amber">{{ live?.tracker_cpu != null ? live.tracker_cpu.toFixed(0) + '%' : '—' }}</span>
                 </div>
                 <Sparkline :data="cpuHistoryValues" color="var(--color-amber)" :height="44" :fill="true" :showDot="true" />
                 <div class="flex justify-between text-[10px] font-body text-text-dim mt-1">
@@ -144,7 +144,7 @@
                 <div class="flex items-baseline justify-between mb-1">
                     <div class="text-[11px] font-body font-extrabold tracking-[2.5px] uppercase text-amber">Cabin Temperature</div>
                     <span class="font-sans text-base font-semibold text-amber tabular-nums">
-                        {{ live?.cabin_temp != null ? live.cabin_temp.toFixed(1) + '°C' : (props.tracker?.cabin_temp != null ? props.tracker.cabin_temp.toFixed(1) + '°C' : '—') }}
+                        {{ live?.cabin_temp_forepeak != null ? live.cabin_temp_forepeak.toFixed(1) + '°C' : (props.tracker?.cabin_temp_forepeak != null ? props.tracker.cabin_temp_forepeak.toFixed(1) + '°C' : '—') }}
                     </span>
                 </div>
                 <div class="mt-3">
@@ -161,7 +161,7 @@
                 <div class="flex items-baseline justify-between mb-1">
                     <div class="text-[11px] font-body font-extrabold tracking-[2.5px] uppercase text-blue">Humidity</div>
                     <span class="font-sans text-base font-semibold text-blue tabular-nums">
-                        {{ live?.cabin_humidity != null ? live.cabin_humidity.toFixed(0) + '%' : (props.tracker?.cabin_humidity != null ? props.tracker.cabin_humidity.toFixed(0) + '%' : '—') }}
+                        {{ live?.cabin_humidity_forepeak != null ? live.cabin_humidity_forepeak.toFixed(0) + '%' : (props.tracker?.cabin_humidity_forepeak != null ? props.tracker.cabin_humidity_forepeak.toFixed(0) + '%' : '—') }}
                     </span>
                 </div>
                 <div class="mt-3">
@@ -181,11 +181,11 @@
                 <tbody class="divide-y divide-border-light">
                     <tr>
                         <td class="py-2.5 font-body text-text-secondary w-1/3">WiFi RSSI</td>
-                        <td class="py-2.5 font-sans font-semibold tabular-nums">{{ live?.wifi_rssi != null ? live.wifi_rssi.toFixed(0) + ' dBm' : '—' }}</td>
+                        <td class="py-2.5 font-sans font-semibold tabular-nums">{{ live?.tracker_wifi_rssi != null ? live.tracker_wifi_rssi.toFixed(0) + ' dBm' : '—' }}</td>
                     </tr>
                     <tr>
                         <td class="py-2.5 font-body text-text-secondary">LTE RSSI</td>
-                        <td class="py-2.5 font-sans font-semibold tabular-nums">{{ live?.lte_rssi != null ? live.lte_rssi.toFixed(0) + ' dBm' : '—' }}</td>
+                        <td class="py-2.5 font-sans font-semibold tabular-nums">{{ live?.tracker_lte_rssi != null ? live.tracker_lte_rssi.toFixed(0) + ' dBm' : '—' }}</td>
                     </tr>
                     <tr>
                         <td class="py-2.5 font-body text-text-secondary">GPS Position</td>
@@ -213,15 +213,15 @@
                     </tr>
                     <tr>
                         <td class="py-2.5 font-body text-text-secondary">CPU Usage</td>
-                        <td class="py-2.5 font-sans font-semibold tabular-nums">{{ live?.cpu_usage != null ? live.cpu_usage.toFixed(0) + '%' : '—' }}</td>
+                        <td class="py-2.5 font-sans font-semibold tabular-nums">{{ live?.tracker_cpu != null ? live.tracker_cpu.toFixed(0) + '%' : '—' }}</td>
                     </tr>
                     <tr>
                         <td class="py-2.5 font-body text-text-secondary">Heap Free</td>
-                        <td class="py-2.5 font-sans font-semibold tabular-nums">{{ live?.heap_free != null ? formatBytes(live.heap_free) : '—' }}</td>
+                        <td class="py-2.5 font-sans font-semibold tabular-nums">{{ live?.tracker_heap != null ? formatBytes(live.tracker_heap) : '—' }}</td>
                     </tr>
                     <tr>
                         <td class="py-2.5 font-body text-text-secondary">Uptime</td>
-                        <td class="py-2.5 font-sans font-semibold tabular-nums">{{ formatUptime(live?.uptime) }}</td>
+                        <td class="py-2.5 font-sans font-semibold tabular-nums">{{ formatUptime(live?.tracker_uptime) }}</td>
                     </tr>
                 </tbody>
             </table>
@@ -282,11 +282,13 @@ const isConnected = computed(() => {
 const primaryConnection = computed(() => {
     const t = live.value;
     if (!t) return 'lte';
-    if (t.wifi_rssi != null) return 'wifi';
+    if ((t.tracker_wifi_connected ?? 0) >= 1) return 'wifi';
     return 'lte';
 });
 
-const isUsbPowered = computed(() => (live.value?.usb_powered ?? 0) >= 1);
+const isRealtime = computed(() => (live.value?.tracker_mode ?? 0) >= 1);
+
+const isUsbPowered = computed(() => (live.value?.tracker_usb ?? 0) >= 1);
 
 const batteryColor = computed(() => {
     if (isUsbPowered.value) return 'text-green';
@@ -298,7 +300,7 @@ const batteryColor = computed(() => {
 });
 
 const cpuColor = computed(() => {
-    const pct = live.value?.cpu_usage;
+    const pct = live.value?.tracker_cpu;
     if (pct == null) return 'text-text-primary';
     if (pct < 50) return 'text-green';
     if (pct < 80) return 'text-amber';
