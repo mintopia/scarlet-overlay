@@ -7,6 +7,9 @@ use App\Http\Controllers\Admin\BoatMetricsController;
 use App\Http\Controllers\Admin\ExploreController;
 use App\Http\Controllers\Admin\JourneyController;
 use App\Http\Controllers\Admin\JourneyViewController as AdminJourneyViewController;
+use App\Http\Controllers\Admin\PlanGroupController;
+use App\Http\Controllers\Admin\PlannerController;
+use App\Http\Controllers\Admin\PlanRouteController;
 use App\Http\Controllers\Admin\ProfileController;
 use App\Http\Controllers\Admin\SettingsController;
 use App\Http\Controllers\Admin\StreamMonitorController;
@@ -21,6 +24,7 @@ use App\Http\Controllers\HomeController;
 use App\Http\Controllers\JourneyViewController;
 use App\Http\Controllers\MapTileController;
 use App\Http\Controllers\OverlayController;
+use App\Http\Controllers\PublicPlannerController;
 use App\Http\Controllers\SrtMetricsController;
 use App\Http\Controllers\WeatherMetricsController;
 use Illuminate\Support\Facades\Route;
@@ -40,6 +44,8 @@ Route::get('/metrics/weather', WeatherMetricsController::class)->name('metrics.w
 Route::get('/journey', [JourneyViewController::class, 'index'])->name('journey.index');
 Route::get('/journey/{slug}', [JourneyViewController::class, 'show'])->name('journey.show');
 Route::get('/api/journey/{slug}/track', [JourneyViewController::class, 'track'])->name('journey.track');
+
+Route::get('/planner/{plan:slug}', [PublicPlannerController::class, 'show'])->name('planner.public');
 
 Route::get('/login', [LoginController::class, 'show'])->name('login')->middleware('guest');
 Route::post('/login', [LoginController::class, 'store'])->middleware('guest');
@@ -103,4 +109,19 @@ Route::middleware('auth')->prefix('admin')->group(function () {
     Route::post('/journeys/{journey}/end', [JourneyController::class, 'end'])->name('admin.journeys.end');
     Route::post('/journeys/{journey}/gpx', [JourneyController::class, 'uploadGpx'])->name('admin.journeys.gpx');
     Route::post('/journeys/{journey}/reimport', [JourneyController::class, 'reimport'])->name('admin.journeys.reimport');
+
+    // Planner
+    Route::get('/planner', [PlannerController::class, 'index'])->name('admin.planner');
+    Route::post('/planner', [PlannerController::class, 'store'])->name('admin.planner.store');
+    Route::get('/planner/{plan}', [PlannerController::class, 'show'])->name('admin.planner.show');
+    Route::put('/planner/{plan}', [PlannerController::class, 'update'])->name('admin.planner.update');
+    Route::delete('/planner/{plan}', [PlannerController::class, 'destroy'])->name('admin.planner.destroy');
+    Route::post('/planner/{plan}/share', [PlannerController::class, 'share'])->name('admin.planner.share');
+    Route::delete('/planner/{plan}/share', [PlannerController::class, 'unshare'])->name('admin.planner.unshare');
+    Route::post('/planner/{plan}/groups', [PlanGroupController::class, 'store'])->name('admin.planner.groups.store');
+    Route::put('/planner/groups/{group}', [PlanGroupController::class, 'update'])->name('admin.planner.groups.update');
+    Route::delete('/planner/groups/{group}', [PlanGroupController::class, 'destroy'])->name('admin.planner.groups.destroy');
+    Route::post('/planner/groups/{group}/routes', [PlanRouteController::class, 'store'])->name('admin.planner.routes.store');
+    Route::put('/planner/routes/{route}', [PlanRouteController::class, 'update'])->name('admin.planner.routes.update');
+    Route::delete('/planner/routes/{route}', [PlanRouteController::class, 'destroy'])->name('admin.planner.routes.destroy');
 });
