@@ -33,6 +33,7 @@ Route::get('/camera', [OverlayController::class, 'camera'])->name('camera');
 Route::get('/snow', [HomeController::class, 'snow'])->name('snow');
 Route::get('/openseamap/{z}/{x}/{y}', [MapTileController::class, 'seamap'])->name('openseamap');
 Route::get('/openseamap-dark/{z}/{x}/{y}', [MapTileController::class, 'seamapDark'])->name('openseamap-dark');
+Route::get('/satellite/{z}/{y}/{x}', [MapTileController::class, 'satellite'])->where(['z' => '[0-9]+', 'y' => '[0-9]+', 'x' => '[0-9]+']);
 Route::get('/metrics/srt', SrtMetricsController::class)->name('metrics.srt');
 Route::get('/metrics/weather', WeatherMetricsController::class)->name('metrics.weather');
 
