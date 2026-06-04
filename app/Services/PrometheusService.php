@@ -130,9 +130,12 @@ class PrometheusService
 
     public function queryTimestamp(string $promql): ?int
     {
+        // tlast_over_time is a VictoriaMetrics/MetricsQL function that returns
+        // the actual unix timestamp of the last raw sample, unlike
+        // timestamp(last_over_time()) which returns the query evaluation time.
         $wrapped = preg_replace_callback(
             '/\b(scarlet_[a-zA-Z0-9_:]*)(\{[^}]*\})?/',
-            fn ($m) => "timestamp(last_over_time({$m[0]}[7d]))",
+            fn ($m) => "tlast_over_time({$m[0]}[7d])",
             $promql,
         );
 
