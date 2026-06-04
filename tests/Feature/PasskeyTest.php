@@ -40,7 +40,8 @@ class PasskeyTest extends TestCase
             ->assertJsonFragment([
                 'id' => 'test-credential-id-abc123',
                 'alias' => 'My iPhone',
-            ]);
+            ])
+            ->assertJsonStructure([['id', 'alias', 'created_at', 'updated_at']]);
     }
 
     public function test_passkey_list_only_shows_own_credentials(): void
@@ -83,12 +84,63 @@ class PasskeyTest extends TestCase
             'attestation_format' => 'none',
         ]);
 
-        $response = $this->actingAs($user)->deleteJson('/passkey/credential-to-delete-xyz');
+        $response = $this->actingAs($user)->deleteJson('/passkey/credential-to-delete-xyz', [
+            'password' => 'password',
+        ]);
 
         $response->assertOk()
             ->assertJson(['message' => 'Passkey removed.']);
 
         $this->assertDatabaseMissing('webauthn_credentials', ['id' => 'credential-to-delete-xyz']);
+    }
+
+    public function test_passkey_destroy_requires_password(): void
+    {
+        $user = User::factory()->create();
+
+        WebAuthnCredential::forceCreate([
+            'id' => 'credential-needs-password',
+            'authenticatable_type' => User::class,
+            'authenticatable_id' => $user->id,
+            'user_id' => fake()->uuid(),
+            'alias' => 'Protected',
+            'counter' => 0,
+            'rp_id' => 'localhost',
+            'origin' => 'http://localhost',
+            'public_key' => encrypt('test-key'),
+            'attestation_format' => 'none',
+        ]);
+
+        $this->actingAs($user)->deleteJson('/passkey/credential-needs-password', [
+            'password' => 'wrong-password',
+        ])->assertUnprocessable()
+            ->assertJsonValidationErrors('password');
+
+        $this->assertDatabaseHas('webauthn_credentials', ['id' => 'credential-needs-password']);
+    }
+
+    public function test_passkey_destroy_rejects_missing_password(): void
+    {
+        $user = User::factory()->create();
+
+        WebAuthnCredential::forceCreate([
+            'id' => 'credential-no-pass',
+            'authenticatable_type' => User::class,
+            'authenticatable_id' => $user->id,
+            'user_id' => fake()->uuid(),
+            'alias' => 'No Pass',
+            'counter' => 0,
+            'rp_id' => 'localhost',
+            'origin' => 'http://localhost',
+            'public_key' => encrypt('test-key'),
+            'attestation_format' => 'none',
+        ]);
+
+        $this->actingAs($user)->deleteJson('/passkey/credential-no-pass')
+            ->assertUnprocessable()
+            ->assertJsonValidationErrors('password');
+
+        $this->assertDatabaseHas('webauthn_credentials', ['id' => 'credential-no-pass']);
     }
 
     public function test_passkey_destroy_cannot_remove_other_users_credential(): void
@@ -109,7 +161,9 @@ class PasskeyTest extends TestCase
             'attestation_format' => 'none',
         ]);
 
-        $this->actingAs($user)->deleteJson('/passkey/other-user-credential-xyz');
+        $this->actingAs($user)->deleteJson('/passkey/other-user-credential-xyz', [
+            'password' => 'password',
+        ]);
 
         $this->assertDatabaseHas('webauthn_credentials', ['id' => 'other-user-credential-xyz']);
     }

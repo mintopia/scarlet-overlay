@@ -43,6 +43,10 @@ class PasskeyController extends Controller
 
     public function destroy(Request $request, string $id)
     {
+        $request->validate([
+            'password' => ['required', 'current_password'],
+        ]);
+
         $request->user()->webAuthnCredentials()->where('id', $id)->delete();
 
         return response()->json(['message' => 'Passkey removed.']);
@@ -52,6 +56,7 @@ class PasskeyController extends Controller
     {
         return $request->user()->webAuthnCredentials()
             ->select('id', 'alias', 'created_at', 'updated_at')
-            ->get();
+            ->get()
+            ->makeVisible(['created_at', 'updated_at']);
     }
 }

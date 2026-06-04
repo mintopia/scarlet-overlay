@@ -120,11 +120,11 @@
                     <tr v-for="pk in passkeys" :key="pk.id" class="border-b border-border last:border-0">
                         <td class="py-3 text-[13px]">{{ pk.alias ?? 'Passkey' }}</td>
                         <td class="py-3 text-[13px] text-text-secondary">{{ formatDate(pk.created_at) }}</td>
-                        <td class="py-3 text-[13px] text-text-secondary">{{ pk.updated_at ? formatDate(pk.updated_at) : '—' }}</td>
+                        <td class="py-3 text-[13px] text-text-secondary">{{ lastUsedLabel(pk) }}</td>
                         <td class="py-3">
                             <button
                                 type="button"
-                                @click="removePasskey(pk.id)"
+                                @click="confirmRemovePasskey(pk)"
                                 class="text-[13px] text-error hover:text-scarlet-hover font-medium"
                             >
                                 Remove
@@ -134,11 +134,50 @@
                 </tbody>
             </table>
         </div>
+
+        <!-- Remove Passkey Modal -->
+        <Transition name="modal">
+        <div v-if="removingPasskey" class="modal-overlay" @click.self="cancelRemovePasskey" @keydown.esc="cancelRemovePasskey">
+            <div class="modal-card" role="dialog" aria-modal="true" aria-label="Remove passkey" @keydown.tab="trapFocus">
+                <h3 class="text-[16px] font-semibold mb-2">Remove passkey?</h3>
+                <p class="text-[13px] text-text-secondary mb-4">
+                    This will permanently remove <strong>{{ removingPasskey.alias ?? 'this passkey' }}</strong>. You will no longer be able to sign in with it.
+                </p>
+                <form @submit.prevent="removePasskey">
+                    <div class="mb-4">
+                        <label class="block text-[13px] font-medium text-text-secondary mb-1.5">Confirm your password</label>
+                        <input
+                            ref="removePasswordInput"
+                            v-model="removePassword"
+                            type="password"
+                            required
+                            autocomplete="current-password"
+                            placeholder="Enter your password"
+                            class="w-full h-[42px] px-3.5 text-sm bg-bg border border-border rounded-[7px] font-sans focus:border-scarlet focus:ring-1 focus:ring-scarlet/20 outline-none"
+                        />
+                        <p v-if="removePasswordError" class="mt-1 text-xs text-error">{{ removePasswordError }}</p>
+                    </div>
+                    <div class="flex items-center justify-end gap-3">
+                        <button type="button" @click="cancelRemovePasskey" class="px-4 h-9 text-[13px] font-medium text-text-secondary hover:text-primary">
+                            Cancel
+                        </button>
+                        <button
+                            type="submit"
+                            :disabled="removingInProgress"
+                            class="px-4 h-9 bg-error text-white text-[13px] font-semibold rounded-[7px] hover:bg-scarlet-hover disabled:opacity-50"
+                        >
+                            {{ removingInProgress ? 'Removing…' : 'Remove passkey' }}
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+        </Transition>
     </AdminLayout>
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue';
+import { ref, nextTick, onMounted } from 'vue';
 import { Head, useForm } from '@inertiajs/vue3';
 import AdminLayout from '@/Layouts/AdminLayout.vue';
 import SavedCheck from '@/components/SavedCheck.vue';
@@ -161,6 +200,11 @@ const passkeys = ref([]);
 const passkeyRegistering = ref(false);
 const passkeyError = ref('');
 const passkeySuccess = ref('');
+const removingPasskey = ref(null);
+const removePassword = ref('');
+const removePasswordError = ref('');
+const removingInProgress = ref(false);
+const removePasswordInput = ref(null);
 
 function getCsrfToken() {
     return document.querySelector('meta[name="csrf-token"]')?.content ?? '';
@@ -169,6 +213,11 @@ function getCsrfToken() {
 function formatDate(dateStr) {
     if (!dateStr) return '—';
     return new Date(dateStr).toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' });
+}
+
+function lastUsedLabel(pk) {
+    if (!pk.updated_at || pk.updated_at === pk.created_at) return 'Never';
+    return formatDate(pk.updated_at);
 }
 
 function arrayBufferToBase64Url(buffer) {
@@ -290,27 +339,64 @@ async function registerPasskey() {
     }
 }
 
-async function removePasskey(id) {
+function confirmRemovePasskey(pk) {
+    removingPasskey.value = pk;
+    removePassword.value = '';
+    removePasswordError.value = '';
     passkeyError.value = '';
     passkeySuccess.value = '';
+    nextTick(() => removePasswordInput.value?.focus());
+}
+
+function cancelRemovePasskey() {
+    removingPasskey.value = null;
+    removePassword.value = '';
+    removePasswordError.value = '';
+}
+
+async function removePasskey() {
+    removePasswordError.value = '';
+    removingInProgress.value = true;
 
     try {
-        const res = await fetch(`/passkey/${id}`, {
+        const res = await fetch(`/passkey/${removingPasskey.value.id}`, {
             method: 'DELETE',
             headers: {
+                'Content-Type': 'application/json',
                 'Accept': 'application/json',
                 'X-CSRF-TOKEN': getCsrfToken(),
             },
+            body: JSON.stringify({ password: removePassword.value }),
         });
 
         if (res.ok) {
+            const removedId = removingPasskey.value.id;
+            removingPasskey.value = null;
+            removePassword.value = '';
             passkeySuccess.value = 'Passkey removed.';
-            passkeys.value = passkeys.value.filter(pk => pk.id !== id);
+            passkeys.value = passkeys.value.filter(pk => pk.id !== removedId);
         } else {
-            throw new Error('Failed to remove passkey.');
+            const data = await res.json().catch(() => ({}));
+            removePasswordError.value = data.errors?.password?.[0] ?? 'Incorrect password.';
         }
     } catch (e) {
-        passkeyError.value = e.message ?? 'Could not remove passkey.';
+        removePasswordError.value = 'Could not remove passkey.';
+    } finally {
+        removingInProgress.value = false;
+    }
+}
+
+function trapFocus(event) {
+    const modal = event.currentTarget;
+    const focusable = modal.querySelectorAll('input, button, [tabindex]:not([tabindex="-1"])');
+    const first = focusable[0];
+    const last = focusable[focusable.length - 1];
+    if (event.shiftKey && document.activeElement === first) {
+        event.preventDefault();
+        last.focus();
+    } else if (!event.shiftKey && document.activeElement === last) {
+        event.preventDefault();
+        first.focus();
     }
 }
 
@@ -330,5 +416,31 @@ onMounted(() => {
 }
 @media (prefers-reduced-motion: reduce) {
     .saved-fade-enter-active { transition: none; }
+}
+
+.modal-overlay {
+    position: fixed; inset: 0;
+    background: rgba(0, 0, 0, 0.45);
+    display: flex; align-items: center; justify-content: center;
+    z-index: 100; padding: 24px;
+}
+.modal-card {
+    background: var(--color-surface);
+    border-radius: 12px;
+    padding: 28px 28px 24px;
+    width: 100%; max-width: 400px;
+    box-shadow: 0 8px 40px rgba(0, 0, 0, 0.14);
+}
+.modal-enter-active, .modal-leave-active {
+    transition: opacity 0.15s ease;
+}
+.modal-enter-active .modal-card, .modal-leave-active .modal-card {
+    transition: transform 0.15s ease;
+}
+.modal-enter-from, .modal-leave-to {
+    opacity: 0;
+}
+.modal-enter-from .modal-card {
+    transform: scale(0.96);
 }
 </style>
