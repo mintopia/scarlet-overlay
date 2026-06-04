@@ -151,7 +151,19 @@ class PrometheusService
 
             $result = $response->json('data.result');
 
-            return ! empty($result) ? (int) $result[0]['value'][1] : null;
+            if (empty($result)) {
+                return null;
+            }
+
+            $maxTs = 0;
+            foreach ($result as $series) {
+                $ts = (int) $series['value'][1];
+                if ($ts > $maxTs) {
+                    $maxTs = $ts;
+                }
+            }
+
+            return $maxTs;
         } catch (\Throwable $e) {
             Log::warning("Prometheus timestamp query failed [{$promql}]: {$e->getMessage()}");
 
