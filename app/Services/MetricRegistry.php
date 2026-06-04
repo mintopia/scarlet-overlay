@@ -52,14 +52,14 @@ class MetricRegistry
         return $wrappedPrimary;
     }
 
-    public function fetchInstant(array $keys, ?int $timestamp = null): array
+    public function fetchInstant(array $keys, ?int $timestamp = null, bool $fallback = true): array
     {
         $queries = [];
         foreach ($keys as $key) {
             $queries[$key] = $this->instantQuery($key);
         }
 
-        return $this->prometheus->queryMultipleAt($queries, $timestamp ?? now()->timestamp, fallback: true);
+        return $this->prometheus->queryMultipleAt($queries, $timestamp ?? now()->timestamp, fallback: $fallback);
     }
 
     public function fetchInstantWithAge(array $keys): array

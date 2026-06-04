@@ -95,7 +95,7 @@
                 </div>
 
                 <div ref="chartEl" class="chart-container" tabindex="0">
-                    <div v-if="!chartData?.length" class="chart-empty">No data for this time range</div>
+                    <div v-if="!chartHasValues" class="chart-empty">No data for this time range</div>
                 </div>
 
                 <!-- Tooltip -->
@@ -121,7 +121,7 @@
                 </div>
 
                 <!-- Stats bar -->
-                <div class="stats-bar">
+                <div v-if="chartHasValues" class="stats-bar">
                     <template v-if="metric.type === 'inverted'">
                         <div class="stat-item">
                             <span class="stat-item-label">Shallowest</span>
@@ -301,6 +301,11 @@ const showOverlayPicker = ref(false);
 const activeOverlays = ref(props.overlays?.map(o => o.metric.slug) || []);
 const overlayData = ref(props.overlays || []);
 const maxOverlays = 3;
+
+const chartHasValues = computed(() => {
+    if (!chartData.value?.length) return false;
+    return chartData.value.some(d => d.value != null);
+});
 
 const fetchError = ref(false);
 const retryCountdown = ref(0);
@@ -763,7 +768,7 @@ function buildChartOpts(width) {
 }
 
 function initChart() {
-    if (!chartEl.value || !chartData.value?.length) return;
+    if (!chartEl.value || !chartHasValues.value) return;
     if (chart) { chart.destroy(); chart = null; }
     chart = new uPlot(buildChartOpts(chartEl.value.offsetWidth), prepareData(), chartEl.value);
 }

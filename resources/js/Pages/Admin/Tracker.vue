@@ -6,8 +6,8 @@
         <div class="flex items-baseline justify-between mb-5">
             <h1 class="font-sans text-2xl font-extrabold tracking-tight">Tracker</h1>
             <div class="flex items-center gap-2 text-[13px] font-body text-text-dim">
-                <span class="w-2 h-2 rounded-full inline-block" :class="lastUpdate ? 'bg-green' : 'bg-text-dim opacity-30'"></span>
-                <span class="tabular-nums">{{ lastTimestamp }} &middot; {{ timeSinceUpdate }}</span>
+                <span class="w-2 h-2 rounded-full inline-block" :class="isConnected ? 'bg-green' : (lastUpdate ? 'bg-amber' : 'bg-text-dim opacity-30')"></span>
+                <span class="tabular-nums">{{ lastUpdate ? `${lastTimestamp} · ${timeSinceUpdate}` : 'No data' }}</span>
             </div>
         </div>
 
@@ -93,13 +93,16 @@
                     &nbsp;&middot;&nbsp;WiFi
                     <span class="font-sans font-semibold text-blue">{{ live?.tracker_wifi_rssi != null ? live.tracker_wifi_rssi.toFixed(0) + ' dBm' : '—' }}</span>
                 </div>
-                <Sparkline :data="lteHistoryValues" color="var(--color-scarlet)" :height="44" :fill="true" :showDot="true" />
-                <div class="mt-2">
-                    <Sparkline :data="wifiHistoryValues" color="var(--color-blue)" :height="32" :fill="false" :showDot="true" />
-                </div>
-                <div class="flex justify-between text-[10px] font-body text-text-dim mt-1">
-                    <span>1h ago</span><span>now</span>
-                </div>
+                <template v-if="hasData(lteHistoryValues) || hasData(wifiHistoryValues)">
+                    <Sparkline :data="lteHistoryValues" color="var(--color-scarlet)" :height="44" :fill="true" :showDot="true" />
+                    <div class="mt-2">
+                        <Sparkline :data="wifiHistoryValues" color="var(--color-blue)" :height="32" :fill="false" :showDot="true" />
+                    </div>
+                    <div class="flex justify-between text-[10px] font-body text-text-dim mt-1">
+                        <span>1h ago</span><span>now</span>
+                    </div>
+                </template>
+                <div v-else class="flex items-center justify-center h-[76px] text-[12px] font-body text-text-dim opacity-50">No data for this period</div>
                 <Link href="/admin/explore?metric=lte_rssi&range=1h" class="text-[11px] font-body font-bold text-teal hover:underline mt-2 inline-block">Explore →</Link>
             </div>
 
@@ -114,10 +117,13 @@
                     &nbsp;&middot;&nbsp;HDOP
                     <span class="font-sans font-semibold">{{ liveGps?.hdop != null ? liveGps.hdop.toFixed(1) : '—' }}</span>
                 </div>
-                <Sparkline :data="gpsHistoryValues" color="var(--color-green)" :height="44" :fill="true" :showDot="true" />
-                <div class="flex justify-between text-[10px] font-body text-text-dim mt-1">
-                    <span>1h ago</span><span>now</span>
-                </div>
+                <template v-if="hasData(gpsHistoryValues)">
+                    <Sparkline :data="gpsHistoryValues" color="var(--color-green)" :height="44" :fill="true" :showDot="true" />
+                    <div class="flex justify-between text-[10px] font-body text-text-dim mt-1">
+                        <span>1h ago</span><span>now</span>
+                    </div>
+                </template>
+                <div v-else class="flex items-center justify-center h-[44px] text-[12px] font-body text-text-dim opacity-50">No data for this period</div>
                 <Link href="/admin/explore?metric=gps_satellites&range=1h" class="text-[11px] font-body font-bold text-teal hover:underline mt-2 inline-block">Explore →</Link>
             </div>
 
@@ -129,10 +135,13 @@
                 <div class="text-[12px] font-body text-text-dim mb-3 tabular-nums">
                     <span class="font-sans font-semibold text-amber">{{ live?.tracker_cpu != null ? live.tracker_cpu.toFixed(0) + '%' : '—' }}</span>
                 </div>
-                <Sparkline :data="cpuHistoryValues" color="var(--color-amber)" :height="44" :fill="true" :showDot="true" />
-                <div class="flex justify-between text-[10px] font-body text-text-dim mt-1">
-                    <span>1h ago</span><span>now</span>
-                </div>
+                <template v-if="hasData(cpuHistoryValues)">
+                    <Sparkline :data="cpuHistoryValues" color="var(--color-amber)" :height="44" :fill="true" :showDot="true" />
+                    <div class="flex justify-between text-[10px] font-body text-text-dim mt-1">
+                        <span>1h ago</span><span>now</span>
+                    </div>
+                </template>
+                <div v-else class="flex items-center justify-center h-[44px] text-[12px] font-body text-text-dim opacity-50">No data for this period</div>
                 <Link href="/admin/explore?metric=cpu_usage&range=1h" class="text-[11px] font-body font-bold text-teal hover:underline mt-2 inline-block">Explore →</Link>
             </div>
         </div>
@@ -147,12 +156,15 @@
                         {{ live?.cabin_temp_forepeak != null ? live.cabin_temp_forepeak.toFixed(1) + '°C' : (props.tracker?.cabin_temp_forepeak != null ? props.tracker.cabin_temp_forepeak.toFixed(1) + '°C' : '—') }}
                     </span>
                 </div>
-                <div class="mt-3">
-                    <Sparkline :data="tempHistoryValues" color="var(--color-amber)" :height="44" :fill="true" :showDot="true" />
-                </div>
-                <div class="flex justify-between text-[10px] font-body text-text-dim mt-1">
-                    <span>6h ago</span><span>now</span>
-                </div>
+                <template v-if="hasData(tempHistoryValues)">
+                    <div class="mt-3">
+                        <Sparkline :data="tempHistoryValues" color="var(--color-amber)" :height="44" :fill="true" :showDot="true" />
+                    </div>
+                    <div class="flex justify-between text-[10px] font-body text-text-dim mt-1">
+                        <span>6h ago</span><span>now</span>
+                    </div>
+                </template>
+                <div v-else class="flex items-center justify-center h-[44px] mt-3 text-[12px] font-body text-text-dim opacity-50">No data for this period</div>
                 <Link href="/admin/explore?metric=temp_forepeak&range=6h" class="text-[11px] font-body font-bold text-teal hover:underline mt-2 inline-block">Explore →</Link>
             </div>
 
@@ -164,12 +176,15 @@
                         {{ live?.cabin_humidity_forepeak != null ? live.cabin_humidity_forepeak.toFixed(0) + '%' : (props.tracker?.cabin_humidity_forepeak != null ? props.tracker.cabin_humidity_forepeak.toFixed(0) + '%' : '—') }}
                     </span>
                 </div>
-                <div class="mt-3">
-                    <Sparkline :data="humidityHistoryValues" color="var(--color-blue)" :height="44" :fill="true" :showDot="true" />
-                </div>
-                <div class="flex justify-between text-[10px] font-body text-text-dim mt-1">
-                    <span>6h ago</span><span>now</span>
-                </div>
+                <template v-if="hasData(humidityHistoryValues)">
+                    <div class="mt-3">
+                        <Sparkline :data="humidityHistoryValues" color="var(--color-blue)" :height="44" :fill="true" :showDot="true" />
+                    </div>
+                    <div class="flex justify-between text-[10px] font-body text-text-dim mt-1">
+                        <span>6h ago</span><span>now</span>
+                    </div>
+                </template>
+                <div v-else class="flex items-center justify-center h-[44px] mt-3 text-[12px] font-body text-text-dim opacity-50">No data for this period</div>
                 <Link href="/admin/explore?metric=humidity_forepeak&range=6h" class="text-[11px] font-body font-bold text-teal hover:underline mt-2 inline-block">Explore →</Link>
             </div>
         </div>
@@ -291,9 +306,15 @@ const lastTimestamp = computed(() => {
 });
 
 const timeSinceUpdate = computed(() => {
-    if (!lastUpdate.value) return 'Loading...';
+    if (!lastUpdate.value) return 'No data';
     const seconds = Math.floor((now.value - lastUpdate.value) / 1000);
-    return `${seconds}s ago`;
+    if (seconds < 60) return `${seconds}s ago`;
+    const minutes = Math.floor(seconds / 60);
+    if (minutes < 60) return `${minutes}m ago`;
+    const hours = Math.floor(minutes / 60);
+    if (hours < 24) return `${hours}h ${minutes % 60}m ago`;
+    const days = Math.floor(hours / 24);
+    return `${days}d ${hours % 24}h ago`;
 });
 
 const isConnected = computed(() => {
@@ -336,6 +357,10 @@ const gpsHistoryValues = computed(() => (props.gpsHistory ?? []).map(d => d.valu
 const cpuHistoryValues = computed(() => (props.cpuHistory ?? []).map(d => d.value));
 const tempHistoryValues = computed(() => (props.tempHistory ?? []).map(d => d.value));
 const humidityHistoryValues = computed(() => (props.humidityHistory ?? []).map(d => d.value));
+
+function hasData(values) {
+    return values.some(v => v != null);
+}
 
 function formatUptime(seconds) {
     if (seconds == null) return '—';

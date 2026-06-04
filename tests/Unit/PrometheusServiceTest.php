@@ -160,19 +160,19 @@ class PrometheusServiceTest extends TestCase
 
     public function test_query_timestamp_returns_last_seen_time(): void
     {
-        $ts = now()->timestamp - 30;
+        $dataTs = now()->timestamp - 30;
         Http::fake([
             '*/api/v1/query*' => Http::response([
                 'status' => 'success',
                 'data' => [
                     'resultType' => 'vector',
-                    'result' => [['value' => [$ts, '42.0']]],
+                    'result' => [['value' => [now()->timestamp, (string) $dataTs]]],
                 ],
             ]),
         ]);
 
         $service = new PrometheusService;
         $result = $service->queryTimestamp('scarlet_metric');
-        $this->assertEquals($ts, $result);
+        $this->assertEquals($dataTs, $result);
     }
 }

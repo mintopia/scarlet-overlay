@@ -189,7 +189,7 @@ class ExploreController extends Controller
             $keys[] = $metric['metric'];
         }
 
-        $registryValues = $registry->fetchInstant(array_unique($keys));
+        $registryValues = $registry->fetchInstant(array_unique($keys), fallback: false);
 
         $values = [];
         foreach ($allMetrics as $slug => $metric) {
@@ -232,7 +232,7 @@ class ExploreController extends Controller
             $keys[] = $metric['metric'];
         }
 
-        $registryValues = $registry->fetchInstant(array_unique($keys));
+        $registryValues = $registry->fetchInstant(array_unique($keys), fallback: false);
 
         $currentValues = [];
         foreach ($allMetrics as $slug => $metric) {

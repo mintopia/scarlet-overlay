@@ -130,9 +130,33 @@ class PrometheusService
 
     public function queryTimestamp(string $promql): ?int
     {
-        $result = $this->queryWithTimestamp($promql, '7d');
+        $wrapped = preg_replace_callback(
+            '/\b(scarlet_[a-zA-Z0-9_:]*)(\{[^}]*\})?/',
+            fn ($m) => "timestamp(last_over_time({$m[0]}[7d]))",
+            $promql,
+        );
 
-        return $result['timestamp'] ?? null;
+        if ($wrapped === $promql) {
+            return null;
+        }
+
+        try {
+            $response = Http::timeout(5)->get("{$this->baseUrl}/api/v1/query", [
+                'query' => $wrapped,
+            ]);
+
+            if (! $response->ok()) {
+                return null;
+            }
+
+            $result = $response->json('data.result');
+
+            return ! empty($result) ? (int) $result[0]['value'][1] : null;
+        } catch (\Throwable $e) {
+            Log::warning("Prometheus timestamp query failed [{$promql}]: {$e->getMessage()}");
+
+            return null;
+        }
     }
 
     public function queryWithTimestamp(string $promql, string $lookback = '7d'): ?array
