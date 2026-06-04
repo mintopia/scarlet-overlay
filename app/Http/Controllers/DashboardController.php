@@ -23,10 +23,16 @@ class DashboardController extends Controller
 
         $gpsTrack = [];
         if ($previous?->started_at) {
-            $gpsTrack = $metrics->getGpsTrack(null, '60s', $previous->started_at->timestamp, $currentOrLatest?->started_at?->timestamp ?? now()->timestamp);
+            $prevEnd = $currentOrLatest?->started_at?->timestamp ?? now()->timestamp;
+            $prevRange = $prevEnd - $previous->started_at->timestamp;
+            $prevStep = max(15, (int) ceil($prevRange / 25000)).'s';
+            $gpsTrack = $metrics->getGpsTrack(null, $prevStep, $previous->started_at->timestamp, $prevEnd);
         }
         if ($currentOrLatest?->started_at) {
-            $gpsTrack = array_merge($gpsTrack, $metrics->getGpsTrack(null, '15s', $currentOrLatest->started_at->timestamp));
+            $trackEnd = $journey ? null : $currentOrLatest->ended_at?->timestamp;
+            $rangeSeconds = ($trackEnd ?? now()->timestamp) - $currentOrLatest->started_at->timestamp;
+            $step = max(15, (int) ceil($rangeSeconds / 25000)).'s';
+            $gpsTrack = array_merge($gpsTrack, $metrics->getGpsTrack(null, $step, $currentOrLatest->started_at->timestamp, $trackEnd));
         }
 
         return Inertia::render('Public/Dashboard', [

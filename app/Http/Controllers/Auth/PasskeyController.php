@@ -4,7 +4,6 @@ namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
 use Laragear\WebAuthn\Http\Requests\AssertedRequest;
 use Laragear\WebAuthn\Http\Requests\AssertionRequest;
 use Laragear\WebAuthn\Http\Requests\AttestationRequest;
@@ -14,12 +13,13 @@ class PasskeyController extends Controller
 {
     public function registerOptions(AttestationRequest $request)
     {
-        return $request->fastRegistration()->toCreate();
+        return $request->userless()->toCreate();
     }
 
     public function register(AttestedRequest $request)
     {
         $request->save();
+
         return response()->json(['message' => 'Passkey registered.']);
     }
 
@@ -34,15 +34,17 @@ class PasskeyController extends Controller
 
         if ($user) {
             $request->session()->regenerate();
+
             return response()->json(['redirect' => '/admin/settings']);
         }
 
         return response()->json(['message' => 'Passkey authentication failed.'], 422);
     }
 
-    public function destroy(Request $request, int $id)
+    public function destroy(Request $request, string $id)
     {
         $request->user()->webAuthnCredentials()->where('id', $id)->delete();
+
         return response()->json(['message' => 'Passkey removed.']);
     }
 

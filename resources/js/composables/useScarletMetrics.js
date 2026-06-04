@@ -205,7 +205,18 @@ export function useScarletMetrics(options = {}) {
         if (newGps?.latitude == null || newGps?.longitude == null) return;
         if (Math.abs(newGps.latitude) < 0.1 && Math.abs(newGps.longitude) < 0.1) return;
         const speed = newBoat?.speed_sog ?? 0;
-        trackPoints.push({ pos: [newGps.latitude, newGps.longitude], speed });
+        const newPos = [newGps.latitude, newGps.longitude];
+
+        if (trackPoints.length > 0) {
+            const last = trackPoints[trackPoints.length - 1].pos;
+            const dLat = newPos[0] - last[0];
+            const dLng = newPos[1] - last[1];
+            if (Math.sqrt(dLat * dLat + dLng * dLng) > 0.01) {
+                trackPoints.length = 0;
+            }
+        }
+
+        trackPoints.push({ pos: newPos, speed });
         mapTargets.forEach(t => updateSingleMap(t, newGps, newBoat));
     }
 

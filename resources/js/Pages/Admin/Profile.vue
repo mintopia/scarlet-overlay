@@ -171,8 +171,9 @@ function formatDate(dateStr) {
     return new Date(dateStr).toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' });
 }
 
-function arrayBufferToBase64(buffer) {
-    return btoa(String.fromCharCode(...new Uint8Array(buffer)));
+function arrayBufferToBase64Url(buffer) {
+    return btoa(String.fromCharCode(...new Uint8Array(buffer)))
+        .replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
 }
 
 function base64UrlDecode(input) {
@@ -202,13 +203,13 @@ function serializeCredential(credential) {
     const keys = ['clientDataJSON', 'attestationObject', 'authenticatorData', 'signature', 'userHandle'];
     keys.forEach(key => {
         if (credential.response[key]) {
-            response[key] = arrayBufferToBase64(credential.response[key]);
+            response[key] = arrayBufferToBase64Url(credential.response[key]);
         }
     });
     return {
         id: credential.id,
         type: credential.type,
-        rawId: arrayBufferToBase64(credential.rawId),
+        rawId: arrayBufferToBase64Url(credential.rawId),
         authenticatorAttachment: credential.authenticatorAttachment,
         clientExtensionResults: credential.getClientExtensionResults(),
         response,
