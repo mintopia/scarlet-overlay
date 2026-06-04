@@ -1,6 +1,18 @@
 <template>
     <div>
-        <div class="route-row" :class="{ 'route-row--dim': !route.is_enabled }" @click="expanded = !expanded">
+        <div
+            class="route-row"
+            :class="{ 'route-row--dim': !route.is_enabled, 'route-row--dragging': isDragging }"
+            :draggable="!readonly"
+            @dragstart="onDragStart"
+            @dragend="onDragEnd"
+            @dragover.prevent="$emit('dragover', $event)"
+            @drop.prevent="$emit('drop', route)"
+            @click="expanded = !expanded"
+        >
+            <span v-if="!readonly" class="route-grip" @mousedown.stop>
+                <svg width="10" height="14" viewBox="0 0 10 14" fill="currentColor"><circle cx="3" cy="2" r="1.2"/><circle cx="7" cy="2" r="1.2"/><circle cx="3" cy="7" r="1.2"/><circle cx="7" cy="7" r="1.2"/><circle cx="3" cy="12" r="1.2"/><circle cx="7" cy="12" r="1.2"/></svg>
+            </span>
             <span class="route-dot" :style="{ background: color }"></span>
             <svg class="route-chevron" :class="{ 'route-chevron--open': expanded }" viewBox="0 0 24 24" width="14" height="14"><polyline points="6 9 12 15 18 9" stroke="currentColor" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
             <span class="route-name">{{ route.name }}</span>
@@ -45,9 +57,21 @@ const props = defineProps({
     readonly: { type: Boolean, default: false },
 });
 
-defineEmits(['toggle', 'remove', 'focusWaypoint']);
+const emit = defineEmits(['toggle', 'remove', 'focusWaypoint', 'dragstart', 'dragover', 'drop']);
 
 const expanded = ref(false);
+const isDragging = ref(false);
+
+function onDragStart(e) {
+    isDragging.value = true;
+    e.dataTransfer.effectAllowed = 'move';
+    e.dataTransfer.setData('text/plain', String(props.route.id));
+    emit('dragstart', props.route);
+}
+
+function onDragEnd() {
+    isDragging.value = false;
+}
 const color = routeColor(props.groupColorIndex, props.route.color_index);
 
 function badgeLabel(i) {
@@ -72,6 +96,15 @@ function badgeClass(i) {
 }
 .route-row:hover { background: var(--color-bg); }
 .route-row--dim { opacity: 0.45; }
+
+.route-row--dragging { opacity: 0.4; }
+
+.route-grip {
+    flex-shrink: 0; cursor: grab; color: var(--color-text-dim); opacity: 0.4;
+    display: flex; align-items: center; padding: 2px 0;
+    transition: opacity 0.1s;
+}
+.route-row:hover .route-grip { opacity: 0.8; }
 
 .route-dot { width: 9px; height: 9px; border-radius: 50%; flex-shrink: 0; }
 

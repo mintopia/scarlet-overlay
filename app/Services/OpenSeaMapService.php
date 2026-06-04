@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Services;
 
 use Illuminate\Support\Facades\Http;
@@ -18,6 +19,7 @@ class OpenSeaMapService
             Storage::createDirectory('openseamap-dark');
         }
     }
+
     public function getTile(int $z, int $x, int $y): ?string
     {
         $filename = "openseamap/{$z}.{$x}.{$y}.png";
@@ -37,11 +39,13 @@ class OpenSeaMapService
         $overlay = $this->getTileImage('seamark', 'https://tiles.openseamap.org/seamark', $z, $x, $y);
         if ($overlay === null) {
             $background->save(Storage::path($filename));
+
             return $filename;
         }
 
         $background->place($overlay);
         $background->save(Storage::path($filename));
+
         return $filename;
     }
 
@@ -65,19 +69,53 @@ class OpenSeaMapService
         $rawOverlay = $this->getTileImage('seamark', 'https://tiles.openseamap.org/seamark', $z, $x, $y);
         if ($rawOverlay === null) {
             $background->save(Storage::path($filename));
+
             return $filename;
         }
 
         $overlay = $this->lightenForDarkBase(Storage::path("seamark/{$z}.{$x}.{$y}.png")) ?? $rawOverlay;
         $background->place($overlay);
         $background->save(Storage::path($filename));
+
+        return $filename;
+    }
+
+    public function getSeamarkOverlay(int $z, int $x, int $y): ?string
+    {
+        $dir = 'seamark-light';
+        if (Storage::directoryMissing($dir)) {
+            Storage::createDirectory($dir);
+        }
+
+        $filename = "{$dir}/{$z}.{$x}.{$y}.png";
+        if (Storage::exists($filename)) {
+            return $filename;
+        }
+
+        $this->getTileImage('seamark', 'https://tiles.openseamap.org/seamark', $z, $x, $y);
+        $rawPath = Storage::path("seamark/{$z}.{$x}.{$y}.png");
+        if (! Storage::exists("seamark/{$z}.{$x}.{$y}.png")) {
+            return null;
+        }
+
+        $lightened = $this->lightenForDarkBase($rawPath);
+        if ($lightened === null) {
+            Storage::copy("seamark/{$z}.{$x}.{$y}.png", $filename);
+
+            return $filename;
+        }
+
+        $lightened->save(Storage::path($filename));
+
         return $filename;
     }
 
     protected function lightenForDarkBase(string $path): ?ImageInterface
     {
         $gd = @imagecreatefrompng($path);
-        if (!$gd) return null;
+        if (! $gd) {
+            return null;
+        }
 
         imagealphablending($gd, false);
         imagesavealpha($gd, true);
@@ -89,7 +127,9 @@ class OpenSeaMapService
             for ($py = 0; $py < $h; $py++) {
                 $rgba = imagecolorat($gd, $px, $py);
                 $alpha = ($rgba >> 24) & 0x7F;
-                if ($alpha > 120) continue;
+                if ($alpha > 120) {
+                    continue;
+                }
 
                 $r = ($rgba >> 16) & 0xFF;
                 $g = ($rgba >> 8) & 0xFF;
@@ -122,6 +162,7 @@ class OpenSeaMapService
                 ->get("{$url}/{$z}/{$x}/{$y}.png");
             if ($response->failed()) {
                 Log::warning("Failed to download {$url}/{$z}/{$x}/{$y}: {$response->getStatusCode()}");
+
                 return null;
             }
             Storage::put($filename, $response->body());

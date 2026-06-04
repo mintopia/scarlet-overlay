@@ -7,7 +7,7 @@
             <h1 class="font-sans text-2xl font-extrabold tracking-tight">Tracker</h1>
             <div class="flex items-center gap-2 text-[13px] font-body text-text-dim">
                 <span class="w-2 h-2 rounded-full inline-block" :class="lastUpdate ? 'bg-green' : 'bg-text-dim opacity-30'"></span>
-                <span class="tabular-nums">{{ timeSinceUpdate }}</span>
+                <span class="tabular-nums">{{ lastTimestamp }} &middot; {{ timeSinceUpdate }}</span>
             </div>
         </div>
 
@@ -223,6 +223,10 @@
                         <td class="py-2.5 font-body text-text-secondary">Uptime</td>
                         <td class="py-2.5 font-sans font-semibold tabular-nums">{{ formatUptime(live?.tracker_uptime) }}</td>
                     </tr>
+                    <tr>
+                        <td class="py-2.5 font-body text-text-secondary">Last Data Received</td>
+                        <td class="py-2.5 font-sans font-semibold tabular-nums">{{ lastTimestamp }}</td>
+                    </tr>
                 </tbody>
             </table>
         </div>
@@ -252,7 +256,8 @@ if (typeof window !== 'undefined' && window.Echo) {
     echoChannel = window.Echo.channel('metrics');
     echoChannel.listen('.metrics.updated', (data) => {
         metrics.value = data;
-        lastUpdate.value = Date.now();
+        const ts = data.tracker?.last_seen;
+        lastUpdate.value = ts ? ts * 1000 : Date.now();
     });
 }
 
@@ -267,10 +272,18 @@ onUnmounted(() => {
     if (echoChannel) window.Echo?.leave('metrics');
 });
 
+const lastTimestamp = computed(() => {
+    if (!lastUpdate.value) return '—';
+    const d = new Date(lastUpdate.value);
+    return d.toLocaleString(undefined, {
+        day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit', second: '2-digit',
+    });
+});
+
 const timeSinceUpdate = computed(() => {
     if (!lastUpdate.value) return 'Loading...';
     const seconds = Math.floor((now.value - lastUpdate.value) / 1000);
-    return `last update ${seconds}s ago`;
+    return `${seconds}s ago`;
 });
 
 const isConnected = computed(() => {

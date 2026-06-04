@@ -84,4 +84,46 @@ class PlanGroupControllerTest extends TestCase
 
         $this->assertDatabaseCount('plan_routes', 0);
     }
+
+    public function test_can_reorder_routes_within_group(): void
+    {
+        $group = PlanGroup::factory()->create(['plan_id' => $this->plan->id]);
+        $routeA = PlanRoute::factory()->create(['plan_group_id' => $group->id, 'sort_order' => 0]);
+        $routeB = PlanRoute::factory()->create(['plan_group_id' => $group->id, 'sort_order' => 1]);
+        $routeC = PlanRoute::factory()->create(['plan_group_id' => $group->id, 'sort_order' => 2]);
+
+        $response = $this->actingAs($this->user)->put("/admin/planner/groups/{$group->id}/reorder", [
+            'route_ids' => [$routeC->id, $routeA->id, $routeB->id],
+        ]);
+
+        $response->assertRedirect();
+        $this->assertEquals(0, $routeC->fresh()->sort_order);
+        $this->assertEquals(1, $routeA->fresh()->sort_order);
+        $this->assertEquals(2, $routeB->fresh()->sort_order);
+    }
+
+    public function test_reorder_rejects_mismatched_route_ids(): void
+    {
+        $group = PlanGroup::factory()->create(['plan_id' => $this->plan->id]);
+        $route = PlanRoute::factory()->create(['plan_group_id' => $group->id]);
+
+        $response = $this->actingAs($this->user)->put("/admin/planner/groups/{$group->id}/reorder", [
+            'route_ids' => [$route->id, 99999],
+        ]);
+
+        $response->assertStatus(422);
+    }
+
+    public function test_reorder_rejects_incomplete_route_ids(): void
+    {
+        $group = PlanGroup::factory()->create(['plan_id' => $this->plan->id]);
+        PlanRoute::factory()->create(['plan_group_id' => $group->id, 'sort_order' => 0]);
+        $routeB = PlanRoute::factory()->create(['plan_group_id' => $group->id, 'sort_order' => 1]);
+
+        $response = $this->actingAs($this->user)->put("/admin/planner/groups/{$group->id}/reorder", [
+            'route_ids' => [$routeB->id],
+        ]);
+
+        $response->assertStatus(422);
+    }
 }

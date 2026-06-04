@@ -91,38 +91,103 @@ class GpxService
         }
     }
 
+    /**
+     * @return array<int, array{path: string, name: string, waypoints: array, track_points: array, distance_nm: float}>
+     */
     public function storeAndParseRoute(UploadedFile $file, int $groupId): array
     {
         $filename = $groupId.'_'.time().'_'.preg_replace('/[^a-zA-Z0-9._-]/', '_', $file->getClientOriginalName());
         $path = $file->storeAs('planner/gpx', $filename);
         $content = file_get_contents($file->getRealPath());
+        $fallbackName = pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME);
 
-        $waypoints = $this->parseWaypoints($content);
-        $trackPoints = $this->parseTrackPoints($content);
-
-        $name = pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME);
         $xml = @simplexml_load_string($content);
-        if ($xml !== false) {
-            $xml->registerXPathNamespace('gpx', 'http://www.topografix.com/GPX/1/1');
-            $trackName = $xml->xpath('//gpx:trk/gpx:name') ?: $xml->xpath('//trk/name');
-            if ($trackName && (string) $trackName[0] !== '') {
-                $name = (string) $trackName[0];
+        if ($xml === false) {
+            throw new \RuntimeException('Invalid GPX file');
+        }
+
+        $xml->registerXPathNamespace('gpx', 'http://www.topografix.com/GPX/1/1');
+        $routes = $this->extractRoutes($xml, $fallbackName);
+
+        if (empty($routes)) {
+            throw new \RuntimeException('No tracks or routes found in GPX file');
+        }
+
+        return array_map(fn (array $route) => array_merge($route, ['path' => $path]), $routes);
+    }
+
+    protected function extractRoutes(\SimpleXMLElement $xml, string $fallbackName): array
+    {
+        $routes = [];
+
+        $tracks = $xml->xpath('//gpx:trk') ?: $xml->xpath('//trk') ?: [];
+        foreach ($tracks as $trk) {
+            $trk->registerXPathNamespace('gpx', 'http://www.topografix.com/GPX/1/1');
+            $nameNode = $trk->xpath('gpx:name') ?: $trk->xpath('name');
+            $name = ($nameNode && (string) $nameNode[0] !== '') ? (string) $nameNode[0] : $fallbackName;
+
+            $points = [];
+            $segments = $trk->xpath('gpx:trkseg/gpx:trkpt') ?: $trk->xpath('trkseg/trkpt') ?: [];
+            foreach ($segments as $pt) {
+                $points[] = [(float) $pt['lat'], (float) $pt['lon']];
             }
-            $routeName = $xml->xpath('//gpx:rte/gpx:name') ?: $xml->xpath('//rte/name');
-            if ($routeName && (string) $routeName[0] !== '' && $name === pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME)) {
-                $name = (string) $routeName[0];
+
+            if (empty($points)) {
+                continue;
+            }
+
+            $routes[] = [
+                'name' => $name,
+                'track_points' => $points,
+                'waypoints' => [],
+                'distance_nm' => round($this->calculateDistanceNm($points), 1),
+            ];
+        }
+
+        $rtes = $xml->xpath('//gpx:rte') ?: $xml->xpath('//rte') ?: [];
+        foreach ($rtes as $rte) {
+            $rte->registerXPathNamespace('gpx', 'http://www.topografix.com/GPX/1/1');
+            $nameNode = $rte->xpath('gpx:name') ?: $rte->xpath('name');
+            $name = ($nameNode && (string) $nameNode[0] !== '') ? (string) $nameNode[0] : $fallbackName;
+
+            $waypoints = [];
+            $rtepts = $rte->xpath('gpx:rtept') ?: $rte->xpath('rtept') ?: [];
+            foreach ($rtepts as $pt) {
+                $ptName = isset($pt->name) && (string) $pt->name !== '' ? (string) $pt->name : null;
+                $waypoints[] = ['lat' => (float) $pt['lat'], 'lng' => (float) $pt['lon'], 'name' => $ptName];
+            }
+
+            if (empty($waypoints)) {
+                continue;
+            }
+
+            $points = array_map(fn ($w) => [$w['lat'], $w['lng']], $waypoints);
+
+            $routes[] = [
+                'name' => $name,
+                'track_points' => $points,
+                'waypoints' => $waypoints,
+                'distance_nm' => round($this->calculateDistanceNm($points), 1),
+            ];
+        }
+
+        if (empty($routes)) {
+            $name = $fallbackName;
+            $waypoints = $this->parseWaypoints($xml->asXML());
+            $trackPoints = $this->parseTrackPoints($xml->asXML());
+
+            if (! empty($trackPoints) || ! empty($waypoints)) {
+                $points = $trackPoints ?: array_map(fn ($w) => [$w['lat'], $w['lng']], $waypoints);
+                $routes[] = [
+                    'name' => $name,
+                    'track_points' => $trackPoints,
+                    'waypoints' => $waypoints,
+                    'distance_nm' => round($this->calculateDistanceNm($points), 1),
+                ];
             }
         }
 
-        $distance = $this->calculateDistanceNm($trackPoints ?: array_map(fn ($w) => [$w['lat'], $w['lng']], $waypoints));
-
-        return [
-            'path' => $path,
-            'name' => $name,
-            'waypoints' => $waypoints,
-            'track_points' => $trackPoints,
-            'distance_nm' => round($distance, 1),
-        ];
+        return $routes;
     }
 
     protected function calculateDistanceNm(array $points): float

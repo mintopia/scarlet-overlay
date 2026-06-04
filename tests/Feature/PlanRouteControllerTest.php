@@ -92,4 +92,25 @@ class PlanRouteControllerTest extends TestCase
 
         $this->assertDatabaseMissing('plan_routes', ['id' => $route->id]);
     }
+
+    public function test_multi_route_gpx_creates_multiple_routes(): void
+    {
+        Storage::fake();
+
+        $gpx = UploadedFile::fake()->createWithContent(
+            'multi.gpx',
+            file_get_contents(base_path('tests/fixtures/multi-route.gpx'))
+        );
+
+        $response = $this->actingAs($this->user)->post("/admin/planner/groups/{$this->group->id}/routes", [
+            'gpx_files' => [$gpx],
+        ]);
+
+        $response->assertRedirect();
+        $this->assertDatabaseCount('plan_routes', 3);
+
+        $this->assertDatabaseHas('plan_routes', ['name' => 'Leg 1 - Lymington to Yarmouth']);
+        $this->assertDatabaseHas('plan_routes', ['name' => 'Leg 2 - Yarmouth to Cowes']);
+        $this->assertDatabaseHas('plan_routes', ['name' => 'Track Log']);
+    }
 }

@@ -13,6 +13,13 @@
                 @blur="saveName"
             />
             <span class="group-count">{{ group.routes.length }}</span>
+            <button
+                v-if="group.routes.length"
+                class="group-toggle"
+                :class="{ 'group-toggle--off': !allVisible }"
+                @click="$emit('toggleGroup', group)"
+                :title="allVisible ? 'Hide all routes' : 'Show all routes'"
+            ></button>
             <button v-if="!readonly" class="group-action" @click="startEditing" title="Edit group">
                 <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M17 3a2.83 2.83 0 114 4L7.5 20.5 2 22l1.5-5.5z"/></svg>
             </button>
@@ -23,14 +30,18 @@
 
         <!-- Route rows -->
         <PlanRouteRow
-            v-for="route in group.routes"
+            v-for="route in orderedRoutes"
             :key="route.id"
             :route="route"
             :group-color-index="group.color_index"
             :readonly="readonly"
+            :class="{ 'route-drop-above': dragOverId === route.id }"
             @toggle="$emit('toggleRoute', $event)"
             @remove="$emit('removeRoute', $event)"
             @focus-waypoint="$emit('focusWaypoint', $event)"
+            @dragstart="onRouteDragStart"
+            @dragover="onRouteDragOver(route, $event)"
+            @drop="onRouteDrop(route)"
         />
 
         <!-- Dropzone -->
@@ -64,7 +75,7 @@
 </template>
 
 <script setup>
-import { ref, nextTick } from 'vue';
+import { ref, computed, nextTick, watch } from 'vue';
 import { router } from '@inertiajs/vue3';
 import PlanRouteRow from './PlanRouteRow.vue';
 import { groupColor } from '@/helpers/planColors.js';
@@ -74,9 +85,10 @@ const props = defineProps({
     readonly: { type: Boolean, default: false },
 });
 
-defineEmits(['delete', 'toggleRoute', 'removeRoute', 'focusWaypoint']);
+defineEmits(['delete', 'toggleGroup', 'toggleRoute', 'removeRoute', 'focusWaypoint']);
 
 const swatchColor = groupColor(props.group.color_index);
+const allVisible = computed(() => props.group.routes.length > 0 && props.group.routes.every(r => r.is_enabled));
 const editing = ref(false);
 const editName = ref(props.group.name);
 const nameInput = ref(null);
@@ -84,6 +96,45 @@ const fileInput = ref(null);
 const dragging = ref(false);
 const uploading = ref(false);
 const uploadErrors = ref([]);
+
+const localOrder = ref(props.group.routes.map(r => r.id));
+watch(() => props.group.routes, (routes) => {
+    localOrder.value = routes.map(r => r.id);
+}, { deep: true });
+
+const orderedRoutes = computed(() => {
+    const byId = Object.fromEntries(props.group.routes.map(r => [r.id, r]));
+    return localOrder.value.map(id => byId[id]).filter(Boolean);
+});
+
+let dragSourceRoute = null;
+const dragOverId = ref(null);
+
+function onRouteDragStart(route) {
+    dragSourceRoute = route;
+}
+
+function onRouteDragOver(route) {
+    if (!dragSourceRoute || dragSourceRoute.id === route.id) return;
+    dragOverId.value = route.id;
+}
+
+function onRouteDrop(targetRoute) {
+    dragOverId.value = null;
+    if (!dragSourceRoute || dragSourceRoute.id === targetRoute.id) return;
+
+    const order = [...localOrder.value];
+    const fromIdx = order.indexOf(dragSourceRoute.id);
+    const toIdx = order.indexOf(targetRoute.id);
+    if (fromIdx === -1 || toIdx === -1) return;
+
+    order.splice(fromIdx, 1);
+    order.splice(toIdx, 0, dragSourceRoute.id);
+    localOrder.value = order;
+    dragSourceRoute = null;
+
+    router.put(`/admin/planner/groups/${props.group.id}/reorder`, { route_ids: order }, { preserveScroll: true });
+}
 
 function startEditing() {
     if (props.readonly) return;
@@ -123,6 +174,7 @@ function uploadFiles(files) {
 
 function handleDrop(e) {
     dragging.value = false;
+    if (!e.dataTransfer.files.length) return;
     uploadFiles(e.dataTransfer.files);
 }
 
@@ -149,6 +201,20 @@ function handleFileSelect(e) {
     font-size: 12px; color: var(--color-text-dim); font-family: var(--font-body);
     background: var(--color-bg); padding: 2px 10px; border-radius: 10px;
 }
+.group-toggle {
+    width: 34px; height: 18px; border-radius: 9px;
+    background: var(--color-green); position: relative; flex-shrink: 0;
+    cursor: pointer; border: none;
+}
+.group-toggle::after {
+    content: ''; position: absolute; top: 2px; right: 2px;
+    width: 14px; height: 14px; border-radius: 50%; background: #fff;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    transition: right 0.12s, left 0.12s;
+}
+.group-toggle--off { background: var(--color-border); }
+.group-toggle--off::after { right: auto; left: 2px; }
+
 .group-action {
     width: 28px; height: 28px; border-radius: 6px;
     display: flex; align-items: center; justify-content: center;
@@ -176,6 +242,8 @@ function handleFileSelect(e) {
     border-top-color: var(--color-teal); border-radius: 50%;
     animation: spin 0.6s linear infinite;
 }
+
+.route-drop-above { box-shadow: inset 0 2px 0 0 var(--color-teal); }
 
 .group-errors { padding: 0 12px 12px; }
 .group-error {

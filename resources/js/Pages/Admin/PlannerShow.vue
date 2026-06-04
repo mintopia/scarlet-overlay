@@ -37,6 +37,7 @@
         <div class="map-section" ref="mapEl">
             <div class="map-tile-switch">
                 <button class="map-tile-btn" :class="{ active: tileMode === 'sea' }" @click="setTileMode('sea')">Sea Chart</button>
+                <button class="map-tile-btn" :class="{ active: tileMode === 'hybrid' }" @click="setTileMode('hybrid')">Hybrid</button>
                 <button class="map-tile-btn" :class="{ active: tileMode === 'satellite' }" @click="setTileMode('satellite')">Satellite</button>
             </div>
         </div>
@@ -55,6 +56,7 @@
                 :key="group.id"
                 :group="group"
                 @delete="confirmDeleteGroup"
+                @toggle-group="toggleGroup"
                 @toggle-route="toggleRoute"
                 @remove-route="confirmDeleteRoute"
                 @focus-waypoint="panToWaypoint"
@@ -63,7 +65,7 @@
 
         <!-- Delete confirmation modal -->
         <Transition name="modal">
-            <div v-if="deleteModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/30" @click.self="deleteModal = null">
+            <div v-if="deleteModal" class="fixed inset-0 z-[10000] flex items-center justify-center bg-black/30" @click.self="deleteModal = null">
                 <div class="modal-card bg-surface border border-border rounded-2xl shadow-lg p-6 w-full max-w-sm">
                     <div class="text-[16px] font-sans font-bold text-text-primary mb-2">{{ deleteModal.title }}</div>
                     <div class="text-[13px] font-body text-text-secondary mb-5">{{ deleteModal.message }}</div>
@@ -103,12 +105,13 @@ const deleteModal = ref(null);
 
 let map = null;
 let tileLayer = null;
+let overlayLayer = null;
 let routeLayers = {};
 
 const totalRoutes = computed(() => props.plan.groups.reduce((sum, g) => sum + g.routes.length, 0));
 
-function getTileUrl() {
-    if (tileMode.value === 'satellite') return '/satellite/{z}/{y}/{x}';
+function getBaseUrl() {
+    if (tileMode.value === 'satellite' || tileMode.value === 'hybrid') return '/satellite/{z}/{y}/{x}';
     if (theme.value === 'dark' || theme.value === 'night') return '/openseamap-dark/{z}/{x}/{y}';
     return '/openseamap/{z}/{x}/{y}';
 }
@@ -121,7 +124,11 @@ function setTileMode(mode) {
 function updateTileLayer() {
     if (!map) return;
     if (tileLayer) map.removeLayer(tileLayer);
-    tileLayer = L.tileLayer(getTileUrl(), { maxZoom: 18 }).addTo(map);
+    if (overlayLayer) { map.removeLayer(overlayLayer); overlayLayer = null; }
+    tileLayer = L.tileLayer(getBaseUrl(), { maxZoom: 18 }).addTo(map);
+    if (tileMode.value === 'hybrid') {
+        overlayLayer = L.tileLayer('/seamark/{z}/{x}/{y}', { maxZoom: 18 }).addTo(map);
+    }
 }
 
 function buildRouteLayers() {
@@ -228,6 +235,16 @@ function createGroup() {
     });
 }
 
+function toggleGroup(group) {
+    const allVisible = group.routes.every(r => r.is_enabled);
+    const newState = !allVisible;
+    group.routes.forEach(route => {
+        if (route.is_enabled !== newState) {
+            router.put(`/admin/planner/routes/${route.id}`, { is_enabled: newState }, { preserveScroll: true });
+        }
+    });
+}
+
 function toggleRoute(route) {
     router.put(`/admin/planner/routes/${route.id}`, { is_enabled: !route.is_enabled }, { preserveScroll: true });
 }
@@ -267,7 +284,7 @@ function formatDate(iso) {
 onMounted(() => {
     if (!mapEl.value) return;
     map = L.map(mapEl.value, { zoomControl: true, attributionControl: false }).setView(props.defaultCenter, 8);
-    tileLayer = L.tileLayer(getTileUrl(), { maxZoom: 18 }).addTo(map);
+    tileLayer = L.tileLayer(getBaseUrl(), { maxZoom: 18 }).addTo(map);
     buildRouteLayers();
 });
 
@@ -285,7 +302,7 @@ watch(() => props.plan, () => {
 .map-section {
     border-radius: 16px; overflow: hidden;
     border: 1px solid var(--color-border); box-shadow: var(--shadow-sm);
-    position: relative; height: 45vh; min-height: 280px;
+    position: relative; height: 60vh; min-height: 400px;
 }
 .map-tile-switch {
     position: absolute; top: 12px; right: 12px; z-index: 1000;

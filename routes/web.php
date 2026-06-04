@@ -38,6 +38,7 @@ Route::get('/snow', [HomeController::class, 'snow'])->name('snow');
 Route::get('/openseamap/{z}/{x}/{y}', [MapTileController::class, 'seamap'])->name('openseamap');
 Route::get('/openseamap-dark/{z}/{x}/{y}', [MapTileController::class, 'seamapDark'])->name('openseamap-dark');
 Route::get('/satellite/{z}/{y}/{x}', [MapTileController::class, 'satellite'])->where(['z' => '[0-9]+', 'y' => '[0-9]+', 'x' => '[0-9]+']);
+Route::get('/seamark/{z}/{x}/{y}', [MapTileController::class, 'seamarkOverlay'])->name('seamark');
 Route::get('/metrics/srt', SrtMetricsController::class)->name('metrics.srt');
 Route::get('/metrics/weather', WeatherMetricsController::class)->name('metrics.weather');
 
@@ -120,6 +121,7 @@ Route::middleware('auth')->prefix('admin')->group(function () {
     Route::delete('/planner/{plan}/share', [PlannerController::class, 'unshare'])->name('admin.planner.unshare');
     Route::post('/planner/{plan}/groups', [PlanGroupController::class, 'store'])->name('admin.planner.groups.store');
     Route::put('/planner/groups/{group}', [PlanGroupController::class, 'update'])->name('admin.planner.groups.update');
+    Route::put('/planner/groups/{group}/reorder', [PlanGroupController::class, 'reorder'])->name('admin.planner.groups.reorder');
     Route::delete('/planner/groups/{group}', [PlanGroupController::class, 'destroy'])->name('admin.planner.groups.destroy');
     Route::post('/planner/groups/{group}/routes', [PlanRouteController::class, 'store'])->name('admin.planner.routes.store');
     Route::put('/planner/routes/{route}', [PlanRouteController::class, 'update'])->name('admin.planner.routes.update');

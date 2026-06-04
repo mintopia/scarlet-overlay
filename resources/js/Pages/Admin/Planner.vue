@@ -8,7 +8,7 @@
         </div>
 
         <!-- Empty state -->
-        <div v-if="!plans.length" class="panel p-12 text-center">
+        <div v-if="!plans.length" class="panel p-12 flex flex-col items-center text-center">
             <div class="text-[15px] font-sans font-semibold text-text-primary mb-2">No plans yet</div>
             <div class="text-[13px] font-body text-text-dim mb-4">Create a plan to start comparing GPX routes.</div>
             <button class="btn btn--primary" @click="showCreate = true">+ Create your first plan</button>

@@ -18,6 +18,7 @@
         <div class="map-section" ref="mapEl">
             <div class="map-tile-switch">
                 <button class="map-tile-btn" :class="{ active: tileMode === 'sea' }" @click="setTileMode('sea')">Sea Chart</button>
+                <button class="map-tile-btn" :class="{ active: tileMode === 'hybrid' }" @click="setTileMode('hybrid')">Hybrid</button>
                 <button class="map-tile-btn" :class="{ active: tileMode === 'satellite' }" @click="setTileMode('satellite')">Satellite</button>
             </div>
         </div>
@@ -29,6 +30,7 @@
                 :key="group.id"
                 :group="groupWithLocalState(group)"
                 :readonly="true"
+                @toggle-group="toggleGroupLocal"
                 @toggle-route="toggleRouteLocal"
                 @focus-waypoint="panToWaypoint"
             />
@@ -53,6 +55,7 @@ const mapEl = ref(null);
 const tileMode = ref('sea');
 let map = null;
 let tileLayer = null;
+let overlayLayer = null;
 let routeLayerMap = {};
 
 const toggleState = reactive({});
@@ -67,13 +70,20 @@ function groupWithLocalState(group) {
     };
 }
 
+function toggleGroupLocal(group) {
+    const allVisible = group.routes.every(r => r.is_enabled);
+    const newState = !allVisible;
+    group.routes.forEach(r => { toggleState[r.id] = newState; });
+    nextTick(buildRouteLayers);
+}
+
 function toggleRouteLocal(route) {
     toggleState[route.id] = !toggleState[route.id];
     nextTick(buildRouteLayers);
 }
 
-function getTileUrl() {
-    if (tileMode.value === 'satellite') return '/satellite/{z}/{y}/{x}';
+function getBaseUrl() {
+    if (tileMode.value === 'satellite' || tileMode.value === 'hybrid') return '/satellite/{z}/{y}/{x}';
     return '/openseamap/{z}/{x}/{y}';
 }
 
@@ -81,7 +91,11 @@ function setTileMode(mode) {
     tileMode.value = mode;
     if (!map) return;
     if (tileLayer) map.removeLayer(tileLayer);
-    tileLayer = L.tileLayer(getTileUrl(), { maxZoom: 18 }).addTo(map);
+    if (overlayLayer) { map.removeLayer(overlayLayer); overlayLayer = null; }
+    tileLayer = L.tileLayer(getBaseUrl(), { maxZoom: 18 }).addTo(map);
+    if (tileMode.value === 'hybrid') {
+        overlayLayer = L.tileLayer('/seamark/{z}/{x}/{y}', { maxZoom: 18 }).addTo(map);
+    }
 }
 
 function buildRouteLayers() {
@@ -124,7 +138,7 @@ function panToWaypoint(wp) {
 onMounted(() => {
     if (!mapEl.value) return;
     map = L.map(mapEl.value, { zoomControl: true, attributionControl: false }).setView(props.defaultCenter, 8);
-    tileLayer = L.tileLayer(getTileUrl(), { maxZoom: 18 }).addTo(map);
+    tileLayer = L.tileLayer(getBaseUrl(), { maxZoom: 18 }).addTo(map);
     buildRouteLayers();
 });
 
