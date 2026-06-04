@@ -24,6 +24,12 @@ processors:
     limit_mib: 256
     spike_limit_mib: 64
 
+  filter/dedup:
+    error_mode: ignore
+    metrics:
+      datapoint:
+        - 'resource.attributes["device_id"] == nil'
+
 exporters:
   prometheusremotewrite:
     endpoint: http://victoriametrics:8428/api/v1/write
@@ -41,5 +47,5 @@ service:
   pipelines:
     metrics:
       receivers: [otlp]
-      processors: [memory_limiter, batch]
+      processors: [memory_limiter, filter/dedup, batch]
       exporters: [prometheusremotewrite]
