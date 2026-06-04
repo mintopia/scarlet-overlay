@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Enums\UserRole;
 use App\Mail\TeamInviteMail;
 use App\Models\Invite;
 use App\Models\User;
@@ -29,7 +30,7 @@ class TeamTest extends TestCase
 
     public function test_crew_cannot_invite(): void
     {
-        $crew = User::factory()->create(['role' => 'crew']);
+        $crew = User::factory()->create(['role' => UserRole::Crew]);
 
         $response = $this->actingAs($crew)->post('/admin/team/invite', [
             'email' => 'another@example.com',
@@ -62,7 +63,7 @@ class TeamTest extends TestCase
     public function test_owner_can_remove_crew(): void
     {
         $owner = User::factory()->owner()->create();
-        $crew = User::factory()->create(['role' => 'crew']);
+        $crew = User::factory()->create(['role' => UserRole::Crew]);
 
         $response = $this->actingAs($owner)->delete("/admin/team/{$crew->id}");
 

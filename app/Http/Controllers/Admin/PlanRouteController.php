@@ -15,7 +15,7 @@ class PlanRouteController extends Controller
     {
         $request->validate([
             'gpx_files' => ['required', 'array', 'min:1'],
-            'gpx_files.*' => ['required', 'file', 'max:10240'],
+            'gpx_files.*' => ['required', 'file', 'max:10240', 'extensions:gpx,xml'],
         ]);
 
         $errors = [];

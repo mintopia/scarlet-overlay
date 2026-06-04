@@ -43,8 +43,8 @@ Route::get('/metrics/srt', SrtMetricsController::class)->name('metrics.srt');
 Route::get('/metrics/weather', WeatherMetricsController::class)->name('metrics.weather');
 
 Route::get('/journey', [JourneyViewController::class, 'index'])->name('journey.index');
-Route::get('/journey/{slug}', [JourneyViewController::class, 'show'])->name('journey.show');
-Route::get('/api/journey/{slug}/track', [JourneyViewController::class, 'track'])->name('journey.track');
+Route::get('/journey/{journey:slug}', [JourneyViewController::class, 'show'])->name('journey.show');
+Route::get('/api/journey/{journey:slug}/track', [JourneyViewController::class, 'track'])->name('journey.track');
 
 Route::get('/planner/{plan:slug}', [PublicPlannerController::class, 'show'])->name('planner.public');
 

@@ -85,7 +85,7 @@ import { Head, router } from '@inertiajs/vue3';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import AdminLayout from '@/Layouts/AdminLayout.vue';
-import PlanGroupCard from '@/Components/Admin/PlanGroupCard.vue';
+import PlanGroupCard from '@/components/Admin/PlanGroupCard.vue';
 import { routeColor, routeColorDim } from '@/helpers/planColors.js';
 import { theme } from '@/composables/useTheme.js';
 import { useToast } from '@/composables/useToast.js';

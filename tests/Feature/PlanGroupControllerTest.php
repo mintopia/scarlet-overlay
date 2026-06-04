@@ -21,7 +21,7 @@ class PlanGroupControllerTest extends TestCase
     {
         parent::setUp();
         $this->user = User::factory()->owner()->create();
-        $this->plan = Plan::factory()->create(['user_id' => $this->user->id]);
+        $this->plan = Plan::factory()->create();
     }
 
     public function test_can_create_group(): void

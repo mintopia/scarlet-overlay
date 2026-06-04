@@ -14,25 +14,25 @@ class Weather
 
     public ?float $temp = null;
 
-    public float $windSpeed = 0;
+    public ?float $windSpeed = null;
 
-    public float $windGusts = 0;
+    public ?float $windGusts = null;
 
-    public int $windDirection = 0;
+    public ?int $windDirection = null;
 
     public ?float $pressure = null;
 
-    public float $waveHeight = 0;
+    public ?float $waveHeight = null;
 
-    public int $waveDirection = 0;
+    public ?int $waveDirection = null;
 
-    public float $wavePeriod = 0;
+    public ?float $wavePeriod = null;
 
     public ?float $seaTemp = null;
 
-    public float $current = 0;
+    public ?float $current = null;
 
-    public int $currentDirection = 0;
+    public ?int $currentDirection = null;
 
     public string $timezone = 'UTC';
 

@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Models\Gps;
+use App\Support\GeoUtils;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\Cache;
 
@@ -26,14 +27,13 @@ class GpsService
         $gps = new Gps;
         $lat = $data['gps_latitude'] ?? null;
         $lng = $data['gps_longitude'] ?? null;
-        $nullIsland = $lat === null || $lng === null
-            || (abs($lat) < 0.1 && abs($lng) < 0.1);
+        $nullIsland = GeoUtils::isNullIsland($lat, $lng);
         $gps->latitude = $nullIsland ? null : $lat;
         $gps->longitude = $nullIsland ? null : $lng;
         $gps->speed = $data['gps_speed'] ?? 0;
         $gps->course = $data['gps_heading'] ?? 0;
         $gps->satellites = (int) ($data['gps_satellites'] ?? 0);
-        $gps->hdop = (int) ($data['gps_hdop'] ?? 9999);
+        $gps->hdop = (float) ($data['gps_hdop'] ?? 9999);
         $gps->valid = ! $nullIsland;
         $gps->timestamp = CarbonImmutable::now();
 

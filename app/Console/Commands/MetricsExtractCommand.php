@@ -2,6 +2,7 @@
 
 namespace App\Console\Commands;
 
+use App\Support\NavigationMath;
 use Carbon\Carbon;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Http;
@@ -99,8 +100,7 @@ class MetricsExtractCommand extends Command
             ];
         }
 
-        // Calculate true wind for each frame
-        // Use converted values (knots/degrees) when raw SI values unavailable
+        // Calculate true wind for each frame using cosine rule
         foreach ($timeline as &$frame) {
             $m = $frame['metrics'];
 
@@ -111,14 +111,9 @@ class MetricsExtractCommand extends Command
 
             // Try raw SI values first (m/s, radians)
             if ($awsRaw !== null && $awaRaw !== null && $stwRaw !== null && $hdgRaw !== null) {
-                $u = $stwRaw * cos(0.0) + $awsRaw * cos($awaRaw);
-                $v = $stwRaw * sin(0.0) + $awsRaw * sin($awaRaw);
-                $tws = sqrt($u * $u + $v * $v);
-                $twa = atan2($v, $u);
-                $twd = fmod($hdgRaw + $twa + 2 * M_PI, 2 * M_PI);
-
-                $frame['metrics']['boat.wind_speed_true'] = $tws * 1.94384;
-                $frame['metrics']['boat.wind_direction_true'] = $twd * 180 / M_PI;
+                $tw = NavigationMath::calculateTrueWind($awsRaw, $awaRaw, $stwRaw, $hdgRaw);
+                $frame['metrics']['boat.wind_speed_true'] = $tw['speed'] * 1.94384;
+                $frame['metrics']['boat.wind_direction_true'] = rad2deg($tw['direction']);
             }
             // Fallback: use converted values (knots, degrees)
             elseif (($m['boat.wind_speed_apparent'] ?? null) !== null
@@ -131,15 +126,10 @@ class MetricsExtractCommand extends Command
                 $stwKn = $m['boat.speed_stw'];
                 $hdgDeg = $m['boat.heading'];
 
-                $awaRad = $awaDeg * M_PI / 180;
-                $u = $stwKn + $awsKn * cos($awaRad);
-                $v = $awsKn * sin($awaRad);
-                $tws = sqrt($u * $u + $v * $v);
-                $twaRad = atan2($v, $u);
-                $twdDeg = fmod($hdgDeg + $twaRad * 180 / M_PI + 360, 360);
-
-                $frame['metrics']['boat.wind_speed_true'] = $tws;
-                $frame['metrics']['boat.wind_direction_true'] = $twdDeg;
+                $awaRad = deg2rad($awaDeg);
+                $tw = NavigationMath::calculateTrueWind($awsKn, $awaRad, $stwKn, deg2rad($hdgDeg));
+                $frame['metrics']['boat.wind_speed_true'] = $tw['speed'];
+                $frame['metrics']['boat.wind_direction_true'] = rad2deg($tw['direction']);
             }
 
             unset($frame['metrics']['boat._aws']);
@@ -178,11 +168,15 @@ class MetricsExtractCommand extends Command
     private function buildQueryList(): array
     {
         $queries = [];
+        $registry = config('scarlet.metrics.registry');
+        $groups = config('scarlet.metrics.groups');
 
         foreach (['boat', 'tracker', 'gps'] as $group) {
-            foreach (config("scarlet.metrics.mappings.{$group}") as $key => $promql) {
-                if (is_string($promql)) {
-                    $queries["{$group}.{$key}"] = $promql;
+            $keys = $groups[$group] ?? [];
+            foreach ($keys as $key) {
+                $entry = $registry[$key] ?? null;
+                if ($entry && isset($entry['query'])) {
+                    $queries["{$group}.{$key}"] = $entry['query'];
                 }
             }
         }

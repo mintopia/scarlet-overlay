@@ -2,9 +2,9 @@
 
 namespace App\Models;
 
+use App\Support\SlugGenerator;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasManyThrough;
 use Illuminate\Support\Str;
@@ -13,7 +13,7 @@ class Plan extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['slug', 'title', 'user_id', 'share_token'];
+    protected $fillable = ['slug', 'title'];
 
     protected static function booted(): void
     {
@@ -22,11 +22,6 @@ class Plan extends Model
                 $plan->slug = static::generateUniqueSlug($plan->title);
             }
         });
-    }
-
-    public function user(): BelongsTo
-    {
-        return $this->belongsTo(User::class);
     }
 
     public function groups(): HasMany
@@ -42,9 +37,36 @@ class Plan extends Model
     public function generateShareToken(): string
     {
         $token = Str::random(32);
-        $this->update(['share_token' => $token]);
+        $this->share_token = $token;
+        $this->save();
 
         return $token;
+    }
+
+    public function toDetailArray(): array
+    {
+        return [
+            'id' => $this->id,
+            'slug' => $this->slug,
+            'title' => $this->title,
+            'share_token' => $this->share_token ?? null,
+            'created_at' => $this->created_at->toIso8601String(),
+            'groups' => $this->groups->map(fn ($g) => [
+                'id' => $g->id,
+                'name' => $g->name,
+                'color_index' => $g->color_index,
+                'sort_order' => $g->sort_order ?? 0,
+                'routes' => $g->routes->map(fn ($r) => [
+                    'id' => $r->id,
+                    'name' => $r->name,
+                    'distance_nm' => (float) $r->distance_nm,
+                    'is_enabled' => $r->is_enabled,
+                    'color_index' => $r->color_index,
+                    'track_points' => $r->track_points,
+                    'waypoints' => $r->waypoints,
+                ]),
+            ]),
+        ];
     }
 
     public function getRouteKeyName(): string
@@ -54,15 +76,6 @@ class Plan extends Model
 
     protected static function generateUniqueSlug(string $title): string
     {
-        $base = Str::slug($title);
-        $slug = $base;
-        $counter = 1;
-
-        while (static::where('slug', $slug)->exists()) {
-            $counter++;
-            $slug = $base.'-'.$counter;
-        }
-
-        return $slug;
+        return SlugGenerator::unique(static::class, $title);
     }
 }

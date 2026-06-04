@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use Carbon\CarbonInterval;
+use Illuminate\Http\Client\Pool;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 
@@ -31,6 +32,8 @@ class PrometheusService
 
             return ! empty($result) ? (float) $result[0]['value'][1] : null;
         } catch (\Throwable $e) {
+            Log::warning("Prometheus query failed [{$promql}]: {$e->getMessage()}");
+
             return null;
         }
     }
@@ -61,6 +64,8 @@ class PrometheusService
 
             return ! empty($result) ? (float) $result[0]['value'][1] : null;
         } catch (\Throwable $e) {
+            Log::warning("Prometheus query failed [{$promql}]: {$e->getMessage()}");
+
             return null;
         }
     }
@@ -88,6 +93,7 @@ class PrometheusService
                     $results[$key] = null;
                 }
             } catch (\Throwable $e) {
+                Log::warning("Prometheus query failed [{$promql}]: {$e->getMessage()}");
                 $results[$key] = null;
             }
 
@@ -289,12 +295,59 @@ class PrometheusService
         $results = [];
         $fetchError = false;
 
+        $wrappedQueries = [];
         foreach ($queries as $key => $promql) {
+            $wrapped = preg_replace_callback(
+                '/\b(scarlet_[a-zA-Z0-9_:]*)(\{[^}]*\})?/',
+                fn ($m) => "last_over_time({$m[0]}[7d])",
+                $promql,
+            );
+
+            if ($wrapped === $promql) {
+                $results[$key] = null;
+            } else {
+                $wrappedQueries[$key] = $wrapped;
+            }
+        }
+
+        if (empty($wrappedQueries)) {
+            return ['values' => $results, 'fetchError' => $fetchError];
+        }
+
+        $responses = Http::pool(function (Pool $pool) use ($wrappedQueries) {
+            foreach ($wrappedQueries as $key => $wrapped) {
+                $pool->as($key)->timeout(5)->get("{$this->baseUrl}/api/v1/query", [
+                    'query' => $wrapped,
+                ]);
+            }
+        });
+
+        foreach ($wrappedQueries as $key => $wrapped) {
             try {
-                $fresh = $this->queryFresh($promql, $maxAge);
-                $results[$key] = $fresh;
+                $response = $responses[$key] ?? null;
+
+                if ($response instanceof \Throwable) {
+                    throw $response;
+                }
+
+                if (! $response || ! $response->ok()) {
+                    $results[$key] = null;
+
+                    continue;
+                }
+
+                $result = $response->json('data.result');
+                if (empty($result)) {
+                    $results[$key] = null;
+
+                    continue;
+                }
+
+                $timestamp = (int) $result[0]['value'][0];
+                $age = now()->timestamp - $timestamp;
+                $results[$key] = $age <= $maxAge ? (float) $result[0]['value'][1] : null;
             } catch (\Throwable $e) {
-                Log::warning("Prometheus query failed [{$promql}]: {$e->getMessage()}");
+                Log::warning("Prometheus query failed [{$queries[$key]}]: {$e->getMessage()}");
                 $fetchError = true;
                 $results[$key] = null;
             }

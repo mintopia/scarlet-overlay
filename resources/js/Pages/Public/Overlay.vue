@@ -2,6 +2,7 @@
 import { ref, computed, watch, onMounted, onUnmounted, nextTick } from 'vue';
 import { Head } from '@inertiajs/vue3';
 import { useScarletMetrics } from '../../composables/useScarletMetrics';
+import { useWeatherProps } from '../../composables/useWeatherProps';
 import { useVideoFeed } from '../../composables/useVideoFeed';
 import ScarletWeather from '../../components/ScarletWeather.vue';
 import ScarletLiveBadge from '../../components/ScarletLiveBadge.vue';
@@ -66,21 +67,7 @@ const liveBadgeExt = computed(() => {
 
 const showBadgeExt = computed(() => !!liveBadgeExt.value);
 
-const weatherProps = computed(() => ({
-    wxIcon: wxIcon.value,
-    wxTemp: wxTemp.value,
-    wxCondition: wxCondition.value,
-    wxSeaTemp: wxSeaTemp.value,
-    wxWindSpeed: wxWindSpeed.value,
-    wxWindDir: wxWindDir.value,
-    wxWaveHeight: wxWaveHeight.value,
-    wxWavePeriod: wxWavePeriod.value,
-    rawTemp: weather.value?.temp != null ? Number(weather.value.temp) : null,
-    rawSeaTemp: weather.value?.seaTemp != null ? Number(weather.value.seaTemp) : null,
-    rawWindSpeed: weather.value?.wind?.speed != null ? Number(weather.value.wind.speed) : null,
-    rawWaveHeight: weather.value?.waves?.height != null ? Number(weather.value.waves.height) : null,
-    rawWavePeriod: weather.value?.waves?.period != null ? Number(weather.value.waves.period) : null,
-}));
+const weatherProps = useWeatherProps(weather, { wxIcon, wxTemp, wxCondition, wxSeaTemp, wxWindSpeed, wxWindDir, wxWaveHeight, wxWavePeriod });
 
 const compassHeading = computed(() => boat.value?.heading ?? boat.value?.cog ?? 0);
 const compassWind = computed(() => {

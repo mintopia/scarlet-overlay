@@ -5,17 +5,23 @@ namespace App\Jobs;
 use App\Models\Journey;
 use App\Models\JourneyTrackPoint;
 use App\Services\MetricRegistry;
+use App\Support\GeoUtils;
 use Carbon\Carbon;
 use Illuminate\Bus\Queueable;
+use Illuminate\Contracts\Queue\ShouldBeUnique;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Facades\Log;
 
-class ImportJourneyFromPrometheus implements ShouldQueue
+class ImportJourneyFromPrometheus implements ShouldBeUnique, ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
+
+    public int $tries = 3;
+
+    public int $backoff = 30;
 
     public function __construct(
         public int $journeyId,
@@ -23,9 +29,15 @@ class ImportJourneyFromPrometheus implements ShouldQueue
         public string $endTime,
     ) {}
 
+    public function uniqueId(): string
+    {
+        return (string) $this->journeyId;
+    }
+
     public function handle(MetricRegistry $registry): void
     {
         $journey = Journey::findOrFail($this->journeyId);
+        $journey->trackPoints()->delete();
         $start = Carbon::parse($this->startTime)->timestamp;
         $end = Carbon::parse($this->endTime)->timestamp;
         $step = '30s';
@@ -49,7 +61,7 @@ class ImportJourneyFromPrometheus implements ShouldQueue
             if (! $lng) {
                 continue;
             }
-            if (abs($point['value']) < 0.1 && abs($lng['value']) < 0.1) {
+            if (GeoUtils::isNullIsland($point['value'], $lng['value'])) {
                 continue;
             }
             $data[$ts] = [

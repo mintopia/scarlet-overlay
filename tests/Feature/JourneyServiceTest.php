@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Enums\JourneyStatus;
 use App\Models\Journey;
 use App\Models\JourneyTrackPoint;
 use App\Services\JourneyService;
@@ -64,7 +65,7 @@ class JourneyServiceTest extends TestCase
         $this->service->recordTrackPoint($journey, $metrics);
 
         $journey->refresh();
-        $this->assertEquals('completed', $journey->status);
+        $this->assertEquals(JourneyStatus::Completed, $journey->status);
         $this->assertNotNull($journey->ended_at);
     }
 
@@ -90,7 +91,7 @@ class JourneyServiceTest extends TestCase
         $this->service->endJourney($journey);
 
         $journey->refresh();
-        $this->assertEquals('completed', $journey->status);
+        $this->assertEquals(JourneyStatus::Completed, $journey->status);
         $this->assertNotNull($journey->ended_at);
     }
 }

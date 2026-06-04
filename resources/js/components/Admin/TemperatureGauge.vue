@@ -26,8 +26,8 @@ const fillLength = computed(() => {
 const sparkPath = computed(() => {
     if (!props.sparkline?.length || props.sparkline.length < 2) return null
     const vals = props.sparkline.map(v => v ?? 0)
-    const min = Math.min(...vals)
-    const max = Math.max(...vals)
+    const min = vals.reduce((m, v) => Math.min(m, v), Infinity)
+    const max = vals.reduce((m, v) => Math.max(m, v), -Infinity)
     const range = max - min || 1
     const w = 60
     const h = 18

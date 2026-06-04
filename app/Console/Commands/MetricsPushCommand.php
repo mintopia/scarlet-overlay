@@ -20,7 +20,16 @@ class MetricsPushCommand extends Command
         $interval = config('scarlet.metrics.push_interval');
         $this->info("Starting metrics push loop (every {$interval}s)");
 
-        while (true) {
+        $running = true;
+        pcntl_async_signals(true);
+        $stop = function () use (&$running) {
+            $this->info('Stopping metrics push loop...');
+            $running = false;
+        };
+        pcntl_signal(SIGTERM, $stop);
+        pcntl_signal(SIGINT, $stop);
+
+        while ($running) {
             try {
                 $all = $metricsService->getAllMetrics();
                 MetricsUpdated::dispatch(

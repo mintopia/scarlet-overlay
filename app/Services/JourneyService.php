@@ -2,14 +2,16 @@
 
 namespace App\Services;
 
+use App\Enums\JourneyStatus;
 use App\Models\Journey;
-use App\Models\JourneyTrackPoint;
+use App\Support\GeoUtils;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
 
 class JourneyService
 {
     const STATIONARY_THRESHOLD = 480;
+
     const STATIONARY_SPEED = 0.5;
 
     public function recordTrackPoint(Journey $journey, array $metrics): void
@@ -20,7 +22,7 @@ class JourneyService
         $lat = $gps['latitude'] ?? null;
         $lng = $gps['longitude'] ?? null;
 
-        if ($lat === null || $lng === null || (abs($lat) < 0.1 && abs($lng) < 0.1)) {
+        if (GeoUtils::isNullIsland($lat, $lng)) {
             return;
         }
 
@@ -57,7 +59,7 @@ class JourneyService
     public function endJourney(Journey $journey): void
     {
         $journey->update([
-            'status' => 'completed',
+            'status' => JourneyStatus::Completed,
             'ended_at' => now(),
         ]);
         Cache::forget('journey.stationary_count');
@@ -66,7 +68,7 @@ class JourneyService
     public function abandonJourney(Journey $journey): void
     {
         $journey->update([
-            'status' => 'abandoned',
+            'status' => JourneyStatus::Abandoned,
             'ended_at' => now(),
         ]);
         Cache::forget('journey.stationary_count');
@@ -82,7 +84,7 @@ class JourneyService
         $endedAt = $lastMoving?->recorded_at ?? now();
 
         $journey->update([
-            'status' => 'completed',
+            'status' => JourneyStatus::Completed,
             'ended_at' => $endedAt,
         ]);
 

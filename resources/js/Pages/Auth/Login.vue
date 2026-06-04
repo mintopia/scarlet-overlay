@@ -37,7 +37,7 @@
                     <label class="remember">
                         <input type="checkbox" v-model="form.remember"> Remember me
                     </label>
-                    <a href="#" class="forgot-link">Forgot password?</a>
+
                 </div>
 
                 <button type="submit" class="btn btn-primary" :disabled="form.processing">

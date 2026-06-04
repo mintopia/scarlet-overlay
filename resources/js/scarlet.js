@@ -63,7 +63,13 @@ export function formatCoord(lat, lon) {
     if (lat == null || lon == null) return '--';
     const latDir = lat >= 0 ? 'N' : 'S';
     const lonDir = lon >= 0 ? 'E' : 'W';
-    return `${Math.abs(lat).toFixed(4)}°${latDir}  ${Math.abs(lon).toFixed(4)}°${lonDir}`;
+    const fmtDM = (deg) => {
+        const abs = Math.abs(deg);
+        const d = Math.floor(abs);
+        const m = ((abs - d) * 60).toFixed(2);
+        return `${d}°${m.padStart(5, '0')}'`;
+    };
+    return `${fmtDM(lat)}${latDir}  ${fmtDM(lon)}${lonDir}`;
 }
 
 export function formatVal(val, decimals = 1) {

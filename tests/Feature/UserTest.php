@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Enums\UserRole;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -15,7 +16,7 @@ class UserTest extends TestCase
         $user = User::factory()->create([
             'name' => 'Jessica Smith',
             'email' => 'jess@mintopia.net',
-            'role' => 'owner',
+            'role' => UserRole::Owner,
         ]);
 
         $this->assertDatabaseHas('users', [
@@ -27,13 +28,13 @@ class UserTest extends TestCase
 
     public function test_can_create_crew(): void
     {
-        $user = User::factory()->create(['role' => 'crew']);
-        $this->assertEquals('crew', $user->role);
+        $user = User::factory()->create(['role' => UserRole::Crew]);
+        $this->assertEquals(UserRole::Crew, $user->role);
     }
 
     public function test_role_defaults_to_crew(): void
     {
         $user = User::factory()->create();
-        $this->assertEquals('crew', $user->role);
+        $this->assertEquals(UserRole::Crew, $user->role);
     }
 }

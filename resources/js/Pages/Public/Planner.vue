@@ -43,7 +43,7 @@ import { ref, reactive, computed, onMounted, onUnmounted, watch, nextTick } from
 import { Head } from '@inertiajs/vue3';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
-import PlanGroupCard from '@/Components/Admin/PlanGroupCard.vue';
+import PlanGroupCard from '@/components/Admin/PlanGroupCard.vue';
 import { routeColor, routeColorDim } from '@/helpers/planColors.js';
 
 const props = defineProps({
@@ -57,6 +57,7 @@ let map = null;
 let tileLayer = null;
 let overlayLayer = null;
 let routeLayerMap = {};
+let initialBoundsFit = false;
 
 const toggleState = reactive({});
 props.plan.groups.forEach(g => g.routes.forEach(r => { toggleState[r.id] = r.is_enabled; }));
@@ -128,7 +129,10 @@ function buildRouteLayers() {
         }
     }
 
-    if (allPoints.length) map.fitBounds(L.latLngBounds(allPoints), { padding: [40, 40] });
+    if (allPoints.length && !initialBoundsFit) {
+        map.fitBounds(L.latLngBounds(allPoints), { padding: [40, 40] });
+        initialBoundsFit = true;
+    }
 }
 
 function panToWaypoint(wp) {

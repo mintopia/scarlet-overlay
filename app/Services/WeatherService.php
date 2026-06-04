@@ -68,7 +68,7 @@ class WeatherService
         ];
 
         Log::debug("Fetching weather forecast for {$latitude}, {$longitude}");
-        $forecast = Http::get("{$forecastUri}forecast", $forecastQuery)->json();
+        $forecast = Http::timeout(10)->get("{$forecastUri}forecast", $forecastQuery)->json();
 
         $marineQuery = [
             'longitude' => $longitude,
@@ -77,25 +77,25 @@ class WeatherService
             'wind_speed_unit' => 'kn',
         ];
         Log::debug("Fetching marine forecast for {$latitude}, {$longitude}");
-        $marine = Http::get("{$marineUri}marine", $marineQuery)->json();
+        $marine = Http::timeout(10)->get("{$marineUri}marine", $marineQuery)->json();
 
         $weather = new Weather;
         $weather->latitude = $forecast['latitude'] ?? null;
         $weather->longitude = $forecast['longitude'] ?? null;
         $weather->timezone = $forecast['timezone'] ?? 'UTC';
-        $weather->temp = (float) $forecast['current']['temperature_2m'] ?? null;
-        $weather->daytime = (bool) $forecast['current']['is_day'] ?? true;
-        $weather->wmoCode = (float) $forecast['current']['weather_code'] ?? 0;
-        $weather->windSpeed = (float) $forecast['current']['wind_speed_10m'] ?? 0;
-        $weather->windGusts = (float) ($forecast['current']['wind_gusts_10m'] ?? 0);
-        $weather->windDirection = (int) $forecast['current']['wind_direction_10m'] ?? 0;
+        $weather->temp = isset($forecast['current']['temperature_2m']) ? (float) $forecast['current']['temperature_2m'] : null;
+        $weather->daytime = (bool) ($forecast['current']['is_day'] ?? true);
+        $weather->wmoCode = (float) ($forecast['current']['weather_code'] ?? 0);
+        $weather->windSpeed = isset($forecast['current']['wind_speed_10m']) ? (float) $forecast['current']['wind_speed_10m'] : null;
+        $weather->windGusts = isset($forecast['current']['wind_gusts_10m']) ? (float) $forecast['current']['wind_gusts_10m'] : null;
+        $weather->windDirection = isset($forecast['current']['wind_direction_10m']) ? (int) $forecast['current']['wind_direction_10m'] : null;
         $weather->pressure = isset($forecast['current']['surface_pressure']) ? (float) $forecast['current']['surface_pressure'] : null;
-        $weather->seaTemp = (float) $marine['current']['sea_surface_temperature'] ?? null;
-        $weather->current = (float) $marine['current']['ocean_current_velocity'] ?? 0;
-        $weather->currentDirection = (int) $marine['current']['ocean_current_direction'] ?? 0;
-        $weather->waveHeight = (float) $marine['current']['wave_height'] ?? 0;
-        $weather->waveDirection = (int) $marine['current']['wave_direction'] ?? 0;
-        $weather->wavePeriod = (float) $marine['current']['wave_period'] ?? 0;
+        $weather->seaTemp = isset($marine['current']['sea_surface_temperature']) ? (float) $marine['current']['sea_surface_temperature'] : null;
+        $weather->current = isset($marine['current']['ocean_current_velocity']) ? (float) $marine['current']['ocean_current_velocity'] : null;
+        $weather->currentDirection = isset($marine['current']['ocean_current_direction']) ? (int) $marine['current']['ocean_current_direction'] : null;
+        $weather->waveHeight = isset($marine['current']['wave_height']) ? (float) $marine['current']['wave_height'] : null;
+        $weather->waveDirection = isset($marine['current']['wave_direction']) ? (int) $marine['current']['wave_direction'] : null;
+        $weather->wavePeriod = isset($marine['current']['wave_period']) ? (float) $marine['current']['wave_period'] : null;
 
         $hourlyTimes = $forecast['hourly']['time'] ?? [];
         $hourlyTemps = $forecast['hourly']['temperature_2m'] ?? [];

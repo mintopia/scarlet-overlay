@@ -12,7 +12,7 @@ class PlannerController extends Controller
 {
     public function index()
     {
-        $plans = Plan::where('user_id', auth()->id())
+        $plans = Plan::query()
             ->withCount(['groups', 'routes'])
             ->orderByDesc('updated_at')
             ->get()
@@ -40,7 +40,6 @@ class PlannerController extends Controller
 
         $plan = Plan::create([
             'title' => $validated['title'],
-            'user_id' => auth()->id(),
         ]);
 
         return redirect()->route('admin.planner.show', $plan);
@@ -55,28 +54,7 @@ class PlannerController extends Controller
         $defaultLng = $gps['longitude'] ?? -8.6740;
 
         return Inertia::render('Admin/PlannerShow', [
-            'plan' => [
-                'id' => $plan->id,
-                'slug' => $plan->slug,
-                'title' => $plan->title,
-                'share_token' => $plan->share_token,
-                'created_at' => $plan->created_at->toIso8601String(),
-                'groups' => $plan->groups->map(fn ($g) => [
-                    'id' => $g->id,
-                    'name' => $g->name,
-                    'color_index' => $g->color_index,
-                    'sort_order' => $g->sort_order,
-                    'routes' => $g->routes->map(fn ($r) => [
-                        'id' => $r->id,
-                        'name' => $r->name,
-                        'distance_nm' => (float) $r->distance_nm,
-                        'is_enabled' => $r->is_enabled,
-                        'color_index' => $r->color_index,
-                        'track_points' => $r->track_points,
-                        'waypoints' => $r->waypoints,
-                    ]),
-                ]),
-            ],
+            'plan' => $plan->toDetailArray(),
             'defaultCenter' => [$defaultLat, $defaultLng],
         ]);
     }
@@ -110,7 +88,8 @@ class PlannerController extends Controller
 
     public function unshare(Plan $plan)
     {
-        $plan->update(['share_token' => null]);
+        $plan->share_token = null;
+        $plan->save();
 
         return back();
     }

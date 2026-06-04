@@ -9,30 +9,32 @@ use App\Services\GpsService;
 use App\Services\MetricsService;
 use App\Services\WeatherService;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Request;
 
 class ApiController extends Controller
 {
     public function gps(GpsService $gpsService): GpsResource
     {
         $gps = $gpsService->getLocation();
+
         return new GpsResource($gps);
     }
 
     public function weather(WeatherService $weatherService): WeatherResource
     {
         $weather = $weatherService->getWeather();
+
         return new WeatherResource($weather);
     }
 
     public function weather_home(WeatherService $weatherService): WeatherResource
     {
         $weather = $weatherService->getWeatherForHome();
+
         return new WeatherResource($weather);
     }
 
     public function metrics(MetricsService $metricsService): JsonResponse
     {
-        return response()->json($metricsService->getMetrics());
+        return response()->json($metricsService->getAllMetrics());
     }
 }

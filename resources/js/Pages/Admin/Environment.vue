@@ -170,8 +170,8 @@
 import { ref, computed, watch } from 'vue'
 import { Head } from '@inertiajs/vue3'
 import AdminLayout from '@/Layouts/AdminLayout.vue'
-import TemperatureGauge from '@/Components/Admin/TemperatureGauge.vue'
-import Sparkline from '@/Components/Admin/Sparkline.vue'
+import TemperatureGauge from '@/components/Admin/TemperatureGauge.vue'
+import Sparkline from '@/components/Admin/Sparkline.vue'
 import { fmt } from '@/composables/useFormatters.js'
 
 const props = defineProps({

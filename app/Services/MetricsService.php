@@ -5,6 +5,8 @@ namespace App\Services;
 use App\Http\Resources\V1\WeatherResource;
 use App\Models\BoatSetting;
 use App\Models\Journey;
+use App\Support\GeoUtils;
+use App\Support\NavigationMath;
 use Carbon\CarbonInterval;
 
 class MetricsService
@@ -70,7 +72,7 @@ class MetricsService
             'heading' => $gps['gps_heading'],
         ];
 
-        if ($this->isNullIsland($result['latitude'], $result['longitude'])) {
+        if (GeoUtils::isNullIsland($result['latitude'], $result['longitude'])) {
             $result['latitude'] = null;
             $result['longitude'] = null;
         }
@@ -158,7 +160,7 @@ class MetricsService
             'heading' => $gpsRaw['gps_heading'],
         ];
 
-        if ($this->isNullIsland($gps['latitude'] ?? null, $gps['longitude'] ?? null)) {
+        if (GeoUtils::isNullIsland($gps['latitude'] ?? null, $gps['longitude'] ?? null)) {
             $gps['latitude'] = null;
             $gps['longitude'] = null;
         }
@@ -214,7 +216,7 @@ class MetricsService
                 continue;
             }
 
-            if ($this->isNullIsland($point['value'], $lng['value'])) {
+            if (GeoUtils::isNullIsland($point['value'], $lng['value'])) {
                 continue;
             }
 
@@ -293,7 +295,7 @@ class MetricsService
                 $row['nav_wp_ttg'], $row['house_battery_soc'],
             );
 
-            if ($this->isNullIsland($row['latitude'] ?? null, $row['longitude'] ?? null)) {
+            if (GeoUtils::isNullIsland($row['latitude'] ?? null, $row['longitude'] ?? null)) {
                 $row['latitude'] = null;
                 $row['longitude'] = null;
             }
@@ -339,17 +341,11 @@ class MetricsService
 
     private function calculateTrueWind(?float $aws, ?float $awa, ?float $sog, ?float $heading): array
     {
-        if ($aws === null || $awa === null || $sog === null || $heading === null) {
-            return ['speed' => null, 'direction' => null];
-        }
-
-        $twsMs = sqrt($aws ** 2 + $sog ** 2 - 2 * $aws * $sog * cos($awa));
-        $twa = atan2($aws * sin($awa), $aws * cos($awa) - $sog);
-        $twdRad = fmod($heading + $twa + 2 * M_PI, 2 * M_PI);
+        $tw = NavigationMath::calculateTrueWind($aws, $awa, $sog, $heading);
 
         return [
-            'speed' => $twsMs * 1.94384,
-            'direction' => rad2deg($twdRad),
+            'speed' => $tw['speed'] !== null ? $tw['speed'] * 1.94384 : null,
+            'direction' => $tw['direction'] !== null ? rad2deg($tw['direction']) : null,
         ];
     }
 
@@ -400,12 +396,6 @@ class MetricsService
         }
 
         return $result;
-    }
-
-    private function isNullIsland(?float $lat, ?float $lng): bool
-    {
-        return $lat === null || $lng === null
-            || (abs($lat) < 0.1 && abs($lng) < 0.1);
     }
 
     private function voltageToPct(?float $voltage): ?float

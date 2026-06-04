@@ -53,6 +53,7 @@ return [
 
             'speed_stw_raw' => ['query' => 'scarlet_signalk_navigation_speedThroughWater'],
             'heading_raw' => ['query' => 'scarlet_signalk_navigation_headingTrue'],
+            'magnetic_variation' => ['query' => 'scarlet_signalk_navigation_magneticVariation', 'multiply' => 180, 'divide' => 3.14159265359],
             'cog_raw' => ['query' => 'scarlet_signalk_navigation_courseOverGroundTrue'],
 
             'water_temp' => ['query' => 'scarlet_signalk_environment_water_temperature', 'subtract' => 273.15],
@@ -122,6 +123,7 @@ return [
                 'cabin_temp_main', 'cabin_humidity_main',
                 'cabin_temp_forepeak', 'cabin_humidity_forepeak',
                 'cabin_pressure_forepeak',
+                'magnetic_variation',
             ],
             'tracker' => [
                 'tracker_battery', 'tracker_usb', 'tracker_lte_connected',

@@ -4,6 +4,9 @@ export function useVideoFeed(videoEl) {
     const videoActive = ref(false);
     const videoChecked = ref(false);
 
+    const MAX_RETRIES = 20;
+    let retryCount = 0;
+
     let peerConnection = null;
     let hlsInstance = null;
     let retryTimer = null;
@@ -243,10 +246,18 @@ export function useVideoFeed(videoEl) {
     }
 
     async function connect() {
+        if (retryCount >= MAX_RETRIES) {
+            console.warn('Video feed: max retries reached, stopping');
+            setActive(false);
+            return;
+        }
+        retryCount++;
+
         teardownPlayer();
 
         try {
             peerConnection = await startWhep();
+            retryCount = 0;
             setActive(true);
             startWatchdog();
 
@@ -268,6 +279,7 @@ export function useVideoFeed(videoEl) {
 
         try {
             await startHls();
+            retryCount = 0;
             setActive(true);
             startWatchdog();
         } catch {

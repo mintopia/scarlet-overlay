@@ -85,6 +85,7 @@ class MetricsFakeCommand extends Command
                 $gps,
                 $weather,
                 $settings,
+                null,
                 $frame['time'],
             );
 
@@ -140,6 +141,7 @@ class MetricsFakeCommand extends Command
                     $all['gps'],
                     $all['weather'],
                     $all['settings'],
+                    null,
                     $all['timestamp'],
                 );
 

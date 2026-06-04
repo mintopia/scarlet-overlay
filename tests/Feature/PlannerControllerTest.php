@@ -35,13 +35,12 @@ class PlannerControllerTest extends TestCase
         $response->assertRedirect();
         $this->assertDatabaseHas('plans', [
             'title' => 'Summer Crossing',
-            'user_id' => $this->user->id,
         ]);
     }
 
     public function test_plan_generates_unique_slug(): void
     {
-        Plan::factory()->create(['title' => 'Summer Crossing', 'user_id' => $this->user->id, 'slug' => 'summer-crossing']);
+        Plan::factory()->create(['title' => 'Summer Crossing', 'slug' => 'summer-crossing']);
 
         $this->actingAs($this->user)->post('/admin/planner', [
             'title' => 'Summer Crossing',
@@ -52,7 +51,7 @@ class PlannerControllerTest extends TestCase
 
     public function test_can_view_plan(): void
     {
-        $plan = Plan::factory()->create(['user_id' => $this->user->id]);
+        $plan = Plan::factory()->create();
         PlanGroup::factory()->create(['plan_id' => $plan->id]);
 
         $response = $this->actingAs($this->user)->get("/admin/planner/{$plan->slug}");
@@ -61,7 +60,7 @@ class PlannerControllerTest extends TestCase
 
     public function test_can_update_plan_title(): void
     {
-        $plan = Plan::factory()->create(['user_id' => $this->user->id]);
+        $plan = Plan::factory()->create();
 
         $response = $this->actingAs($this->user)->put("/admin/planner/{$plan->slug}", [
             'title' => 'Winter Passage',
@@ -74,7 +73,7 @@ class PlannerControllerTest extends TestCase
 
     public function test_can_delete_plan(): void
     {
-        $plan = Plan::factory()->create(['user_id' => $this->user->id]);
+        $plan = Plan::factory()->create();
 
         $response = $this->actingAs($this->user)->delete("/admin/planner/{$plan->slug}");
         $response->assertRedirect();
@@ -84,7 +83,7 @@ class PlannerControllerTest extends TestCase
 
     public function test_can_generate_share_token(): void
     {
-        $plan = Plan::factory()->create(['user_id' => $this->user->id]);
+        $plan = Plan::factory()->create();
 
         $response = $this->actingAs($this->user)->post("/admin/planner/{$plan->slug}/share");
         $response->assertRedirect();
@@ -95,7 +94,7 @@ class PlannerControllerTest extends TestCase
 
     public function test_can_remove_share_token(): void
     {
-        $plan = Plan::factory()->shared()->create(['user_id' => $this->user->id]);
+        $plan = Plan::factory()->shared()->create();
 
         $response = $this->actingAs($this->user)->delete("/admin/planner/{$plan->slug}/share");
         $response->assertRedirect();

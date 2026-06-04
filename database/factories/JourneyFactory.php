@@ -2,6 +2,7 @@
 
 namespace Database\Factories;
 
+use App\Enums\JourneyStatus;
 use App\Models\Journey;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
@@ -15,7 +16,7 @@ class JourneyFactory extends Factory
             'from_port' => fake()->city(),
             'to_port' => fake()->city(),
             'started_at' => now()->subHours(3),
-            'status' => 'completed',
+            'status' => JourneyStatus::Completed,
             'ended_at' => now(),
             'is_public' => true,
         ];
@@ -24,7 +25,7 @@ class JourneyFactory extends Factory
     public function active(): static
     {
         return $this->state(fn () => [
-            'status' => 'active',
+            'status' => JourneyStatus::Active,
             'ended_at' => null,
         ]);
     }
@@ -32,7 +33,7 @@ class JourneyFactory extends Factory
     public function abandoned(): static
     {
         return $this->state(fn () => [
-            'status' => 'abandoned',
+            'status' => JourneyStatus::Abandoned,
         ]);
     }
 }

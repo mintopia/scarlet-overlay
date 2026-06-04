@@ -32,7 +32,7 @@
         </div>
 
         <!-- Main: Video + Stats -->
-        <div class="grid grid-cols-[1fr_320px] gap-4">
+        <div class="grid grid-cols-1 lg:grid-cols-[1fr_320px] gap-4">
             <!-- Left: 16:9 video -->
             <div class="panel">
                 <div class="aspect-video bg-[oklch(0.12_0.01_205)] rounded-[15px] overflow-hidden">
@@ -102,7 +102,7 @@
 import { ref, computed, watch, onMounted, onUnmounted } from 'vue';
 import { Head, router } from '@inertiajs/vue3';
 import AdminLayout from '@/Layouts/AdminLayout.vue';
-import Sparkline from '@/Components/Admin/Sparkline.vue';
+import Sparkline from '@/components/Admin/Sparkline.vue';
 import { useVideoFeed } from '@/composables/useVideoFeed.js';
 
 const props = defineProps({

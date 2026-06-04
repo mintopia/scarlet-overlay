@@ -16,7 +16,7 @@ RUN composer install \
         --ignore-platform-reqs
 
 # Use the node23 image to do an npm install
-FROM node:23 AS npm
+FROM node:22 AS npm
 
 WORKDIR /app/
 ENV HOME=/tmp

@@ -2,11 +2,13 @@
 
 namespace App\Models;
 
+use App\Enums\JourneyStatus;
+use App\Support\GeoUtils;
+use App\Support\SlugGenerator;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Facades\Cache;
-use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 
 class Journey extends Model
@@ -18,12 +20,16 @@ class Journey extends Model
         'status', 'is_public', 'gpx_route_path', 'route_waypoints', 'notes',
     ];
 
-    protected $casts = [
-        'started_at' => 'datetime',
-        'ended_at' => 'datetime',
-        'is_public' => 'boolean',
-        'route_waypoints' => 'array',
-    ];
+    protected function casts(): array
+    {
+        return [
+            'started_at' => 'datetime',
+            'ended_at' => 'datetime',
+            'is_public' => 'boolean',
+            'route_waypoints' => 'array',
+            'status' => JourneyStatus::class,
+        ];
+    }
 
     protected static function booted(): void
     {
@@ -48,17 +54,17 @@ class Journey extends Model
 
     public function scopePlanned($query)
     {
-        return $query->where('status', 'planned');
+        return $query->where('status', JourneyStatus::Planned);
     }
 
     public function scopeActive($query)
     {
-        return $query->where('status', 'active');
+        return $query->where('status', JourneyStatus::Active);
     }
 
     public function scopeCompleted($query)
     {
-        return $query->where('status', 'completed');
+        return $query->where('status', JourneyStatus::Completed);
     }
 
     public function scopePublic($query)
@@ -75,7 +81,7 @@ class Journey extends Model
 
     public static function planned(): ?self
     {
-        return static::query()->where('status', 'planned')->first();
+        return static::query()->where('status', JourneyStatus::Planned)->first();
     }
 
     public static function lastPort(): ?string
@@ -92,7 +98,7 @@ class Journey extends Model
 
     public static function createPlanned(string $fromPort, string $toPort, array $extra = []): self
     {
-        if (static::active()->exists() || static::query()->where('status', 'planned')->exists()) {
+        if (static::active()->exists() || static::query()->where('status', JourneyStatus::Planned)->exists()) {
             throw ValidationException::withMessages([
                 'status' => 'A journey is already planned or active. End or delete it first.',
             ]);
@@ -101,13 +107,13 @@ class Journey extends Model
         return static::create(array_merge([
             'from_port' => $fromPort,
             'to_port' => $toPort,
-            'status' => 'planned',
+            'status' => JourneyStatus::Planned,
         ], $extra));
     }
 
     public function activate(): void
     {
-        if ($this->status !== 'planned') {
+        if ($this->status !== JourneyStatus::Planned) {
             throw ValidationException::withMessages([
                 'status' => 'Only planned journeys can be started.',
             ]);
@@ -120,7 +126,7 @@ class Journey extends Model
         }
 
         $this->update([
-            'status' => 'active',
+            'status' => JourneyStatus::Active,
             'started_at' => now(),
         ]);
     }
@@ -144,7 +150,7 @@ class Journey extends Model
 
         $total = 0;
         for ($i = 1; $i < $points->count(); $i++) {
-            $total += static::haversineNm(
+            $total += GeoUtils::haversineNm(
                 $points[$i - 1]->latitude, $points[$i - 1]->longitude,
                 $points[$i]->latitude, $points[$i]->longitude,
             );
@@ -155,25 +161,6 @@ class Journey extends Model
 
     protected static function generateUniqueSlug(string $from, string $to): string
     {
-        $base = Str::slug($from.' to '.$to);
-        $slug = $base;
-        $counter = 1;
-
-        while (static::where('slug', $slug)->exists()) {
-            $counter++;
-            $slug = $base.'-'.$counter;
-        }
-
-        return $slug;
-    }
-
-    protected static function haversineNm(float $lat1, float $lon1, float $lat2, float $lon2): float
-    {
-        $r = 3440.065;
-        $dLat = deg2rad($lat2 - $lat1);
-        $dLon = deg2rad($lon2 - $lon1);
-        $a = sin($dLat / 2) ** 2 + cos(deg2rad($lat1)) * cos(deg2rad($lat2)) * sin($dLon / 2) ** 2;
-
-        return $r * 2 * atan2(sqrt($a), sqrt(1 - $a));
+        return SlugGenerator::unique(static::class, $from.' to '.$to);
     }
 }

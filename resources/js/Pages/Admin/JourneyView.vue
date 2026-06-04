@@ -253,9 +253,7 @@ const resizeObservers = [];
 function setupChartResize(key, el) {
     const ro = new ResizeObserver(() => {
         if (chartInstances[key] && el.offsetWidth > 0) {
-            chartInstances[key].destroy();
-            delete chartInstances[key];
-            buildChart(key, el);
+            chartInstances[key].setSize({ width: el.offsetWidth, height: el.offsetHeight || 160 });
         }
     });
     ro.observe(el);

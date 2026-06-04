@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Journey;
+use App\Support\GeoUtils;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 
@@ -12,25 +13,23 @@ class JourneyViewController extends Controller
     {
         $active = Journey::current();
 
-        if (!$active) {
+        if (! $active) {
             abort(404);
         }
 
         return redirect("/journey/{$active->slug}");
     }
 
-    public function show(Request $request, string $slug)
+    public function show(Request $request, Journey $journey)
     {
-        $journey = Journey::where('slug', $slug)->firstOrFail();
-
-        if (!$journey->is_public && !$request->user()) {
+        if (! $journey->is_public && ! $request->user()) {
             abort(403);
         }
 
         $trackPoints = $journey->trackPoints()
             ->select(['recorded_at', 'latitude', 'longitude', 'speed_sog', 'heading', 'cog', 'depth', 'wind_speed_apparent', 'wind_angle_apparent', 'wind_speed_true', 'wind_direction_true', 'house_battery_voltage', 'house_battery_current', 'heel'])
             ->get()
-            ->filter(fn ($p) => !(abs($p->latitude) < 0.1 && abs($p->longitude) < 0.1));
+            ->filter(fn ($p) => ! GeoUtils::isNullIsland($p->latitude, $p->longitude));
 
         $track = $trackPoints->map(fn ($p) => [
             $p->latitude, $p->longitude, $p->speed_sog ?? 0,
@@ -60,18 +59,16 @@ class JourneyViewController extends Controller
         ]);
     }
 
-    public function track(Request $request, string $slug)
+    public function track(Request $request, Journey $journey)
     {
-        $journey = Journey::where('slug', $slug)->firstOrFail();
-
-        if (!$journey->is_public && !$request->user()) {
+        if (! $journey->is_public && ! $request->user()) {
             abort(403);
         }
 
         $points = $journey->trackPoints()
             ->select(['recorded_at', 'latitude', 'longitude', 'speed_sog', 'heading', 'cog', 'depth', 'wind_speed_apparent', 'wind_angle_apparent', 'wind_speed_true', 'wind_direction_true', 'house_battery_voltage', 'house_battery_current', 'heel'])
             ->get()
-            ->filter(fn ($p) => !(abs($p->latitude) < 0.1 && abs($p->longitude) < 0.1))
+            ->filter(fn ($p) => ! GeoUtils::isNullIsland($p->latitude, $p->longitude))
             ->values();
 
         return response()->json($points);
@@ -87,6 +84,7 @@ class JourneyViewController extends Controller
         if (end($result) !== end($track)) {
             $result[] = end($track);
         }
+
         return $result;
     }
 }

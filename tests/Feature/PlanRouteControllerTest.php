@@ -25,7 +25,7 @@ class PlanRouteControllerTest extends TestCase
     {
         parent::setUp();
         $this->user = User::factory()->owner()->create();
-        $this->plan = Plan::factory()->create(['user_id' => $this->user->id]);
+        $this->plan = Plan::factory()->create();
         $this->group = PlanGroup::factory()->create(['plan_id' => $this->plan->id]);
     }
 

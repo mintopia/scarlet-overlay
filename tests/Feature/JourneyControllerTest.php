@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Enums\JourneyStatus;
 use App\Models\Journey;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -83,7 +84,7 @@ class JourneyControllerTest extends TestCase
         $response->assertRedirect();
 
         $journey->refresh();
-        $this->assertEquals('completed', $journey->status);
+        $this->assertEquals(JourneyStatus::Completed, $journey->status);
     }
 
     public function test_can_update_journey(): void

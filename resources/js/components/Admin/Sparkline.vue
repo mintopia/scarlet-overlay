@@ -21,8 +21,8 @@ const pathData = computed(() => {
     const numericValues = values.filter(v => v != null)
     if (numericValues.length < 2) return null
 
-    const min = props.zeroLine ? Math.min(0, ...numericValues) : Math.min(...numericValues)
-    const max = props.zeroLine ? Math.max(0, ...numericValues) : Math.max(...numericValues)
+    const min = props.zeroLine ? numericValues.reduce((m, v) => Math.min(m, v), 0) : numericValues.reduce((m, v) => Math.min(m, v), Infinity)
+    const max = props.zeroLine ? numericValues.reduce((m, v) => Math.max(m, v), 0) : numericValues.reduce((m, v) => Math.max(m, v), -Infinity)
     const range = max - min || 1
     const padding = 4
 

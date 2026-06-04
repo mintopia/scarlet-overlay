@@ -3,7 +3,6 @@
 namespace Database\Factories;
 
 use App\Models\Plan;
-use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 class PlanFactory extends Factory
@@ -14,7 +13,6 @@ class PlanFactory extends Factory
     {
         return [
             'title' => fake()->words(3, true),
-            'user_id' => User::factory(),
         ];
     }
 

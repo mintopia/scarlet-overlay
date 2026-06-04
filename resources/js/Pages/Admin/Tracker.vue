@@ -236,7 +236,7 @@
 <script setup>
 import { Head, Link } from '@inertiajs/vue3';
 import AdminLayout from '@/Layouts/AdminLayout.vue';
-import Sparkline from '@/Components/Admin/Sparkline.vue';
+import Sparkline from '@/components/Admin/Sparkline.vue';
 import { computed, ref, onMounted, onUnmounted } from 'vue';
 
 const props = defineProps({
@@ -252,14 +252,25 @@ const props = defineProps({
 const metrics = ref(null);
 const lastUpdate = ref(props.tracker?.last_seen ? props.tracker.last_seen * 1000 : null);
 let echoChannel = null;
-if (typeof window !== 'undefined' && window.Echo) {
-    echoChannel = window.Echo.channel('metrics');
-    echoChannel.listen('.metrics.updated', (data) => {
-        metrics.value = data;
-        const ts = data.tracker?.last_seen;
-        lastUpdate.value = ts ? ts * 1000 : Date.now();
-    });
-}
+
+onMounted(() => {
+    if (typeof window !== 'undefined' && window.Echo) {
+        echoChannel = window.Echo.channel('metrics');
+        echoChannel.listen('.metrics.updated', (data) => {
+            metrics.value = data;
+            const ts = data.tracker?.last_seen;
+            lastUpdate.value = ts ? ts * 1000 : Date.now();
+        });
+    }
+});
+
+onUnmounted(() => {
+    if (echoChannel) {
+        echoChannel.stopListening('.metrics.updated');
+        window.Echo?.leave('metrics');
+        echoChannel = null;
+    }
+});
 
 const live = computed(() => metrics.value?.tracker ?? props.tracker);
 const liveGps = computed(() => metrics.value?.gps ?? props.gps);
@@ -269,7 +280,6 @@ let ticker = null;
 onMounted(() => { ticker = setInterval(() => { now.value = Date.now(); }, 1000); });
 onUnmounted(() => {
     if (ticker) clearInterval(ticker);
-    if (echoChannel) window.Echo?.leave('metrics');
 });
 
 const lastTimestamp = computed(() => {

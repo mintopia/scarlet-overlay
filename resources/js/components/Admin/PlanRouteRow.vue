@@ -19,7 +19,6 @@
             <span class="route-stat"><span class="route-stat-val">{{ route.distance_nm }}</span> nm</span>
             <span class="route-stat"><span class="route-stat-val">{{ route.waypoints?.length ?? 0 }}</span> wpt</span>
             <button
-                v-if="!readonly"
                 class="route-toggle"
                 :class="{ 'route-toggle--off': !route.is_enabled }"
                 @click.stop="$emit('toggle', route)"
