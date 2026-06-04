@@ -18,9 +18,25 @@ class PasskeyController extends Controller
 
     public function register(AttestedRequest $request)
     {
-        $request->save();
+        $credentialId = $request->save();
 
-        return response()->json(['message' => 'Passkey registered.']);
+        return response()->json([
+            'message' => 'Passkey registered.',
+            'id' => $credentialId,
+        ]);
+    }
+
+    public function update(Request $request, string $id)
+    {
+        $validated = $request->validate([
+            'alias' => ['required', 'string', 'max:255'],
+        ]);
+
+        $request->user()->webAuthnCredentials()->where('id', $id)->update([
+            'alias' => $validated['alias'],
+        ]);
+
+        return response()->json(['message' => 'Passkey renamed.']);
     }
 
     public function loginOptions(AssertionRequest $request)

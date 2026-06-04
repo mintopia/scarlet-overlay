@@ -122,18 +122,66 @@
                         <td class="py-3 text-[13px] text-text-secondary">{{ formatDate(pk.created_at) }}</td>
                         <td class="py-3 text-[13px] text-text-secondary">{{ lastUsedLabel(pk) }}</td>
                         <td class="py-3">
-                            <button
-                                type="button"
-                                @click="confirmRemovePasskey(pk)"
-                                class="text-[13px] text-error hover:text-scarlet-hover font-medium"
-                            >
-                                Remove
-                            </button>
+                            <div class="flex items-center gap-3">
+                                <button
+                                    type="button"
+                                    @click="openRenameModal(pk)"
+                                    class="text-[13px] text-scarlet hover:underline font-medium"
+                                >
+                                    Rename
+                                </button>
+                                <button
+                                    type="button"
+                                    @click="confirmRemovePasskey(pk)"
+                                    class="text-[13px] text-error hover:text-scarlet-hover font-medium"
+                                >
+                                    Remove
+                                </button>
+                            </div>
                         </td>
                     </tr>
                 </tbody>
             </table>
         </div>
+
+        <!-- Name Passkey Modal -->
+        <Transition name="modal">
+        <div v-if="namingPasskey" class="modal-overlay" @click.self="cancelNaming" @keydown.esc="cancelNaming">
+            <div class="modal-card" role="dialog" aria-modal="true" :aria-label="namingPasskey.isNew ? 'Name your passkey' : 'Rename passkey'" @keydown.tab="trapFocus">
+                <h3 class="text-[16px] font-semibold mb-2">{{ namingPasskey.isNew ? 'Name your passkey' : 'Rename passkey' }}</h3>
+                <p v-if="namingPasskey.isNew" class="text-[13px] text-text-secondary mb-4">
+                    Give this passkey a name so you can identify it later.
+                </p>
+                <form @submit.prevent="savePasskeyName">
+                    <div class="mb-4">
+                        <label class="block text-[13px] font-medium text-text-secondary mb-1.5">Name</label>
+                        <input
+                            ref="nameInput"
+                            v-model="passkeyNameValue"
+                            type="text"
+                            required
+                            maxlength="255"
+                            placeholder="e.g. MacBook Pro, iPhone"
+                            class="w-full h-[42px] px-3.5 text-sm bg-bg border border-border rounded-[7px] font-sans focus:border-scarlet focus:ring-1 focus:ring-scarlet/20 outline-none"
+                        />
+                        <p v-if="nameError" class="mt-1 text-xs text-error">{{ nameError }}</p>
+                    </div>
+                    <div class="flex items-center justify-end gap-3">
+                        <button type="button" @click="cancelNaming" class="px-4 h-9 text-[13px] font-medium text-text-secondary hover:text-primary">
+                            {{ namingPasskey.isNew ? 'Skip' : 'Cancel' }}
+                        </button>
+                        <button
+                            type="submit"
+                            :disabled="namingSaving"
+                            class="px-4 h-9 bg-scarlet text-white text-[13px] font-semibold rounded-[7px] hover:bg-scarlet-hover disabled:opacity-50"
+                        >
+                            {{ namingSaving ? 'Saving…' : 'Save' }}
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+        </Transition>
 
         <!-- Remove Passkey Modal -->
         <Transition name="modal">
@@ -205,6 +253,11 @@ const removePassword = ref('');
 const removePasswordError = ref('');
 const removingInProgress = ref(false);
 const removePasswordInput = ref(null);
+const namingPasskey = ref(null);
+const passkeyNameValue = ref('');
+const nameError = ref('');
+const namingSaving = ref(false);
+const nameInput = ref(null);
 
 function getCsrfToken() {
     return document.querySelector('meta[name="csrf-token"]')?.content ?? '';
@@ -326,8 +379,9 @@ async function registerPasskey() {
             throw new Error('Failed to save passkey on server.');
         }
 
-        passkeySuccess.value = 'Passkey registered successfully.';
+        const regData = await registerResponse.json();
         await fetchPasskeys();
+        openNameModal(regData.id, true);
     } catch (e) {
         if (e.name === 'NotAllowedError') {
             passkeyError.value = 'Passkey registration was cancelled or timed out.';
@@ -336,6 +390,62 @@ async function registerPasskey() {
         }
     } finally {
         passkeyRegistering.value = false;
+    }
+}
+
+function openNameModal(id, isNew) {
+    const pk = passkeys.value.find(p => p.id === id);
+    namingPasskey.value = { id, isNew, alias: pk?.alias ?? '' };
+    passkeyNameValue.value = pk?.alias ?? '';
+    nameError.value = '';
+    passkeyError.value = '';
+    passkeySuccess.value = '';
+    nextTick(() => nameInput.value?.focus());
+}
+
+function openRenameModal(pk) {
+    openNameModal(pk.id, false);
+}
+
+function cancelNaming() {
+    if (namingPasskey.value?.isNew) {
+        passkeySuccess.value = 'Passkey registered successfully.';
+    }
+    namingPasskey.value = null;
+    passkeyNameValue.value = '';
+    nameError.value = '';
+}
+
+async function savePasskeyName() {
+    nameError.value = '';
+    namingSaving.value = true;
+
+    try {
+        const res = await fetch(`/passkey/${namingPasskey.value.id}`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json',
+                'X-CSRF-TOKEN': getCsrfToken(),
+            },
+            body: JSON.stringify({ alias: passkeyNameValue.value }),
+        });
+
+        if (res.ok) {
+            const pk = passkeys.value.find(p => p.id === namingPasskey.value.id);
+            if (pk) pk.alias = passkeyNameValue.value;
+            const wasNew = namingPasskey.value.isNew;
+            namingPasskey.value = null;
+            passkeyNameValue.value = '';
+            passkeySuccess.value = wasNew ? 'Passkey registered successfully.' : 'Passkey renamed.';
+        } else {
+            const data = await res.json().catch(() => ({}));
+            nameError.value = data.errors?.alias?.[0] ?? 'Failed to save name.';
+        }
+    } catch (e) {
+        nameError.value = 'Could not save name.';
+    } finally {
+        namingSaving.value = false;
     }
 }
 

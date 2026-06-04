@@ -183,6 +183,83 @@ class PasskeyTest extends TestCase
         $this->postJson('/passkey/register')->assertUnauthorized();
     }
 
+    public function test_passkey_update_renames_credential(): void
+    {
+        $user = User::factory()->create();
+
+        WebAuthnCredential::forceCreate([
+            'id' => 'credential-to-rename',
+            'authenticatable_type' => User::class,
+            'authenticatable_id' => $user->id,
+            'user_id' => fake()->uuid(),
+            'alias' => 'Old Name',
+            'counter' => 0,
+            'rp_id' => 'localhost',
+            'origin' => 'http://localhost',
+            'public_key' => encrypt('test-key'),
+            'attestation_format' => 'none',
+        ]);
+
+        $this->actingAs($user)->putJson('/passkey/credential-to-rename', [
+            'alias' => 'MacBook Pro',
+        ])->assertOk()
+            ->assertJson(['message' => 'Passkey renamed.']);
+
+        $this->assertDatabaseHas('webauthn_credentials', ['id' => 'credential-to-rename', 'alias' => 'MacBook Pro']);
+    }
+
+    public function test_passkey_update_requires_alias(): void
+    {
+        $user = User::factory()->create();
+
+        WebAuthnCredential::forceCreate([
+            'id' => 'credential-no-alias',
+            'authenticatable_type' => User::class,
+            'authenticatable_id' => $user->id,
+            'user_id' => fake()->uuid(),
+            'alias' => 'Original',
+            'counter' => 0,
+            'rp_id' => 'localhost',
+            'origin' => 'http://localhost',
+            'public_key' => encrypt('test-key'),
+            'attestation_format' => 'none',
+        ]);
+
+        $this->actingAs($user)->putJson('/passkey/credential-no-alias', [])
+            ->assertUnprocessable()
+            ->assertJsonValidationErrors('alias');
+    }
+
+    public function test_passkey_update_cannot_rename_other_users_credential(): void
+    {
+        $user = User::factory()->create();
+        $other = User::factory()->create();
+
+        WebAuthnCredential::forceCreate([
+            'id' => 'other-credential-rename',
+            'authenticatable_type' => User::class,
+            'authenticatable_id' => $other->id,
+            'user_id' => fake()->uuid(),
+            'alias' => 'Not Mine',
+            'counter' => 0,
+            'rp_id' => 'localhost',
+            'origin' => 'http://localhost',
+            'public_key' => encrypt('test-key'),
+            'attestation_format' => 'none',
+        ]);
+
+        $this->actingAs($user)->putJson('/passkey/other-credential-rename', [
+            'alias' => 'Stolen',
+        ]);
+
+        $this->assertDatabaseHas('webauthn_credentials', ['id' => 'other-credential-rename', 'alias' => 'Not Mine']);
+    }
+
+    public function test_passkey_update_requires_auth(): void
+    {
+        $this->putJson('/passkey/some-id', ['alias' => 'Test'])->assertUnauthorized();
+    }
+
     public function test_passkey_login_options_available_to_guests(): void
     {
         $response = $this->postJson('/passkey/login/options');

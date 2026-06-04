@@ -66,6 +66,7 @@ Route::post('/passkey/login', [PasskeyController::class, 'login'])->middleware('
 Route::middleware('auth')->group(function () {
     Route::post('/passkey/register/options', [PasskeyController::class, 'registerOptions']);
     Route::post('/passkey/register', [PasskeyController::class, 'register']);
+    Route::put('/passkey/{id}', [PasskeyController::class, 'update']);
     Route::delete('/passkey/{id}', [PasskeyController::class, 'destroy']);
     Route::get('/passkey/list', [PasskeyController::class, 'list']);
 });
