@@ -153,21 +153,91 @@ class OpenSeaMapService
         return $this->imageManager->read($data);
     }
 
-    protected function getTileImage(string $prefix, string $url, int $z, int $x, int $y): ?ImageInterface
+    public function getPlainTile(int $z, int $x, int $y): ?string
+    {
+        return $this->ensureTile('openstreetmap', 'https://tile.openstreetmap.org', $z, $x, $y);
+    }
+
+    public function getPlainDarkTile(int $z, int $x, int $y): ?string
+    {
+        return $this->ensureTile('cartodb-dark', 'https://basemaps.cartocdn.com/dark_all', $z, $x, $y);
+    }
+
+    public function getDepthContourTile(int $z, int $x, int $y): ?string
+    {
+        $dir = 'depth-contours';
+        if (Storage::directoryMissing($dir)) {
+            Storage::createDirectory($dir);
+        }
+
+        $filename = "{$dir}/{$z}.{$x}.{$y}.png";
+        if (Storage::exists($filename)) {
+            return $filename;
+        }
+
+        $n = pow(2, $z);
+        $originShift = 20037508.342789244;
+        $tileSize = $originShift * 2 / $n;
+        $minX = -$originShift + $x * $tileSize;
+        $maxX = $minX + $tileSize;
+        $maxY = $originShift - $y * $tileSize;
+        $minY = $maxY - $tileSize;
+
+        $url = 'https://ows.emodnet-bathymetry.eu/wms?'.http_build_query([
+            'SERVICE' => 'WMS',
+            'VERSION' => '1.3.0',
+            'REQUEST' => 'GetMap',
+            'LAYERS' => 'contours',
+            'CRS' => 'EPSG:3857',
+            'BBOX' => "{$minX},{$minY},{$maxX},{$maxY}",
+            'WIDTH' => '256',
+            'HEIGHT' => '256',
+            'FORMAT' => 'image/png',
+            'TRANSPARENT' => 'true',
+            'STYLES' => '',
+        ]);
+
+        $response = Http::withHeader('User-Agent', 'Scarlet Sailing Map Overlay; jess@mintopia.net')
+            ->timeout(15)
+            ->get($url);
+
+        if ($response->failed()) {
+            Log::warning("Failed to download depth contour tile {$z}/{$x}/{$y}: {$response->status()}");
+
+            return null;
+        }
+
+        Storage::put($filename, $response->body());
+
+        return $filename;
+    }
+
+    protected function ensureTile(string $prefix, string $url, int $z, int $x, int $y): ?string
     {
         $filename = "{$prefix}/{$z}.{$x}.{$y}.png";
         if (Storage::missing($filename)) {
-            Log::info("Downloading {$url}/{$z}/{$x}/{$y}");
+            if (Storage::directoryMissing($prefix)) {
+                Storage::createDirectory($prefix);
+            }
+
             $response = Http::withHeader('User-Agent', 'Scarlet Sailing Map Overlay; jess@mintopia.net')
                 ->get("{$url}/{$z}/{$x}/{$y}.png");
             if ($response->failed()) {
-                Log::warning("Failed to download {$url}/{$z}/{$x}/{$y}: {$response->getStatusCode()}");
+                Log::warning("Failed to download {$url}/{$z}/{$x}/{$y}: {$response->status()}");
 
                 return null;
             }
             Storage::put($filename, $response->body());
-        } else {
-            Log::info("Loading {$prefix} tile {$z}/{$x}/{$y} from cache");
+        }
+
+        return $filename;
+    }
+
+    protected function getTileImage(string $prefix, string $url, int $z, int $x, int $y): ?ImageInterface
+    {
+        $filename = $this->ensureTile($prefix, $url, $z, $x, $y);
+        if ($filename === null) {
+            return null;
         }
 
         return $this->imageManager->read(Storage::path($filename));

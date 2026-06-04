@@ -22,6 +22,11 @@
             </div>
             <div class="map-wrap" ref="mapEl">
                 <div v-if="!gpsTrack.length" class="no-track">No track data</div>
+                <MapLayerControl
+                    v-model:base="base"
+                    v-model:seamark="seamark"
+                    v-model:contours="contours"
+                />
             </div>
             <div class="speed-legend">
                 <div class="legend-gradient"></div>
@@ -37,8 +42,9 @@ import { Head, router } from '@inertiajs/vue3';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import AdminLayout from '@/Layouts/AdminLayout.vue';
+import MapLayerControl from '@/components/MapLayerControl.vue';
 import { speedToColor, addRouteLayer } from '../../scarlet.js';
-import { theme } from '@/composables/useTheme.js';
+import { useMapLayers } from '@/composables/useMapLayers.js';
 
 const props = defineProps({
     gpsTrack: { type: Array, default: () => [] },
@@ -49,9 +55,9 @@ const props = defineProps({
 
 const mapEl = ref(null);
 const selectedPeriod = ref(props.period);
+const { base, seamark, contours, attach } = useMapLayers();
 let map = null;
 let trackLayer = null;
-let tileLayer = null;
 
 function changePeriod() {
     router.get('/admin/tracks', { period: selectedPeriod.value }, { preserveState: true });
@@ -65,19 +71,8 @@ function buildMap() {
     if (!mapEl.value) return;
 
     if (!map) {
-        const tileUrl = theme.value === 'dark' || theme.value === 'night'
-            ? '/openseamap-dark/{z}/{x}/{y}'
-            : '/openseamap/{z}/{x}/{y}';
         map = L.map(mapEl.value, { zoomControl: true, attributionControl: false }).setView([0, 0], 2);
-        tileLayer = L.tileLayer(tileUrl, { maxZoom: 18 }).addTo(map);
-
-        watch(theme, (t) => {
-            const url = t === 'dark' || t === 'night'
-                ? '/openseamap-dark/{z}/{x}/{y}'
-                : '/openseamap/{z}/{x}/{y}';
-            map.removeLayer(tileLayer);
-            tileLayer = L.tileLayer(url, { maxZoom: 18 }).addTo(map);
-        });
+        attach(map);
     }
 
     trackLayer = L.layerGroup().addTo(map);

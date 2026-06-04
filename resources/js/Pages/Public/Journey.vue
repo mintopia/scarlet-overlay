@@ -5,7 +5,8 @@ import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import { speedToColor, makeBoatIcon, formatCoord, addRouteLayer } from '../../scarlet';
 import { fmt, fmtDuration } from '@/composables/useFormatters.js';
-import { theme } from '@/composables/useTheme.js';
+import { useMapLayers } from '@/composables/useMapLayers.js';
+import MapLayerControl from '@/components/MapLayerControl.vue';
 
 const props = defineProps({
     journey: Object,
@@ -19,6 +20,7 @@ const scrubIndex = ref(0);
 const playing = ref(false);
 const playbackSpeed = ref(1);
 const speedOptions = [1, 2, 5, 10];
+const { base, seamark, contours, attach } = useMapLayers();
 let map = null;
 let marker = null;
 let playInterval = null;
@@ -114,20 +116,9 @@ onMounted(() => {
     if (!mapEl.value || !props.gpsTrack.length) return;
 
     const firstPt = props.gpsTrack[0];
-    const tileUrl = theme.value === 'dark' || theme.value === 'night'
-        ? '/openseamap-dark/{z}/{x}/{y}'
-        : '/openseamap/{z}/{x}/{y}';
     map = L.map(mapEl.value, { zoomControl: false, attributionControl: false })
         .setView([firstPt[0], firstPt[1]], 14);
-    let tileLayer = L.tileLayer(tileUrl, { maxZoom: 18 }).addTo(map);
-
-    watch(theme, (t) => {
-        const url = t === 'dark' || t === 'night'
-            ? '/openseamap-dark/{z}/{x}/{y}'
-            : '/openseamap/{z}/{x}/{y}';
-        map.removeLayer(tileLayer);
-        tileLayer = L.tileLayer(url, { maxZoom: 18 }).addTo(map);
-    });
+    attach(map);
 
     for (let i = 1; i < props.gpsTrack.length; i++) {
         L.polyline(
@@ -161,6 +152,14 @@ onUnmounted(() => {
 
     <div class="journey-view">
         <div ref="mapEl" class="journey-map"></div>
+
+        <!-- Map layer control -->
+        <MapLayerControl
+            v-model:base="base"
+            v-model:seamark="seamark"
+            v-model:contours="contours"
+            class="journey-layer-control"
+        />
 
         <!-- Journey title overlay -->
         <div class="title-overlay">
@@ -244,6 +243,17 @@ onUnmounted(() => {
     border-radius: 10px;
     padding: 10px 14px;
     border: 1px solid oklch(0.32 0.01 40 / 0.18);
+}
+
+.journey-layer-control {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    z-index: 10;
+}
+
+@media (min-width: 640px) {
+    .journey-layer-control { top: 16px; right: 16px; }
 }
 
 @media (min-width: 640px) {

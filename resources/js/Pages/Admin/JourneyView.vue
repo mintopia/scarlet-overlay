@@ -39,6 +39,11 @@
             <div class="section">
                 <div class="map-container" ref="mapEl">
                     <div v-if="!props.gpsTrack.length" class="map-empty">No track data</div>
+                    <MapLayerControl
+                        v-model:base="base"
+                        v-model:seamark="seamark"
+                        v-model:contours="contours"
+                    />
                 </div>
                 <div class="speed-legend">
                     <div class="legend-gradient"></div>
@@ -82,8 +87,9 @@ import uPlot from 'uplot';
 import 'uplot/dist/uPlot.min.css';
 import AdminLayout from '@/Layouts/AdminLayout.vue';
 import LogTable from '@/components/LogTable.vue';
+import MapLayerControl from '@/components/MapLayerControl.vue';
 import { speedToColor, addRouteLayer } from '../../scarlet.js';
-import { theme } from '@/composables/useTheme.js';
+import { useMapLayers } from '@/composables/useMapLayers.js';
 
 const props = defineProps({
     journey: Object,
@@ -94,6 +100,7 @@ const props = defineProps({
 });
 
 const mapEl = ref(null);
+const { base, seamark, contours, attach } = useMapLayers();
 let map = null;
 
 const chartKeys = Object.keys(props.charts ?? {});
@@ -213,19 +220,8 @@ function buildMap() {
     if (!mapEl.value) return;
 
     if (!map) {
-        const tileUrl = theme.value === 'dark' || theme.value === 'night'
-            ? '/openseamap-dark/{z}/{x}/{y}'
-            : '/openseamap/{z}/{x}/{y}';
         map = L.map(mapEl.value, { zoomControl: true, attributionControl: false }).setView([0, 0], 2);
-        let tileLayer = L.tileLayer(tileUrl, { maxZoom: 18 }).addTo(map);
-
-        watch(theme, (t) => {
-            const url = t === 'dark' || t === 'night'
-                ? '/openseamap-dark/{z}/{x}/{y}'
-                : '/openseamap/{z}/{x}/{y}';
-            map.removeLayer(tileLayer);
-            tileLayer = L.tileLayer(url, { maxZoom: 18 }).addTo(map);
-        });
+        attach(map);
     }
 
     if (!props.gpsTrack?.length) return;

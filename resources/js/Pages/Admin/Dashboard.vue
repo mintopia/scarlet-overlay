@@ -185,7 +185,13 @@
     <!-- Journey Section -->
     <div v-if="routeWaypointsArr.length || liveGps?.latitude" class="journey-grid panel p-0 mb-5 overflow-hidden">
         <!-- Map -->
-        <div ref="mapEl" class="journey-map"></div>
+        <div ref="mapEl" class="journey-map">
+            <MapLayerControl
+                v-model:base="mapBase"
+                v-model:seamark="mapSeamark"
+                v-model:contours="mapContours"
+            />
+        </div>
 
         <!-- Nav sidebar -->
         <div class="journey-sidebar p-4 flex flex-col gap-4">
@@ -231,7 +237,9 @@ import LevelBar from '@/components/Admin/LevelBar.vue';
 import Sparkline from '@/components/Admin/Sparkline.vue';
 import { fmt, fmtDuration } from '@/composables/useFormatters.js';
 import { useScarletMetrics } from '@/composables/useScarletMetrics.js';
+import { useMapLayers } from '@/composables/useMapLayers.js';
 import { useSpringValue, useAngleSpring } from '@/composables/useSpringValue.js';
+import MapLayerControl from '@/components/MapLayerControl.vue';
 
 const props = defineProps({
     boat: Object,
@@ -296,11 +304,13 @@ const animAwa = useAngleSpring(() => liveBoat.value?.wind_angle_apparent);
 
 // ── Map ──────────────────────────────────────────────────────────────────────
 const mapEl = ref(null);
+const { base: mapBase, seamark: mapSeamark, contours: mapContours, attach: attachLayers } = useMapLayers();
 let map = null;
 
 onMounted(() => {
     if (mapEl.value) {
-        map = initMap(mapEl.value, { interactive: true });
+        map = initMap(mapEl.value, { interactive: true, tiles: false });
+        attachLayers(map);
         addMapTarget(map, { autoCenter: true });
 
         if (routeWaypointsArr.value.length) {

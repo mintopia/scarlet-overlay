@@ -102,8 +102,9 @@ export function useScarletMetrics(options = {}) {
 
     function initMap(el, opts = {}) {
         const interactive = opts.interactive !== false;
+        const tiles = opts.tiles !== false;
         const mapOpts = {
-            zoomControl: false,
+            zoomControl: interactive,
             attributionControl: false,
         };
         if (!interactive) {
@@ -119,12 +120,15 @@ export function useScarletMetrics(options = {}) {
             ? [gps.value.latitude, gps.value.longitude]
             : [50.6931, -1.6433];
         const map = L.map(el, mapOpts).setView(initialPos, 16);
-        let tileLayer = L.tileLayer(tileUrlForTheme(theme.value), { maxZoom: 18 }).addTo(map);
 
-        watch(theme, (t) => {
-            map.removeLayer(tileLayer);
-            tileLayer = L.tileLayer(tileUrlForTheme(t), { maxZoom: 18 }).addTo(map);
-        });
+        if (tiles) {
+            let tileLayer = L.tileLayer(tileUrlForTheme(theme.value), { maxZoom: 18 }).addTo(map);
+
+            watch(theme, (t) => {
+                map.removeLayer(tileLayer);
+                tileLayer = L.tileLayer(tileUrlForTheme(t), { maxZoom: 18 }).addTo(map);
+            });
+        }
 
         return map;
     }

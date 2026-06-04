@@ -39,6 +39,9 @@ Route::get('/openseamap/{z}/{x}/{y}', [MapTileController::class, 'seamap'])->nam
 Route::get('/openseamap-dark/{z}/{x}/{y}', [MapTileController::class, 'seamapDark'])->name('openseamap-dark');
 Route::get('/satellite/{z}/{y}/{x}', [MapTileController::class, 'satellite'])->where(['z' => '[0-9]+', 'y' => '[0-9]+', 'x' => '[0-9]+']);
 Route::get('/seamark/{z}/{x}/{y}', [MapTileController::class, 'seamarkOverlay'])->name('seamark');
+Route::get('/osm/{z}/{x}/{y}', [MapTileController::class, 'osm'])->name('osm');
+Route::get('/cartodb-dark/{z}/{x}/{y}', [MapTileController::class, 'cartodbDark'])->name('cartodb-dark');
+Route::get('/depth/{z}/{x}/{y}', [MapTileController::class, 'depthContours'])->name('depth-contours');
 Route::get('/metrics/srt', SrtMetricsController::class)->name('metrics.srt');
 Route::get('/metrics/weather', WeatherMetricsController::class)->name('metrics.weather');
 

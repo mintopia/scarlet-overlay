@@ -35,11 +35,11 @@
 
         <!-- Map -->
         <div class="map-section" ref="mapEl">
-            <div class="map-tile-switch">
-                <button class="map-tile-btn" :class="{ active: tileMode === 'sea' }" @click="setTileMode('sea')">Sea Chart</button>
-                <button class="map-tile-btn" :class="{ active: tileMode === 'hybrid' }" @click="setTileMode('hybrid')">Hybrid</button>
-                <button class="map-tile-btn" :class="{ active: tileMode === 'satellite' }" @click="setTileMode('satellite')">Satellite</button>
-            </div>
+            <MapLayerControl
+                v-model:base="base"
+                v-model:seamark="seamark"
+                v-model:contours="contours"
+            />
         </div>
 
         <!-- Empty state -->
@@ -86,8 +86,9 @@ import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import AdminLayout from '@/Layouts/AdminLayout.vue';
 import PlanGroupCard from '@/components/Admin/PlanGroupCard.vue';
+import MapLayerControl from '@/components/MapLayerControl.vue';
 import { routeColor, routeColorDim } from '@/helpers/planColors.js';
-import { theme } from '@/composables/useTheme.js';
+import { useMapLayers } from '@/composables/useMapLayers.js';
 import { useToast } from '@/composables/useToast.js';
 
 const props = defineProps({
@@ -97,39 +98,16 @@ const props = defineProps({
 
 const toast = useToast();
 const mapEl = ref(null);
-const tileMode = ref('sea');
 const editingTitle = ref(false);
 const titleDraft = ref(props.plan.title);
 const titleInput = ref(null);
 const deleteModal = ref(null);
+const { base, seamark, contours, attach } = useMapLayers();
 
 let map = null;
-let tileLayer = null;
-let overlayLayer = null;
 let routeLayers = {};
 
 const totalRoutes = computed(() => props.plan.groups.reduce((sum, g) => sum + g.routes.length, 0));
-
-function getBaseUrl() {
-    if (tileMode.value === 'satellite' || tileMode.value === 'hybrid') return '/satellite/{z}/{y}/{x}';
-    if (theme.value === 'dark' || theme.value === 'night') return '/openseamap-dark/{z}/{x}/{y}';
-    return '/openseamap/{z}/{x}/{y}';
-}
-
-function setTileMode(mode) {
-    tileMode.value = mode;
-    updateTileLayer();
-}
-
-function updateTileLayer() {
-    if (!map) return;
-    if (tileLayer) map.removeLayer(tileLayer);
-    if (overlayLayer) { map.removeLayer(overlayLayer); overlayLayer = null; }
-    tileLayer = L.tileLayer(getBaseUrl(), { maxZoom: 18 }).addTo(map);
-    if (tileMode.value === 'hybrid') {
-        overlayLayer = L.tileLayer('/seamark/{z}/{x}/{y}', { maxZoom: 18 }).addTo(map);
-    }
-}
 
 function buildRouteLayers() {
     Object.values(routeLayers).forEach(layers => {
@@ -199,8 +177,6 @@ function buildRouteLayers() {
         map.fitBounds(L.latLngBounds(allPoints), { padding: [40, 40] });
     }
 }
-
-watch(theme, updateTileLayer);
 
 function startEditTitle() {
     titleDraft.value = props.plan.title;
@@ -284,7 +260,7 @@ function formatDate(iso) {
 onMounted(() => {
     if (!mapEl.value) return;
     map = L.map(mapEl.value, { zoomControl: true, attributionControl: false }).setView(props.defaultCenter, 8);
-    tileLayer = L.tileLayer(getBaseUrl(), { maxZoom: 18 }).addTo(map);
+    attach(map);
     buildRouteLayers();
 });
 
@@ -304,18 +280,6 @@ watch(() => props.plan, () => {
     border: 1px solid var(--color-border); box-shadow: var(--shadow-sm);
     position: relative; height: 60vh; min-height: 400px;
 }
-.map-tile-switch {
-    position: absolute; top: 12px; right: 12px; z-index: 1000;
-    display: flex; background: var(--color-surface); border-radius: 8px;
-    border: 1px solid var(--color-border); overflow: hidden;
-}
-.map-tile-btn {
-    padding: 6px 14px; font-size: 12px; font-weight: 600;
-    font-family: var(--font-body); color: var(--color-text-secondary);
-    border: none; background: none; cursor: pointer;
-}
-.map-tile-btn.active { background: var(--color-teal); color: #fff; }
-.map-tile-btn + .map-tile-btn { border-left: 1px solid var(--color-border); }
 
 .groups-grid {
     display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px;

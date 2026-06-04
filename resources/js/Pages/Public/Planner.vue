@@ -16,11 +16,11 @@
 
         <!-- Map -->
         <div class="map-section" ref="mapEl">
-            <div class="map-tile-switch">
-                <button class="map-tile-btn" :class="{ active: tileMode === 'sea' }" @click="setTileMode('sea')">Sea Chart</button>
-                <button class="map-tile-btn" :class="{ active: tileMode === 'hybrid' }" @click="setTileMode('hybrid')">Hybrid</button>
-                <button class="map-tile-btn" :class="{ active: tileMode === 'satellite' }" @click="setTileMode('satellite')">Satellite</button>
-            </div>
+            <MapLayerControl
+                v-model:base="base"
+                v-model:seamark="seamark"
+                v-model:contours="contours"
+            />
         </div>
 
         <!-- Groups grid -->
@@ -44,7 +44,9 @@ import { Head } from '@inertiajs/vue3';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import PlanGroupCard from '@/components/Admin/PlanGroupCard.vue';
+import MapLayerControl from '@/components/MapLayerControl.vue';
 import { routeColor, routeColorDim } from '@/helpers/planColors.js';
+import { useMapLayers } from '@/composables/useMapLayers.js';
 
 const props = defineProps({
     plan: { type: Object, required: true },
@@ -52,10 +54,8 @@ const props = defineProps({
 });
 
 const mapEl = ref(null);
-const tileMode = ref('sea');
+const { base, seamark, contours, attach } = useMapLayers();
 let map = null;
-let tileLayer = null;
-let overlayLayer = null;
 let routeLayerMap = {};
 let initialBoundsFit = false;
 
@@ -81,22 +81,6 @@ function toggleGroupLocal(group) {
 function toggleRouteLocal(route) {
     toggleState[route.id] = !toggleState[route.id];
     nextTick(buildRouteLayers);
-}
-
-function getBaseUrl() {
-    if (tileMode.value === 'satellite' || tileMode.value === 'hybrid') return '/satellite/{z}/{y}/{x}';
-    return '/openseamap/{z}/{x}/{y}';
-}
-
-function setTileMode(mode) {
-    tileMode.value = mode;
-    if (!map) return;
-    if (tileLayer) map.removeLayer(tileLayer);
-    if (overlayLayer) { map.removeLayer(overlayLayer); overlayLayer = null; }
-    tileLayer = L.tileLayer(getBaseUrl(), { maxZoom: 18 }).addTo(map);
-    if (tileMode.value === 'hybrid') {
-        overlayLayer = L.tileLayer('/seamark/{z}/{x}/{y}', { maxZoom: 18 }).addTo(map);
-    }
 }
 
 function buildRouteLayers() {
@@ -142,7 +126,7 @@ function panToWaypoint(wp) {
 onMounted(() => {
     if (!mapEl.value) return;
     map = L.map(mapEl.value, { zoomControl: true, attributionControl: false }).setView(props.defaultCenter, 8);
-    tileLayer = L.tileLayer(getBaseUrl(), { maxZoom: 18 }).addTo(map);
+    attach(map);
     buildRouteLayers();
 });
 
@@ -164,18 +148,6 @@ onUnmounted(() => { map?.remove(); map = null; });
     border: 1px solid var(--color-border); box-shadow: var(--shadow-sm);
     position: relative; height: 45vh; min-height: 280px;
 }
-.map-tile-switch {
-    position: absolute; top: 12px; right: 12px; z-index: 1000;
-    display: flex; background: var(--color-surface); border-radius: 8px;
-    border: 1px solid var(--color-border); overflow: hidden;
-}
-.map-tile-btn {
-    padding: 6px 14px; font-size: 12px; font-weight: 600;
-    font-family: var(--font-body); color: var(--color-text-secondary);
-    border: none; background: none; cursor: pointer;
-}
-.map-tile-btn.active { background: var(--color-teal); color: #fff; }
-.map-tile-btn + .map-tile-btn { border-left: 1px solid var(--color-border); }
 
 .groups-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; margin-top: 20px; }
 @media (max-width: 768px) { .groups-grid { grid-template-columns: 1fr; } }

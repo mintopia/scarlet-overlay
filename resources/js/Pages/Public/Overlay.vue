@@ -246,7 +246,7 @@ onUnmounted(() => {
 
 .bl-cluster {
     position: absolute;
-    bottom: 88px;
+    bottom: 104px;
     left: 16px;
     z-index: 10;
     display: flex;
