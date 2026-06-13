@@ -11,6 +11,8 @@ class PrometheusService
 {
     protected string $baseUrl;
 
+    protected string $defaultLookback = '30d';
+
     public function __construct()
     {
         $this->baseUrl = config('scarlet.metrics.prometheus_url');
@@ -38,8 +40,9 @@ class PrometheusService
         }
     }
 
-    public function queryLastOverTimeAt(string $promql, int $timestamp, string $lookback = '7d'): ?float
+    public function queryLastOverTimeAt(string $promql, int $timestamp, ?string $lookback = null): ?float
     {
+        $lookback ??= $this->defaultLookback;
         $wrapped = preg_replace_callback(
             '/\b(scarlet_[a-zA-Z0-9_:]*)(\{[^}]*\})?/',
             fn ($m) => "last_over_time({$m[0]}[{$lookback}])",
@@ -70,7 +73,7 @@ class PrometheusService
         }
     }
 
-    public function queryMultipleAt(array $queries, int $timestamp, bool $fallback = false, string $fallbackLookback = '7d'): array
+    public function queryMultipleAt(array $queries, int $timestamp, bool $fallback = false, ?string $fallbackLookback = null): array
     {
         $responses = Http::pool(function ($pool) use ($queries, $timestamp) {
             foreach ($queries as $key => $promql) {
@@ -113,14 +116,14 @@ class PrometheusService
 
     public function query(string $promql): ?float
     {
-        $result = $this->queryWithTimestamp($promql, '7d');
+        $result = $this->queryWithTimestamp($promql);
 
         return $result['value'] ?? null;
     }
 
     public function queryFresh(string $promql, int $maxAge = 120): ?float
     {
-        $result = $this->queryWithTimestamp($promql, '7d');
+        $result = $this->queryWithTimestamp($promql);
         if ($result === null) {
             return null;
         }
@@ -135,7 +138,7 @@ class PrometheusService
         // timestamp(last_over_time()) which returns the query evaluation time.
         $wrapped = preg_replace_callback(
             '/\b(scarlet_[a-zA-Z0-9_:]*)(\{[^}]*\})?/',
-            fn ($m) => "tlast_over_time({$m[0]}[7d])",
+            fn ($m) => "tlast_over_time({$m[0]}[{$this->defaultLookback}])",
             $promql,
         );
 
@@ -174,8 +177,9 @@ class PrometheusService
         }
     }
 
-    public function queryWithTimestamp(string $promql, string $lookback = '7d'): ?array
+    public function queryWithTimestamp(string $promql, ?string $lookback = null): ?array
     {
+        $lookback ??= $this->defaultLookback;
         $wrapped = preg_replace_callback(
             '/\b(scarlet_[a-zA-Z0-9_:]*)(\{[^}]*\})?/',
             fn ($m) => "last_over_time({$m[0]}[{$lookback}])",
@@ -289,7 +293,7 @@ class PrometheusService
         return $this->queryRange($fallback, $duration, $step, $start, $end);
     }
 
-    public function queryMultiple(array $queries, string $fallbackLookback = '7d'): array
+    public function queryMultiple(array $queries, ?string $fallbackLookback = null): array
     {
         $responses = Http::pool(function ($pool) use ($queries) {
             foreach ($queries as $key => $promql) {
@@ -322,7 +326,7 @@ class PrometheusService
 
         if (! empty($missingKeys)) {
             foreach ($missingKeys as $key => $promql) {
-                $results[$key] = $this->queryLastOverTimeAt($promql, now()->timestamp, $fallbackLookback);
+                $results[$key] = $this->queryLastOverTimeAt($promql, now()->timestamp, $fallbackLookback ?? $this->defaultLookback);
             }
         }
 
@@ -338,7 +342,7 @@ class PrometheusService
         foreach ($queries as $key => $promql) {
             $wrapped = preg_replace_callback(
                 '/\b(scarlet_[a-zA-Z0-9_:]*)(\{[^}]*\})?/',
-                fn ($m) => "last_over_time({$m[0]}[7d])",
+                fn ($m) => "last_over_time({$m[0]}[{$this->defaultLookback}])",
                 $promql,
             );
 
