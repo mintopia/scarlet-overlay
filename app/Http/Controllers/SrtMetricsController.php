@@ -12,7 +12,7 @@ class SrtMetricsController extends Controller
     {
         $url = BoatSetting::getValue('srt_stats_url', '');
 
-        if (!$url) {
+        if (! $url) {
             return response("# No SRT stats URL configured\n", 200)
                 ->header('Content-Type', 'text/plain; version=0.0.4; charset=utf-8');
         }
@@ -22,6 +22,7 @@ class SrtMetricsController extends Controller
             $data = $response->json();
         } catch (\Throwable $e) {
             Log::warning("SRT metrics fetch failed: {$e->getMessage()}");
+
             return response("# SRT stats fetch failed\nscarlet_srt_up 0\n", 200)
                 ->header('Content-Type', 'text/plain; version=0.0.4; charset=utf-8');
         }
@@ -31,61 +32,110 @@ class SrtMetricsController extends Controller
         $lines[] = '# TYPE scarlet_srt_up gauge';
         $lines[] = 'scarlet_srt_up 1';
 
-        $publishers = $data['publishers'] ?? [];
+        $publishers = $this->normalizePublishers($data);
         foreach ($publishers as $name => $pub) {
-            $labels = '{publisher="' . $this->escape($name) . '"}';
+            $labels = '{publisher="'.$this->escape($name).'"}';
 
             $lines[] = '# HELP scarlet_srt_publisher_connected Whether the publisher is connected';
             $lines[] = '# TYPE scarlet_srt_publisher_connected gauge';
-            $lines[] = "scarlet_srt_publisher_connected{$labels} " . ($pub['connected'] ? '1' : '0');
+            $lines[] = "scarlet_srt_publisher_connected{$labels} ".(($pub['connected'] ?? false) ? '1' : '0');
 
             $lines[] = '# HELP scarlet_srt_publisher_bitrate_bps Publisher bitrate in bits per second';
             $lines[] = '# TYPE scarlet_srt_publisher_bitrate_bps gauge';
-            $lines[] = "scarlet_srt_publisher_bitrate_bps{$labels} " . (($pub['bitrate'] ?? 0) * 1000);
+            $lines[] = "scarlet_srt_publisher_bitrate_bps{$labels} ".(($pub['bitrate'] ?? 0) * 1000);
 
             $lines[] = '# HELP scarlet_srt_publisher_rtt_ms Publisher round-trip time in milliseconds';
             $lines[] = '# TYPE scarlet_srt_publisher_rtt_ms gauge';
-            $lines[] = "scarlet_srt_publisher_rtt_ms{$labels} " . ($pub['rtt'] ?? 0);
+            $lines[] = "scarlet_srt_publisher_rtt_ms{$labels} ".($pub['rtt'] ?? 0);
 
             $lines[] = '# HELP scarlet_srt_publisher_latency_ms Publisher latency in milliseconds';
             $lines[] = '# TYPE scarlet_srt_publisher_latency_ms gauge';
-            $lines[] = "scarlet_srt_publisher_latency_ms{$labels} " . ($pub['latency'] ?? 0);
+            $lines[] = "scarlet_srt_publisher_latency_ms{$labels} ".($pub['latency'] ?? 0);
 
             $lines[] = '# HELP scarlet_srt_publisher_dropped_packets_total Publisher dropped packets';
             $lines[] = '# TYPE scarlet_srt_publisher_dropped_packets_total gauge';
-            $lines[] = "scarlet_srt_publisher_dropped_packets_total{$labels} " . ($pub['dropped_pkts'] ?? 0);
+            $lines[] = "scarlet_srt_publisher_dropped_packets_total{$labels} ".($pub['dropped_pkts'] ?? 0);
 
             $lines[] = '# HELP scarlet_srt_publisher_network_bps Publisher network bandwidth in bits per second';
             $lines[] = '# TYPE scarlet_srt_publisher_network_bps gauge';
-            $lines[] = "scarlet_srt_publisher_network_bps{$labels} " . (($pub['network'] ?? 0) * 1000);
+            $lines[] = "scarlet_srt_publisher_network_bps{$labels} ".(($pub['network'] ?? 0) * 1000);
         }
 
         $consumers = $data['consumers'] ?? [];
         foreach ($consumers as $i => $con) {
             $server = $con['server'] ?? "consumer_{$i}";
-            $labels = '{server="' . $this->escape($server) . '"}';
+            $labels = '{server="'.$this->escape($server).'"}';
 
             $lines[] = '# HELP scarlet_srt_consumer_bitrate_bps Consumer bitrate in bits per second';
             $lines[] = '# TYPE scarlet_srt_consumer_bitrate_bps gauge';
-            $lines[] = "scarlet_srt_consumer_bitrate_bps{$labels} " . (($con['bitrate'] ?? 0) * 1000);
+            $lines[] = "scarlet_srt_consumer_bitrate_bps{$labels} ".(($con['bitrate'] ?? 0) * 1000);
 
             $lines[] = '# HELP scarlet_srt_consumer_rtt_ms Consumer round-trip time in milliseconds';
             $lines[] = '# TYPE scarlet_srt_consumer_rtt_ms gauge';
-            $lines[] = "scarlet_srt_consumer_rtt_ms{$labels} " . ($con['rtt'] ?? 0);
+            $lines[] = "scarlet_srt_consumer_rtt_ms{$labels} ".($con['rtt'] ?? 0);
 
             $lines[] = '# HELP scarlet_srt_consumer_latency_ms Consumer latency in milliseconds';
             $lines[] = '# TYPE scarlet_srt_consumer_latency_ms gauge';
-            $lines[] = "scarlet_srt_consumer_latency_ms{$labels} " . ($con['latency'] ?? 0);
+            $lines[] = "scarlet_srt_consumer_latency_ms{$labels} ".($con['latency'] ?? 0);
 
             $lines[] = '# HELP scarlet_srt_consumer_dropped_packets_total Consumer dropped packets';
             $lines[] = '# TYPE scarlet_srt_consumer_dropped_packets_total gauge';
-            $lines[] = "scarlet_srt_consumer_dropped_packets_total{$labels} " . ($con['dropped_pkts'] ?? 0);
+            $lines[] = "scarlet_srt_consumer_dropped_packets_total{$labels} ".($con['dropped_pkts'] ?? 0);
         }
 
         $lines[] = '';
 
         return response(implode("\n", $lines), 200)
             ->header('Content-Type', 'text/plain; version=0.0.4; charset=utf-8');
+    }
+
+    /**
+     * Normalize the upstream stats payload into a map of publisher name => publisher data.
+     *
+     * Supports two upstream shapes:
+     *  - Aggregate / legacy: {"publishers": {"<name>": {...}}, "status": "ok"}
+     *  - Single stream:      {"publisher": {...}, "status": "ok"}
+     *
+     * Neither shape's publisher object carries a `connected` flag; liveness is the
+     * top-level `status === "ok"`. Field names also vary between shapes
+     * (e.g. `dropped_pkts` vs `pktRcvDrop`), so each entry is normalized to a
+     * consistent internal shape here.
+     *
+     * @param  array<string, mixed>  $data
+     * @return array<string, array<string, mixed>>
+     */
+    private function normalizePublishers(array $data): array
+    {
+        $statusOk = ($data['status'] ?? null) === 'ok';
+
+        if (isset($data['publishers']) && is_array($data['publishers'])) {
+            return array_map(
+                fn ($pub): array => $this->normalizePublisher((array) $pub, $statusOk),
+                $data['publishers'],
+            );
+        }
+
+        if (array_key_exists('status', $data) || array_key_exists('publisher', $data)) {
+            return ['srt' => $this->normalizePublisher((array) ($data['publisher'] ?? []), $statusOk)];
+        }
+
+        return [];
+    }
+
+    /**
+     * @param  array<string, mixed>  $pub
+     * @return array<string, mixed>
+     */
+    private function normalizePublisher(array $pub, bool $statusOk): array
+    {
+        return [
+            'connected' => $pub['connected'] ?? $statusOk,
+            'bitrate' => $pub['bitrate'] ?? 0,
+            'rtt' => $pub['rtt'] ?? 0,
+            'latency' => $pub['latency'] ?? 0,
+            'dropped_pkts' => $pub['dropped_pkts'] ?? $pub['pktRcvDrop'] ?? 0,
+            'network' => $pub['network'] ?? 0,
+        ];
     }
 
     private function escape(string $value): string
