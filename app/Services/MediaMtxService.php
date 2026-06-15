@@ -19,9 +19,13 @@ class MediaMtxService
         $config = ['source' => $source];
 
         if ($source !== '') {
-            $config['sourceOnDemand'] = true;
-            $config['sourceOnDemandStartTimeout'] = '10s';
-            $config['sourceOnDemandCloseAfter'] = '10s';
+            // Keep the SRT pull connected continuously rather than on demand. The
+            // BELABOX relay can take 15s+ to establish the SRT session and fill its
+            // latency buffer — longer than any reasonable on-demand start timeout —
+            // so on-demand mode timed out the first viewer and re-paid that startup
+            // cost on every reconnect. A persistent source stays primed so viewers
+            // attach instantly.
+            $config['sourceOnDemand'] = false;
         }
 
         try {
@@ -35,13 +39,16 @@ class MediaMtxService
 
             if ($response->successful()) {
                 Log::info("MediaMTX path '{$path}' source updated", ['source' => $source ?: '(empty)']);
+
                 return true;
             }
 
-            Log::warning("MediaMTX API error", ['status' => $response->status(), 'body' => $response->body()]);
+            Log::warning('MediaMTX API error', ['status' => $response->status(), 'body' => $response->body()]);
+
             return false;
         } catch (\Exception $e) {
             Log::warning("MediaMTX API unreachable: {$e->getMessage()}");
+
             return false;
         }
     }
