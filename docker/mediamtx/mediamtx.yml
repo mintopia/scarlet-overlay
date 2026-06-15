@@ -39,6 +39,14 @@ webrtcICEServers2: []
 hls: yes
 hlsAddress: :8888
 hlsAllowOrigins: ["*"]
+# Standard (non-low-latency) HLS for resilience on the boat's unreliable uplink.
+# The fmp4 variant (not mpegts) is required because the stream is H265 + Opus.
+# Larger segments and a deep window let viewers buffer several seconds and ride
+# out dropouts, trading latency (~6-10s) for smoothness. fmp4 also avoids the
+# LL-HLS part-duration drift that breaks iOS clients.
+hlsVariant: fmp4
+hlsSegmentCount: 10
+hlsSegmentDuration: 2s
 hlsAlwaysRemux: yes
 hlsCDNSecret: "scarlet-hls-internal"
 
