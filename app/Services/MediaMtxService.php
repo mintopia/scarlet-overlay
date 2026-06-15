@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Models\BoatSetting;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 
@@ -12,6 +13,21 @@ class MediaMtxService
     public function __construct()
     {
         $this->baseUrl = rtrim(config('scarlet.mediamtx.api_url', 'http://mediamtx:9997'), '/');
+    }
+
+    /**
+     * Apply the configured SRT URL to the `live` path, honouring the manual
+     * pull toggle. The pull only runs when `srt_pull_enabled` is set; otherwise
+     * the source is cleared so MediaMTX holds no connection. Used by the sync
+     * command, the settings save, and the Broadcast start/stop control so they
+     * all resolve the source identically.
+     */
+    public function syncLiveSource(): bool
+    {
+        $url = BoatSetting::getValue('srt_url', '');
+        $enabled = BoatSetting::getValue('srt_pull_enabled') === '1';
+
+        return $this->setPathSource('live', $enabled ? $url : '');
     }
 
     public function setPathSource(string $path, string $source): bool

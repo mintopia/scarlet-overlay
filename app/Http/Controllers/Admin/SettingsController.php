@@ -38,11 +38,10 @@ class SettingsController extends Controller
             'srt_stats_url' => ['nullable', 'url', 'max:500'],
         ]);
 
-        $srtUrl = $validated['srt_url'] ?? '';
-        BoatSetting::setValue('srt_url', $srtUrl);
+        BoatSetting::setValue('srt_url', $validated['srt_url'] ?? '');
         BoatSetting::setValue('srt_stats_url', $validated['srt_stats_url'] ?? '');
 
-        $mediaMtx->setPathSource('live', $srtUrl);
+        $mediaMtx->syncLiveSource();
 
         return back()->with('success', 'Stream settings updated.');
     }

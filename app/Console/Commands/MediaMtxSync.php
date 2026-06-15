@@ -14,14 +14,17 @@ class MediaMtxSync extends Command
 
     public function handle(MediaMtxService $mediaMtx): int
     {
-        $srtUrl = BoatSetting::getValue('srt_url', '');
+        $pulling = BoatSetting::getValue('srt_pull_enabled') === '1'
+            && BoatSetting::getValue('srt_url', '') !== '';
 
-        if ($mediaMtx->setPathSource('live', $srtUrl)) {
-            $this->info('MediaMTX synced: ' . ($srtUrl ?: '(no source)'));
+        if ($mediaMtx->syncLiveSource()) {
+            $this->info('MediaMTX synced: '.($pulling ? 'pulling live source' : '(pull stopped)'));
+
             return self::SUCCESS;
         }
 
         $this->warn('MediaMTX sync failed — will retry on next startup');
+
         return self::FAILURE;
     }
 }

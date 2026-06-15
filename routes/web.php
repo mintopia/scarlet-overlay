@@ -85,6 +85,7 @@ Route::middleware('auth')->prefix('admin')->group(function () {
     Route::put('/settings/camera', [SettingsController::class, 'updateCamera'])->name('admin.settings.camera');
     Route::post('/settings/force-reload', [SettingsController::class, 'forceReload'])->name('admin.settings.force-reload');
     Route::get('broadcast', [StreamMonitorController::class, 'index'])->name('admin.broadcast');
+    Route::post('broadcast/pull', [StreamMonitorController::class, 'updatePull'])->name('admin.broadcast.pull');
     Route::redirect('stream', 'broadcast');
     Route::get('/tracker', [TrackerController::class, 'index'])->name('admin.tracker');
     Route::get('/metrics', [BoatMetricsController::class, 'index'])->name('admin.metrics');

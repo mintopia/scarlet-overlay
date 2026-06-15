@@ -29,6 +29,23 @@
                     <span class="text-text-dim">&middot; No publisher connected</span>
                 </template>
             </span>
+
+            <!-- Pull control: arms/stops the MediaMTX SRT pull, independent of live state -->
+            <div class="ml-auto flex items-center gap-3">
+                <span class="text-[11px] font-body font-extrabold tracking-[2px] uppercase" :class="pullEnabled ? 'text-teal' : 'text-text-dim'">
+                    {{ pullEnabled ? 'Pulling' : 'Pull idle' }}
+                </span>
+                <button
+                    type="button"
+                    :disabled="pulling || (!pullEnabled && !srtConfigured)"
+                    :title="!pullEnabled && !srtConfigured ? 'Set an SRT URL in Settings first' : ''"
+                    class="btn"
+                    :class="pullEnabled ? 'btn--danger' : 'btn--primary'"
+                    @click="togglePull"
+                >
+                    {{ pullEnabled ? 'Stop' : 'Start' }}
+                </button>
+            </div>
         </div>
 
         <!-- Main: Video + Stats -->
@@ -109,6 +126,8 @@ const props = defineProps({
     statsUrl: String,
     fetchError: Boolean,
     publisher: Object,
+    pullEnabled: Boolean,
+    srtConfigured: Boolean,
     bitrateHistory: Array,
     rttHistory: Array,
     droppedHistory: Array,
@@ -119,6 +138,16 @@ const videoEl = ref(null);
 const { connect, cleanup } = useVideoFeed(videoEl);
 
 const isConnected = computed(() => (props.publisher?.connected ?? 0) >= 1);
+
+const pulling = ref(false);
+
+function togglePull() {
+    pulling.value = true;
+    router.post(route('admin.broadcast.pull'), { enabled: !props.pullEnabled }, {
+        preserveScroll: true,
+        onFinish: () => { pulling.value = false; },
+    });
+}
 
 const bitrateValues = computed(() => (props.bitrateHistory ?? []).map(h => h.value));
 const rttValues = computed(() => (props.rttHistory ?? []).map(h => h.value));
