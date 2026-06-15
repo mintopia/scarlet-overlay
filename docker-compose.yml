@@ -69,7 +69,9 @@ services:
       - scarlet
 
   mediamtx:
-    image: bluenviron/mediamtx:latest
+    # -ffmpeg variant bundles ffmpeg, used to transcode the H265 source to H264
+    # for browser playback (see runOnReady in docker/mediamtx/mediamtx.yml).
+    image: bluenviron/mediamtx:latest-ffmpeg
     ports:
       - "${MEDIAMTX_WEBRTC_PORT:-8889}:8889"
       - "${MEDIAMTX_SRT_PORT:-8890}:8890/udp"

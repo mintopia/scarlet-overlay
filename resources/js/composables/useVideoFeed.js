@@ -13,7 +13,8 @@ export function useVideoFeed(videoEl) {
     let lastPosition = null;
     let videoStallCount = 0;
 
-    const HLS_URL = '/hls/live/index.m3u8';
+    // live_web is the H264/AAC transcode of the H265 source, for browser compat.
+    const HLS_URL = '/hls/live_web/index.m3u8';
     const RETRY_DELAY = 5000;
 
     function getVideoElement() {
