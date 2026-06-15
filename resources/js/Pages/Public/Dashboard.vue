@@ -1,7 +1,8 @@
 <script setup>
 import { ref, computed, onMounted, onUnmounted } from 'vue';
-import { Head } from '@inertiajs/vue3';
+import { Head, router } from '@inertiajs/vue3';
 import { useScarletMetrics } from '../../composables/useScarletMetrics';
+import { useKonami } from '../../composables/useKonami';
 import { useWeatherProps } from '../../composables/useWeatherProps';
 import { useSpringValue, useAngleSpring } from '../../composables/useSpringValue';
 import ScarletWeather from '../../components/ScarletWeather.vue';
@@ -27,6 +28,9 @@ const props = defineProps({
 const mapContainer = ref(null);
 const autoCenter = ref(true);
 let map = null;
+
+// Hidden LCARS easter egg: Konami code unlocks /lcars (see PLAN.md / ADR 0001).
+useKonami(() => router.visit('/lcars'));
 
 const {
     boat, gps, weather, staleKeys,

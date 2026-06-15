@@ -1,0 +1,173 @@
+/*
+ * LCARS Panel styles — the hidden Star Trek easter egg (PLAN.md / ADR 0001).
+ * Deliberately OFF Scarlet's house style. Everything is namespaced under `.lcars`
+ * and this file only loads with the LCARS page chunk, so it never touches the
+ * admin theme. Self-hosted Antonio (OFL) — no external font request.
+ */
+
+@font-face {
+    font-family: 'Antonio LCARS';
+    font-style: normal;
+    font-weight: 100 700;
+    font-display: swap;
+    src: url('/fonts/antonio-latin.woff2') format('woff2');
+    unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+2000-206F, U+2074, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+@font-face {
+    font-family: 'Antonio LCARS';
+    font-style: normal;
+    font-weight: 100 700;
+    font-display: swap;
+    src: url('/fonts/antonio-latin-ext.woff2') format('woff2');
+    unicode-range: U+0100-024F, U+0259, U+1E00-1EFF, U+2020, U+20A0-20AB, U+20AD-20CF, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+
+.lcars {
+    --bg: #000;
+    --orange: #f90;
+    --peach: #fc9;
+    --mauve: #c9c;
+    --blue: #99f;
+    --amber: #fc0;
+    --lilac: #c69;
+    --ice: #9cf;
+    --red: #c66;
+    --gold: #fc6;
+    --gap: 8px;
+    --rad: 40px;
+    --panel: #140e04;
+    --panel-2: #1a1206;
+
+    position: fixed;
+    inset: 0;
+    background: var(--bg);
+    color: var(--peach);
+    font-family: 'Antonio LCARS', 'Arial Narrow', sans-serif;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    overflow: hidden;
+    -webkit-font-smoothing: antialiased;
+}
+
+.lcars * { box-sizing: border-box; }
+.lcars-num { font-variant-numeric: tabular-nums; }
+
+/* ── Frame ─────────────────────────────────────────────────────────── */
+.lcars-wrap {
+    height: 100%;
+    display: grid;
+    grid-template-columns: 200px 1fr;
+    grid-template-rows: 96px 1fr 56px;
+    gap: var(--gap);
+    padding: var(--gap);
+}
+
+.lcars-elbow {
+    grid-row: 1; grid-column: 1;
+    background: var(--orange);
+    border-top-left-radius: var(--rad);
+    position: relative;
+    display: flex; align-items: flex-end; justify-content: flex-end;
+    padding: 12px 16px;
+}
+.lcars-elbow::after {
+    content: '';
+    position: absolute; right: 0; bottom: 0;
+    width: calc(100% - 36px); height: calc(100% - 36px);
+    background: var(--bg);
+    border-top-left-radius: 26px;
+}
+.lcars-elbow span { position: relative; z-index: 2; color: #000; font-weight: 700; font-size: 15px; line-height: 0.9; text-align: right; }
+
+.lcars-topbar { grid-row: 1; grid-column: 2; display: flex; gap: var(--gap); }
+.lcars-title {
+    flex: 1; background: var(--orange);
+    border-top-right-radius: var(--rad);
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 0 28px; color: #000; font-weight: 700;
+}
+.lcars-title .name { font-size: 32px; line-height: 1; }
+.lcars-title .reg { font-size: 16px; opacity: 0.8; }
+.lcars-tag { width: 132px; background: var(--mauve); display: flex; flex-direction: column; align-items: center; justify-content: center; color: #000; font-weight: 600; font-size: 15px; line-height: 1.05; }
+.lcars-tag.b { background: var(--blue); }
+.lcars-tag.stale { background: var(--red); animation: lcars-blink 1.1s steps(1) infinite; }
+
+/* ── Rail ──────────────────────────────────────────────────────────── */
+.lcars-rail { grid-row: 2 / span 2; grid-column: 1; display: flex; flex-direction: column; gap: var(--gap); }
+.lcars-btn {
+    flex: 0 0 auto; height: 60px; border: none; cursor: pointer;
+    background: var(--mauve); color: #000;
+    font-family: inherit; font-weight: 600; font-size: 19px;
+    text-transform: uppercase; text-align: right; letter-spacing: 0.04em;
+    padding: 0 16px 9px; display: flex; align-items: flex-end; justify-content: flex-end;
+    transition: background 0.18s cubic-bezier(0.25, 1, 0.5, 1), color 0.18s;
+}
+.lcars-btn:nth-child(3n) { background: var(--blue); }
+.lcars-btn:nth-child(3n+1) { background: var(--peach); }
+.lcars-btn:hover { background: var(--gold); }
+.lcars-btn:active { transform: translateY(1px); }
+.lcars-btn:focus-visible { outline: 3px solid var(--ice); outline-offset: -3px; }
+.lcars-btn.active { background: var(--orange); color: #000; }
+.lcars-btn.active::before { content: '\25B8\00a0'; }
+.lcars-rail .num { height: 40px; background: var(--blue); color: #000; font-size: 15px; font-weight: 600; display: flex; align-items: center; justify-content: flex-end; padding: 0 14px; }
+.lcars-rail .spacer { flex: 1 1 auto; background: var(--lilac); border-bottom-left-radius: var(--rad); min-height: 30px; }
+.lcars-rail .exit { background: var(--red); color: #000; }
+.lcars-rail .exit:hover { background: var(--gold); }
+
+/* ── Main / footer ─────────────────────────────────────────────────── */
+.lcars-main { grid-row: 2; grid-column: 2; overflow: hidden; display: flex; flex-direction: column; gap: var(--gap); }
+.lcars-sysbar { height: 40px; display: flex; align-items: center; gap: 14px; color: var(--orange); font-size: 26px; font-weight: 700; border-bottom: 3px solid var(--orange); padding-bottom: 4px; }
+.lcars-sysbar h1 { margin: 0; font: inherit; color: inherit; letter-spacing: inherit; }
+.lcars-sysbar .dot { width: 18px; height: 18px; border-radius: 50%; background: var(--orange); }
+.lcars-sysbar .meta { margin-left: auto; font-size: 15px; color: var(--mauve); }
+
+.lcars-foot { grid-row: 3; grid-column: 2; display: flex; gap: var(--gap); }
+.lcars-foot .seg { background: var(--lilac); flex: 1; display: flex; align-items: center; justify-content: flex-end; padding: 0 24px; color: #000; font-weight: 600; font-size: 15px; }
+.lcars-foot .seg:last-child { border-bottom-right-radius: var(--rad); }
+.lcars-foot .seg.b { background: var(--blue); }
+.lcars-foot .seg.live { background: var(--orange); }
+.lcars-foot .seg.lost { background: var(--red); animation: lcars-blink 1.1s steps(1) infinite; }
+
+/* ── Section grid + panels (bento: hero + varied tiles) ────────────── */
+.lcars-grid { flex: 1; display: grid; grid-template-columns: repeat(12, 1fr); grid-auto-rows: minmax(116px, 1fr); grid-auto-flow: row; gap: var(--gap); margin-top: 6px; min-height: 0; }
+.lcars-panel { background: var(--panel); border-radius: 4px 16px 16px 4px; padding: 13px 18px; display: flex; flex-direction: column; min-height: 0; position: relative; overflow: hidden; }
+.lcars-panel > .hd { color: var(--mauve); font-size: 15px; font-weight: 600; margin-bottom: 6px; display: flex; justify-content: space-between; flex: 0 0 auto; }
+.lcars-panel .lost-flag { color: var(--red); }
+.lcars-panel .body { flex: 1 1 auto; min-height: 0; display: flex; flex-direction: column; justify-content: center; }
+
+/* Deliberate composition: hero (8×2) + a 2-tile rail fill the top band; every
+ * subsequent row is sized to total exactly 12 columns, so tiles never strand or
+ * leave mid-row gaps. */
+.s-hero { grid-column: span 8; grid-row: span 2; padding: 18px 24px; }
+.s-hero .hd { font-size: 18px; color: var(--orange); }
+.s-lg   { grid-column: span 6; }
+.s-md   { grid-column: span 4; }
+.s-sm   { grid-column: span 3; }
+.s-full { grid-column: 1 / -1; }
+
+.lcars-readout { color: var(--peach); font-weight: 700; line-height: 0.9; display: flex; align-items: baseline; gap: 6px; }
+.lcars-readout .u { font-size: 0.42em; color: var(--blue); font-weight: 500; }
+.lcars-readout.dim { color: var(--lilac); opacity: 0.6; }
+
+/* ── Animations ────────────────────────────────────────────────────── */
+@keyframes lcars-blink { 50% { opacity: 0.3; } }
+@keyframes lcars-cascade { from { transform: translateY(0); } to { transform: translateY(-50%); } }
+
+.lcars-cascade { position: absolute; right: 10px; top: 10px; bottom: 10px; width: 54px; overflow: hidden; opacity: 0.12; pointer-events: none; color: var(--blue); font-size: 13px; line-height: 1.5; text-align: right; }
+.lcars-cascade .col { animation: lcars-cascade 9s linear infinite; }
+
+/* ── Responsive floor ──────────────────────────────────────────────── */
+.lcars-toosmall { display: none; }
+@media (max-width: 1023px) {
+    .lcars-wrap { display: none; }
+    .lcars-toosmall { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; gap: 18px; text-align: center; padding: 24px; }
+    .lcars-toosmall .pill { background: var(--orange); color: #000; padding: 12px 28px; border-radius: var(--rad); font-weight: 700; font-size: 20px; border: none; }
+    .lcars-toosmall .pill:focus-visible { outline: 3px solid var(--ice); outline-offset: 3px; }
+    .lcars-toosmall p { color: var(--peach); font-size: 16px; max-width: 30ch; }
+}
+
+/* ── Reduced motion ────────────────────────────────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+    .lcars *, .lcars *::before, .lcars *::after { animation: none !important; transition: none !important; }
+    .lcars-cascade { display: none; }
+}

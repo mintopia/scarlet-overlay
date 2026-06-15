@@ -22,6 +22,7 @@ use App\Http\Controllers\Auth\RegisterController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\JourneyViewController;
+use App\Http\Controllers\LcarsController;
 use App\Http\Controllers\MapTileController;
 use App\Http\Controllers\OverlayController;
 use App\Http\Controllers\PublicPlannerController;
@@ -31,6 +32,11 @@ use Illuminate\Support\Facades\Route;
 
 Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
 Route::get('/', fn () => redirect('/dashboard'));
+
+// Hidden LCARS easter egg (see PLAN.md / ADR 0001). Public — exposes only data the
+// public dashboard already broadcasts. Reached via Konami code on either dashboard.
+Route::get('/lcars', [LcarsController::class, 'index'])->name('lcars');
+Route::get('/lcars/series', [LcarsController::class, 'series'])->name('lcars.series');
 
 Route::get('/overlay', [OverlayController::class, 'index'])->name('overlay');
 Route::get('/camera', [OverlayController::class, 'camera'])->name('camera');

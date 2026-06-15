@@ -229,9 +229,10 @@
 
 <script setup>
 import { ref, computed, onMounted, onUnmounted } from 'vue';
-import { Head, Link } from '@inertiajs/vue3';
+import { Head, Link, router } from '@inertiajs/vue3';
 import L from 'leaflet';
 import AdminLayout from '@/Layouts/AdminLayout.vue';
+import { useKonami } from '@/composables/useKonami.js';
 import CompassRose from '@/components/Admin/CompassRose.vue';
 import LevelBar from '@/components/Admin/LevelBar.vue';
 import Sparkline from '@/components/Admin/Sparkline.vue';
@@ -258,6 +259,9 @@ const props = defineProps({
     timestamp: String,
     powerHistory: { type: Array, default: () => [] },
 });
+
+// Hidden LCARS easter egg: Konami code unlocks /lcars (see PLAN.md / ADR 0001).
+useKonami(() => router.visit('/lcars'));
 
 const routeWaypointsArr = computed(() => props.routeWaypoints ?? []);
 const trackerFresh = computed(() => {
