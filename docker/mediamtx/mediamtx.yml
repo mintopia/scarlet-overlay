@@ -59,7 +59,7 @@ paths:
     # republishes to `live_web`, which is what browsers consume. A keyframe every
     # 2s keeps HLS segments aligned. veryfast keeps CPU reasonable; raise the
     # preset (or add hardware accel) if the host has headroom.
-    runOnReady: ffmpeg -rtsp_transport tcp -i rtsp://localhost:8554/$MTX_PATH -c:v libx264 -preset veryfast -tune zerolatency -pix_fmt yuv420p -force_key_frames expr:gte(t,n_forced*2) -b:v 3000k -maxrate 3000k -bufsize 6000k -c:a aac -b:a 128k -ar 48000 -f rtsp rtsp://localhost:8554/live_web
+    runOnReady: ffmpeg -rtsp_transport tcp -i rtsp://localhost:8554/$MTX_PATH -c:v libx264 -preset veryfast -tune zerolatency -pix_fmt yuv420p -force_key_frames expr:gte(t,n_forced*2) -b:v 6000k -maxrate 6000k -bufsize 12000k -c:a aac -b:a 128k -ar 48000 -f rtsp rtsp://localhost:8554/live_web
     runOnReadyRestart: yes
 
   # Browser-facing H264/AAC stream, published by the transcode above.
