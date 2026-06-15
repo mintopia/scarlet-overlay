@@ -2,7 +2,6 @@
 import { computed } from 'vue';
 
 const props = defineProps({
-    label: { type: String, default: '' },
     temp: { type: Number, default: null },
     humidity: { type: Number, default: null },
     tempRange: { type: Array, default: () => [0, 35] },
@@ -24,7 +23,6 @@ const rh = computed(() => (props.humidity == null ? 0 : Math.max(0, Math.min(100
 
 <template>
     <div class="lcars-climate">
-        <div class="hd">{{ label }}</div>
         <div class="big lcars-num" :style="{ color: tempColor }">{{ temp == null ? '--' : temp.toFixed(1) }}<small>°C</small></div>
         <div class="rail temp"><span class="fill" :style="{ width: tempPct + '%', background: tempColor }"></span></div>
         <div class="rh">
@@ -37,7 +35,6 @@ const rh = computed(() => (props.humidity == null ? 0 : Math.max(0, Math.min(100
 
 <style scoped>
 .lcars-climate { display: flex; flex-direction: column; gap: 6px; justify-content: center; }
-.hd { font-size: 14px; color: var(--mauve); }
 .big { font-size: 34px; font-weight: 700; line-height: 1; }
 .big small { font-size: 15px; color: var(--blue); margin-left: 2px; }
 .rail { height: 6px; background: var(--panel-2); border-radius: 3px; overflow: hidden; }

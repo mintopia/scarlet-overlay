@@ -6,7 +6,7 @@ import { useKonami } from '../../composables/useKonami.js';
 import { STATIONS, CONTRACT, pluck } from '../../lcars/contract.js';
 import { fmtMetric } from '../../lcars/format.js';
 import LcarsLineGraph from '../../components/Lcars/LcarsLineGraph.vue';
-import LcarsDial from '../../components/Lcars/LcarsDial.vue';
+import LcarsArc from '../../components/Lcars/LcarsArc.vue';
 import LcarsBar from '../../components/Lcars/LcarsBar.vue';
 import LcarsStat from '../../components/Lcars/LcarsStat.vue';
 import LcarsSignalBars from '../../components/Lcars/LcarsSignalBars.vue';
@@ -168,8 +168,14 @@ const cascade = Array.from({ length: 3 }, (_, c) =>
 function cur(m) { return pluck(tele.metrics.value, m.src); }
 function lost(m) { return m.src ? tele.signalLost.value.has(m.src) : false; }
 function colorFor(m) { return m.color ?? 'var(--orange)'; }
-const HEADER_VIZ = ['line', 'badge', 'navfix', 'sunarc'];
-function showHeader(m) { return HEADER_VIZ.includes(m.viz); }
+
+// Colored LCARS label-cap tab per tile. Line metrics keep their graph colour for
+// cohesion; everything else cycles the palette so the caps read varied, not uniform.
+const CAP_CYCLE = ['var(--peach)', 'var(--mauve)', 'var(--blue)', 'var(--gold)', 'var(--lilac)', 'var(--orange)'];
+function capColor(m, i) { return m.color ?? CAP_CYCLE[i % CAP_CYCLE.length]; }
+
+// Irregular rail-button heights — LCARS sidebars were never uniform.
+const RAIL_H = [60, 46, 74, 54, 62, 48];
 function statFor(m) {
     const v = cur(m);
     const { text, unit } = fmtMetric(m, v);
@@ -204,12 +210,14 @@ const G = (path) => pluck(tele.metrics.value, path);
 
             <!-- Rail -->
             <nav class="lcars-rail">
-                <button v-for="s in STATIONS" :key="s.id" class="lcars-btn"
-                    :class="{ active: active === s.id }" :aria-label="s.title" :aria-pressed="active === s.id"
+                <button v-for="(s, i) in STATIONS" :key="s.id" class="lcars-btn"
+                    :class="{ active: active === s.id }" :style="{ height: RAIL_H[i % RAIL_H.length] + 'px' }"
+                    :aria-label="s.title" :aria-pressed="active === s.id"
                     @click="selectStation(s.id)">{{ s.label }}</button>
+                <div class="num lcars-num" aria-hidden="true">47·02·19</div>
                 <button class="lcars-btn" :class="{ active: soundOn }" :aria-pressed="soundOn"
                     :aria-label="soundOn ? 'Interface sound on' : 'Interface sound off'" @click="toggleSound">{{ soundOn ? '♪ ON' : '♪ OFF' }}</button>
-                <div class="num lcars-num" aria-hidden="true">47·02·19</div>
+                <div class="blk lcars-num" aria-hidden="true">LCARS·24613</div>
                 <div class="spacer"></div>
                 <button class="lcars-btn exit" aria-label="End program and return to dashboard" @click="exit">◄ END</button>
             </nav>
@@ -229,15 +237,15 @@ const G = (path) => pluck(tele.metrics.value, path);
 
                 <!-- Bridge stations (bento layout) -->
                 <div v-else-if="!detailKey" class="lcars-grid">
-                    <div v-for="m in activeMetrics" :key="m.key" class="lcars-panel"
-                        :class="[`s-${m.size || 'md'}`, { clickable: CLICKABLE.has(m.viz) }]"
-                        :style="morphKey === m.key ? { viewTransitionName: 'lcars-morph' } : null"
+                    <div v-for="(m, i) in activeMetrics" :key="m.key" class="lcars-panel"
+                        :class="[`s-${m.size || 'md'}`, { clickable: CLICKABLE.has(m.viz), lost: lost(m) }]"
+                        :style="{ '--cap': capColor(m, i), ...(morphKey === m.key ? { viewTransitionName: 'lcars-morph' } : {}) }"
                         :role="CLICKABLE.has(m.viz) ? 'button' : null"
                         :tabindex="CLICKABLE.has(m.viz) ? 0 : null"
                         :aria-label="CLICKABLE.has(m.viz) ? `Analyse ${m.label}` : null"
                         @click="openDetail(m)" @keydown.enter="openDetail(m)">
                         <span v-if="CLICKABLE.has(m.viz)" class="analyse-corner" aria-hidden="true">◹ ANALYSE</span>
-                        <div v-if="showHeader(m)" class="hd">
+                        <div class="hd">
                             <span>{{ m.label }}</span>
                             <span v-if="lost(m)" class="lost-flag">SIGNAL LOST</span>
                         </div>
@@ -255,20 +263,20 @@ const G = (path) => pluck(tele.metrics.value, path);
                         </template>
 
                         <div v-else class="body">
-                            <LcarsBar v-if="m.viz === 'bar'" :value="cur(m)" :range="m.range" :unit="m.unit"
-                                :label="m.label" :dp="m.dp ?? 0" :color="colorFor(m)" :lost="lost(m)" />
+                            <LcarsArc v-if="m.viz === 'compass' || m.compass" :value="cur(m)" :range="m.range"
+                                :unit="m.unit" :dp="m.dp ?? 0" :compass="m.viz === 'compass' || m.compass"
+                                :color="colorFor(m)" :lost="lost(m)" />
 
-                            <LcarsDial v-else-if="m.viz === 'dial' || m.viz === 'compass'" :value="cur(m)" :range="m.range"
-                                :unit="m.unit" :label="m.label" :dp="m.dp ?? 1" :compass="m.viz === 'compass' || m.compass" :lost="lost(m)" />
+                            <LcarsBar v-else-if="m.viz === 'bar' || m.viz === 'dial'" :value="cur(m)" :range="m.range" :unit="m.unit"
+                                :dp="m.dp ?? (m.viz === 'dial' ? 1 : 0)" :color="colorFor(m)" :lost="lost(m)" />
 
-                            <LcarsStat v-else-if="m.viz === 'stat'" :label="m.label" :text="statFor(m).text"
+                            <LcarsStat v-else-if="m.viz === 'stat'" :text="statFor(m).text"
                                 :unit="statFor(m).unit" :pct="statFor(m).pct" :color="colorFor(m)"
                                 :size="m.size === 'lg' ? 44 : 34" :lost="lost(m)" />
 
-                            <LcarsSignalBars v-else-if="m.viz === 'signal'" :value="cur(m)" :range="m.range"
-                                :label="m.label" :lost="lost(m)" />
+                            <LcarsSignalBars v-else-if="m.viz === 'signal'" :value="cur(m)" :range="m.range" :lost="lost(m)" />
 
-                            <LcarsClimate v-else-if="m.viz === 'climate'" :label="m.label"
+                            <LcarsClimate v-else-if="m.viz === 'climate'"
                                 :temp="G(m.tempSrc)" :humidity="G(m.humSrc)" />
 
                             <LcarsNavFix v-else-if="m.viz === 'navfix'"

@@ -37,6 +37,9 @@ const tilt = computed(() => `rotate(${(heel.value ?? 0).toFixed(2)} 200 130)`);
                 <path d="M205,34 L205,128 L262,128 Z" fill="var(--orange)" opacity="0.18" stroke="var(--orange)" stroke-width="1.5" />
                 <!-- jib -->
                 <path d="M205,40 L205,126 L150,126 Z" fill="var(--blue)" opacity="0.16" stroke="var(--blue)" stroke-width="1.5" />
+                <!-- EPS power conduits: animated dashes flow along the ship's systems -->
+                <line class="eps" x1="205" y1="150" x2="205" y2="34" stroke="var(--gold)" stroke-width="1.4" stroke-dasharray="2 7" />
+                <path class="eps" d="M132,138 Q200,158 278,138" fill="none" stroke="var(--amber)" stroke-width="1.4" stroke-dasharray="2 7" />
             </g>
 
             <!-- depth under keel -->
@@ -59,6 +62,7 @@ const tilt = computed(() => `rotate(${(heel.value ?? 0).toFixed(2)} 200 130)`);
 <style scoped>
 .lcars-msd { display: grid; grid-template-rows: auto 1fr; height: 100%; gap: 14px; }
 .lcars-msd svg { width: 100%; max-height: 320px; }
+.eps { animation: lcars-flow 1.1s linear infinite; opacity: 0.85; }
 .callouts { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; align-content: start; }
 .callouts .co { background: var(--panel); border-radius: 0 10px 10px 0; padding: 8px 12px; display: flex; flex-direction: column; }
 .callouts .co .k { color: var(--mauve); font-size: 13px; }

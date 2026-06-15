@@ -25,6 +25,22 @@ const satDots = computed(() => Array.from({ length: 12 }, (_, i) => i < (props.s
 
 function pol(a, r) { const rad = (a - 90) * Math.PI / 180; return [50 + r * Math.cos(rad), 50 + r * Math.sin(rad)]; }
 const cardinals = [['N', 0], ['E', 90], ['S', 180], ['W', 270]];
+
+// Swept heading arc (N → bearing) + a rim marker — LCARS grammar, no center pivot.
+const R = 40;
+const hdgArc = computed(() => {
+    const t = Math.max(0.001, Math.min(359.999, hdgSpring.value ?? 0));
+    const [sx, sy] = pol(0, R);
+    const [ex, ey] = pol(t, R);
+    return `M${sx.toFixed(2)},${sy.toFixed(2)} A${R},${R} 0 ${t > 180 ? 1 : 0} 1 ${ex.toFixed(2)},${ey.toFixed(2)}`;
+});
+const hdgMark = computed(() => {
+    const tip = pol(hdgSpring.value ?? 0, R + 3);
+    const l = pol((hdgSpring.value ?? 0) - 5, R - 1);
+    const r = pol((hdgSpring.value ?? 0) + 5, R - 1);
+    return `${l[0]},${l[1]} ${tip[0]},${tip[1]} ${r[0]},${r[1]}`;
+});
+const cogMark = computed(() => pol(cogSpring.value ?? 0, R));
 </script>
 
 <template>
@@ -36,11 +52,11 @@ const cardinals = [['N', 0], ['E', 90], ['S', 180], ['W', 270]];
                     :x2="pol(d * 10, 46)[0]" :y2="pol(d * 10, 46)[1]" stroke="var(--mauve)" :stroke-width="d % 9 === 1 ? 1.4 : 0.6" opacity="0.6" />
                 <text v-for="[c, a] in cardinals" :key="c" :x="pol(a, 34)[0]" :y="pol(a, 34)[1] + 3" text-anchor="middle" font-size="9"
                     :fill="c === 'N' ? 'var(--orange)' : 'var(--mauve)'">{{ c }}</text>
-                <!-- COG marker -->
-                <line v-if="cog != null" x1="50" y1="50" :x2="pol(cogSpring, 40)[0]" :y2="pol(cogSpring, 40)[1]" stroke="var(--blue)" stroke-width="2" stroke-dasharray="3 2" />
-                <!-- Heading needle -->
-                <line v-if="heading != null" x1="50" y1="50" :x2="pol(hdgSpring, 38)[0]" :y2="pol(hdgSpring, 38)[1]" stroke="var(--orange)" stroke-width="3.5" stroke-linecap="round" />
-                <circle cx="50" cy="50" r="4" fill="var(--orange)" />
+                <!-- COG rim marker (dashed bug) -->
+                <circle v-if="cog != null" :cx="cogMark[0]" :cy="cogMark[1]" r="2.6" fill="none" stroke="var(--blue)" stroke-width="1.6" />
+                <!-- Heading: swept arc from N + rim marker (no center pivot) -->
+                <path v-if="heading != null" :d="hdgArc" fill="none" stroke="var(--orange)" stroke-width="4" stroke-linecap="round" opacity="0.9" />
+                <polygon v-if="heading != null" :points="hdgMark" fill="var(--orange)" />
             </svg>
             <div class="hdg lcars-num">{{ heading == null ? '---' : Math.round(heading) }}°</div>
         </div>

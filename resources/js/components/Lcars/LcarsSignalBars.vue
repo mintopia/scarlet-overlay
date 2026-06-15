@@ -4,7 +4,6 @@ import { computed } from 'vue';
 const props = defineProps({
     value: { type: Number, default: null },     // dBm (negative)
     range: { type: Array, default: () => [-110, -50] },
-    label: { type: String, default: '' },
     lost: { type: Boolean, default: false },
 });
 
@@ -21,7 +20,6 @@ const color = computed(() => (bars.value <= 1 ? 'var(--red)' : bars.value <= 2 ?
 
 <template>
     <div class="lcars-sig" :class="{ lost }">
-        <div class="lb">{{ label }}<span v-if="lost" class="lost-flag"> · LOST</span></div>
         <div class="bars">
             <span v-for="i in 5" :key="i" class="bar" :class="{ on: i <= bars }"
                 :style="[{ height: 28 + i * 12 + '%' }, i <= bars ? { background: color } : {}]"></span>
@@ -35,7 +33,6 @@ const color = computed(() => (bars.value <= 1 ? 'var(--red)' : bars.value <= 2 ?
 
 <style scoped>
 .lcars-sig { display: flex; flex-direction: column; gap: 6px; justify-content: center; }
-.lcars-sig .lb { font-size: 14px; color: var(--mauve); }
 .bars { display: flex; align-items: flex-end; gap: 5px; height: 56px; }
 .bars .bar { flex: 1; background: var(--panel-2); border-radius: 2px; transition: background 0.3s; }
 .meta { display: flex; justify-content: space-between; align-items: baseline; }

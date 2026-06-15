@@ -6,7 +6,6 @@ const props = defineProps({
     value: { type: Number, default: null },
     range: { type: Array, default: () => [0, 100] },
     unit: { type: String, default: '%' },
-    label: { type: String, default: '' },
     dp: { type: Number, default: 0 },
     color: { type: String, default: 'var(--orange)' },
     lost: { type: Boolean, default: false },
@@ -27,7 +26,7 @@ const cells = computed(() => Array.from({ length: 20 }, (_, i) => (i + 1) * 5 <=
 
 <template>
     <div class="lcars-barm" :class="{ lost }">
-        <div class="top"><span class="lb">{{ label }}</span><span class="v lcars-num">{{ display }}<small>{{ unit }}</small></span></div>
+        <div class="top"><span class="v lcars-num">{{ display }}<small>{{ unit }}</small></span></div>
         <div class="cells">
             <span v-for="(on, i) in cells" :key="i" class="cell" :class="{ on }" :style="on ? { background: color } : {}"></span>
         </div>
@@ -36,9 +35,8 @@ const cells = computed(() => Array.from({ length: 20 }, (_, i) => (i + 1) * 5 <=
 
 <style scoped>
 .lcars-barm { display: flex; flex-direction: column; gap: 6px; justify-content: center; }
-.lcars-barm .top { display: flex; justify-content: space-between; align-items: baseline; }
-.lcars-barm .lb { font-size: 14px; color: var(--mauve); }
-.lcars-barm .v { font-size: 26px; font-weight: 700; color: var(--peach); }
+.lcars-barm .top { display: flex; justify-content: flex-start; align-items: baseline; }
+.lcars-barm .v { font-size: 30px; font-weight: 700; color: var(--peach); }
 .lcars-barm .v small { font-size: 13px; color: var(--blue); margin-left: 2px; }
 .lcars-barm .cells { display: flex; gap: 3px; height: 22px; }
 .lcars-barm .cell { flex: 1; background: var(--panel-2); border-radius: 1px; transition: background 0.3s cubic-bezier(0.25, 1, 0.5, 1); }
