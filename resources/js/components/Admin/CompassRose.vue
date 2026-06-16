@@ -178,8 +178,8 @@ const zoneLabels = computed(() => {
         <!-- Heading index mark at top -->
         <polygon points="90,-4 86,4 94,4" fill="var(--color-teal)" opacity="0.7"/>
 
-        <!-- COG dashed line (relative to heading) -->
-        <line v-if="cogLine" x1="90" y1="90" :x2="cogLine.x2" :y2="cogLine.y2" stroke="var(--color-teal)" stroke-width="1.5" stroke-dasharray="5 3" opacity="0.35"/>
+        <!-- COG dashed line (relative to heading, blue to match the COG readout) -->
+        <line v-if="cogLine" x1="90" y1="90" :x2="cogLine.x2" :y2="cogLine.y2" stroke="var(--color-blue)" stroke-width="1.5" stroke-dasharray="5 3" opacity="0.55"/>
 
         <!-- AWA arrow (relative to boat, pink — shorter, behind TWA) -->
         <g v-if="awaArrow">

@@ -339,9 +339,9 @@ class MetricsService
         return $rows;
     }
 
-    private function calculateTrueWind(?float $aws, ?float $awa, ?float $sog, ?float $heading): array
+    private function calculateTrueWind(?float $aws, ?float $awa, ?float $stw, ?float $heading): array
     {
-        $tw = NavigationMath::calculateTrueWind($aws, $awa, $sog, $heading);
+        $tw = NavigationMath::calculateTrueWind($aws, $awa, $stw, $heading);
 
         return [
             'speed' => $tw['speed'] !== null ? $tw['speed'] * 1.94384 : null,

@@ -2,6 +2,8 @@
 
 namespace App\Console\Commands;
 
+use App\Support\NavigationMath;
+
 trait ResolvesShipLogData
 {
     private function buildLogData(array $values): array
@@ -46,19 +48,13 @@ trait ResolvesShipLogData
         return ($value !== null && $value != 0) ? $value : null;
     }
 
-    private function calculateTrueWind(?float $aws, ?float $awa, ?float $sog, ?float $heading): array
+    private function calculateTrueWind(?float $aws, ?float $awa, ?float $stw, ?float $heading): array
     {
-        if ($aws === null || $awa === null || $sog === null || $heading === null) {
-            return ['speed' => null, 'direction' => null];
-        }
-
-        $twsMs = sqrt($aws ** 2 + $sog ** 2 - 2 * $aws * $sog * cos($awa));
-        $twa = atan2($aws * sin($awa), $aws * cos($awa) - $sog);
-        $twdRad = fmod($heading + $twa + 2 * M_PI, 2 * M_PI);
+        $tw = NavigationMath::calculateTrueWind($aws, $awa, $stw, $heading);
 
         return [
-            'speed' => $twsMs * 1.94384,
-            'direction' => rad2deg($twdRad),
+            'speed' => $tw['speed'] !== null ? $tw['speed'] * 1.94384 : null,
+            'direction' => $tw['direction'] !== null ? rad2deg($tw['direction']) : null,
         ];
     }
 }

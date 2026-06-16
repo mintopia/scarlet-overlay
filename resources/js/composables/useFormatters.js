@@ -31,6 +31,19 @@ export function bearingToCardinal(deg) {
     return CARDINALS_16[Math.round(((deg % 360) + 360) % 360 / 22.5) % 16];
 }
 
+const BEAUFORT_UPPER_KNOTS = [3, 6, 10, 16, 21, 27, 33, 40, 47, 55, 63];
+
+/**
+ * Convert a wind speed in knots to its Beaufort force number (0–12).
+ * Returns null when the speed is unavailable.
+ */
+export function knotsToBeaufort(knots) {
+    if (knots == null || isNaN(knots)) return null;
+    if (knots < 1) return 0;
+    const force = BEAUFORT_UPPER_KNOTS.findIndex((max) => knots <= max);
+    return force === -1 ? 12 : force + 1;
+}
+
 export function fmtDuration(seconds) {
     if (seconds == null) return '—';
     const s = Math.abs(seconds);

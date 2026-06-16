@@ -101,6 +101,7 @@ import { ref, computed, onMounted, onUnmounted, nextTick, watch } from 'vue';
 import { router } from '@inertiajs/vue3';
 import uPlot from 'uplot';
 import 'uplot/dist/uPlot.min.css';
+import { knotsToBeaufort as toBeaufortForce } from '@/composables/useFormatters.js';
 
 const props = defineProps({
     rows: { type: Array, default: () => [] },
@@ -355,20 +356,8 @@ function degreesToCompass(deg) {
 }
 
 function knotsToBeaufort(kn) {
-    if (kn == null) return '—';
-    if (kn < 1) return '0';
-    if (kn <= 3) return '1';
-    if (kn <= 6) return '2';
-    if (kn <= 10) return '3';
-    if (kn <= 16) return '4';
-    if (kn <= 21) return '5';
-    if (kn <= 27) return '6';
-    if (kn <= 33) return '7';
-    if (kn <= 40) return '8';
-    if (kn <= 47) return '9';
-    if (kn <= 55) return '10';
-    if (kn <= 63) return '11';
-    return '12';
+    const force = toBeaufortForce(kn);
+    return force == null ? '—' : String(force);
 }
 </script>
 

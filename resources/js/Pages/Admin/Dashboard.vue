@@ -110,17 +110,25 @@
                     </div>
                 </div>
                 <div class="helm-reading">
+                    <span class="helm-reading__label" style="color: var(--color-blue)">COG</span>
+                    <div class="helm-reading__row">
+                        <span class="helm-reading__value text-blue">{{ liveBoat?.cog != null ? fmt(animCog, 0) : '—' }}</span>
+                        <span class="helm-reading__unit">°</span>
+                    </div>
+                </div>
+                <div class="helm-reading">
                     <span class="helm-reading__label" style="color: var(--color-amber)">True Wind</span>
                     <div class="helm-reading__row">
                         <span class="helm-reading__value text-amber">{{ fmt(animTws) }}</span>
                         <span class="helm-reading__unit">kn</span>
+                        <span class="helm-reading__bft" v-if="trueWindBeaufort != null">F{{ trueWindBeaufort }}</span>
                     </div>
-                    <div class="helm-reading__sub">{{ twd != null ? fmt(animTwd, 0) + '°' : '—' }}</div>
+                    <div class="helm-reading__sub">{{ twaOffBow != null ? fmt(twaOffBow, 0) + '°' : '—' }}</div>
                 </div>
                 <div class="helm-reading">
-                    <span class="helm-reading__label" style="color: var(--color-teal); opacity: 0.65">Apparent Wind</span>
+                    <span class="helm-reading__label" style="color: var(--color-pink)">Apparent Wind</span>
                     <div class="helm-reading__row">
-                        <span class="helm-reading__value" style="color: var(--color-teal); opacity: 0.65">{{ fmt(animAws) }}</span>
+                        <span class="helm-reading__value" style="color: var(--color-pink)">{{ fmt(animAws) }}</span>
                         <span class="helm-reading__unit">kn</span>
                     </div>
                     <div class="helm-reading__sub">{{ liveBoat?.wind_angle_apparent != null ? fmt(Math.abs(animAwa), 0) + '°' : '—' }}</div>
@@ -236,7 +244,7 @@ import { useKonami } from '@/composables/useKonami.js';
 import CompassRose from '@/components/Admin/CompassRose.vue';
 import LevelBar from '@/components/Admin/LevelBar.vue';
 import Sparkline from '@/components/Admin/Sparkline.vue';
-import { fmt, fmtDuration } from '@/composables/useFormatters.js';
+import { fmt, fmtDuration, knotsToBeaufort } from '@/composables/useFormatters.js';
 import { useScarletMetrics } from '@/composables/useScarletMetrics.js';
 import { useMapLayers } from '@/composables/useMapLayers.js';
 import { useSpringValue, useAngleSpring } from '@/composables/useSpringValue.js';
@@ -303,8 +311,10 @@ const animTws = useSpringValue(() => liveBoat.value?.wind_speed_true);
 const animAws = useSpringValue(() => liveBoat.value?.wind_speed_apparent);
 const animDtw = useSpringValue(() => liveBoat.value?.nav_wp_distance);
 const animHdg = useAngleSpring(() => liveBoat.value?.heading);
-const animTwd = useAngleSpring(() => liveBoat.value?.wind_direction_true);
+const animCog = useAngleSpring(() => liveBoat.value?.cog);
 const animAwa = useAngleSpring(() => liveBoat.value?.wind_angle_apparent);
+
+const trueWindBeaufort = computed(() => knotsToBeaufort(liveBoat.value?.wind_speed_true));
 
 // ── Map ──────────────────────────────────────────────────────────────────────
 const mapEl = ref(null);
@@ -330,14 +340,20 @@ onUnmounted(() => {
 });
 
 // ── Computed helpers ─────────────────────────────────────────────────────────
-const twd = computed(() => liveBoat.value?.wind_direction_true ?? null);
-
 const relativeTwa = computed(() => {
     if (liveBoat.value?.wind_angle_true != null) return liveBoat.value.wind_angle_true;
     const twdVal = liveBoat.value?.wind_direction_true;
     const hdg = liveBoat.value?.heading;
     if (twdVal == null || hdg == null) return null;
     return ((twdVal - hdg + 360) % 360);
+});
+
+// True wind angle off the bow (0–180°), matching how Apparent Wind shows |AWA|.
+const animTwa = useAngleSpring(() => relativeTwa.value);
+const twaOffBow = computed(() => {
+    if (relativeTwa.value == null) return null;
+    const m = ((animTwa.value % 360) + 360) % 360;
+    return m > 180 ? 360 - m : m;
 });
 
 
@@ -558,6 +574,15 @@ const wxGradient = computed(() => {
     font-size: 11px;
     font-weight: 500;
     color: var(--color-text-dim);
+}
+
+.helm-reading__bft {
+    font-size: 11px;
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+    color: var(--color-amber);
+    opacity: 0.75;
+    margin-left: 2px;
 }
 
 .helm-reading__sub {
