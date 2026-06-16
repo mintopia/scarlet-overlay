@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Support\NavigationMath;
 use Illuminate\Support\Collection;
 
 trait BuildsLogRows
@@ -56,9 +57,7 @@ trait BuildsLogRows
                 ? $curr['total_log'] - $prev['total_log']
                 : null;
 
-            $dmg = ($curr['wp_distance'] !== null && $prev['wp_distance'] !== null)
-                ? $prev['wp_distance'] - $curr['wp_distance']
-                : null;
+            $dmg = NavigationMath::distanceMadeGood($prev['wp_distance'], $curr['wp_distance'], $dist);
 
             if ($dist !== null && $dmg !== null) {
                 $cumDist += $dist;

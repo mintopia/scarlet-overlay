@@ -321,9 +321,7 @@ class MetricsService
                 ? $curr['trip_log'] - $prev['trip_log']
                 : null;
 
-            $dmg = ($curr['wp_distance'] !== null && $prev['wp_distance'] !== null)
-                ? $prev['wp_distance'] - $curr['wp_distance']
-                : null;
+            $dmg = NavigationMath::distanceMadeGood($prev['wp_distance'], $curr['wp_distance'], $dist);
 
             if ($dist !== null && $dmg !== null) {
                 $cumDist += $dist;

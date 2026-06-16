@@ -52,4 +52,52 @@ class NavigationMathTest extends TestCase
         $this->assertSame(['speed' => null, 'direction' => null], NavigationMath::calculateTrueWind(8.5, 0.78, null, 4.78));
         $this->assertSame(['speed' => null, 'direction' => null], NavigationMath::calculateTrueWind(8.5, 0.78, 3.1, null));
     }
+
+    public function test_distance_made_good_is_the_reduction_in_waypoint_distance(): void
+    {
+        // Closed 5nm toward the waypoint over a 5nm leg.
+        $this->assertEqualsWithDelta(5.0, NavigationMath::distanceMadeGood(17.5, 12.5, 5.0), 0.0001);
+    }
+
+    public function test_distance_made_good_is_negative_when_sailing_away(): void
+    {
+        // Tacking away: waypoint distance grew, but only within the distance sailed.
+        $this->assertEqualsWithDelta(-1.0, NavigationMath::distanceMadeGood(10.0, 11.0, 3.0), 0.0001);
+    }
+
+    public function test_distance_made_good_allows_gain_beyond_through_water_distance_from_current(): void
+    {
+        // Favourable current: 6nm made good on 4.2nm through the water is plausible, not a waypoint change.
+        $this->assertEqualsWithDelta(6.0, NavigationMath::distanceMadeGood(10.0, 4.0, 4.2), 0.0001);
+    }
+
+    public function test_distance_made_good_is_null_when_waypoint_advances_to_a_farther_point(): void
+    {
+        // Arrival: 0.2nm -> 17.5nm over a 4.6nm leg is physically impossible for a fixed point.
+        $this->assertNull(NavigationMath::distanceMadeGood(0.2, 17.5, 4.6));
+    }
+
+    public function test_distance_made_good_is_null_when_waypoint_switches_to_a_nearer_point(): void
+    {
+        // Route edit to a closer waypoint: 17nm -> 2nm over a 4nm leg is impossible for a fixed point.
+        $this->assertNull(NavigationMath::distanceMadeGood(17.0, 2.0, 4.0));
+    }
+
+    public function test_distance_made_good_tolerates_jitter_when_stationary(): void
+    {
+        // At anchor with a small waypoint-distance wobble and no distance sailed.
+        $this->assertEqualsWithDelta(0.2, NavigationMath::distanceMadeGood(5.0, 4.8, 0.0), 0.0001);
+    }
+
+    public function test_distance_made_good_is_null_when_either_reading_is_missing(): void
+    {
+        $this->assertNull(NavigationMath::distanceMadeGood(null, 12.5, 5.0));
+        $this->assertNull(NavigationMath::distanceMadeGood(17.5, null, 5.0));
+    }
+
+    public function test_distance_made_good_trusts_the_reading_when_distance_sailed_is_unknown(): void
+    {
+        // Without a distance sailed we cannot apply the physical bound, so return the raw reduction.
+        $this->assertEqualsWithDelta(2.0, NavigationMath::distanceMadeGood(10.0, 8.0, null), 0.0001);
+    }
 }
