@@ -210,6 +210,7 @@ return [
                     'metric' => 'heel',
                     'group' => 'navigation',
                     'type' => 'signed',
+                    'polarity' => ['pos' => 'Starboard', 'neg' => 'Port', 'pos_short' => 'stbd', 'neg_short' => 'port'],
                     'related' => ['pitch'],
                 ],
                 'pitch' => [
@@ -219,6 +220,7 @@ return [
                     'metric' => 'pitch',
                     'group' => 'navigation',
                     'type' => 'signed',
+                    'polarity' => ['pos' => 'Bow up', 'neg' => 'Bow down', 'pos_short' => 'up', 'neg_short' => 'down'],
                     'related' => ['heel'],
                 ],
                 'trip_log' => [
@@ -311,6 +313,7 @@ return [
                     'computed' => 'battery_power',
                     'group' => 'power',
                     'type' => 'signed',
+                    'polarity' => ['pos' => 'Charging', 'neg' => 'Discharging'],
                     'related' => ['battery_voltage', 'battery_soc', 'battery_current'],
                 ],
                 'battery_voltage' => [
@@ -329,6 +332,7 @@ return [
                     'metric' => 'house_battery_current',
                     'group' => 'power',
                     'type' => 'signed',
+                    'polarity' => ['pos' => 'Charging', 'neg' => 'Discharging'],
                     'related' => ['battery_power', 'battery_voltage'],
                 ],
                 'engine_battery_voltage' => [

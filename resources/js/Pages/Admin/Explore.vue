@@ -328,8 +328,9 @@ const fmtCurrentValue = computed(() => fmtVal(stats.value.current, props.metric.
 
 const currentUnitDisplay = computed(() => {
     if (isCompass.value) return bearingToCardinal(stats.value.current);
-    if (isSigned.value && stats.value.current != null) {
-        return stats.value.current >= 0 ? `${props.metric.unit} charging` : `${props.metric.unit} discharging`;
+    if (isSigned.value && stats.value.current != null && props.metric.polarity) {
+        const word = stats.value.current >= 0 ? props.metric.polarity.pos : props.metric.polarity.neg;
+        return `${props.metric.unit} ${word.toLowerCase()}`;
     }
     return props.metric.unit;
 });
@@ -680,7 +681,7 @@ function buildChartOpts(width) {
         series = [
             {},
             {
-                label: 'Charging',
+                label: props.metric.polarity?.pos ?? 'Positive',
                 stroke: cssVar('--color-green'),
                 fill: cssVar('--color-green') + '14',
                 width: 1.5,
@@ -689,7 +690,7 @@ function buildChartOpts(width) {
                 paths: drawSignedPath,
             },
             {
-                label: 'Discharging',
+                label: props.metric.polarity?.neg ?? 'Negative',
                 stroke: cssVar('--color-amber'),
                 fill: cssVar('--color-amber') + '14',
                 width: 1.5,

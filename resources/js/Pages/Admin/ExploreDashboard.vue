@@ -189,10 +189,10 @@ function formatValue(metric, slug) {
 function displayUnit(metric, slug) {
     if (!metric) return '';
     if (metric.type === 'compass') return bearingToCardinal(currentValues.value[slug]);
-    if (metric.type === 'signed' && metric.unit === '°') {
+    if (metric.type === 'signed' && metric.polarity?.pos_short) {
         const v = currentValues.value[slug];
         if (v == null) return '';
-        return v >= 0 ? 'stbd' : 'port';
+        return v >= 0 ? metric.polarity.pos_short : metric.polarity.neg_short;
     }
     return metric.unit || '';
 }
