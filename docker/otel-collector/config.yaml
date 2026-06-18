@@ -30,6 +30,38 @@ processors:
       datapoint:
         - 'resource.attributes["device_id"] == nil'
 
+  # Drop the EcoFlow fields we don't care about. The Delta publishes 125 BMS/runtime
+  # fields under ecoflow/<serial>_<report>/<field>; we keep only the curated subset
+  # (SOC, input/output power per channel, voltage, current, temperature, time-remaining,
+  # cycles/SOH) and drop the rest. Edit the keep-list below to adjust.
+  filter/ecoflow:
+    error_mode: ignore
+    metrics:
+      datapoint:
+        - 'IsMatch(attributes["topic"], "^ecoflow/") and not IsMatch(attributes["topic"], "/(soc|f32ShowSoc|actSoc|inputWatts|outputWatts|powInSumW|powOutSumW|powGetAc|powGetAcIn|powGet_12v|powGetTypec1|powGetTypec2|powGetQcusb1|powGetQcusb2|vol|amp|temp|remainTime|cycles|soh)$")'
+
+  # Strip inconsistent / noise labels that pollute every series and create duplicates.
+  # `key` is the worst offender (present-or-absent → duplicate series, e.g. 252 for
+  # scarlet_mqtt_value); `value`, `instance`, `service_name`, and the otel_scope_* labels
+  # add no signal. `instance` is mapped from the service.instance.id resource attribute.
+  # Meaningful labels (device_id, device_mode, gps_source, topic, path, carrier, rat, ssid…) are kept.
+  transform/normalize_labels:
+    error_mode: ignore
+    metric_statements:
+      - context: datapoint
+        statements:
+          - 'delete_key(attributes, "key")'
+          - 'delete_key(attributes, "value")'
+          - 'delete_key(attributes, "instance")'
+      - context: resource
+        statements:
+          - 'delete_key(attributes, "service.name")'
+          - 'delete_key(attributes, "service.instance.id")'
+      - context: scope
+        statements:
+          - 'set(name, "")'
+          - 'set(version, "")'
+
 exporters:
   prometheusremotewrite:
     endpoint: http://victoriametrics:8428/api/v1/write
@@ -47,5 +79,5 @@ service:
   pipelines:
     metrics:
       receivers: [otlp]
-      processors: [memory_limiter, filter/dedup, batch]
+      processors: [memory_limiter, filter/dedup, filter/ecoflow, transform/normalize_labels, batch]
       exporters: [prometheusremotewrite]
