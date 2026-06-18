@@ -2,6 +2,7 @@
 
 namespace Tests\Unit;
 
+use App\Services\CanonicalReader;
 use App\Services\MetricRegistry;
 use App\Services\MetricsService;
 use App\Services\PrometheusService;
@@ -17,6 +18,7 @@ class SunTimesTest extends TestCase
             Mockery::mock(PrometheusService::class),
             Mockery::mock(WeatherService::class),
             Mockery::mock(MetricRegistry::class),
+            Mockery::mock(CanonicalReader::class),
         );
     }
 
