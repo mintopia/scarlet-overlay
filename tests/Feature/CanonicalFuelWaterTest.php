@@ -4,6 +4,7 @@ namespace Tests\Feature;
 
 use App\Services\CanonicalReader;
 use App\Services\MetricsService;
+use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Http;
 use PHPUnit\Framework\MockObject\MockObject;
@@ -11,6 +12,8 @@ use Tests\TestCase;
 
 class CanonicalFuelWaterTest extends TestCase
 {
+    use RefreshDatabase;
+
     public function test_enabled_flag_overrides_fuel_from_canonical_reader(): void
     {
         Http::fake([
@@ -55,5 +58,50 @@ class CanonicalFuelWaterTest extends TestCase
         $boat = $service->getBoatMetrics();
 
         $this->assertArrayHasKey('wind_speed_true', $boat);
+    }
+
+    public function test_get_all_metrics_includes_canonical_block_when_enabled(): void
+    {
+        Http::fake([
+            '*' => Http::response(['status' => 'success', 'data' => ['result' => []]]),
+        ]);
+
+        Config::set('scarlet.canonical.enabled', true);
+        Config::set('scarlet.canonical.overrides', ['fuel_level' => 'fuel_level', 'water_fresh_level' => 'water_level']);
+
+        /** @var CanonicalReader&MockObject $reader */
+        $reader = $this->createMock(CanonicalReader::class);
+        $reader->method('catalogVersion')->willReturn(4);
+        $reader->method('readMany')->willReturn([
+            'fuel_level' => ['value' => 63.0, 'raw' => 63.0, 'unit' => '%', 'timestamp' => 1, 'age' => 20, 'stale' => false, 'resolved_source' => 'mqtt'],
+            'water_fresh_level' => null,
+        ]);
+        $reader->method('read')->willReturn(['value' => 63.0, 'raw' => 63.0, 'unit' => '%', 'timestamp' => 1, 'age' => 20, 'stale' => false, 'resolved_source' => 'mqtt']);
+        $this->app->instance(CanonicalReader::class, $reader);
+
+        $all = $this->app->make(MetricsService::class)->getAllMetrics();
+
+        $this->assertSame(4, $all['catalog_version']);
+        $this->assertArrayHasKey('fuel_level', $all['canonical']);
+        $this->assertEqualsWithDelta(63.0, $all['canonical']['fuel_level']['value'], 0.001);
+        $this->assertSame(20, $all['canonical']['fuel_level']['age']);
+        $this->assertArrayNotHasKey('water_fresh_level', $all['canonical']);
+    }
+
+    public function test_get_all_metrics_canonical_empty_when_disabled(): void
+    {
+        Http::fake([
+            '*' => Http::response(['status' => 'success', 'data' => ['result' => []]]),
+        ]);
+        Config::set('scarlet.canonical.enabled', false);
+
+        /** @var CanonicalReader&MockObject $reader */
+        $reader = $this->createMock(CanonicalReader::class);
+        $reader->expects($this->never())->method('readMany');
+        $this->app->instance(CanonicalReader::class, $reader);
+
+        $all = $this->app->make(MetricsService::class)->getAllMetrics();
+
+        $this->assertSame([], $all['canonical']);
     }
 }

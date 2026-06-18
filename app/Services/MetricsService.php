@@ -134,6 +134,7 @@ class MetricsService
     {
         $gps = $this->getGpsMetrics();
         $weather = $this->getWeatherData();
+        $canonical = $this->getCanonicalContracts();
 
         return [
             'boat' => $this->getBoatMetrics(),
@@ -143,7 +144,24 @@ class MetricsService
             'settings' => $this->getSettings(),
             'sun' => $this->getSunTimes($gps['latitude'] ?? null, $gps['longitude'] ?? null, $weather['timezone'] ?? 'UTC'),
             'timestamp' => now()->toIso8601String(),
+            'canonical' => $canonical['contracts'],
+            'catalog_version' => $canonical['version'],
         ];
+    }
+
+    /**
+     * @return array{contracts: array<string, array<string, mixed>>, version: int}
+     */
+    private function getCanonicalContracts(): array
+    {
+        if (! config('scarlet.canonical.enabled')) {
+            return ['contracts' => [], 'version' => 0];
+        }
+
+        $keys = array_keys(config('scarlet.canonical.overrides', []));
+        $contracts = array_filter($this->canonical->readMany($keys), fn ($c) => $c !== null);
+
+        return ['contracts' => $contracts, 'version' => $this->canonical->catalogVersion()];
     }
 
     public function getAllMetricsAt(int $timestamp): array
