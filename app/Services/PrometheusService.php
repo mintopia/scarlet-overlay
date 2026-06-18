@@ -333,6 +333,48 @@ class PrometheusService
         return $results;
     }
 
+    /**
+     * @return array<int, string>
+     */
+    public function labelValues(string $label): array
+    {
+        try {
+            $response = Http::timeout(15)->get("{$this->baseUrl}/api/v1/label/{$label}/values");
+
+            if (! $response->ok()) {
+                return [];
+            }
+
+            return $response->json('data') ?? [];
+        } catch (\Throwable $e) {
+            Log::warning("Prometheus labelValues failed [{$label}]: {$e->getMessage()}");
+
+            return [];
+        }
+    }
+
+    /**
+     * @return array<int, array<string, string>>
+     */
+    public function series(string $match): array
+    {
+        try {
+            $response = Http::timeout(30)->get("{$this->baseUrl}/api/v1/series", [
+                'match[]' => $match,
+            ]);
+
+            if (! $response->ok()) {
+                return [];
+            }
+
+            return $response->json('data') ?? [];
+        } catch (\Throwable $e) {
+            Log::warning("Prometheus series failed [{$match}]: {$e->getMessage()}");
+
+            return [];
+        }
+    }
+
     public function queryMultipleWithStatus(array $queries, int $maxAge = 120): array
     {
         $results = [];

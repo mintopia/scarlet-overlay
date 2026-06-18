@@ -175,4 +175,45 @@ class PrometheusServiceTest extends TestCase
         $result = $service->queryTimestamp('scarlet_metric');
         $this->assertEquals($dataTs, $result);
     }
+
+    public function test_label_values_returns_data_array(): void
+    {
+        Http::fake([
+            '*/api/v1/label/__name__/values*' => Http::response([
+                'status' => 'success',
+                'data' => ['scarlet_gps_latitude_deg', 'scarlet_mqtt_percent'],
+            ]),
+        ]);
+
+        $service = new PrometheusService;
+        $result = $service->labelValues('__name__');
+
+        $this->assertSame(['scarlet_gps_latitude_deg', 'scarlet_mqtt_percent'], $result);
+    }
+
+    public function test_label_values_returns_empty_on_failure(): void
+    {
+        Http::fake(['*/api/v1/label/*' => Http::response('', 500)]);
+
+        $service = new PrometheusService;
+        $this->assertSame([], $service->labelValues('job'));
+    }
+
+    public function test_series_returns_label_sets(): void
+    {
+        Http::fake([
+            '*/api/v1/series*' => Http::response([
+                'status' => 'success',
+                'data' => [
+                    ['__name__' => 'scarlet_gps_latitude_deg', 'job' => 'boat-tracker', 'gps_source' => 'onboard'],
+                ],
+            ]),
+        ]);
+
+        $service = new PrometheusService;
+        $result = $service->series('scarlet_gps_latitude_deg');
+
+        $this->assertCount(1, $result);
+        $this->assertSame('boat-tracker', $result[0]['job']);
+    }
 }
