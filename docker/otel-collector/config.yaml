@@ -38,7 +38,7 @@ processors:
     error_mode: ignore
     metrics:
       datapoint:
-        - 'IsMatch(attributes["topic"], "^ecoflow/") and not IsMatch(attributes["topic"], "/(soc|f32ShowSoc|actSoc|inputWatts|outputWatts|powInSumW|powOutSumW|powGetAc|powGetAcIn|powGet_12v|powGetTypec1|powGetTypec2|powGetQcusb1|powGetQcusb2|vol|amp|temp|remainTime|cycles|soh)$")'
+        - 'metric.name == "mqtt.value" and IsMatch(datapoint.attributes["topic"], "^ecoflow/") and not IsMatch(datapoint.attributes["topic"], "/(soc|f32ShowSoc|actSoc|inputWatts|outputWatts|powInSumW|powOutSumW|powGetAc|powGetAcIn|powGet_12v|powGetTypec1|powGetTypec2|powGetQcusb1|powGetQcusb2|vol|amp|temp|remainTime|cycles|soh)$")'
 
   # Strip inconsistent / noise labels that pollute every series and create duplicates.
   # `key` is the worst offender (present-or-absent → duplicate series, e.g. 252 for
@@ -48,19 +48,13 @@ processors:
   transform/normalize_labels:
     error_mode: ignore
     metric_statements:
-      - context: datapoint
-        statements:
-          - 'delete_key(attributes, "key")'
-          - 'delete_key(attributes, "value")'
-          - 'delete_key(attributes, "instance")'
-      - context: resource
-        statements:
-          - 'delete_key(attributes, "service.name")'
-          - 'delete_key(attributes, "service.instance.id")'
-      - context: scope
-        statements:
-          - 'set(name, "")'
-          - 'set(version, "")'
+      - delete_key(resource.attributes, "service.name")
+      - delete_key(resource.attributes, "service.instance.id")
+      - delete_key(datapoint.attributes, "key")
+      - delete_key(datapoint.attributes, "value")
+      - delete_key(datapoint.attributes, "instance")
+      - set(scope.name, "")
+      - set(scope.version, "")
 
 exporters:
   prometheusremotewrite:
