@@ -2,8 +2,12 @@
 
 namespace Tests\Feature;
 
+use App\Models\CanonicalCatalogVersion;
 use App\Models\CanonicalMetric;
+use App\Services\CanonicalCatalog;
+use App\Support\CanonicalBaseline;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Schema;
 use Tests\TestCase;
 
@@ -57,5 +61,88 @@ class CanonicalCatalogTest extends TestCase
         $this->assertCount(1, $fresh->sources);
         $this->assertSame('topic', $fresh->sources[0]->label_matchers[0]['label']);
         $this->assertSame('multiply', $fresh->sources[0]->unit_transform[0]['op']);
+    }
+
+    public function test_apply_baseline_seeds_and_compiles_definition(): void
+    {
+        $catalog = app(CanonicalCatalog::class);
+        $version = $catalog->applyBaseline(CanonicalBaseline::definitions(), 'seed', 'test');
+
+        $this->assertSame(1, $version);
+
+        $def = $catalog->definition('fuel_level');
+        $this->assertSame('%', $def['unit']);
+        $this->assertTrue($def['volatile']);
+        $this->assertSame(3600, $def['staleness']);
+        $this->assertSame('scarlet_signalk_tanks_fuel_0_currentLevel', $def['sources'][0]['selector']);
+        $this->assertSame(1800, $def['sources'][0]['staleness']);
+        $this->assertSame([['op' => 'multiply', 'value' => 100]], $def['sources'][0]['transforms']);
+        $this->assertSame('scarlet_mqtt_percent{topic="tanklevel"}', $def['sources'][1]['selector']);
+    }
+
+    public function test_definition_null_for_unknown_or_disabled(): void
+    {
+        $catalog = app(CanonicalCatalog::class);
+        $catalog->applyBaseline(CanonicalBaseline::definitions(), 'seed', 'test'); // v1, cache warm
+
+        $this->assertNull($catalog->definition('does_not_exist'));
+
+        CanonicalMetric::create([
+            'key' => 'disabled_demo', 'label' => 'Disabled', 'storage_unit' => 'x', 'display_unit' => 'x',
+            'staleness_threshold_s' => 3600, 'coverage_window_s' => 3600, 'coverage_min' => 0.5, 'enabled' => false,
+        ]);
+        Cache::flush(); // force recompute of all()
+
+        $this->assertNull(app(CanonicalCatalog::class)->definition('disabled_demo'));
+        $this->assertNotNull(app(CanonicalCatalog::class)->definition('fuel_level'));
+    }
+
+    public function test_apply_baseline_is_idempotent_no_version_bump_when_unchanged(): void
+    {
+        $catalog = app(CanonicalCatalog::class);
+        $v1 = $catalog->applyBaseline(CanonicalBaseline::definitions(), 'seed', 'test');
+        $v2 = $catalog->applyBaseline(CanonicalBaseline::definitions(), 'seed', 'test');
+
+        $this->assertSame($v1, $v2);
+        $this->assertSame(1, CanonicalCatalogVersion::count());
+    }
+
+    public function test_mutation_bumps_version_and_busts_cache(): void
+    {
+        $catalog = app(CanonicalCatalog::class);
+        $catalog->applyBaseline(CanonicalBaseline::definitions(), 'seed', 'test');
+        $this->assertSame(3600, $catalog->definition('fuel_level')['staleness']);
+
+        $defs = CanonicalBaseline::definitions();
+        foreach ($defs as &$d) {
+            if ($d['key'] === 'fuel_level') {
+                $d['staleness_threshold_s'] = 1200;
+            }
+        }
+        unset($d);
+        $v2 = $catalog->applyBaseline($defs, 'edit', 'test');
+
+        $this->assertSame(2, $v2);
+        $this->assertSame(1200, $catalog->definition('fuel_level')['staleness']);
+    }
+
+    public function test_rollback_restores_prior_snapshot_as_new_version(): void
+    {
+        $catalog = app(CanonicalCatalog::class);
+        $catalog->applyBaseline(CanonicalBaseline::definitions(), 'seed', 'test');
+
+        $defs = CanonicalBaseline::definitions();
+        foreach ($defs as &$d) {
+            if ($d['key'] === 'fuel_level') {
+                $d['staleness_threshold_s'] = 1200;
+            }
+        }
+        unset($d);
+        $catalog->applyBaseline($defs, 'edit', 'test');
+
+        $v3 = $catalog->rollback(1, 'test');
+
+        $this->assertSame(3, $v3);
+        $this->assertSame(3600, $catalog->definition('fuel_level')['staleness']);
     }
 }
