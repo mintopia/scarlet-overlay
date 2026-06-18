@@ -40,6 +40,8 @@ class MetricsPushCommand extends Command
                     $all['settings'],
                     $all['sun'],
                     $all['timestamp'],
+                    $all['canonical'],
+                    $all['catalog_version'],
                 );
                 $this->line('Pushed metrics at '.$all['timestamp']);
 

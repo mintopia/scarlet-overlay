@@ -18,6 +18,8 @@ class MetricsUpdated implements ShouldBroadcastNow
         public array $settings,
         public ?array $sun,
         public string $timestamp,
+        public array $canonical = [],
+        public int $catalogVersion = 0,
     ) {}
 
     public function broadcastOn(): Channel
