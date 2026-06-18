@@ -51,6 +51,25 @@ class CanonicalReader
     }
 
     /**
+     * @param  array<int, string>  $keys
+     * @return array<string, array<string, mixed>|null>
+     */
+    public function readMany(array $keys): array
+    {
+        $out = [];
+        foreach ($keys as $key) {
+            $out[$key] = $this->read($key);
+        }
+
+        return $out;
+    }
+
+    public function catalogVersion(): int
+    {
+        return $this->catalog->version();
+    }
+
+    /**
      * @param  array<string, mixed>  $def
      * @param  array<string, mixed>  $source
      * @param  array{value: float, timestamp: int, age: int}  $raw

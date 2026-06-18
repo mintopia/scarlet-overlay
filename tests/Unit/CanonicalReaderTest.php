@@ -187,6 +187,37 @@ class CanonicalReaderTest extends TestCase
         ]), 0.001);
     }
 
+    public function test_read_many_returns_contract_per_key(): void
+    {
+        $p = $this->createMock(PrometheusService::class);
+        $p->method('queryWithTimestamp')->willReturn(['value' => 63.0, 'timestamp' => 1716000000, 'age' => 20]);
+        $p->method('coverageRatio')->willReturn(0.9);
+
+        $catalog = $this->createMock(CanonicalCatalog::class);
+        $catalog->method('definition')->willReturnMap([
+            ['fuel_level', [
+                'label' => 'Diesel', 'unit' => '%', 'volatile' => false, 'trend_fn' => 'median', 'trend_window' => '10m',
+                'staleness' => 3600, 'coverage_window_seconds' => 3600, 'coverage_min' => 0.5,
+                'sources' => [['selector' => 'scarlet_mqtt_percent{topic="tanklevel"}']],
+            ]],
+        ]);
+
+        $reader = new CanonicalReader($p, $catalog);
+        $result = $reader->readMany(['fuel_level', 'missing_key']);
+
+        $this->assertEqualsWithDelta(63.0, $result['fuel_level']['value'], 0.001);
+        $this->assertNull($result['missing_key']);
+    }
+
+    public function test_catalog_version_delegates_to_catalog(): void
+    {
+        $catalog = $this->createMock(CanonicalCatalog::class);
+        $catalog->method('version')->willReturn(7);
+
+        $reader = new CanonicalReader($this->createMock(PrometheusService::class), $catalog);
+        $this->assertSame(7, $reader->catalogVersion());
+    }
+
     private function invokeApplyArithmetic(CanonicalReader $reader, float $value, array $source): float
     {
         $ref = new \ReflectionMethod($reader, 'applyArithmetic');
