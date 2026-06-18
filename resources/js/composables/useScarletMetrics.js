@@ -18,6 +18,7 @@ export function useScarletMetrics(options = {}) {
 
     // ── Reactive state ──────────────────────────────────────────────────
     const boat = ref(initialMetrics?.boat ?? {});
+    const canonical = ref(initialMetrics?.canonical ?? {});
     const gps = ref(initialMetrics?.gps ?? {});
     const weather = ref(initialMetrics?.weather ?? null);
     const sun = ref(options.initialSun ?? null);
@@ -235,6 +236,7 @@ export function useScarletMetrics(options = {}) {
                 }
             }
             boat.value = merged;
+            if (data.canonical) canonical.value = data.canonical;
             staleKeys.value = newStale;
             gps.value = data.gps;
             if (data.weather) weather.value = data.weather;
@@ -265,7 +267,7 @@ export function useScarletMetrics(options = {}) {
     onUnmounted(cleanup);
 
     return {
-        boat, gps, weather, sun, lastUpdate, staleKeys,
+        boat, gps, weather, sun, lastUpdate, staleKeys, canonical,
         clock, clockDate,
         coordText, isOffline, statusText, statusClass, lastUpdateText,
         wxTemp, wxCondition, wxIcon, wxSeaTemp, wxWindSpeed, wxWindDir, wxWaveHeight, wxWavePeriod,

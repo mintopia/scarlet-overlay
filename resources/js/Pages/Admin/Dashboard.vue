@@ -149,8 +149,20 @@
                 </div>
                 <div class="space-y-2.5 mb-3">
                     <LevelBar :value="batteryPct" label="Battery" color="green" />
-                    <LevelBar :value="fuelLevel" label="Fuel" color="amber" />
-                    <LevelBar :value="waterLevel" label="Water" color="blue" />
+                    <LevelBar
+                        :value="fuelLevel"
+                        label="Fuel"
+                        color="amber"
+                        :age="canonical?.fuel_level?.age ?? null"
+                        :stale="canonical?.fuel_level?.stale ?? false"
+                    />
+                    <LevelBar
+                        :value="waterLevel"
+                        label="Water"
+                        color="blue"
+                        :age="canonical?.water_fresh_level?.age ?? null"
+                        :stale="canonical?.water_fresh_level?.stale ?? false"
+                    />
                 </div>
                 <div>
                     <div class="flex items-baseline justify-between mb-1">
@@ -295,6 +307,7 @@ const {
     clockDate,
     initMap,
     addMapTarget,
+    canonical,
 } = useScarletMetrics({
     initialMetrics: { boat: props.boat, gps: props.gps, weather: props.weather, settings: props.settings },
     initialSun: props.sun,
