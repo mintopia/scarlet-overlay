@@ -6,14 +6,17 @@ namespace App\Services;
 
 class CanonicalReader
 {
-    public function __construct(protected PrometheusService $prometheus) {}
+    public function __construct(
+        protected PrometheusService $prometheus,
+        protected CanonicalCatalog $catalog,
+    ) {}
 
     /**
      * @return array{value: float, raw: float, unit: string, timestamp: int, age: int, stale: bool, resolved_source: string}|null
      */
     public function read(string $key): ?array
     {
-        $def = config("scarlet.canonical.metrics.{$key}");
+        $def = $this->catalog->definition($key);
         if ($def === null) {
             return null;
         }
@@ -80,6 +83,14 @@ class CanonicalReader
      */
     private function applyArithmetic(float $value, array $source): float
     {
+        if (! empty($source['transforms'])) {
+            foreach ($source['transforms'] as $t) {
+                $value = $this->applyOp($value, (string) $t['op'], (float) $t['value']);
+            }
+
+            return $value;
+        }
+
         if (isset($source['multiply'])) {
             $value *= $source['multiply'];
         }
@@ -91,5 +102,16 @@ class CanonicalReader
         }
 
         return $value;
+    }
+
+    private function applyOp(float $value, string $op, float $operand): float
+    {
+        return match ($op) {
+            'multiply' => $value * $operand,
+            'divide' => $operand !== 0.0 ? $value / $operand : $value,
+            'subtract' => $value - $operand,
+            'add' => $value + $operand,
+            default => $value,
+        };
     }
 }
