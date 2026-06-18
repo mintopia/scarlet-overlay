@@ -22,5 +22,7 @@ class DatabaseSeeder extends Seeder
         BoatSetting::setValue('passage_from', '');
         BoatSetting::setValue('passage_to', '');
         BoatSetting::setValue('port_name', '');
+
+        $this->call(CanonicalCatalogSeeder::class);
     }
 }

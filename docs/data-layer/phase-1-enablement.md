@@ -13,3 +13,5 @@ source chain (SignalK preferred → MQTT fallback). It is OFF by default.
   ≥ `coverage_min`). Otherwise falls through; if nothing is fresh, shows the last-known value flagged stale.
 - Volatile metrics (fuel/water) display a 10-minute median; `age`/`timestamp` come from the latest raw sample.
 - This is the seed for the Phase 2 DB catalog; the config shape mirrors the planned schema.
+- As of Phase 2, the canonical definitions live in the DB catalog (seeded from `CanonicalBaseline`), not
+  `config/scarlet.php`. See `docs/data-layer/phase-2-catalog.md`.

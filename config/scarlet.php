@@ -519,36 +519,8 @@ return [
     'canonical' => [
         'enabled' => (bool) env('CANONICAL_READER_ENABLED', false),
 
-        'metrics' => [
-            'fuel_level' => [
-                'label' => 'Diesel',
-                'unit' => '%',
-                'volatile' => true,
-                'trend_fn' => 'median',
-                'trend_window' => '10m',
-                'staleness' => 3600,
-                'coverage_window_seconds' => 3600,
-                'coverage_min' => 0.5,
-                'sources' => [
-                    ['selector' => 'scarlet_signalk_tanks_fuel_0_currentLevel', 'multiply' => 100, 'class' => 'both', 'staleness' => 1800],
-                    ['selector' => 'scarlet_mqtt_percent{topic="tanklevel"}', 'class' => 'both'],
-                ],
-            ],
-            'water_fresh_level' => [
-                'label' => 'Fresh Water',
-                'unit' => '%',
-                'volatile' => true,
-                'trend_fn' => 'median',
-                'trend_window' => '10m',
-                'staleness' => 3600,
-                'coverage_window_seconds' => 3600,
-                'coverage_min' => 0.5,
-                'sources' => [
-                    ['selector' => 'scarlet_signalk_tanks_freshWater_0_currentLevel', 'multiply' => 100, 'class' => 'both', 'staleness' => 1800],
-                    ['selector' => 'scarlet_mqtt_percent{topic="watertank"}', 'class' => 'both'],
-                ],
-            ],
-        ],
+        // EcoFlow Delta device serial — typed param substituted into canonical EcoFlow source topics.
+        'ecoflow_serial' => env('CANONICAL_ECOFLOW_SERIAL', 'P231ZE1APJ3P0446'),
 
         // Maps a canonical key onto the legacy boat-metric key it overrides when the reader is enabled.
         'overrides' => [

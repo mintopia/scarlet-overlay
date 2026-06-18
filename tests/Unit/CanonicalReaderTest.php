@@ -2,42 +2,30 @@
 
 namespace Tests\Unit;
 
+use App\Services\CanonicalCatalog;
 use App\Services\CanonicalReader;
 use App\Services\PrometheusService;
-use Illuminate\Support\Facades\Config;
 use PHPUnit\Framework\MockObject\MockObject;
 use Tests\TestCase;
 
 class CanonicalReaderTest extends TestCase
 {
-    public function test_baseline_defines_fuel_and_water_chains(): void
-    {
-        $metrics = config('scarlet.canonical.metrics');
-
-        $this->assertArrayHasKey('fuel_level', $metrics);
-        $this->assertArrayHasKey('water_fresh_level', $metrics);
-
-        $fuelSources = array_column($metrics['fuel_level']['sources'], 'selector');
-        $this->assertSame('scarlet_signalk_tanks_fuel_0_currentLevel', $fuelSources[0]);
-        $this->assertSame('scarlet_mqtt_percent{topic="tanklevel"}', $fuelSources[1]);
-
-        $this->assertTrue($metrics['fuel_level']['volatile']);
-        $this->assertFalse(config('scarlet.canonical.enabled'));
-    }
-
     private function reader(PrometheusService $prometheus): CanonicalReader
     {
-        Config::set('scarlet.canonical.metrics.fuel_level', [
-            'label' => 'Diesel', 'unit' => '%', 'volatile' => false,
-            'trend_fn' => 'median', 'trend_window' => '10m',
-            'staleness' => 3600, 'coverage_window_seconds' => 3600, 'coverage_min' => 0.5,
-            'sources' => [
-                ['selector' => 'scarlet_signalk_tanks_fuel_0_currentLevel', 'multiply' => 100, 'staleness' => 1800],
-                ['selector' => 'scarlet_mqtt_percent{topic="tanklevel"}'],
-            ],
+        $catalog = $this->createMock(CanonicalCatalog::class);
+        $catalog->method('definition')->willReturnMap([
+            ['fuel_level', [
+                'label' => 'Diesel', 'unit' => '%', 'volatile' => false,
+                'trend_fn' => 'median', 'trend_window' => '10m',
+                'staleness' => 3600, 'coverage_window_seconds' => 3600, 'coverage_min' => 0.5,
+                'sources' => [
+                    ['selector' => 'scarlet_signalk_tanks_fuel_0_currentLevel', 'transforms' => [['op' => 'multiply', 'value' => 100]], 'staleness' => 1800],
+                    ['selector' => 'scarlet_mqtt_percent{topic="tanklevel"}'],
+                ],
+            ]],
         ]);
 
-        return new CanonicalReader($prometheus);
+        return new CanonicalReader($prometheus, $catalog);
     }
 
     public function test_uses_preferred_source_when_fresh_and_healthy(): void
@@ -121,20 +109,14 @@ class CanonicalReaderTest extends TestCase
         /** @var PrometheusService&MockObject $p */
         $p = $this->createMock(PrometheusService::class);
 
-        $this->assertNull((new CanonicalReader($p))->read('does_not_exist'));
+        $catalog = $this->createMock(CanonicalCatalog::class);
+        $catalog->method('definition')->willReturn(null);
+
+        $this->assertNull((new CanonicalReader($p, $catalog))->read('does_not_exist'));
     }
 
     public function test_volatile_value_is_median_but_age_is_from_raw_sample(): void
     {
-        Config::set('scarlet.canonical.metrics.water_fresh_level', [
-            'label' => 'Fresh Water', 'unit' => '%', 'volatile' => true,
-            'trend_fn' => 'median', 'trend_window' => '10m',
-            'staleness' => 3600, 'coverage_window_seconds' => 3600, 'coverage_min' => 0.5,
-            'sources' => [
-                ['selector' => 'scarlet_mqtt_percent{topic="watertank"}'],
-            ],
-        ]);
-
         /** @var PrometheusService&MockObject $p */
         $p = $this->createMock(PrometheusService::class);
         // Latest raw sample is a slosh spike (95) at age 12; median over window is the real level (61).
@@ -142,11 +124,74 @@ class CanonicalReaderTest extends TestCase
         $p->method('coverageRatio')->willReturn(0.9);
         $p->method('aggregateOverTime')->willReturn(61.0);
 
-        $result = (new CanonicalReader($p))->read('water_fresh_level');
+        $catalog = $this->createMock(CanonicalCatalog::class);
+        $catalog->method('definition')->willReturnMap([
+            ['water_fresh_level', [
+                'label' => 'Fresh Water', 'unit' => '%', 'volatile' => true,
+                'trend_fn' => 'median', 'trend_window' => '10m',
+                'staleness' => 3600, 'coverage_window_seconds' => 3600, 'coverage_min' => 0.5,
+                'sources' => [
+                    ['selector' => 'scarlet_mqtt_percent{topic="watertank"}'],
+                ],
+            ]],
+        ]);
+
+        $result = (new CanonicalReader($p, $catalog))->read('water_fresh_level');
 
         $this->assertEqualsWithDelta(61.0, $result['value'], 0.001); // smoothed
         $this->assertEqualsWithDelta(95.0, $result['raw'], 0.001);   // raw last sample
         $this->assertSame(12, $result['age']);                       // age from raw sample
         $this->assertFalse($result['stale']);
+    }
+
+    public function test_applies_ordered_transforms_in_sequence(): void
+    {
+        $reader = new CanonicalReader(
+            $this->createMock(PrometheusService::class),
+            $this->createMock(CanonicalCatalog::class),
+        );
+
+        // (300 - 273.15) * 2 = 53.70
+        $value = $this->invokeApplyArithmetic($reader, 300.0, [
+            'transforms' => [['op' => 'subtract', 'value' => 273.15], ['op' => 'multiply', 'value' => 2]],
+        ]);
+        $this->assertEqualsWithDelta(53.70, $value, 0.001);
+    }
+
+    public function test_legacy_scalar_transform_keys_still_work(): void
+    {
+        $reader = new CanonicalReader(
+            $this->createMock(PrometheusService::class),
+            $this->createMock(CanonicalCatalog::class),
+        );
+
+        $value = $this->invokeApplyArithmetic($reader, 0.42, ['multiply' => 100]);
+        $this->assertEqualsWithDelta(42.0, $value, 0.001);
+    }
+
+    public function test_ordered_transforms_add_and_divide_by_zero_guard(): void
+    {
+        $reader = new CanonicalReader(
+            $this->createMock(PrometheusService::class),
+            $this->createMock(CanonicalCatalog::class),
+        );
+
+        // add: 50 + 10 = 60
+        $this->assertEqualsWithDelta(60.0, $this->invokeApplyArithmetic($reader, 50.0, [
+            'transforms' => [['op' => 'add', 'value' => 10]],
+        ]), 0.001);
+
+        // divide by zero is guarded -> identity (value unchanged)
+        $this->assertEqualsWithDelta(50.0, $this->invokeApplyArithmetic($reader, 50.0, [
+            'transforms' => [['op' => 'divide', 'value' => 0]],
+        ]), 0.001);
+    }
+
+    private function invokeApplyArithmetic(CanonicalReader $reader, float $value, array $source): float
+    {
+        $ref = new \ReflectionMethod($reader, 'applyArithmetic');
+        $ref->setAccessible(true);
+
+        return $ref->invoke($reader, $value, $source);
     }
 }
