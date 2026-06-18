@@ -353,6 +353,51 @@ class PrometheusService
         }
     }
 
+    public function aggregateOverTime(string $selector, string $fn, string $window): ?float
+    {
+        $allowed = ['median', 'avg', 'min', 'max'];
+        if (! in_array($fn, $allowed, true)) {
+            return null;
+        }
+
+        return $this->instantScalar("{$fn}_over_time({$selector}[{$window}])");
+    }
+
+    public function coverageRatio(string $selector, int $windowSeconds, int $stepSeconds = 15): ?float
+    {
+        if ($stepSeconds <= 0 || $windowSeconds <= 0) {
+            return null;
+        }
+
+        $count = $this->instantScalar("count_over_time({$selector}[{$windowSeconds}s])");
+        if ($count === null) {
+            return null;
+        }
+
+        $expected = $windowSeconds / $stepSeconds;
+
+        return min(1.0, $count / $expected);
+    }
+
+    private function instantScalar(string $promql): ?float
+    {
+        try {
+            $response = Http::timeout(5)->get("{$this->baseUrl}/api/v1/query", ['query' => $promql]);
+
+            if (! $response->ok()) {
+                return null;
+            }
+
+            $result = $response->json('data.result');
+
+            return ! empty($result) ? (float) $result[0]['value'][1] : null;
+        } catch (\Throwable $e) {
+            Log::warning("Prometheus instantScalar failed [{$promql}]: {$e->getMessage()}");
+
+            return null;
+        }
+    }
+
     /**
      * @return array<int, array<string, string>>
      */

@@ -216,4 +216,64 @@ class PrometheusServiceTest extends TestCase
         $this->assertCount(1, $result);
         $this->assertSame('boat-tracker', $result[0]['job']);
     }
+
+    public function test_aggregate_over_time_returns_value(): void
+    {
+        Http::fake([
+            '*/api/v1/query*' => Http::response([
+                'status' => 'success',
+                'data' => ['resultType' => 'vector', 'result' => [['value' => [1716000000, '42.5']]]],
+            ]),
+        ]);
+
+        $service = new PrometheusService;
+        $result = $service->aggregateOverTime('scarlet_mqtt_percent{topic="watertank"}', 'median', '10m');
+
+        $this->assertEquals(42.5, $result);
+    }
+
+    public function test_coverage_ratio_is_count_over_expected_capped_at_one(): void
+    {
+        // 120 samples observed; window 3600s / step 15s = 240 expected -> 0.5
+        Http::fake([
+            '*/api/v1/query*' => Http::response([
+                'status' => 'success',
+                'data' => ['resultType' => 'vector', 'result' => [['value' => [1716000000, '120']]]],
+            ]),
+        ]);
+
+        $service = new PrometheusService;
+        $ratio = $service->coverageRatio('scarlet_mqtt_percent{topic="watertank"}', 3600, 15);
+
+        $this->assertEqualsWithDelta(0.5, $ratio, 0.001);
+    }
+
+    public function test_coverage_ratio_caps_at_one_when_oversampled(): void
+    {
+        // 300 observed; window 3600s / step 15s = 240 expected -> raw 1.25, capped to 1.0
+        Http::fake([
+            '*/api/v1/query*' => Http::response([
+                'status' => 'success',
+                'data' => ['resultType' => 'vector', 'result' => [['value' => [1716000000, '300']]]],
+            ]),
+        ]);
+
+        $service = new PrometheusService;
+        $ratio = $service->coverageRatio('scarlet_mqtt_percent{topic="watertank"}', 3600, 15);
+
+        $this->assertEqualsWithDelta(1.0, $ratio, 0.001);
+    }
+
+    public function test_coverage_ratio_null_when_no_data(): void
+    {
+        Http::fake([
+            '*/api/v1/query*' => Http::response([
+                'status' => 'success',
+                'data' => ['resultType' => 'vector', 'result' => []],
+            ]),
+        ]);
+
+        $service = new PrometheusService;
+        $this->assertNull($service->coverageRatio('scarlet_absent', 3600, 15));
+    }
 }
