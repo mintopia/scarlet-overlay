@@ -1,13 +1,13 @@
 <template>
     <div class="ms-wrap" @keydown.escape="close">
         <input
-            ref="inputRef"
             v-model="query"
             type="text"
             class="field-input"
             :placeholder="placeholder"
             autocomplete="off"
             @focus="open = true"
+            @blur="close"
             @input="open = true; highlight = 0"
             @keydown.down.prevent="move(1)"
             @keydown.up.prevent="move(-1)"
@@ -41,8 +41,6 @@ const emit = defineEmits(['select']);
 const query = ref('');
 const open = ref(false);
 const highlight = ref(0);
-const inputRef = ref(null);
-
 const filtered = computed(() => {
     const q = query.value.trim().toLowerCase();
     const list = q

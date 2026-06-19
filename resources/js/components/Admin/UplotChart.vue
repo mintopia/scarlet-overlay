@@ -42,7 +42,13 @@ function buildOptions() {
     const axisColor = cssVar('--color-text-dim', '#888');
     const gridColor = cssVar('--color-border-light', '#eee');
     const hasRight = props.series.some((s) => s.axis === 'right');
-    const palette = ['var(--color-scarlet)', 'var(--color-teal)', 'var(--color-blue)', 'var(--color-amber)', 'var(--color-green)'];
+    const palette = [
+        cssVar('--color-scarlet', '#c0392b'),
+        cssVar('--color-teal', '#1abc9c'),
+        cssVar('--color-blue', '#2980b9'),
+        cssVar('--color-amber', '#f39c12'),
+        cssVar('--color-green', '#27ae60'),
+    ];
 
     const axes = [
         { stroke: axisColor, grid: { stroke: gridColor, width: 1 }, ticks: { stroke: gridColor } },
