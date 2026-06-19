@@ -229,6 +229,7 @@ const ecoflowRemDisplay = computed(() => {
 <style scoped>
 .tech-dash {
     max-width: 1100px;
+    margin: 0 auto;
 }
 
 /* ── Metric → data-explorer links ───────────────────────────────────────────── */

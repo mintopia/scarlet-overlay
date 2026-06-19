@@ -707,6 +707,7 @@ const etaDisplay = computed(() => {
 /* ── Shell ─────────────────────────────────────────────────────────────────── */
 .ops-dash {
     max-width: 1100px;
+    margin: 0 auto;
     font-family: 'DM Sans', sans-serif;
 }
 
