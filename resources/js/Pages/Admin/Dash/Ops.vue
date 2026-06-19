@@ -33,10 +33,6 @@
                                     class="metric-link ops-sys__soc ops-sys__soc--house"
                                     :class="{ 'ops-stale': stale('house_battery_soc') }"
                                 >{{ houseSocDisplay }}</Link>
-                                <span class="ops-sys__rem">
-                                    <span class="ops-sys__rem-lab">runtime</span>
-                                    <span class="ops-sys__rem-val">~18 h</span>
-                                </span>
                             </div>
                             <div class="ops-sys__det" :class="{ 'ops-stale': stale('house_battery_voltage') }">
                                 <b>{{ houseVoltDisplay }}</b> V ·
@@ -184,8 +180,8 @@
                     <!-- Current outside weather cell -->
                     <div class="ops-wnow">
                         <svg width="50" height="50" viewBox="0 0 40 40" aria-hidden="true">
-                            <circle cx="15" cy="14" r="6.5" fill="oklch(0.82 0.14 78)"/>
-                            <g fill="oklch(0.87 0.022 235)">
+                            <circle cx="15" cy="14" r="6.5" fill="var(--color-amber)"/>
+                            <g fill="var(--color-border-light)">
                                 <circle cx="17" cy="25" r="6"/>
                                 <circle cx="25" cy="23" r="7.5"/>
                                 <rect x="12" y="23" width="19" height="9" rx="4.5"/>
@@ -206,7 +202,7 @@
                         label="Forepeak"
                         :temperature="val('cabin_temp_forepeak')"
                         :humidity="val('cabin_humidity_forepeak')"
-                        color="oklch(0.6 0.14 60)"
+                        color="var(--color-amber)"
                         :min="5"
                         :max="40"
                     />
@@ -214,7 +210,7 @@
                         label="Quarterberth"
                         :temperature="val('cabin_temp_quarterberth')"
                         :humidity="val('cabin_humidity_quarterberth')"
-                        color="oklch(0.62 0.12 85)"
+                        color="var(--color-amber)"
                         :min="5"
                         :max="40"
                     />
@@ -222,7 +218,7 @@
                         label="Main Cabin"
                         :temperature="val('cabin_temp_main')"
                         :humidity="val('cabin_humidity_main')"
-                        color="oklch(0.6 0.15 45)"
+                        color="var(--color-amber)"
                         :min="5"
                         :max="40"
                     />
@@ -232,7 +228,7 @@
                         label="Sea"
                         :temperature="val('water_temp')"
                         :humidity="null"
-                        color="oklch(0.5 0.14 245)"
+                        color="var(--color-blue)"
                         :min="0"
                         :max="30"
                     />
@@ -295,8 +291,8 @@
                             <div class="ops-wfc__p">
                                 <span class="ops-wfc__ph">Now</span>
                                 <svg width="30" height="30" viewBox="0 0 28 28" aria-hidden="true">
-                                    <circle cx="10" cy="9" r="4.5" fill="oklch(0.82 0.14 78)"/>
-                                    <g fill="oklch(0.87 0.022 235)">
+                                    <circle cx="10" cy="9" r="4.5" fill="var(--color-amber)"/>
+                                    <g fill="var(--color-border-light)">
                                         <circle cx="12" cy="17" r="4.5"/>
                                         <circle cx="18" cy="16" r="5.5"/>
                                         <rect x="8" y="16" width="14" height="6.5" rx="3.25"/>
@@ -728,8 +724,8 @@ const etaDisplay = computed(() => {
     display: inline-flex;
     align-items: center;
     gap: 7px;
-    background: oklch(0.92 0.05 150);
-    color: oklch(0.28 0.1 150);
+    background: var(--color-green-bg);
+    color: var(--color-green);
     font-size: 11px;
     font-weight: 800;
     letter-spacing: 1px;
@@ -742,7 +738,7 @@ const etaDisplay = computed(() => {
     width: 7px;
     height: 7px;
     border-radius: 50%;
-    background: oklch(0.45 0.16 150);
+    background: var(--color-green);
 }
 
 .ops-hdot {
@@ -759,7 +755,7 @@ const etaDisplay = computed(() => {
     width: 7px;
     height: 7px;
     border-radius: 50%;
-    background: oklch(0.45 0.16 150);
+    background: var(--color-green);
 }
 
 .ops-passage {
@@ -838,8 +834,8 @@ const etaDisplay = computed(() => {
     line-height: 0.85;
 }
 
-.ops-sys__soc--house { color: oklch(0.45 0.16 150); }
-.ops-sys__soc--eco   { color: oklch(0.42 0.14 178); }
+.ops-sys__soc--house { color: var(--color-green); }
+.ops-sys__soc--eco   { color: var(--color-teal); }
 
 .ops-sys__rem {
     display: flex;
@@ -878,7 +874,7 @@ const etaDisplay = computed(() => {
     color: var(--color-text-secondary);
 }
 
-.ops-chg { color: oklch(0.34 0.11 150); font-weight: 600; }
+.ops-chg { color: var(--color-green); font-weight: 600; }
 .ops-dis { color: var(--color-scarlet); font-weight: 600; }
 
 .ops-chart {
@@ -950,8 +946,8 @@ const etaDisplay = computed(() => {
     font-size: 24px;
 }
 
-.ops-tank__pct--fuel  { color: oklch(0.48 0.17 70); }
-.ops-tank__pct--water { color: oklch(0.42 0.14 245); }
+.ops-tank__pct--fuel  { color: var(--color-amber); }
+.ops-tank__pct--water { color: var(--color-blue); }
 
 .ops-tank__days {
     font-family: 'Nunito Sans', sans-serif;
@@ -1081,8 +1077,8 @@ const etaDisplay = computed(() => {
     color: var(--color-text-primary);
 }
 
-.ops-wcol__v--amber { color: oklch(0.48 0.17 70); }
-.ops-wcol__v--blue  { color: oklch(0.42 0.14 245); }
+.ops-wcol__v--amber { color: var(--color-amber); }
+.ops-wcol__v--blue  { color: var(--color-blue); }
 
 /* Forecast cells */
 .ops-wfc__cells {
@@ -1139,7 +1135,7 @@ const etaDisplay = computed(() => {
 .ops-wfc__pw {
     font-size: 9px;
     font-weight: 600;
-    color: oklch(0.48 0.17 70);
+    color: var(--color-amber);
 }
 
 .ops-wfc__pw--dim {
@@ -1165,7 +1161,7 @@ const etaDisplay = computed(() => {
     position: relative;
     overflow: hidden;
     border: 1px solid var(--color-border);
-    background: linear-gradient(165deg, oklch(0.9 0.035 215), oklch(0.84 0.05 205));
+    background: linear-gradient(165deg, var(--color-teal-bg), var(--color-teal-bg));
 }
 
 /* Leaflet container fills the card */
@@ -1180,11 +1176,11 @@ const etaDisplay = computed(() => {
 .ops-cmap__chip {
     position: absolute;
     z-index: 10;
-    background: oklch(0.99 0.004 205 / 0.92);
+    background: var(--color-surface);
     border: 1px solid var(--color-border);
     border-radius: 10px;
     padding: 6px 10px;
-    box-shadow: 0 2px 8px oklch(0.2 0.02 205 / 0.1);
+    box-shadow: var(--shadow-sm);
     font-size: 10px;
     font-weight: 700;
     color: var(--color-text-secondary);
@@ -1242,9 +1238,9 @@ const etaDisplay = computed(() => {
     color: var(--color-text-primary);
 }
 
-.ops-sdrow__v--teal  { color: oklch(0.42 0.14 178); }
-.ops-sdrow__v--amber { color: oklch(0.48 0.17 70); }
-.ops-sdrow__v--blue  { color: oklch(0.42 0.14 245); }
+.ops-sdrow__v--teal  { color: var(--color-teal); }
+.ops-sdrow__v--amber { color: var(--color-amber); }
+.ops-sdrow__v--blue  { color: var(--color-blue); }
 
 /* ── Stale state ───────────────────────────────────────────────────────────── */
 .ops-stale {

@@ -16,10 +16,24 @@ const props = defineProps({
 const hostRef = ref(null);
 const chart = shallowRef(null);
 let resizeObserver = null;
+let themeObserver = null;
 
 function cssVar(name, fallback) {
     const v = getComputedStyle(document.documentElement).getPropertyValue(name).trim();
     return v || fallback;
+}
+
+/**
+ * Resolve a caller-supplied color to a concrete value before it reaches the
+ * canvas. uPlot draws to <canvas>, which cannot resolve CSS var() tokens, so a
+ * series color passed as `var(--color-x)` must be computed first.
+ */
+function resolveColor(c) {
+    if (typeof c === 'string') {
+        const m = c.match(/^var\((--[\w-]+)\)$/);
+        if (m) { return cssVar(m[1], c); }
+    }
+    return c;
 }
 
 /** Merge all series onto one shared, sorted timestamp axis. */
@@ -64,7 +78,7 @@ function buildOptions() {
     props.series.forEach((s, i) => {
         uSeries.push({
             label: `${s.label}${s.unit ? ' (' + s.unit + ')' : ''}`,
-            stroke: s.color || palette[i % palette.length],
+            stroke: resolveColor(s.color) || palette[i % palette.length],
             width: 2,
             scale: s.axis === 'right' ? 'right' : 'left',
             points: { show: false },
@@ -108,12 +122,21 @@ onMounted(async () => {
         }
     });
     resizeObserver.observe(hostRef.value);
+
+    // Re-read CSS-variable colors (axes, grid, palette) when the active theme
+    // changes so the chart adapts to dark / Night Watch without a remount.
+    themeObserver = new MutationObserver(() => { render(); });
+    themeObserver.observe(document.documentElement, {
+        attributes: true,
+        attributeFilter: ['data-theme'],
+    });
 });
 
 watch(() => props.series, render, { deep: true });
 
 onBeforeUnmount(() => {
     resizeObserver?.disconnect();
+    themeObserver?.disconnect();
     chart.value?.destroy();
     chart.value = null;
 });

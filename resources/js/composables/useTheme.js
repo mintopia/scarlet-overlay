@@ -12,7 +12,21 @@ const AUTO_CHECK_MS = 60 * 1000;
 const theme = ref('light');
 const autoMode = ref(true);
 
-function applyTheme(t) {
+let transitionTimer = null;
+
+/**
+ * Enable the cross-fade transition only for the ~250ms of an actual theme
+ * switch, so it never applies to unrelated hover/focus/state changes.
+ */
+function flagThemeTransition() {
+    const el = document.documentElement;
+    el.classList.add('theme-transition');
+    if (transitionTimer) { clearTimeout(transitionTimer); }
+    transitionTimer = setTimeout(() => el.classList.remove('theme-transition'), 250);
+}
+
+function applyTheme(t, animate = false) {
+    if (animate && theme.value !== t) { flagThemeTransition(); }
     theme.value = t;
     if (t === 'light') {
         document.documentElement.removeAttribute('data-theme');
@@ -68,7 +82,7 @@ export function useTheme() {
         if (!THEMES.includes(t)) return;
         autoMode.value = false;
         localStorage.setItem(LS_AUTO, 'false');
-        applyTheme(t);
+        applyTheme(t, true);
     }
 
     function enableAuto() {
@@ -88,7 +102,7 @@ export function useTheme() {
         } else {
             dark = isDarkFallback();
         }
-        applyTheme(dark ? 'dark' : 'light');
+        applyTheme(dark ? 'dark' : 'light', true);
     }
 
     async function fetchGps() {

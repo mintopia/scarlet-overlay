@@ -59,6 +59,7 @@
                                         class="note-textarea"
                                         rows="2"
                                         placeholder="Add a note..."
+                                        aria-label="Log entry note"
                                         @keydown.enter.meta="saveNote(row)"
                                         @keydown.enter.ctrl="saveNote(row)"
                                         @keydown.escape="cancelEdit"
@@ -68,7 +69,16 @@
                                         <button class="note-btn note-btn-save" @click="saveNote(row)" :disabled="saving">Save</button>
                                     </div>
                                 </div>
-                                <div v-else class="note-read" @click.stop="startEdit(row)">
+                                <div
+                                    v-else
+                                    class="note-read"
+                                    role="button"
+                                    tabindex="0"
+                                    :aria-label="row.notes ? 'Edit note' : 'Add a note'"
+                                    @click.stop="startEdit(row)"
+                                    @keydown.enter.stop="startEdit(row)"
+                                    @keydown.space.stop.prevent="startEdit(row)"
+                                >
                                     <span v-if="row.notes" class="note-text">{{ row.notes }}</span>
                                     <span v-else class="note-placeholder">Click to add a note...</span>
                                 </div>
@@ -164,6 +174,7 @@ function cssVar(name) {
 
 const chartEl = ref(null);
 let chart = null;
+let themeObserver = null;
 
 const progressData = computed(() => {
     return props.rows.filter(r => r.cum_diff != null);
@@ -270,11 +281,20 @@ function handleResize() {
 onMounted(() => {
     nextTick(() => initChart());
     window.addEventListener('resize', handleResize);
+
+    // Re-read CSS-variable colors when the active theme changes so the chart
+    // adapts to dark / Night Watch without a remount.
+    themeObserver = new MutationObserver(() => { nextTick(() => initChart()); });
+    themeObserver.observe(document.documentElement, {
+        attributes: true,
+        attributeFilter: ['data-theme'],
+    });
 });
 
 onUnmounted(() => {
     if (chart) chart.destroy();
     window.removeEventListener('resize', handleResize);
+    themeObserver?.disconnect();
 });
 
 watch(() => props.rows, () => nextTick(() => initChart()), { deep: true });
@@ -405,7 +425,7 @@ function knotsToBeaufort(kn) {
 }
 
 .group-end {
-    border-right: 2px solid var(--color-border) !important;
+    border-right: 1px solid var(--color-border-light) !important;
 }
 
 .col-time { text-align: left !important; cursor: default; }

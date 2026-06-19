@@ -34,14 +34,12 @@ const emit = defineEmits(['update:base', 'update:seamark', 'update:contours']);
     top: 12px;
     right: 12px;
     z-index: 1000;
-    background: var(--color-surface, oklch(0.08 0.008 40 / 0.82));
-    backdrop-filter: blur(16px);
-    -webkit-backdrop-filter: blur(16px);
+    background: var(--color-surface);
     border-radius: 10px;
-    border: 1px solid var(--color-border, oklch(0.32 0.01 40 / 0.18));
+    border: 1px solid var(--color-border);
     overflow: hidden;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
-    font-family: var(--font-body, 'Outfit', system-ui, sans-serif);
+    box-shadow: var(--shadow-sm);
+    font-family: var(--font-body);
 }
 
 .mlc-base {
@@ -52,7 +50,7 @@ const emit = defineEmits(['update:base', 'update:seamark', 'update:contours']);
     padding: 7px 16px;
     font-size: 12px;
     font-weight: 600;
-    color: var(--color-text-secondary, oklch(0.62 0.008 70));
+    color: var(--color-text-secondary);
     border: none;
     background: none;
     cursor: pointer;
@@ -62,21 +60,21 @@ const emit = defineEmits(['update:base', 'update:seamark', 'update:contours']);
 }
 
 .mlc-btn:hover {
-    background: var(--color-border-light, oklch(0.25 0.01 40 / 0.2));
+    background: var(--color-border-light);
 }
 
 .mlc-btn.active {
-    background: var(--color-teal, oklch(0.55 0.14 185));
-    color: #fff;
+    background: var(--color-teal);
+    color: var(--color-surface);
 }
 
 .mlc-btn + .mlc-btn {
-    border-left: 1px solid var(--color-border, oklch(0.32 0.01 40 / 0.18));
+    border-left: 1px solid var(--color-border);
 }
 
 .mlc-divider {
     height: 1px;
-    background: var(--color-border, oklch(0.32 0.01 40 / 0.18));
+    background: var(--color-border);
 }
 
 .mlc-overlays {
@@ -92,7 +90,7 @@ const emit = defineEmits(['update:base', 'update:seamark', 'update:contours']);
     gap: 6px;
     font-size: 11px;
     font-weight: 500;
-    color: var(--color-text-secondary, oklch(0.75 0.008 70));
+    color: var(--color-text-secondary);
     cursor: pointer;
     user-select: none;
 }
@@ -100,7 +98,7 @@ const emit = defineEmits(['update:base', 'update:seamark', 'update:contours']);
 .mlc-toggle input[type="checkbox"] {
     width: 14px;
     height: 14px;
-    accent-color: var(--color-teal, oklch(0.55 0.14 185));
+    accent-color: var(--color-teal);
     cursor: pointer;
     margin: 0;
     flex-shrink: 0;

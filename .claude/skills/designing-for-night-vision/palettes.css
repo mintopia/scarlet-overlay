@@ -1,0 +1,112 @@
+/* ===========================================================================
+   Night-vision palettes — two regimes. Pick ONE based on the use case.
+   See SKILL.md "Choose the regime FIRST" before copying.
+
+   Luminance is the master lever, not hue. Every value here is deliberately
+   dim. Do not "brighten for readability" — darken the background instead.
+   =========================================================================== */
+
+
+/* ---------------------------------------------------------------------------
+   REGIME A — COMFORTABLE DARK  (low-strain night, NOT true dark adaptation)
+   Use for: overnight office work, reading, dashboards indoors with some
+   ambient light, partner asleep nearby. Goal: cut glare + blue + melatonin
+   suppression. Warm, dim, desaturated. Muted color is allowed.
+   --------------------------------------------------------------------------- */
+:root[data-night="comfortable"] {
+  color-scheme: dark;
+
+  /* Backgrounds — warm/neutral near-black, never #000 (smear/halation) */
+  --bg-base:     #121013;  /* page */
+  --bg-surface:  #1A171B;  /* cards, panels */
+  --bg-raised:   #231F25;  /* modals, hovered rows */
+  --border:      #312C34;  /* hairlines */
+
+  /* Text — warm off-white, NEVER pure #FFF. Cap the bright end. */
+  --text-primary:   #D6CFCB;  /* body / readouts */
+  --text-secondary: #9E9690;  /* labels, metadata */
+  --text-muted:     #6B645F;  /* disabled, placeholder */
+
+  /* Accents — desaturated and warm. Muted color is fine here, blue is not. */
+  --accent:   #C98A4B;  /* warm amber — links, focus, selection */
+  --ok:       #6FAE84;  /* muted desaturated green */
+  --warn:     #D2A24A;  /* muted amber */
+  --crit:     #D0584E;  /* muted red — reserve saturation for true alerts */
+
+  --focus-ring: var(--accent);
+}
+
+
+/* ---------------------------------------------------------------------------
+   REGIME B — SCOTOPIC / RED-LIGHT  (preserve rod-based dark adaptation)
+   Use for: astronomy, ship's bridge / cockpit at night, observatory,
+   maritime/aviation/military, any UI in the user's field of view while they
+   must still see in real darkness. Monochrome red only. No blue. No green.
+   No white. No bright fills. Saturated red = alarms ONLY.
+   --------------------------------------------------------------------------- */
+:root[data-night="scotopic"] {
+  color-scheme: dark;
+
+  /* Backgrounds — warm near-black with a faint red tint */
+  --bg-base:     #0B0605;  /* page */
+  --bg-surface:  #150B08;  /* cards — do not exceed this lightness for fills */
+  --bg-raised:   #1F120C;  /* hover / active surface */
+  --border:      #2A1812;  /* hairlines */
+
+  /* Text — desaturated red/amber. Hue is fixed; vary luminance for hierarchy. */
+  --text-primary:   #C25A38;  /* readouts, headings (never brighter than this) */
+  --text-secondary: #8A4026;  /* labels, units */
+  --text-muted:     #56281A;  /* inactive */
+
+  /* Accents — all within the red family. */
+  --accent:   #D2693A;  /* highlight, selection, focus */
+  --ok:       #9E4E2C;  /* nominal — dim amber, NOT green */
+  --warn:     #C9802A;  /* the brightest non-alarm value; use sparingly */
+  --crit:     #E5331E;  /* the ONLY saturated red — alarms only */
+
+  --focus-ring: var(--accent);
+}
+
+
+/* ---------------------------------------------------------------------------
+   SHARED RULES — apply to both regimes
+   --------------------------------------------------------------------------- */
+:root[data-night] body {
+  background: var(--bg-base);
+  color: var(--text-primary);
+  font-weight: 500;                 /* light text on dark blooms; <400 vanishes */
+  font-size: clamp(16px, 1.05vw, 18px);
+  line-height: 1.55;
+  letter-spacing: 0.01em;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Numbers steady on update; medium weight, never hairline */
+:root[data-night] .metric {
+  font-variant-numeric: tabular-nums;
+  font-weight: 500;
+}
+
+/* Focus: visible ring in-palette, never blue */
+:root[data-night] :focus-visible {
+  outline: 2px solid var(--focus-ring);
+  outline-offset: 2px;
+}
+
+/* Tint ALL icons/SVG to text color — no stray pure-white assets */
+:root[data-night] svg:not([data-keep-color]) { color: var(--text-primary); fill: currentColor; }
+
+/* Interaction states change by DARKEN / SATURATE, never a luminance spike */
+:root[data-night] .btn { transition: background 120ms ease, border-color 120ms ease; }
+:root[data-night] .btn:hover  { background: var(--bg-raised); }   /* slightly more saturated */
+:root[data-night] .btn:active { filter: brightness(0.85); }      /* darker, never flash up */
+
+/* Critical alerts dim-pulse rather than flash bright */
+@keyframes night-softpulse { 0%,100% { opacity: 1; } 50% { opacity: 0.5; } }
+:root[data-night] .alert--crit { color: var(--crit); animation: night-softpulse 2s ease-in-out infinite; }
+@media (prefers-reduced-motion: reduce) {
+  :root[data-night] .alert--crit { animation: none; }
+}
+
+/* Master brightness control — scale the whole root, let users tune to ambient */
+:root[data-night] { filter: brightness(var(--night-brightness, 1)); }

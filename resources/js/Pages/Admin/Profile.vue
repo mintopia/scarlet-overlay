@@ -8,8 +8,9 @@
             <h2 class="text-[15px] font-semibold mb-4">Your Details</h2>
             <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
                 <div>
-                    <label class="field-label">Name</label>
+                    <label for="profile-name" class="field-label">Name</label>
                     <input
+                        id="profile-name"
                         v-model="profileForm.name"
                         type="text"
                         required
@@ -18,8 +19,9 @@
                     <p v-if="profileForm.errors.name" class="field-error">{{ profileForm.errors.name }}</p>
                 </div>
                 <div>
-                    <label class="field-label">Email</label>
+                    <label for="profile-email" class="field-label">Email</label>
                     <input
+                        id="profile-email"
                         v-model="profileForm.email"
                         type="email"
                         required
@@ -32,7 +34,7 @@
                 <button
                     type="submit"
                     :disabled="profileForm.processing"
-                    class="px-4 h-9 bg-scarlet text-white text-[13px] font-semibold rounded-[7px] hover:bg-scarlet-hover disabled:opacity-50"
+                    class="btn btn--primary"
                 >
                     Save
                 </button>
@@ -43,37 +45,40 @@
         <!-- Change Password -->
         <form @submit.prevent="passwordForm.put(route('admin.profile.password'))" class="bg-surface border border-border rounded-[10px] p-6 mb-6">
             <h2 class="text-[15px] font-semibold mb-4">Change Password</h2>
-            <div class="grid grid-cols-1 gap-4">
-                <div>
-                    <label class="field-label">Current Password</label>
+            <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                <div class="sm:col-span-2">
+                    <label for="current-password" class="field-label">Current Password</label>
                     <input
+                        id="current-password"
                         v-model="passwordForm.current_password"
                         type="password"
                         required
                         autocomplete="current-password"
-                        class="field-input sm:max-w-sm"
+                        class="field-input"
                     />
                     <p v-if="passwordForm.errors.current_password" class="field-error">{{ passwordForm.errors.current_password }}</p>
                 </div>
                 <div>
-                    <label class="field-label">New Password</label>
+                    <label for="new-password" class="field-label">New Password</label>
                     <input
+                        id="new-password"
                         v-model="passwordForm.password"
                         type="password"
                         required
                         autocomplete="new-password"
-                        class="field-input sm:max-w-sm"
+                        class="field-input"
                     />
                     <p v-if="passwordForm.errors.password" class="field-error">{{ passwordForm.errors.password }}</p>
                 </div>
                 <div>
-                    <label class="field-label">Confirm New Password</label>
+                    <label for="confirm-new-password" class="field-label">Confirm New Password</label>
                     <input
+                        id="confirm-new-password"
                         v-model="passwordForm.password_confirmation"
                         type="password"
                         required
                         autocomplete="new-password"
-                        class="field-input sm:max-w-sm"
+                        class="field-input"
                     />
                 </div>
             </div>
@@ -81,7 +86,7 @@
                 <button
                     type="submit"
                     :disabled="passwordForm.processing"
-                    class="px-4 h-9 bg-scarlet text-white text-[13px] font-semibold rounded-[7px] hover:bg-scarlet-hover disabled:opacity-50"
+                    class="btn btn--primary"
                 >
                     Update password
                 </button>
@@ -97,13 +102,13 @@
                     type="button"
                     @click="registerPasskey"
                     :disabled="passkeyRegistering"
-                    class="px-4 h-9 bg-scarlet text-white text-[13px] font-semibold rounded-[7px] hover:bg-scarlet-hover disabled:opacity-50 disabled:cursor-not-allowed"
+                    class="btn btn--primary disabled:cursor-not-allowed"
                 >
                     {{ passkeyRegistering ? 'Registering…' : 'Register new' }}
                 </button>
             </div>
-            <p v-if="passkeyError" class="mb-3 text-[13px] text-error">{{ passkeyError }}</p>
-            <p v-if="passkeySuccess" class="mb-3 text-[13px] text-green">{{ passkeySuccess }}</p>
+            <p v-if="passkeyError" role="alert" aria-live="assertive" class="mb-3 text-[13px] text-error">{{ passkeyError }}</p>
+            <p v-if="passkeySuccess" role="status" aria-live="polite" class="mb-3 text-[13px] text-green">{{ passkeySuccess }}</p>
             <table class="w-full text-sm min-w-[440px]">
                 <thead>
                     <tr class="border-b border-border">
@@ -146,16 +151,17 @@
 
         <!-- Name Passkey Modal -->
         <Transition name="modal">
-        <div v-if="namingPasskey" class="modal-overlay" @click.self="cancelNaming" @keydown.esc="cancelNaming">
-            <div class="modal-card" role="dialog" aria-modal="true" :aria-label="namingPasskey.isNew ? 'Name your passkey' : 'Rename passkey'" @keydown.tab="trapFocus">
-                <h3 class="text-[16px] font-semibold mb-2">{{ namingPasskey.isNew ? 'Name your passkey' : 'Rename passkey' }}</h3>
+        <div v-if="namingPasskey" class="modal-overlay" @click.self="cancelNaming" @keydown.escape="cancelNaming">
+            <div tabindex="-1" class="modal-card" role="dialog" aria-modal="true" aria-labelledby="name-passkey-title" @keydown.tab="trapFocus">
+                <h3 id="name-passkey-title" class="text-[16px] font-semibold mb-2">{{ namingPasskey.isNew ? 'Name your passkey' : 'Rename passkey' }}</h3>
                 <p v-if="namingPasskey.isNew" class="text-[13px] text-text-secondary mb-4">
                     Give this passkey a name so you can identify it later.
                 </p>
                 <form @submit.prevent="savePasskeyName">
                     <div class="mb-4">
-                        <label class="block text-[13px] font-medium text-text-secondary mb-1.5">Name</label>
+                        <label for="passkey-alias" class="block text-[13px] font-medium text-text-secondary mb-1.5">Name</label>
                         <input
+                            id="passkey-alias"
                             ref="nameInput"
                             v-model="passkeyNameValue"
                             type="text"
@@ -167,13 +173,13 @@
                         <p v-if="nameError" class="mt-1 text-xs text-error">{{ nameError }}</p>
                     </div>
                     <div class="flex items-center justify-end gap-3">
-                        <button type="button" @click="cancelNaming" class="px-4 h-9 text-[13px] font-medium text-text-secondary hover:text-primary">
+                        <button type="button" @click="cancelNaming" class="btn btn--ghost">
                             {{ namingPasskey.isNew ? 'Skip' : 'Cancel' }}
                         </button>
                         <button
                             type="submit"
                             :disabled="namingSaving"
-                            class="px-4 h-9 bg-scarlet text-white text-[13px] font-semibold rounded-[7px] hover:bg-scarlet-hover disabled:opacity-50"
+                            class="btn btn--primary"
                         >
                             {{ namingSaving ? 'Saving…' : 'Save' }}
                         </button>
@@ -185,16 +191,17 @@
 
         <!-- Remove Passkey Modal -->
         <Transition name="modal">
-        <div v-if="removingPasskey" class="modal-overlay" @click.self="cancelRemovePasskey" @keydown.esc="cancelRemovePasskey">
-            <div class="modal-card" role="dialog" aria-modal="true" aria-label="Remove passkey" @keydown.tab="trapFocus">
-                <h3 class="text-[16px] font-semibold mb-2">Remove passkey?</h3>
+        <div v-if="removingPasskey" class="modal-overlay" @click.self="cancelRemovePasskey" @keydown.escape="cancelRemovePasskey">
+            <div tabindex="-1" class="modal-card" role="dialog" aria-modal="true" aria-labelledby="remove-passkey-title" @keydown.tab="trapFocus">
+                <h3 id="remove-passkey-title" class="text-[16px] font-semibold mb-2">Remove passkey?</h3>
                 <p class="text-[13px] text-text-secondary mb-4">
                     This will permanently remove <strong>{{ removingPasskey.alias ?? 'this passkey' }}</strong>. You will no longer be able to sign in with it.
                 </p>
                 <form @submit.prevent="removePasskey">
                     <div class="mb-4">
-                        <label class="block text-[13px] font-medium text-text-secondary mb-1.5">Confirm your password</label>
+                        <label for="remove-passkey-password" class="block text-[13px] font-medium text-text-secondary mb-1.5">Confirm your password</label>
                         <input
+                            id="remove-passkey-password"
                             ref="removePasswordInput"
                             v-model="removePassword"
                             type="password"
@@ -206,13 +213,13 @@
                         <p v-if="removePasswordError" class="mt-1 text-xs text-error">{{ removePasswordError }}</p>
                     </div>
                     <div class="flex items-center justify-end gap-3">
-                        <button type="button" @click="cancelRemovePasskey" class="px-4 h-9 text-[13px] font-medium text-text-secondary hover:text-primary">
+                        <button type="button" @click="cancelRemovePasskey" class="btn btn--ghost">
                             Cancel
                         </button>
                         <button
                             type="submit"
                             :disabled="removingInProgress"
-                            class="px-4 h-9 bg-error text-white text-[13px] font-semibold rounded-[7px] hover:bg-scarlet-hover disabled:opacity-50"
+                            class="btn btn--danger"
                         >
                             {{ removingInProgress ? 'Removing…' : 'Remove passkey' }}
                         </button>
@@ -227,6 +234,7 @@
 <script setup>
 import { ref, nextTick, onMounted } from 'vue';
 import { Head, useForm } from '@inertiajs/vue3';
+import { formatDate } from '@/lib/datetime';
 import AdminLayout from '@/Layouts/AdminLayout.vue';
 import SavedCheck from '@/components/SavedCheck.vue';
 
@@ -263,10 +271,6 @@ function getCsrfToken() {
     return document.querySelector('meta[name="csrf-token"]')?.content ?? '';
 }
 
-function formatDate(dateStr) {
-    if (!dateStr) return '—';
-    return new Date(dateStr).toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' });
-}
 
 function lastUsedLabel(pk) {
     if (!pk.updated_at || pk.updated_at === pk.created_at) return 'Never';

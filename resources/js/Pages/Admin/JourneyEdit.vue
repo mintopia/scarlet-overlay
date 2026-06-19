@@ -6,29 +6,29 @@
         <form @submit.prevent="form.put(`/admin/journeys/${journey.id}`)" class="panel p-6 mb-6">
             <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
                 <div>
-                    <label class="field-label">Title</label>
-                    <input v-model="form.title" type="text" required class="field-input" />
+                    <label for="edit-title" class="field-label">Title</label>
+                    <input id="edit-title" v-model="form.title" type="text" required class="field-input" />
                     <p v-if="form.errors.title" class="field-error">{{ form.errors.title }}</p>
                 </div>
                 <div>
-                    <label class="field-label">Slug</label>
-                    <input v-model="form.slug" type="text" required class="field-input" />
+                    <label for="edit-slug" class="field-label">Slug</label>
+                    <input id="edit-slug" v-model="form.slug" type="text" required class="field-input" />
                     <p v-if="form.errors.slug" class="field-error">{{ form.errors.slug }}</p>
                 </div>
             </div>
             <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 mt-4">
                 <div>
-                    <label class="field-label">From</label>
-                    <input v-model="form.from_port" type="text" required class="field-input" />
+                    <label for="edit-from" class="field-label">From</label>
+                    <input id="edit-from" v-model="form.from_port" type="text" required class="field-input" />
                 </div>
                 <div>
-                    <label class="field-label">To</label>
-                    <input v-model="form.to_port" type="text" required class="field-input" />
+                    <label for="edit-to" class="field-label">To</label>
+                    <input id="edit-to" v-model="form.to_port" type="text" required class="field-input" />
                 </div>
             </div>
             <div class="mt-4">
-                <label class="field-label">Notes</label>
-                <textarea v-model="form.notes" rows="3" class="field-input"></textarea>
+                <label for="edit-notes" class="field-label">Notes</label>
+                <textarea id="edit-notes" v-model="form.notes" rows="3" class="field-input"></textarea>
             </div>
             <div class="mt-4 flex items-center gap-3">
                 <label class="flex items-center gap-2 text-[13px] cursor-pointer">
@@ -55,8 +55,8 @@
             <h2 class="text-[15px] font-semibold mb-4">GPX Route</h2>
             <p v-if="journey.gpx_route_path" class="text-[13px] text-green mb-3">Route file uploaded.</p>
             <div>
-                <label class="field-label">{{ journey.gpx_route_path ? 'Replace GPX file' : 'Upload GPX file' }}</label>
-                <input type="file" accept=".gpx" @change="gpxForm.gpx_file = $event.target.files[0]" class="field-input text-[13px]" />
+                <label for="edit-gpx" class="field-label">{{ journey.gpx_route_path ? 'Replace GPX file' : 'Upload GPX file' }}</label>
+                <input id="edit-gpx" type="file" accept=".gpx" @change="gpxForm.gpx_file = $event.target.files[0]" class="field-input text-[13px]" />
             </div>
             <div class="flex items-center gap-3 mt-4">
                 <button type="submit" :disabled="gpxForm.processing || !gpxForm.gpx_file" class="btn btn--primary">Upload</button>
@@ -68,7 +68,7 @@
         <div v-if="journey.started_at && journey.ended_at" class="panel p-6 mb-6">
             <h2 class="text-[15px] font-semibold mb-2">Track Data</h2>
             <p class="text-[13px] text-text-secondary mb-3">{{ journey.track_point_count }} track points recorded.</p>
-            <p v-if="reimportForm.errors.reimport" class="text-[12px] text-red-600 mb-3">{{ reimportForm.errors.reimport }}</p>
+            <p v-if="reimportForm.errors.reimport" class="text-[12px] text-error mb-3">{{ reimportForm.errors.reimport }}</p>
             <div class="flex items-center gap-3">
                 <button @click="showReimportModal = true" :disabled="reimportForm.processing" class="btn btn--ghost">Re-import from Prometheus</button>
                 <Transition name="saved-fade"><SavedCheck v-if="reimportForm.wasSuccessful" label="Import started" /></Transition>
@@ -77,7 +77,7 @@
 
         <!-- Danger Zone -->
         <div class="panel p-6 border-error bg-error-bg">
-            <h2 class="text-[15px] font-semibold mb-3 text-red-600">Danger Zone</h2>
+            <h2 class="text-[15px] font-semibold mb-3 text-error">Danger Zone</h2>
             <div class="flex items-center justify-between">
                 <p class="text-[13px] text-text-secondary">Permanently delete this journey and all its track data.</p>
                 <button @click="showDeleteModal = true" class="btn btn--danger">Delete Journey</button>
@@ -86,9 +86,9 @@
 
         <!-- Start Confirmation Modal -->
         <Transition name="modal">
-        <div v-if="showStartModal" class="modal-overlay" @click.self="showStartModal = false">
-            <div class="modal-card" role="dialog" aria-modal="true" aria-label="Confirm start recording">
-                <h3 class="text-[16px] font-semibold mb-2">Start recording?</h3>
+        <div v-if="showStartModal" class="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="start-modal-title" @click.self="showStartModal = false" @keydown.escape="showStartModal = false">
+            <div ref="startModalRef" tabindex="-1" class="modal-card" @keydown.tab="trapFocus($event, startModalRef)">
+                <h3 id="start-modal-title" class="text-[16px] font-semibold mb-2">Start recording?</h3>
                 <p class="text-[13px] text-text-secondary mb-5">This will begin track recording for <strong>{{ journey.title }}</strong>. GPS position and boat data will be logged from now.</p>
                 <div class="flex items-center justify-end gap-3">
                     <button @click="showStartModal = false" class="btn btn--ghost">Cancel</button>
@@ -100,9 +100,9 @@
 
         <!-- Reimport Confirmation Modal -->
         <Transition name="modal">
-        <div v-if="showReimportModal" class="modal-overlay" @click.self="showReimportModal = false">
-            <div class="modal-card" role="dialog" aria-modal="true" aria-label="Confirm re-import">
-                <h3 class="text-[16px] font-semibold mb-2">Re-import track data?</h3>
+        <div v-if="showReimportModal" class="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="reimport-modal-title" @click.self="showReimportModal = false" @keydown.escape="showReimportModal = false">
+            <div ref="reimportModalRef" tabindex="-1" class="modal-card" @keydown.tab="trapFocus($event, reimportModalRef)">
+                <h3 id="reimport-modal-title" class="text-[16px] font-semibold mb-2">Re-import track data?</h3>
                 <p class="text-[13px] text-text-secondary mb-5">This will delete all existing track points and re-import from Prometheus. The import runs in the background.</p>
                 <div class="flex items-center justify-end gap-3">
                     <button @click="showReimportModal = false" class="btn btn--ghost">Cancel</button>
@@ -114,9 +114,9 @@
 
         <!-- Delete Confirmation Modal -->
         <Transition name="modal">
-        <div v-if="showDeleteModal" class="modal-overlay" @click.self="showDeleteModal = false">
-            <div class="modal-card" role="dialog" aria-modal="true" aria-label="Confirm delete journey">
-                <h3 class="text-[16px] font-semibold mb-2">Delete this journey?</h3>
+        <div v-if="showDeleteModal" class="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="delete-modal-title" @click.self="showDeleteModal = false" @keydown.escape="showDeleteModal = false">
+            <div ref="deleteModalRef" tabindex="-1" class="modal-card" @keydown.tab="trapFocus($event, deleteModalRef)">
+                <h3 id="delete-modal-title" class="text-[16px] font-semibold mb-2">Delete this journey?</h3>
                 <p class="text-[13px] text-text-secondary mb-5">This will permanently delete the journey and all its track points. This cannot be undone.</p>
                 <div class="flex items-center justify-end gap-3">
                     <button @click="showDeleteModal = false" class="btn btn--ghost">Cancel</button>
@@ -129,7 +129,7 @@
 </template>
 
 <script setup>
-import { ref } from 'vue';
+import { ref, watch, nextTick } from 'vue';
 import { Head, Link, useForm, router } from '@inertiajs/vue3';
 import AdminLayout from '@/Layouts/AdminLayout.vue';
 import SavedCheck from '@/components/SavedCheck.vue';
@@ -152,20 +152,56 @@ const gpxForm = useForm({
 });
 
 const showStartModal = ref(false);
+const startModalRef = ref(null);
 function startRecording() {
     router.post(`/admin/journeys/${props.journey.id}/start`);
 }
 
 const reimportForm = useForm({});
 const showReimportModal = ref(false);
+const reimportModalRef = ref(null);
 function reimport() {
     showReimportModal.value = false;
     reimportForm.post(`/admin/journeys/${props.journey.id}/reimport`);
 }
 
 const showDeleteModal = ref(false);
+const deleteModalRef = ref(null);
 function deleteJourney() {
     router.delete(`/admin/journeys/${props.journey.id}`);
+}
+
+watch(showStartModal, (open) => {
+    if (open) {
+        nextTick(() => startModalRef.value?.focus());
+    }
+});
+watch(showReimportModal, (open) => {
+    if (open) {
+        nextTick(() => reimportModalRef.value?.focus());
+    }
+});
+watch(showDeleteModal, (open) => {
+    if (open) {
+        nextTick(() => deleteModalRef.value?.focus());
+    }
+});
+
+function trapFocus(event, containerRef) {
+    const modal = containerRef;
+    if (!modal) {
+        return;
+    }
+    const focusable = modal.querySelectorAll('input, button, textarea, select, [tabindex]:not([tabindex="-1"])');
+    const first = focusable[0];
+    const last = focusable[focusable.length - 1];
+    if (event.shiftKey && document.activeElement === first) {
+        event.preventDefault();
+        last?.focus();
+    } else if (!event.shiftKey && document.activeElement === last) {
+        event.preventDefault();
+        first?.focus();
+    }
 }
 </script>
 

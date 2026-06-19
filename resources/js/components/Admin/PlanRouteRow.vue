@@ -14,7 +14,15 @@
                 <svg width="10" height="14" viewBox="0 0 10 14" fill="currentColor"><circle cx="3" cy="2" r="1.2"/><circle cx="7" cy="2" r="1.2"/><circle cx="3" cy="7" r="1.2"/><circle cx="7" cy="7" r="1.2"/><circle cx="3" cy="12" r="1.2"/><circle cx="7" cy="12" r="1.2"/></svg>
             </span>
             <span class="route-dot" :style="{ background: color }"></span>
-            <svg class="route-chevron" :class="{ 'route-chevron--open': expanded }" viewBox="0 0 24 24" width="14" height="14"><polyline points="6 9 12 15 18 9" stroke="currentColor" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            <button
+                type="button"
+                class="route-chevron-btn"
+                :aria-expanded="expanded"
+                :aria-label="expanded ? 'Collapse route' : 'Expand route'"
+                @click.stop="expanded = !expanded"
+            >
+                <svg class="route-chevron" :class="{ 'route-chevron--open': expanded }" viewBox="0 0 24 24" width="14" height="14"><polyline points="6 9 12 15 18 9" stroke="currentColor" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </button>
             <span class="route-name">{{ route.name }}</span>
             <span class="route-stat"><span class="route-stat-val">{{ route.distance_nm }}</span> nm</span>
             <span class="route-stat"><span class="route-stat-val">{{ route.waypoints?.length ?? 0 }}</span> wpt</span>
@@ -22,9 +30,13 @@
                 class="route-toggle"
                 :class="{ 'route-toggle--off': !route.is_enabled }"
                 @click.stop="$emit('toggle', route)"
+                @keydown.enter.stop
+                @keydown.space.stop
                 :title="route.is_enabled ? 'Hide route' : 'Show route'"
+                :aria-label="route.is_enabled ? 'Hide route' : 'Show route'"
+                :aria-pressed="route.is_enabled"
             ></button>
-            <button v-if="!readonly" class="route-remove" @click.stop="$emit('remove', route)" title="Remove route">&times;</button>
+            <button v-if="!readonly" class="route-remove" @click.stop="$emit('remove', route)" @keydown.enter.stop @keydown.space.stop title="Remove route" aria-label="Remove route">&times;</button>
         </div>
 
         <!-- Expanded waypoints -->
@@ -34,7 +46,11 @@
                     v-for="(wp, i) in route.waypoints"
                     :key="i"
                     class="waypoint-item"
+                    role="button"
+                    tabindex="0"
                     @click.stop="$emit('focusWaypoint', wp)"
+                    @keydown.enter.stop="$emit('focusWaypoint', wp)"
+                    @keydown.space.stop.prevent="$emit('focusWaypoint', wp)"
                 >
                     <span class="waypoint-dot" :class="{ 'waypoint-dot--endpoint': i === 0 || i === route.waypoints.length - 1 }"></span>
                     <span class="waypoint-badge" :class="badgeClass(i)">{{ badgeLabel(i) }}</span>
@@ -93,6 +109,15 @@ function badgeClass(i) {
     border-bottom: 1px solid var(--color-border-light);
     cursor: pointer; transition: background 0.1s;
 }
+.route-chevron-btn {
+    display: inline-flex;
+    align-items: center;
+    padding: 0;
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: inherit;
+}
 .route-row:hover { background: var(--color-bg); }
 .route-row--dim { opacity: 0.45; }
 
@@ -125,8 +150,8 @@ function badgeClass(i) {
 }
 .route-toggle::after {
     content: ''; position: absolute; top: 2px; right: 2px;
-    width: 13px; height: 13px; border-radius: 50%; background: #fff;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    width: 13px; height: 13px; border-radius: 50%; background: var(--color-surface);
+    box-shadow: var(--shadow-sm);
     transition: right 0.12s, left 0.12s;
 }
 .route-toggle--off { background: var(--color-border); }

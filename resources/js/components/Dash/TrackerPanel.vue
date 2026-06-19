@@ -48,6 +48,7 @@
 
             <!-- Right: Connectivity + Resources -->
             <div class="tp-conn">
+                <div class="tp-conn-grid">
                 <!-- LTE row -->
                 <div class="tp-crow">
                     <div class="tp-bars" aria-label="LTE signal strength">
@@ -92,6 +93,8 @@
                         <div class="tp-cv__n">{{ wifiRssiDisplay }}<span class="tp-cu">dBm</span></div>
                         <div class="tp-cv__l">2.4 GHz</div>
                     </div>
+                </div>
+
                 </div>
 
                 <!-- Resource mini-bars: CPU, Free heap, Humidity -->
@@ -327,25 +330,37 @@ const humidityPct = computed(() => {
 
 /* Two-column body */
 .tp-body {
-    display: flex;
+    display: grid;
+    grid-template-columns: minmax(170px, 220px) 1fr;
     gap: 24px;
-    flex-wrap: wrap;
+}
+
+@media (max-width: 640px) {
+    .tp-body { grid-template-columns: 1fr; }
 }
 
 .tp-vitals {
     display: flex;
     flex-direction: column;
     gap: 14px;
-    min-width: 160px;
-    flex: 0 0 auto;
+    min-width: 0;
 }
 
 .tp-conn {
-    flex: 1;
-    min-width: 240px;
+    min-width: 0;
     display: flex;
     flex-direction: column;
     gap: 10px;
+}
+
+.tp-conn-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 4px 24px;
+}
+
+@media (max-width: 520px) {
+    .tp-conn-grid { grid-template-columns: 1fr; }
 }
 
 /* Mode pill */
@@ -361,30 +376,18 @@ const humidityPct = computed(() => {
 }
 
 .tp-mode--realtime {
-    background: oklch(0.95 0.05 150);
-    color: oklch(0.35 0.15 150);
+    background: var(--color-green-bg);
+    color: var(--color-green);
 }
 
 .tp-mode--saver {
-    background: oklch(0.95 0.05 40);
-    color: oklch(0.40 0.15 40);
+    background: var(--color-amber-bg);
+    color: var(--color-amber);
 }
 
 .tp-mode--unknown {
     background: var(--color-bg);
     color: var(--color-text-dim);
-}
-
-:global(.dark) .tp-mode--realtime,
-:global(.night) .tp-mode--realtime {
-    background: oklch(0.25 0.08 150);
-    color: oklch(0.70 0.15 150);
-}
-
-:global(.dark) .tp-mode--saver,
-:global(.night) .tp-mode--saver {
-    background: oklch(0.25 0.08 40);
-    color: oklch(0.70 0.15 40);
 }
 
 /* Battery vitals */
@@ -413,15 +416,10 @@ const humidityPct = computed(() => {
     font-size: 10px;
     font-weight: 600;
     color: var(--color-amber);
-    background: oklch(0.95 0.06 60);
+    background: var(--color-amber-bg);
     border-radius: 4px;
     padding: 1px 5px;
     line-height: 1.4;
-}
-
-:global(.dark) .tp-chip,
-:global(.night) .tp-chip {
-    background: oklch(0.28 0.08 60);
 }
 
 .tp-vl { font-size: 11px; color: var(--color-text-dim); }
@@ -470,11 +468,8 @@ const humidityPct = computed(() => {
     display: flex;
     align-items: center;
     gap: 12px;
-    padding: 10px 0;
-    border-bottom: 1px solid var(--color-border-light);
+    padding: 8px 0;
 }
-
-.tp-crow:last-child { border-bottom: none; }
 
 /* Signal bars */
 .tp-bars {
@@ -537,10 +532,16 @@ const humidityPct = computed(() => {
 
 /* Resource mini-bars */
 .tp-res {
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-    margin-top: 6px;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px 24px;
+    margin-top: 10px;
+    padding-top: 14px;
+    border-top: 1px solid var(--color-border-light);
+}
+
+@media (max-width: 520px) {
+    .tp-res { grid-template-columns: 1fr; }
 }
 
 .tp-rc { display: flex; flex-direction: column; gap: 6px; }

@@ -75,11 +75,11 @@
     <Teleport to="body">
         <div v-if="showReloadModal" class="fixed inset-0 z-[100] flex items-center justify-center" role="dialog" aria-modal="true" aria-labelledby="reload-title" @keydown.escape="showReloadModal = false">
             <div class="absolute inset-0 bg-black/50" @click="showReloadModal = false"></div>
-            <div ref="reloadModalRef" tabindex="-1" class="relative bg-surface rounded-xl p-7 max-w-[420px] w-full mx-4 shadow-[0_20px_60px_rgba(0,0,0,0.25)] text-text-primary">
+            <div ref="reloadModalRef" tabindex="-1" class="relative bg-surface rounded-xl p-7 max-w-[420px] w-full mx-4 shadow-[0_20px_60px_rgba(0,0,0,0.25)] text-text-primary" @keydown.tab="trapFocus($event, reloadModalRef)">
                 <h3 id="reload-title" class="text-base font-bold mb-2.5">Force Reload Clients</h3>
                 <p class="text-sm text-text-secondary leading-normal mb-6">This will reload all overlay and dashboard browser windows. Continue?</p>
                 <div class="flex gap-2.5 justify-end">
-                    <button type="button" @click="showReloadModal = false" class="btn btn--secondary">Cancel</button>
+                    <button type="button" @click="showReloadModal = false" class="btn btn--ghost">Cancel</button>
                     <button type="button" @click="confirmForceReload" :disabled="reloading" class="btn btn--danger">
                         {{ reloading ? 'Sending…' : 'Reload All Clients' }}
                     </button>
@@ -117,6 +117,23 @@ const reloadModalRef = ref(null);
 watch(showReloadModal, (open) => {
     if (open) nextTick(() => reloadModalRef.value?.focus());
 });
+
+function trapFocus(event, containerRef) {
+    const modal = containerRef;
+    if (!modal) {
+        return;
+    }
+    const focusable = modal.querySelectorAll('input, button, textarea, select, [tabindex]:not([tabindex="-1"])');
+    const first = focusable[0];
+    const last = focusable[focusable.length - 1];
+    if (event.shiftKey && document.activeElement === first) {
+        event.preventDefault();
+        last?.focus();
+    } else if (!event.shiftKey && document.activeElement === last) {
+        event.preventDefault();
+        first?.focus();
+    }
+}
 
 function confirmForceReload() {
     reloading.value = true;

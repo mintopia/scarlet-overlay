@@ -258,7 +258,7 @@
 
 <script setup>
 import { ref, computed, onMounted, onUnmounted } from 'vue';
-import { Head } from '@inertiajs/vue3';
+import { Head, Link } from '@inertiajs/vue3';
 import AdminLayout from '@/Layouts/AdminLayout.vue';
 import CompassRose from '@/components/Admin/CompassRose.vue';
 import TrendChart from '@/components/Admin/TrendChart.vue';
@@ -560,8 +560,8 @@ const publisherOnline = computed(() =>
     display: inline-flex;
     align-items: center;
     gap: 7px;
-    background: color-mix(in oklch, var(--color-green) 18%, white);
-    color: color-mix(in oklch, var(--color-green) 60%, black);
+    background: var(--color-green-bg);
+    color: var(--color-green);
     font-size: 11px;
     font-weight: 800;
     letter-spacing: 1px;
@@ -622,7 +622,7 @@ const publisherOnline = computed(() =>
     border-radius: 16px;
     overflow: hidden;
     border: 1px solid var(--color-border);
-    background: linear-gradient(165deg, oklch(0.91 0.03 215), oklch(0.86 0.05 205) 55%, oklch(0.82 0.058 200));
+    background: linear-gradient(165deg, var(--color-blue-bg), var(--color-surface) 55%, var(--color-blue-bg));
 }
 
 .mn-map::after {
@@ -631,7 +631,7 @@ const publisherOnline = computed(() =>
     inset: 0;
     pointer-events: none;
     z-index: 1;
-    background: radial-gradient(120% 90% at 50% 18%, transparent 55%, oklch(0.3 0.04 220 / 0.16));
+    background: radial-gradient(120% 90% at 50% 18%, transparent 55%, color-mix(in oklab, var(--color-blue) 16%, transparent));
 }
 
 .mn-map__leaflet {
@@ -650,11 +650,11 @@ const publisherOnline = computed(() =>
 .mn-cluster {
     position: absolute;
     z-index: 2;
-    background: oklch(0.99 0.004 205 / 0.92);
+    background: color-mix(in oklab, var(--color-surface) 92%, transparent);
     border: 1px solid var(--color-border);
     border-radius: 12px;
     padding: 9px 13px;
-    box-shadow: 0 2px 10px oklch(0.2 0.02 205 / 0.12);
+    box-shadow: var(--shadow-sm);
 }
 
 /* TL — weather */
@@ -675,7 +675,7 @@ const publisherOnline = computed(() =>
     font-weight: 700;
     font-size: 26px;
     letter-spacing: -1px;
-    color: var(--color-text);
+    color: var(--color-text-primary);
     line-height: 1;
 }
 
@@ -698,7 +698,7 @@ const publisherOnline = computed(() =>
 .mn-weather__sub b {
     font-family: 'Nunito Sans', sans-serif;
     font-weight: 700;
-    color: var(--color-text);
+    color: var(--color-text-primary);
 }
 
 /* TR — position */
@@ -708,7 +708,7 @@ const publisherOnline = computed(() =>
     font-family: 'Nunito Sans', sans-serif;
     font-weight: 700;
     font-size: 12px;
-    color: var(--color-text);
+    color: var(--color-text-primary);
     white-space: nowrap;
 }
 
@@ -780,7 +780,7 @@ const publisherOnline = computed(() =>
 .mn-num {
     font-family: 'Nunito Sans', sans-serif;
     font-weight: 700;
-    color: var(--color-text);
+    color: var(--color-text-primary);
     line-height: 0.95;
     letter-spacing: -1px;
     font-size: 20px;
@@ -820,7 +820,7 @@ const publisherOnline = computed(() =>
     flex-direction: column;
     align-items: center;
     padding-bottom: 14px;
-    border-bottom: 1px solid var(--color-border-light, oklch(0.93 0.006 205));
+    border-bottom: 1px solid var(--color-border-light);
 }
 
 .mn-rail__pos {
@@ -845,13 +845,13 @@ const publisherOnline = computed(() =>
 .mn-rail__pos-sub b {
     font-family: 'Nunito Sans', sans-serif;
     font-weight: 700;
-    color: var(--color-text);
+    color: var(--color-text-primary);
 }
 
 /* gblock: speed + depth sections */
 .mn-rail__gblock {
     padding: 15px 0;
-    border-bottom: 1px solid var(--color-border-light, oklch(0.93 0.006 205));
+    border-bottom: 1px solid var(--color-border-light);
 }
 
 .mn-rail__gblock:last-child {
@@ -879,7 +879,7 @@ const publisherOnline = computed(() =>
 
 .mn-rail__stw-num {
     font-size: 32px;
-    color: var(--color-text);
+    color: var(--color-text-primary);
 }
 
 /* SOG/STW delta */
@@ -944,7 +944,7 @@ const publisherOnline = computed(() =>
     gap: 30px;
     margin-top: 16px;
     padding-top: 18px;
-    border-top: 1px solid var(--color-border-light, oklch(0.93 0.006 205));
+    border-top: 1px solid var(--color-border-light);
 }
 
 .mn-res__top {

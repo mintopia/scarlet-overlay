@@ -5,7 +5,16 @@
         <!-- Page header -->
         <div class="flex items-baseline justify-between mb-1">
             <div class="flex items-baseline gap-3">
-                <h1 v-if="!editingTitle" class="font-sans text-2xl font-extrabold tracking-tight cursor-pointer" @click="startEditTitle">{{ plan.title }}</h1>
+                <h1
+                    v-if="!editingTitle"
+                    class="font-sans text-2xl font-extrabold tracking-tight cursor-pointer"
+                    role="button"
+                    tabindex="0"
+                    aria-label="Edit plan title"
+                    @click="startEditTitle"
+                    @keydown.enter="startEditTitle"
+                    @keydown.space.prevent="startEditTitle"
+                >{{ plan.title }}</h1>
                 <input
                     v-else
                     ref="titleInput"
@@ -15,7 +24,10 @@
                     @keydown.enter="saveTitle"
                     @blur="saveTitle"
                 />
-                <span v-if="plan.share_token" class="text-[10px] font-body font-bold uppercase tracking-wide text-teal bg-teal-bg px-2 py-0.5 rounded-full">Shared</span>
+                <span v-if="plan.share_token" class="inline-flex items-center gap-1 text-[10px] font-body font-bold uppercase tracking-wide text-teal">
+                    <span class="inline-block w-1.5 h-1.5 rounded-full bg-teal" aria-hidden="true"></span>
+                    Shared
+                </span>
             </div>
             <div class="flex items-center gap-2">
                 <button v-if="plan.share_token" class="btn btn--ghost text-[12px]" @click="copyShareUrl">Copy Link</button>
@@ -65,9 +77,22 @@
 
         <!-- Delete confirmation modal -->
         <Transition name="modal">
-            <div v-if="deleteModal" class="fixed inset-0 z-[10000] flex items-center justify-center bg-black/30" @click.self="deleteModal = null">
-                <div class="modal-card bg-surface border border-border rounded-2xl shadow-lg p-6 w-full max-w-sm">
-                    <div class="text-[16px] font-sans font-bold text-text-primary mb-2">{{ deleteModal.title }}</div>
+            <div
+                v-if="deleteModal"
+                class="fixed inset-0 z-[10000] flex items-center justify-center bg-black/30"
+                role="dialog"
+                aria-modal="true"
+                aria-labelledby="delete-modal-title"
+                @click.self="deleteModal = null"
+                @keydown.escape="deleteModal = null"
+            >
+                <div
+                    ref="deleteModalRef"
+                    tabindex="-1"
+                    class="modal-card bg-surface border border-border rounded-2xl shadow-lg p-6 w-full max-w-sm"
+                    @keydown.tab="trapFocus($event, deleteModalRef)"
+                >
+                    <div id="delete-modal-title" class="text-[16px] font-sans font-bold text-text-primary mb-2">{{ deleteModal.title }}</div>
                     <div class="text-[13px] font-body text-text-secondary mb-5">{{ deleteModal.message }}</div>
                     <div class="flex justify-end gap-2">
                         <button class="btn btn--ghost" @click="deleteModal = null">Cancel</button>
@@ -82,12 +107,13 @@
 <script setup>
 import { ref, computed, onMounted, onUnmounted, watch, nextTick } from 'vue';
 import { Head, router } from '@inertiajs/vue3';
+import { formatDate } from '@/lib/datetime';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import AdminLayout from '@/Layouts/AdminLayout.vue';
 import PlanGroupCard from '@/components/Admin/PlanGroupCard.vue';
 import MapLayerControl from '@/components/MapLayerControl.vue';
-import { routeColor, routeColorDim } from '@/helpers/planColors.js';
+import { routeColor, routeColorDim, routeDashPattern } from '@/helpers/planColors.js';
 import { useMapLayers } from '@/composables/useMapLayers.js';
 import { useToast } from '@/composables/useToast.js';
 
@@ -102,12 +128,36 @@ const editingTitle = ref(false);
 const titleDraft = ref(props.plan.title);
 const titleInput = ref(null);
 const deleteModal = ref(null);
+const deleteModalRef = ref(null);
 const { base, seamark, contours, attach } = useMapLayers();
 
 let map = null;
 let routeLayers = {};
+let themeObserver = null;
 
 const totalRoutes = computed(() => props.plan.groups.reduce((sum, g) => sum + g.routes.length, 0));
+
+/**
+ * In the "night" theme the whole UI is mapped to the red spectrum, so routes
+ * can no longer be told apart by hue. When active we add a distinct dash
+ * pattern per group so the lines stay distinguishable in monochrome-red.
+ *
+ * @returns {boolean}
+ */
+function isNightTheme() {
+    return document.documentElement.getAttribute('data-theme') === 'night';
+}
+
+/**
+ * Resolve the dashArray for an enabled route's polyline. In night theme this
+ * is the group-derived texture; otherwise lines stay solid as before.
+ *
+ * @param {number} groupColorIndex
+ * @returns {string|null}
+ */
+function enabledDashArray(groupColorIndex) {
+    return isNightTheme() ? routeDashPattern(groupColorIndex) : null;
+}
 
 function buildRouteLayers() {
     Object.values(routeLayers).forEach(layers => {
@@ -134,7 +184,7 @@ function buildRouteLayers() {
                 color: route.is_enabled ? color : dimColor,
                 weight: route.is_enabled ? 3 : 2,
                 opacity: route.is_enabled ? 0.85 : 0.3,
-                dashArray: route.is_enabled ? null : '6 4',
+                dashArray: route.is_enabled ? enabledDashArray(group.color_index) : '6 4',
             }).addTo(map);
             layers.push(polyline);
 
@@ -199,10 +249,14 @@ function toggleShare() {
     }
 }
 
-function copyShareUrl() {
+async function copyShareUrl() {
     const url = `${window.location.origin}/planner/${props.plan.slug}?token=${props.plan.share_token}`;
-    navigator.clipboard.writeText(url);
-    toast.success('Share link copied to clipboard');
+    try {
+        await navigator.clipboard.writeText(url);
+        toast.success('Share link copied to clipboard');
+    } catch {
+        toast.error(`Couldn't copy automatically. Copy this link: ${url}`);
+    }
 }
 
 function createGroup() {
@@ -253,8 +307,22 @@ function panToWaypoint(wp) {
     }
 }
 
-function formatDate(iso) {
-    return new Date(iso).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
+/**
+ * Re-apply only the night-theme dash pattern to enabled route polylines
+ * in place, without rebuilding all layers (keeps map state / fit bounds).
+ */
+function restyleForTheme() {
+    if (!map) return;
+    for (const group of props.plan.groups) {
+        for (const route of group.routes) {
+            if (!route.is_enabled) continue;
+            const layers = routeLayers[route.id];
+            const polyline = layers?.[0];
+            if (polyline && typeof polyline.setStyle === 'function') {
+                polyline.setStyle({ dashArray: enabledDashArray(group.color_index) });
+            }
+        }
+    }
 }
 
 onMounted(() => {
@@ -262,9 +330,14 @@ onMounted(() => {
     map = L.map(mapEl.value, { zoomControl: true, attributionControl: false }).setView(props.defaultCenter, 8);
     attach(map);
     buildRouteLayers();
+
+    themeObserver = new MutationObserver(restyleForTheme);
+    themeObserver.observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
 });
 
 onUnmounted(() => {
+    themeObserver?.disconnect();
+    themeObserver = null;
     map?.remove();
     map = null;
 });
@@ -272,6 +345,29 @@ onUnmounted(() => {
 watch(() => props.plan, () => {
     nextTick(buildRouteLayers);
 }, { deep: true });
+
+watch(deleteModal, (val) => {
+    if (val) {
+        nextTick(() => deleteModalRef.value?.focus());
+    }
+});
+
+function trapFocus(event, containerRef) {
+    const modal = containerRef;
+    if (!modal) {
+        return;
+    }
+    const focusable = modal.querySelectorAll('input, button, textarea, select, [tabindex]:not([tabindex="-1"])');
+    const first = focusable[0];
+    const last = focusable[focusable.length - 1];
+    if (event.shiftKey && document.activeElement === first) {
+        event.preventDefault();
+        last?.focus();
+    } else if (!event.shiftKey && document.activeElement === last) {
+        event.preventDefault();
+        first?.focus();
+    }
+}
 </script>
 
 <style scoped>

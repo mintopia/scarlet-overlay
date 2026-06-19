@@ -1,5 +1,8 @@
 <script setup>
-import { computed } from 'vue'
+import { computed, useId } from 'vue'
+
+/** Unique marker id so multiple sparklines on a page don't collide. */
+const endDotMarkerId = `spark-end-dot-${useId()}`
 
 const props = defineProps({
     data: { type: Array, required: true },
@@ -88,16 +91,45 @@ const pathData = computed(() => {
 
     return { lineSegments, fillSegments, gapPaths, lastPoint: lastValid, zeroY }
 })
+
+const ariaSummary = computed(() => {
+    const numericValues = (props.data || []).filter(v => v != null)
+    if (numericValues.length < 2) return 'Sparkline. No data.'
+    const min = Math.min(...numericValues)
+    const max = Math.max(...numericValues)
+    const last = numericValues[numericValues.length - 1]
+    return `Sparkline. Min ${min.toFixed(2)}, max ${max.toFixed(2)}, latest ${last.toFixed(2)}.`
+})
 </script>
 
 <template>
-    <svg :viewBox="`0 0 ${width} ${height}`" preserveAspectRatio="none" :style="{ width: '100%', height: height + 'px' }">
+    <svg :viewBox="`0 0 ${width} ${height}`" preserveAspectRatio="none" :style="{ width: '100%', height: height + 'px' }" role="img" :aria-label="ariaSummary">
+        <title>{{ ariaSummary }}</title>
+        <!--
+            End dot rendered as a user-space marker so it stays circular
+            despite the non-uniform preserveAspectRatio="none" scaling.
+        -->
+        <defs v-if="pathData">
+            <marker
+                v-if="showDot && pathData.lastPoint"
+                :id="endDotMarkerId"
+                markerUnits="userSpaceOnUse"
+                :markerWidth="9"
+                :markerHeight="9"
+                :refX="4.5"
+                :refY="4.5"
+            >
+                <circle cx="4.5" cy="4.5" r="3" :fill="color" stroke="var(--color-surface)" stroke-width="1.5"/>
+            </marker>
+        </defs>
         <template v-if="pathData">
             <!-- Zero line -->
             <line v-if="zeroLine && pathData.zeroY" x1="0" :y1="pathData.zeroY" :x2="width" :y2="pathData.zeroY" :stroke="color" stroke-width="0.5" stroke-dasharray="2 2" opacity="0.3" vector-effect="non-scaling-stroke"/>
 
             <!-- Fill segments -->
-            <path v-if="fill" v-for="(seg, i) in pathData.fillSegments" :key="'f'+i" :d="seg" :fill="color" opacity="0.06"/>
+            <template v-if="fill">
+                <path v-for="(seg, i) in pathData.fillSegments" :key="'f'+i" :d="seg" :fill="color" opacity="0.06"/>
+            </template>
 
             <!-- Solid line segments -->
             <path v-for="(seg, i) in pathData.lineSegments" :key="'l'+i" :d="seg" fill="none" :stroke="color" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" opacity="0.7" vector-effect="non-scaling-stroke"/>
@@ -105,8 +137,8 @@ const pathData = computed(() => {
             <!-- Dotted gap connectors -->
             <path v-for="(seg, i) in pathData.gapPaths" :key="'g'+i" :d="seg" fill="none" :stroke="color" stroke-width="1" stroke-dasharray="3 3" opacity="0.3" vector-effect="non-scaling-stroke"/>
 
-            <!-- Current value dot -->
-            <circle v-if="showDot && pathData.lastPoint" :cx="pathData.lastPoint.x" :cy="pathData.lastPoint.y" r="3" :fill="color" stroke="var(--color-surface)" stroke-width="1.5"/>
+            <!-- Current value dot (circular via user-space marker) -->
+            <path v-if="showDot && pathData.lastPoint" :d="`M${(pathData.lastPoint.x - 0.01).toFixed(3)},${pathData.lastPoint.y} L${pathData.lastPoint.x},${pathData.lastPoint.y}`" fill="none" stroke="none" :marker-end="`url(#${endDotMarkerId})`"/>
         </template>
     </svg>
 </template>

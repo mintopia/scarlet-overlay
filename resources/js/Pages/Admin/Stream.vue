@@ -64,7 +64,7 @@ onMounted(() => {
     align-items: center;
     justify-content: center;
     gap: 14px;
-    color: oklch(0.85 0.01 240);
+    color: var(--color-text-secondary);
 }
 
 .stream-overlay__text {

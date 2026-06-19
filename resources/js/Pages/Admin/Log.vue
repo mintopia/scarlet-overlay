@@ -30,6 +30,12 @@
             </div>
         </div>
 
+        <p class="scroll-hint md:hidden" aria-hidden="true">
+            <span>Swipe to see more</span>
+            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M5 12h14M13 6l6 6-6 6" />
+            </svg>
+        </p>
         <LogTable :rows="rows" :timezone="activeTz" />
     </AdminLayout>
 </template>
@@ -76,6 +82,19 @@ function changePeriod() {
 
 .toolbar-label-text {
     font-size: 10px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--color-text-dim);
+}
+
+.scroll-hint {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 4px;
+    margin-bottom: 8px;
+    font-size: 11px;
     font-weight: 600;
     text-transform: uppercase;
     letter-spacing: 0.04em;
