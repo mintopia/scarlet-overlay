@@ -204,12 +204,17 @@ class PrometheusService
                 return null;
             }
 
-            $timestamp = (int) $result[0]['value'][0];
+            // $result[0]['value'][0] is the instant-query EVALUATION time (~now),
+            // not the last sample's time — relying on it makes age always ~0, which
+            // silently disables every staleness/freshness check downstream. Derive
+            // the real last-sample timestamp via tlast_over_time (see queryTimestamp),
+            // falling back to the evaluation time only when it is unavailable.
+            $sampleTimestamp = $this->queryTimestamp($promql) ?? (int) $result[0]['value'][0];
 
             return [
                 'value' => (float) $result[0]['value'][1],
-                'timestamp' => $timestamp,
-                'age' => now()->timestamp - $timestamp,
+                'timestamp' => $sampleTimestamp,
+                'age' => max(0, now()->timestamp - $sampleTimestamp),
             ];
         } catch (\Throwable $e) {
             Log::warning("Prometheus query failed [{$promql}]: {$e->getMessage()}");

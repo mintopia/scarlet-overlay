@@ -122,18 +122,44 @@ class PrometheusServiceTest extends TestCase
         $this->assertNull($result['speed']);
     }
 
+    /**
+     * Fake VictoriaMetrics so the value query (last_over_time) and the
+     * timestamp query (tlast_over_time) return independent results.
+     * The instant-query envelope timestamp (value[0]) is always ~now (eval time);
+     * the real last-sample time is carried as the tlast_over_time value (value[1]).
+     */
+    private function fakeVictoriaMetrics(float $value, int $sampleTimestamp): void
+    {
+        $evalTime = now()->timestamp;
+        Http::fake(function ($request) use ($value, $sampleTimestamp, $evalTime) {
+            $url = urldecode($request->url());
+            $payload = str_contains($url, 'tlast_over_time')
+                ? ['value' => [$evalTime, (string) $sampleTimestamp]]
+                : ['value' => [$evalTime, (string) $value]];
+
+            return Http::response([
+                'status' => 'success',
+                'data' => ['resultType' => 'vector', 'result' => [$payload]],
+            ]);
+        });
+    }
+
+    public function test_query_with_timestamp_uses_real_sample_time_not_eval_time(): void
+    {
+        // Eval time is "now", but the last real sample landed 5 minutes ago.
+        $this->fakeVictoriaMetrics(value: 12.5, sampleTimestamp: now()->timestamp - 300);
+
+        $service = new PrometheusService;
+        $result = $service->queryWithTimestamp('scarlet_metric');
+
+        $this->assertEquals(12.5, $result['value']);
+        $this->assertEquals(now()->timestamp - 300, $result['timestamp']);
+        $this->assertEqualsWithDelta(300, $result['age'], 2);
+    }
+
     public function test_query_fresh_returns_value_when_recent(): void
     {
-        $now = now()->timestamp;
-        Http::fake([
-            '*/api/v1/query*' => Http::response([
-                'status' => 'success',
-                'data' => [
-                    'resultType' => 'vector',
-                    'result' => [['value' => [$now, '5.0']]],
-                ],
-            ]),
-        ]);
+        $this->fakeVictoriaMetrics(value: 5.0, sampleTimestamp: now()->timestamp - 10);
 
         $service = new PrometheusService;
         $result = $service->queryFresh('scarlet_metric', 120);
@@ -142,16 +168,7 @@ class PrometheusServiceTest extends TestCase
 
     public function test_query_fresh_returns_null_when_stale(): void
     {
-        $staleTs = now()->timestamp - 300;
-        Http::fake([
-            '*/api/v1/query*' => Http::response([
-                'status' => 'success',
-                'data' => [
-                    'resultType' => 'vector',
-                    'result' => [['value' => [$staleTs, '5.0']]],
-                ],
-            ]),
-        ]);
+        $this->fakeVictoriaMetrics(value: 5.0, sampleTimestamp: now()->timestamp - 300);
 
         $service = new PrometheusService;
         $result = $service->queryFresh('scarlet_metric', 120);
