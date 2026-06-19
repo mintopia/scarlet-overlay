@@ -37,6 +37,15 @@ processors:
       datapoint:
         - 'resource.attributes["device.id"] == nil'
 
+  # Strip the `device.mode` RESOURCE attribute (-> drops the `device_mode` label).
+  # Device mode is tracked as its own metric, so it is noise on every other series.
+  # Only `device.mode` is deleted here — NOT `service.name` (the exporter derives the
+  # wanted `job` label from service.name; see attributes/strip note below).
+  resource/strip:
+    attributes:
+      - key: device.mode
+        action: delete
+
   # --- Normalization (Phase 4, Stage 1: declarative, panic-proof) ---
   # Strip noise DATAPOINT attributes. `value` is the important one: on
   # mqtt.last_seen and the signalk string metrics it carries a CHANGING string
@@ -80,5 +89,5 @@ service:
     metrics:
       receivers: [otlp]
       # Stage 1: declarative strips only. filter/ecoflow (OTTL) is added in Stage 2.
-      processors: [memory_limiter, filter/dedup, attributes/strip, batch]
+      processors: [memory_limiter, filter/dedup, resource/strip, attributes/strip, batch]
       exporters: [prometheusremotewrite]
