@@ -8,6 +8,7 @@ use App\Http\Controllers\Admin\CanonicalCatalogController;
 use App\Http\Controllers\Admin\ExploreController;
 use App\Http\Controllers\Admin\JourneyController;
 use App\Http\Controllers\Admin\JourneyViewController as AdminJourneyViewController;
+use App\Http\Controllers\Admin\OpsDashboardController;
 use App\Http\Controllers\Admin\PlanGroupController;
 use App\Http\Controllers\Admin\PlannerController;
 use App\Http\Controllers\Admin\PlanRouteController;
@@ -142,6 +143,7 @@ Route::middleware('auth')->prefix('admin')->group(function () {
 
     // Audience dashboards
     Route::get('dash/tech', [TechDashboardController::class, 'index'])->name('admin.dash.tech');
+    Route::get('dash/ops', [OpsDashboardController::class, 'index'])->name('admin.dash.ops');
 
     // Canonical metric catalog
     Route::get('metrics/catalog', [CanonicalCatalogController::class, 'index'])->name('admin.catalog');
