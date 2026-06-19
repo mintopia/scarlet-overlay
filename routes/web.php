@@ -14,6 +14,7 @@ use App\Http\Controllers\Admin\PlanRouteController;
 use App\Http\Controllers\Admin\ProfileController;
 use App\Http\Controllers\Admin\SettingsController;
 use App\Http\Controllers\Admin\SkipperDashboardController;
+use App\Http\Controllers\Admin\StreamController;
 use App\Http\Controllers\Admin\StreamMonitorController;
 use App\Http\Controllers\Admin\TeamController;
 use App\Http\Controllers\Admin\TechDashboardController;
@@ -130,6 +131,8 @@ Route::middleware('auth')->prefix('admin')->group(function () {
     Route::post('/planner/groups/{group}/routes', [PlanRouteController::class, 'store'])->name('admin.planner.routes.store');
     Route::put('/planner/routes/{route}', [PlanRouteController::class, 'update'])->name('admin.planner.routes.update');
     Route::delete('/planner/routes/{route}', [PlanRouteController::class, 'destroy'])->name('admin.planner.routes.destroy');
+
+    Route::get('stream', [StreamController::class, 'index'])->name('admin.stream');
 
     // Audience dashboards
     Route::get('dash/main', [MainDashboardController::class, 'index'])->name('admin.dash.main');
