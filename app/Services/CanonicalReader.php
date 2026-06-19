@@ -70,6 +70,43 @@ class CanonicalReader
     }
 
     /**
+     * Return a time-ordered series of transformed values for the canonical key.
+     *
+     * @return array<int, array{t: int, v: float}>
+     */
+    public function readRange(string $key, string $duration, string $step = '300s'): array
+    {
+        $def = $this->catalog->definition($key);
+        if ($def === null) {
+            return [];
+        }
+
+        $source = $def['sources'][0] ?? null;
+        if ($source === null) {
+            return [];
+        }
+
+        $raw = $this->prometheus->queryRange($source['selector'], $duration, $step, fillGaps: false);
+        if (empty($raw)) {
+            return [];
+        }
+
+        $points = [];
+        foreach ($raw as $point) {
+            if ($point['value'] === null) {
+                continue;
+            }
+
+            $points[] = [
+                't' => (int) $point['timestamp'],
+                'v' => $this->applyArithmetic((float) $point['value'], $source),
+            ];
+        }
+
+        return $points;
+    }
+
+    /**
      * @param  array<string, mixed>  $def
      * @param  array<string, mixed>  $source
      * @param  array{value: float, timestamp: int, age: int}  $raw
