@@ -152,6 +152,7 @@ Route::middleware('auth')->prefix('admin')->group(function () {
     // Canonical metric catalog
     Route::get('metrics/catalog', [CanonicalCatalogController::class, 'index'])->name('admin.catalog');
     Route::post('metrics/catalog', [CanonicalCatalogController::class, 'store'])->name('admin.catalog.store');
+    Route::get('metrics/catalog/inventory', [CanonicalCatalogController::class, 'inventory'])->name('admin.catalog.inventory');
     Route::put('metrics/catalog/{metric}', [CanonicalCatalogController::class, 'update'])->name('admin.catalog.update');
     Route::delete('metrics/catalog/{metric}', [CanonicalCatalogController::class, 'destroy'])->name('admin.catalog.destroy');
     Route::post('metrics/catalog/test', [CanonicalCatalogController::class, 'test'])->name('admin.catalog.test');

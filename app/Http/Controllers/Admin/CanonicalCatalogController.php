@@ -6,7 +6,9 @@ use App\Http\Controllers\Controller;
 use App\Models\CanonicalCatalogVersion;
 use App\Models\CanonicalMetric;
 use App\Services\CanonicalCatalog;
+use App\Services\PrometheusService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Gate;
 use Inertia\Inertia;
 
 class CanonicalCatalogController extends Controller
@@ -21,8 +23,23 @@ class CanonicalCatalogController extends Controller
         ]);
     }
 
+    public function inventory(PrometheusService $prometheus)
+    {
+        $names = array_values(array_filter(
+            $prometheus->labelValues('__name__'),
+            fn (string $n): bool => str_starts_with($n, 'scarlet_'),
+        ));
+        sort($names);
+
+        return response()->json([
+            'names' => $names,
+            'topics' => $prometheus->labelValues('topic'),
+        ]);
+    }
+
     public function store(Request $request, CanonicalCatalog $catalog)
     {
+        Gate::authorize('manageCanonicalCatalog');
         $data = $this->validateMetric($request);
         $metric = CanonicalMetric::create(collect($data)->except('sources')->all());
         foreach ($data['sources'] as $s) {
@@ -35,6 +52,7 @@ class CanonicalCatalogController extends Controller
 
     public function update(Request $request, CanonicalMetric $metric, CanonicalCatalog $catalog)
     {
+        Gate::authorize('manageCanonicalCatalog');
         $data = $this->validateMetric($request);
         $metric->update(collect($data)->except('sources')->all());
         $metric->sources()->delete();
@@ -48,6 +66,7 @@ class CanonicalCatalogController extends Controller
 
     public function destroy(Request $request, CanonicalMetric $metric, CanonicalCatalog $catalog)
     {
+        Gate::authorize('manageCanonicalCatalog');
         $metric->delete();
         $catalog->recordVersion('delete', $request->user()->email);
 
@@ -66,6 +85,7 @@ class CanonicalCatalogController extends Controller
 
     public function rollback(Request $request, CanonicalCatalog $catalog)
     {
+        Gate::authorize('manageCanonicalCatalog');
         $validated = $request->validate(['version' => ['required', 'integer', 'min:1']]);
         $catalog->rollback($validated['version'], $request->user()->email);
 
@@ -87,6 +107,9 @@ class CanonicalCatalogController extends Controller
             'staleness_threshold_s' => ['required', 'integer', 'min:1'],
             'coverage_window_s' => ['integer', 'min:1'],
             'coverage_min' => ['numeric', 'between:0,1'],
+            'valid_min' => ['nullable', 'numeric'],
+            'valid_max' => ['nullable', 'numeric'],
+            'reject_null_island' => ['boolean'],
             'enabled' => ['boolean'],
             'description' => ['nullable', 'string'],
             'sources' => ['required', 'array', 'min:1'],

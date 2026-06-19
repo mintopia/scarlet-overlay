@@ -77,6 +77,7 @@ class CanonicalCatalog
                 'volatile' => $m->volatile, 'trend_fn' => $m->trend_fn, 'trend_window' => $m->trend_window,
                 'staleness_threshold_s' => $m->staleness_threshold_s, 'coverage_window_s' => $m->coverage_window_s,
                 'coverage_min' => $m->coverage_min, 'valid_min' => $m->valid_min, 'valid_max' => $m->valid_max,
+                'reject_null_island' => $m->reject_null_island,
                 'enabled' => $m->enabled, 'description' => $m->description,
                 'sources' => $m->sources->map(fn ($s) => [
                     'priority' => $s->priority, 'source_metric_name' => $s->source_metric_name,
@@ -133,6 +134,7 @@ class CanonicalCatalog
                 'coverage_min' => $metric->coverage_min,
                 'valid_min' => $metric->valid_min,
                 'valid_max' => $metric->valid_max,
+                'reject_null_island' => $metric->reject_null_island,
                 'sources' => $metric->sources->map(fn ($s) => array_filter([
                     'selector' => $this->compileSelector([
                         'source_metric_name' => $s->source_metric_name,
@@ -229,6 +231,7 @@ class CanonicalCatalog
             $def['coverage_min'] = (float) $def['coverage_min'];
             $def['valid_min'] = isset($def['valid_min']) ? (float) $def['valid_min'] : null;
             $def['valid_max'] = isset($def['valid_max']) ? (float) $def['valid_max'] : null;
+            $def['reject_null_island'] = (bool) ($def['reject_null_island'] ?? false);
             $def['volatile'] = (bool) $def['volatile'];
             $def['enabled'] = (bool) $def['enabled'];
             $def['staleness_threshold_s'] = (int) $def['staleness_threshold_s'];
@@ -251,7 +254,7 @@ class CanonicalCatalog
             foreach ([
                 'key', 'label', 'group', 'storage_unit', 'display_unit', 'volatile', 'trend_fn',
                 'trend_window', 'staleness_threshold_s', 'coverage_window_s', 'coverage_min',
-                'valid_min', 'valid_max', 'enabled', 'description', 'sources',
+                'valid_min', 'valid_max', 'reject_null_island', 'enabled', 'description', 'sources',
             ] as $field) {
                 $ordered[$field] = $def[$field] ?? null;
             }

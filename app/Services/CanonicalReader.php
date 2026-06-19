@@ -30,7 +30,7 @@ class CanonicalReader
             }
 
             // Reject inactive-source sentinels (e.g. SignalK course/waypoint cluster when no route is active).
-            if (! $this->withinValidRange($def, $this->applyArithmetic($raw['value'], $source))) {
+            if (! $this->isValidReading($def, $this->applyArithmetic($raw['value'], $source))) {
                 continue;
             }
 
@@ -49,7 +49,7 @@ class CanonicalReader
                 continue;
             }
 
-            if (! $this->withinValidRange($def, $this->applyArithmetic($raw['value'], $source))) {
+            if (! $this->isValidReading($def, $this->applyArithmetic($raw['value'], $source))) {
                 continue;
             }
 
@@ -144,13 +144,20 @@ class CanonicalReader
     }
 
     /**
-     * Reject readings outside the metric's declared plausible range (display units).
-     * Used to discard fixed sentinels that inactive sources emit (e.g. SignalK
-     * course/waypoint values when no route is active).
+     * Null Island threshold — lat/long magnitudes below this are treated as a
+     * no-GPS-fix reading (0,0), matching the app-wide convention.
+     */
+    private const NULL_ISLAND_EPSILON = 0.1;
+
+    /**
+     * Reject readings that are not real values: outside the metric's declared
+     * plausible range (display units) — discarding fixed sentinels that inactive
+     * sources emit (e.g. SignalK course/waypoint values when no route is active) —
+     * or, for lat/long metrics, a Null Island (0,0 / no-fix) reading.
      *
      * @param  array<string, mixed>  $def
      */
-    private function withinValidRange(array $def, float $value): bool
+    private function isValidReading(array $def, float $value): bool
     {
         $min = $def['valid_min'] ?? null;
         $max = $def['valid_max'] ?? null;
@@ -160,6 +167,10 @@ class CanonicalReader
         }
 
         if ($max !== null && $value > (float) $max) {
+            return false;
+        }
+
+        if (($def['reject_null_island'] ?? false) && abs($value) < self::NULL_ISLAND_EPSILON) {
             return false;
         }
 

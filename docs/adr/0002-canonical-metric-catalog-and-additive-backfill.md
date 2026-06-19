@@ -57,3 +57,19 @@ rebuild clean canonical history alongside the originals; verify; back up; only t
   Audience Dashboards are an explicitly separate follow-on program.
 - **A Source Priority Chain, not a single query, defines "definitive."** Backfill must stitch history
   across whichever source was live at each timestamp (SignalK where present, MQTT fallback otherwise).
+
+## Amendment (2026-06-19)
+
+Decision **2** of this ADR — "Normalisation is Fix-Forward + **Additive Backfill**" — is **superseded**.
+There is **no canonical writer, no physically-written canonical output series, no legacy prune, and no
+verification ledger**. The Source Priority Chain is resolved **at read time** by `App\Services\CanonicalReader`
+over the existing raw VictoriaMetrics series; nothing is written back as a canonical series. (The
+collector-side label normalisation of raw data, done separately, remains valid and is unaffected by this
+amendment.)
+
+Decision **1** of this ADR — the **DB-backed, management-UI-editable Canonical Catalog** with **structured
+source descriptors** and read-time resolution — is **retained**, and **extended**: each canonical metric may
+declare optional per-metric `valid_min` / `valid_max` **validity bounds** (in display units), which the
+reader applies to reject out-of-range sentinels (e.g. SignalK's "no active route" course/waypoint values),
+falling to the next source or to a null/empty reading. Bounds are part of the versioned catalog, not
+free-form.

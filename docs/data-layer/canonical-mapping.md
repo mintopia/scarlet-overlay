@@ -59,9 +59,23 @@ GPS is already unit-suffixed at source (`_deg`/`_kn`/`_meters`). MQTT tank `_per
 | `scarlet_signalk_navigation_magneticVariation` | rad | `mag_variation` → `scarlet_navigation_mag_variation_deg` | ×180/π | proposed |
 | `scarlet_gps_*` (`latitude_deg`,`longitude_deg`,`speed_kn`,`heading_deg`,`hdop`,`satellites`,`altitude_meters`) | deg/kn/m | — | — | keep-raw (already unit-correct; GPS fallback source for position/speed) |
 | `scarlet_signalk_navigation_gnss_*` (dilutions, satellites, antennaAltitude, geoidalSeparation) | mixed | — | — | keep-raw → drop-from-catalog (GNSS diagnostics) |
-| `scarlet_signalk_navigation_course_calcValues_*` (XTE, bearings, distance, VMG, timeToGo) | SI | — | — | keep-raw; canonicalize on demand for active-route nav |
+| `scarlet_signalk_navigation_course_calcValues_velocityMadeGood` | m/s | `vmg` (reads this series) | ×1.943844 → kn | **baseline** (was mapped to non-existent `courseGreatCircle_*`; repointed 2026-06-19) |
+| `scarlet_signalk_navigation_course_calcValues_crossTrackError` | m | `xte` (reads this series) | none (m) | **baseline**; bounds ±185200 m (±100 nm) — repointed 2026-06-19 |
+| `scarlet_signalk_navigation_course_calcValues_bearingTrue` | rad | `bearing_to_wp_true` (reads this series) | ×180/π → deg | **baseline**; repointed 2026-06-19 |
+| `scarlet_signalk_navigation_course_calcValues_bearingTrackTrue` | rad | `track_bearing_true` (reads this series) | ×180/π → deg | **baseline**; repointed 2026-06-19 |
+| `scarlet_signalk_navigation_course_calcValues_distance` | m | `wp_distance` (reads this series) | m → nm | **baseline**; bounds 0–1000 nm — repointed 2026-06-19 |
+| `scarlet_signalk_navigation_course_calcValues_timeToGo` | s | `wp_ttg` (reads this series) | s | **baseline**; bounds 0–14 d — repointed 2026-06-19 |
 | `scarlet_signalk_navigation_{datetime,log,trip_log,course*startTime,*Point*type}` | str/m/ts | — | — | drop-from-catalog (string/enum/odometer) |
-| `scarlet_signalk_performance_velocityMadeGoodToWaypoint` | m/s | `vmg_waypoint` → `scarlet_navigation_vmg_waypoint_kn` | ×1.943844 | proposed |
+| `scarlet_signalk_performance_velocityMadeGoodToWaypoint` | m/s | `vmg_waypoint` (reads this series) | ×1.943844 → kn | proposed |
+
+> **Waypoint/course keys repointed (2026-06-19).** The 6 navigation waypoint keys — `vmg`, `xte`,
+> `bearing_to_wp_true`, `track_bearing_true`, `wp_distance`, `wp_ttg` — were baselined against
+> non-existent `scarlet_signalk_navigation_courseGreatCircle_*` series. The live audit found the real
+> resolved-course cluster is `scarlet_signalk_navigation_course_calcValues_*`, so they were repointed there
+> (rows above). **Validity bounds** were added so these keys read null/empty instead of serving SignalK's
+> "no active route" sentinels (xte ≈ −3.79 M m, wp_distance ≈ 2642 nm): `xte` ±100 nm (±185200 m),
+> `wp_distance` 0–1000 nm, `wp_ttg` 0–14 d. Bounds are applied by `CanonicalReader` in both the fresh and
+> stale passes (read contract, Phase 3 item 10a).
 
 ## Wind & Environment (domains `wind`, `environment`)
 

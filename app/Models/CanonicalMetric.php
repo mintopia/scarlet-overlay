@@ -10,7 +10,7 @@ class CanonicalMetric extends Model
     protected $fillable = [
         'key', 'label', 'group', 'storage_unit', 'display_unit', 'volatile',
         'trend_fn', 'trend_window', 'staleness_threshold_s', 'coverage_window_s',
-        'coverage_min', 'valid_min', 'valid_max', 'enabled', 'description',
+        'coverage_min', 'valid_min', 'valid_max', 'reject_null_island', 'enabled', 'description',
     ];
 
     protected function casts(): array
@@ -23,6 +23,7 @@ class CanonicalMetric extends Model
             'coverage_min' => 'float',
             'valid_min' => 'float',
             'valid_max' => 'float',
+            'reject_null_island' => 'boolean',
         ];
     }
 

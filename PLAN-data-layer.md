@@ -2,6 +2,57 @@
 _Locked via grill-with-docs — by Claude + Jess. Terms per CONTEXT.md; architecture per ADR 0002._
 _Revised after Codex Rounds 1–4 — APPROVED (see PLAN-REVIEW-LOG-data-layer.md)._
 
+## SUPERSEDED / CURRENT MODEL (2026-06-19)
+
+> **The plan below this section is historical.** On 2026-06-19 the project owner (Jess) reversed the
+> backfill-as-writer half of the program. Read this section for what was actually built; treat the
+> 8-phase plan beneath it as the original record only.
+
+**Current model — a read-time mapping layer, not a writer.** The Canonical Catalog is a **DB-backed,
+management-UI-editable mapping layer over the EXISTING raw VictoriaMetrics series**. There is **no
+canonical writer and no physically-written canonical output series** — the old
+`scarlet_<domain>_<quantity>_<unit>{source=...}` series are **not** created. For each canonical metric an
+admin configures (in the management UI) which existing raw VM series, label matchers, and unit transforms
+it maps to, and `App\Services\CanonicalReader` resolves it **at read time**: an ordered source-priority
+chain, staleness-bounded, with a 10-minute median for volatile metrics.
+
+**Dropped from the original plan:**
+- **Phase 5 — additive backfill that *writes* canonical series** (`metrics:canonicalise`). Nothing is written.
+- **Phase 8 — legacy prune.** No destructive prune of raw series for canonicalisation.
+- **The verification ledger** (`pending_delete → … → verified` chunk ledger).
+- **Physically-written canonical output series** (the separate output-name allowlist).
+
+> Note: the **collector-side label normalisation of ALL raw data** (Phase 5 backup doc) was done
+> separately and **remains valid** — it is *not* the canonical writer.
+
+**Retained (and where it lives in the historical plan):**
+- **Catalog DB + management-UI mapping editing** — original **Phase 7** (and the Phase 2 schema): seen,
+  edited, and versioned in the DB via structured descriptors.
+- **Read contract + validity bounds** — original **Phase 3** (incl. item 10a): `CanonicalReader` returns
+  value/age/trend/resolved-source and rejects out-of-range readings via optional per-metric
+  `valid_min`/`valid_max`.
+- **Consumer cutover** — original **Phase 6**: consumers read through the catalog/reader.
+
+**Work completed 2026-06-19 under the current model:**
+1. Audited all 79 canonical baseline keys against live VM. 6 navigation waypoint keys (`vmg`, `xte`,
+   `bearing_to_wp_true`, `track_bearing_true`, `wp_distance`, `wp_ttg`) were mapped to non-existent
+   `scarlet_signalk_navigation_courseGreatCircle_*` series and were repointed to the live resolved-course
+   cluster `scarlet_signalk_navigation_course_calcValues_*` (`velocityMadeGood`, `crossTrackError`,
+   `distance`, `timeToGo`, `bearingTrue`, `bearingTrackTrue`).
+2. Added read-contract **validity bounds**: canonical metrics carry optional `valid_min`/`valid_max`
+   (display units); `CanonicalReader` rejects out-of-range readings in **both** the fresh and stale passes,
+   so the key reads null/empty instead of serving SignalK "no active route" sentinels (xte ≈ −3.79 M m,
+   wp_distance ≈ 2642 nm). Bounds set: `xte` ±100 nm (±185200 m), `wp_distance` 0–1000 nm, `wp_ttg` 0–14 d.
+   (Phase 3, item 10a.)
+3. The corrected catalog ships to production via an **idempotent reseed migration** that runs on
+   `php artisan migrate` (skipped in the `testing` env) — no manual `metrics:catalog:reset` on deploy.
+4. EcoFlow keys left as-is (device offline; historical data exists; resolves stale; will reconstruct/resolve
+   when the device returns).
+
+---
+
+_The remainder of this document is the original 8-phase plan, retained for the record._
+
 ## Goal
 
 Replace Scarlet's drift-prone, code-only metric registry with a **DB-backed, admin-editable Canonical

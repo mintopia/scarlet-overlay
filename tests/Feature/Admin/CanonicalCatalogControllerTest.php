@@ -48,7 +48,7 @@ class CanonicalCatalogControllerTest extends TestCase
         $metric = CanonicalMetric::create(['key' => 'fuel_level', 'label' => 'Diesel', 'storage_unit' => 'pct', 'display_unit' => '%', 'staleness_threshold_s' => 3600]);
         $metric->sources()->create(['priority' => 1, 'source_metric_name' => 'old_metric_name']);
 
-        $this->actingAs(User::factory()->create())
+        $this->actingAs(User::factory()->owner()->create())
             ->put(route('admin.catalog.update', $metric), [
                 'key' => 'fuel_level', 'label' => 'Diesel Updated', 'group' => 'tank',
                 'storage_unit' => 'pct', 'display_unit' => '%', 'staleness_threshold_s' => 3600,
@@ -66,7 +66,7 @@ class CanonicalCatalogControllerTest extends TestCase
     {
         $metric = CanonicalMetric::create(['key' => 'fuel_level', 'label' => 'Diesel', 'storage_unit' => 'pct', 'display_unit' => '%', 'staleness_threshold_s' => 3600]);
 
-        $this->actingAs(User::factory()->create())
+        $this->actingAs(User::factory()->owner()->create())
             ->delete(route('admin.catalog.destroy', $metric))
             ->assertRedirect();
 
@@ -76,7 +76,7 @@ class CanonicalCatalogControllerTest extends TestCase
 
     public function test_store_creates_metric_with_sources_and_bumps_version(): void
     {
-        $this->actingAs(User::factory()->create())
+        $this->actingAs(User::factory()->owner()->create())
             ->post(route('admin.catalog.store'), [
                 'key' => 'water_fresh_level', 'label' => 'Fresh Water', 'group' => 'tank',
                 'storage_unit' => 'pct', 'display_unit' => '%', 'staleness_threshold_s' => 3600,
@@ -91,6 +91,46 @@ class CanonicalCatalogControllerTest extends TestCase
         $this->assertDatabaseHas('canonical_metrics', ['key' => 'water_fresh_level']);
         $this->assertDatabaseHas('canonical_metric_sources', ['source_metric_name' => 'scarlet_signalk_tanks_freshWater_0_currentLevel']);
         $this->assertDatabaseHas('canonical_catalog_versions', ['action' => 'edit']);
+    }
+
+    public function test_store_is_forbidden_for_non_owner(): void
+    {
+        $this->actingAs(User::factory()->create()) // crew
+            ->post(route('admin.catalog.store'), [
+                'key' => 'foo', 'label' => 'Foo', 'storage_unit' => 'x', 'display_unit' => 'x',
+                'staleness_threshold_s' => 60,
+                'sources' => [['priority' => 1, 'source_metric_name' => 'scarlet_x']],
+            ])->assertForbidden();
+
+        $this->assertDatabaseMissing('canonical_metrics', ['key' => 'foo']);
+    }
+
+    public function test_store_persists_validity_bounds_and_null_island_flag(): void
+    {
+        $this->actingAs(User::factory()->owner()->create())
+            ->post(route('admin.catalog.store'), [
+                'key' => 'position_lat', 'label' => 'Latitude', 'group' => 'nav',
+                'storage_unit' => 'deg', 'display_unit' => '°', 'staleness_threshold_s' => 120,
+                'valid_min' => -90, 'valid_max' => 90, 'reject_null_island' => true,
+                'sources' => [['priority' => 1, 'source_metric_name' => 'scarlet_gps_latitude_deg']],
+            ])->assertRedirect();
+
+        $this->assertDatabaseHas('canonical_metrics', [
+            'key' => 'position_lat', 'valid_min' => -90, 'valid_max' => 90, 'reject_null_island' => true,
+        ]);
+    }
+
+    public function test_inventory_returns_scarlet_series_names(): void
+    {
+        Http::fake(['*' => Http::response([
+            'status' => 'success',
+            'data' => ['scarlet_gps_latitude_deg', 'scarlet_signalk_navigation_speedOverGround', 'go_gc_duration_seconds'],
+        ], 200)]);
+
+        $this->actingAs(User::factory()->create())
+            ->getJson(route('admin.catalog.inventory'))
+            ->assertOk()
+            ->assertJson(['names' => ['scarlet_gps_latitude_deg', 'scarlet_signalk_navigation_speedOverGround']]);
     }
 
     public function test_test_endpoint_returns_value(): void

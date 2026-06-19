@@ -1,5 +1,11 @@
 # Canonical metric naming convention
 
+> **Model note (2026-06-19):** **no canonical output series are physically written.** Under the current
+> read-time model there is no canonical writer — `CanonicalReader` resolves each logical metric from its
+> configured raw VM source at read time. This convention therefore describes **logical catalog keys only**
+> (the identity + storage-unit semantics behind each catalog entry); it does **not** describe series
+> materialised in VictoriaMetrics.
+
 Format: `scarlet_<domain>_<quantity>_<storage-unit>`
 
 - `<domain>`: navigation | wind | power | tank | environment | cabin | tracker | ecoflow | stream

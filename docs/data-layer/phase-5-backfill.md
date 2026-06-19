@@ -1,5 +1,12 @@
 # Phase 5 — Backup & historical label normalisation
 
+> **SUPERSEDED (2026-06-19).** The canonical-*writing* backfill this phase was originally for
+> (`metrics:canonicalise` — additively writing canonical output series, with a verification ledger and a
+> later legacy prune) was **abandoned**. There is **no canonical writer and nothing is written**: the
+> canonical source for each logical metric is configured in management and resolved **at read time** by
+> `CanonicalReader`. What remains valid below is the **backup + collector-side / historical label
+> normalisation of the raw series** (done separately) — that work stands. The rest is kept for history.
+
 Executed 2026-06-19 against production VictoriaMetrics (`44.30.69.5:8428`) via its HTTP API.
 Small dataset (~900 active series, ~7.8M samples), so done as direct passes rather than the
 day-chunked ledgered tooling the plan envisages for scale. Existing backups are the safety net.

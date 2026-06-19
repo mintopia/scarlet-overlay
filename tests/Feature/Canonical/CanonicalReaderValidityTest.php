@@ -80,6 +80,53 @@ class CanonicalReaderValidityTest extends TestCase
         $this->assertNotNull($reader->read('xte'));
     }
 
+    /**
+     * @return array<string, mixed>
+     */
+    private function latDefinition(): array
+    {
+        return [
+            'label' => 'Latitude', 'unit' => '°', 'volatile' => false,
+            'trend_fn' => 'last', 'trend_window' => '2m', 'staleness' => 120,
+            'coverage_window_seconds' => 300, 'coverage_min' => 0.5,
+            'valid_min' => -90.0, 'valid_max' => 90.0, 'reject_null_island' => true,
+            'sources' => [['selector' => 'scarlet_gps_latitude_deg', 'transforms' => []]],
+        ];
+    }
+
+    public function test_null_island_reading_is_rejected_when_enabled(): void
+    {
+        $catalog = Mockery::mock(CanonicalCatalog::class);
+        $catalog->shouldReceive('definition')->with('position_lat')->andReturn($this->latDefinition());
+
+        $prom = Mockery::mock(PrometheusService::class);
+        $prom->shouldReceive('queryWithTimestamp')
+            ->andReturn(['value' => 0.0001, 'timestamp' => 1_700_000_000, 'age' => 5]);
+        $prom->shouldNotReceive('coverageRatio');
+
+        $reader = new CanonicalReader($prom, $catalog);
+
+        $this->assertNull($reader->read('position_lat'));
+    }
+
+    public function test_real_position_passes_when_null_island_enabled(): void
+    {
+        $catalog = Mockery::mock(CanonicalCatalog::class);
+        $catalog->shouldReceive('definition')->with('position_lat')->andReturn($this->latDefinition());
+
+        $prom = Mockery::mock(PrometheusService::class);
+        $prom->shouldReceive('queryWithTimestamp')
+            ->andReturn(['value' => -50.42, 'timestamp' => 1_700_000_000, 'age' => 5]);
+        $prom->shouldReceive('coverageRatio')->andReturn(0.9);
+
+        $reader = new CanonicalReader($prom, $catalog);
+
+        $result = $reader->read('position_lat');
+
+        $this->assertNotNull($result);
+        $this->assertEqualsWithDelta(-50.42, $result['value'], 0.001);
+    }
+
     protected function tearDown(): void
     {
         Mockery::close();

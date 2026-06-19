@@ -63,12 +63,20 @@
                                     </button>
                                 </td>
                                 <td class="px-5 py-3">
-                                    <span class="inline-flex items-center gap-1.5 text-[11px] font-semibold px-2 py-0.5 rounded-full"
-                                        :class="metric.enabled ? 'bg-green-bg text-green' : 'bg-bg text-text-dim'">
-                                        <span class="w-1.5 h-1.5 rounded-full inline-block"
-                                            :class="metric.enabled ? 'bg-green' : 'bg-text-dim'"></span>
-                                        {{ metric.enabled ? 'Enabled' : 'Disabled' }}
-                                    </span>
+                                    <div class="flex items-center gap-1.5 flex-wrap">
+                                        <span class="inline-flex items-center gap-1.5 text-[11px] font-semibold px-2 py-0.5 rounded-full"
+                                            :class="metric.enabled ? 'bg-green-bg text-green' : 'bg-bg text-text-dim'">
+                                            <span class="w-1.5 h-1.5 rounded-full inline-block"
+                                                :class="metric.enabled ? 'bg-green' : 'bg-text-dim'"></span>
+                                            {{ metric.enabled ? 'Enabled' : 'Disabled' }}
+                                        </span>
+                                        <span v-if="metricDrift(metric) === 'missing'"
+                                            class="inline-flex items-center gap-1 text-[11px] font-semibold px-2 py-0.5 rounded-full bg-error-bg text-error"
+                                            title="Highest-priority source not found in live VictoriaMetrics">
+                                            <svg viewBox="0 0 24 24" width="11" height="11" stroke="currentColor" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+                                            drift
+                                        </span>
+                                    </div>
                                 </td>
                                 <td class="px-5 py-3 text-right">
                                     <div class="flex items-center justify-end gap-2">
@@ -265,6 +273,25 @@
                         </div>
                     </div>
 
+                    <!-- Validity / filtering -->
+                    <div class="grid grid-cols-3 gap-4">
+                        <div>
+                            <label class="field-label" for="ed-valid-min">Valid Min</label>
+                            <input id="ed-valid-min" v-model="metricForm.valid_min" type="number" step="any" class="field-input" placeholder="optional" />
+                        </div>
+                        <div>
+                            <label class="field-label" for="ed-valid-max">Valid Max</label>
+                            <input id="ed-valid-max" v-model="metricForm.valid_max" type="number" step="any" class="field-input" placeholder="optional" />
+                        </div>
+                        <div class="flex items-end pb-1.5">
+                            <label class="flex items-center gap-2 cursor-pointer select-none">
+                                <input type="checkbox" v-model="metricForm.reject_null_island" class="w-4 h-4 rounded accent-scarlet" />
+                                <span class="text-[13px] font-medium">Reject Null Island</span>
+                            </label>
+                        </div>
+                    </div>
+                    <p class="text-[11px] text-text-dim -mt-2">Readings outside Valid Min/Max are dropped (e.g. inactive-route sentinels). Null Island drops lat/long&nbsp;≈&nbsp;0,0 (no GPS fix).</p>
+
                     <div>
                         <label class="field-label" for="ed-description">Description</label>
                         <textarea id="ed-description" v-model="metricForm.description" class="field-input" rows="2" placeholder="Optional description"></textarea>
@@ -308,7 +335,11 @@
                             <div class="grid grid-cols-2 gap-2">
                                 <div>
                                     <label class="field-label" :for="'src-name-' + idx">Source Metric Name <span class="text-error">*</span></label>
-                                    <input :id="'src-name-' + idx" v-model="src.source_metric_name" type="text" class="field-input" placeholder="e.g. signalk_wind_speed" />
+                                    <input :id="'src-name-' + idx" v-model="src.source_metric_name" type="text" class="field-input" list="vm-series-list" autocomplete="off" placeholder="e.g. scarlet_signalk_environment_wind_speedApparent" />
+                                    <p v-if="src.source_metric_name && inventoryLoaded && !seriesInVm(src.source_metric_name)" class="text-[11px] text-error mt-1 flex items-center gap-1">
+                                        <svg viewBox="0 0 24 24" width="11" height="11" stroke="currentColor" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                                        Not found in live VictoriaMetrics
+                                    </p>
                                 </div>
                                 <div>
                                     <label class="field-label" :for="'src-class-' + idx">Source Class</label>
@@ -336,6 +367,11 @@
                                 </div>
                             </div>
                         </div>
+
+                        <!-- Series picker options sourced from live VM inventory -->
+                        <datalist id="vm-series-list">
+                            <option v-for="name in seriesOptions" :key="name" :value="name" />
+                        </datalist>
                     </div>
                 </div>
 
@@ -423,7 +459,7 @@
 </template>
 
 <script setup>
-import { ref, computed, watch, nextTick } from 'vue';
+import { ref, computed, watch, nextTick, onMounted } from 'vue';
 import { Head, useForm, router } from '@inertiajs/vue3';
 import AdminLayout from '@/Layouts/AdminLayout.vue';
 
@@ -432,6 +468,44 @@ const props = defineProps({
     versions: { type: Array, default: () => [] },
     version: { type: Number, default: 0 },
 });
+
+// ── Live VM inventory (series picker + drift detection) ─────
+
+const liveSeries = ref(new Set());
+const liveTopics = ref([]);
+const inventoryLoaded = ref(false);
+
+onMounted(async () => {
+    try {
+        const response = await fetch(route('admin.catalog.inventory'), {
+            headers: { Accept: 'application/json' },
+        });
+        if (response.ok) {
+            const data = await response.json();
+            liveSeries.value = new Set(data.names ?? []);
+            liveTopics.value = data.topics ?? [];
+        }
+    } catch {
+        // Inventory is advisory — the editor still works without it.
+    } finally {
+        inventoryLoaded.value = true;
+    }
+});
+
+const seriesOptions = computed(() => [...liveSeries.value]);
+
+function seriesInVm(name) {
+    return !!name && liveSeries.value.has(name);
+}
+
+// A metric drifts if its highest-priority source name is absent from live VM.
+function metricDrift(metric) {
+    if (!inventoryLoaded.value || !metric.sources?.length) {
+        return null;
+    }
+    const primary = [...metric.sources].sort((a, b) => a.priority - b.priority)[0];
+    return seriesInVm(primary.source_metric_name) ? 'ok' : 'missing';
+}
 
 // ── Grouping ───────────────────────────────────────────────
 
@@ -481,7 +555,10 @@ async function testSource(src) {
                 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.content ?? '',
                 'Accept': 'application/json',
             },
-            body: JSON.stringify({ source_id: src.id }),
+            body: JSON.stringify({
+                source_metric_name: src.source_metric_name,
+                label_matchers: src.label_matchers ?? null,
+            }),
         });
         const data = response.ok
             ? await response.json()
@@ -523,6 +600,9 @@ const metricForm = useForm({
     staleness_threshold_s: '',
     coverage_window_s: '',
     coverage_min: '',
+    valid_min: '',
+    valid_max: '',
+    reject_null_island: false,
     description: '',
     sources: [],
 });
@@ -550,6 +630,9 @@ function openEdit(metric) {
     metricForm.staleness_threshold_s = metric.staleness_threshold_s ?? '';
     metricForm.coverage_window_s = metric.coverage_window_s ?? '';
     metricForm.coverage_min = metric.coverage_min ?? '';
+    metricForm.valid_min = metric.valid_min ?? '';
+    metricForm.valid_max = metric.valid_max ?? '';
+    metricForm.reject_null_island = metric.reject_null_island ?? false;
     metricForm.description = metric.description ?? '';
     metricForm.sources = metric.sources.map((s) => ({
         source_metric_name: s.source_metric_name ?? '',
