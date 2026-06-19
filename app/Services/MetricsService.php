@@ -153,7 +153,7 @@ class MetricsService
     /**
      * @return array{contracts: array<string, array<string, mixed>>, version: int}
      */
-    public function getCanonicalContracts(): array
+    private function getCanonicalContracts(): array
     {
         if (! config('scarlet.canonical.enabled')) {
             return ['contracts' => [], 'version' => 0];

@@ -23,10 +23,10 @@ class ContractsBroadcastTest extends TestCase
 
         app(CanonicalCatalog::class)->applyBaseline(CanonicalBaseline::definitions(), 'reset', 'test');
 
-        $result = app(MetricsService::class)->getCanonicalContracts();
+        $result = app(MetricsService::class)->getAllMetrics();
 
-        $this->assertArrayHasKey('srt_up', $result['contracts']);
-        $this->assertArrayHasKey('house_battery_soc', $result['contracts']);
-        $this->assertGreaterThan(0, $result['version']);
+        $this->assertArrayHasKey('srt_up', $result['canonical']);
+        $this->assertArrayHasKey('house_battery_soc', $result['canonical']);
+        $this->assertGreaterThan(0, $result['catalog_version']);
     }
 }
