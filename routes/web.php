@@ -4,6 +4,7 @@ use App\Http\Controllers\Admin\AdminDashboardController;
 use App\Http\Controllers\Admin\AdminLogController;
 use App\Http\Controllers\Admin\BoatMetricsController;
 use App\Http\Controllers\Admin\CanonicalCatalogController;
+use App\Http\Controllers\Admin\DataController;
 use App\Http\Controllers\Admin\JourneyController;
 use App\Http\Controllers\Admin\JourneyViewController as AdminJourneyViewController;
 use App\Http\Controllers\Admin\MainDashboardController;
@@ -143,6 +144,7 @@ Route::middleware('auth')->prefix('admin')->group(function () {
     // Canonical metric catalog (Data)
     Route::get('data', [CanonicalCatalogController::class, 'index'])->name('admin.data.index');
     Route::post('data', [CanonicalCatalogController::class, 'store'])->name('admin.data.store');
+    Route::get('data/current', [DataController::class, 'current'])->name('admin.data.current');
     Route::get('data/inventory', [CanonicalCatalogController::class, 'inventory'])->name('admin.data.inventory');
     Route::post('data/test', [CanonicalCatalogController::class, 'test'])->name('admin.data.test');
     Route::post('data/rollback', [CanonicalCatalogController::class, 'rollback'])->name('admin.data.rollback');
