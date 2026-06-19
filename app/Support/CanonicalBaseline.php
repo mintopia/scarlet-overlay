@@ -37,8 +37,8 @@ class CanonicalBaseline
 
             [
                 'key' => 'fuel_level', 'label' => 'Diesel', 'group' => 'tank',
-                'storage_unit' => 'pct', 'display_unit' => '%', 'volatile' => false,
-                'trend_fn' => 'median', 'trend_window' => 600,
+                'storage_unit' => 'pct', 'display_unit' => '%', 'volatile' => true,
+                'trend_fn' => 'median', 'trend_window' => '10m',
                 'staleness_threshold_s' => 3600, 'coverage_window_s' => 3600, 'coverage_min' => 0.5,
                 'enabled' => true, 'description' => 'Diesel tank level (SignalK preferred, MQTT tanklevel fallback).',
                 'sources' => [
@@ -48,8 +48,8 @@ class CanonicalBaseline
             ],
             [
                 'key' => 'water_fresh_level', 'label' => 'Fresh Water', 'group' => 'tank',
-                'storage_unit' => 'pct', 'display_unit' => '%', 'volatile' => false,
-                'trend_fn' => 'median', 'trend_window' => 600,
+                'storage_unit' => 'pct', 'display_unit' => '%', 'volatile' => true,
+                'trend_fn' => 'median', 'trend_window' => '10m',
                 'staleness_threshold_s' => 3600, 'coverage_window_s' => 3600, 'coverage_min' => 0.5,
                 'enabled' => true, 'description' => 'Fresh water tank level (SignalK preferred, MQTT watertank fallback).',
                 'sources' => [
@@ -63,7 +63,7 @@ class CanonicalBaseline
             [
                 'key' => 'speed_sog', 'label' => 'Speed (SOG)', 'group' => 'nav',
                 'storage_unit' => 'kn', 'display_unit' => 'kn', 'volatile' => true,
-                'trend_fn' => 'last', 'trend_window' => 120,
+                'trend_fn' => 'last', 'trend_window' => '2m',
                 'staleness_threshold_s' => 120, 'coverage_window_s' => 300, 'coverage_min' => 0.5,
                 'enabled' => true, 'description' => 'Speed over ground in knots (SignalK m/s → kn).',
                 'sources' => [
@@ -73,7 +73,7 @@ class CanonicalBaseline
             [
                 'key' => 'speed_stw', 'label' => 'Speed (STW)', 'group' => 'nav',
                 'storage_unit' => 'kn', 'display_unit' => 'kn', 'volatile' => true,
-                'trend_fn' => 'last', 'trend_window' => 120,
+                'trend_fn' => 'last', 'trend_window' => '2m',
                 'staleness_threshold_s' => 120, 'coverage_window_s' => 300, 'coverage_min' => 0.5,
                 'enabled' => true, 'description' => 'Speed through water in knots (SignalK m/s → kn).',
                 'sources' => [
@@ -83,7 +83,7 @@ class CanonicalBaseline
             [
                 'key' => 'vmg', 'label' => 'VMG', 'group' => 'nav',
                 'storage_unit' => 'kn', 'display_unit' => 'kn', 'volatile' => true,
-                'trend_fn' => 'last', 'trend_window' => 120,
+                'trend_fn' => 'last', 'trend_window' => '2m',
                 'staleness_threshold_s' => 120, 'coverage_window_s' => 300, 'coverage_min' => 0.5,
                 'enabled' => true, 'description' => 'Velocity made good toward waypoint (SignalK m/s → kn).',
                 'sources' => [
@@ -93,7 +93,7 @@ class CanonicalBaseline
             [
                 'key' => 'heading_true', 'label' => 'Heading (True)', 'group' => 'nav',
                 'storage_unit' => 'deg', 'display_unit' => '°', 'volatile' => true,
-                'trend_fn' => 'last', 'trend_window' => 120,
+                'trend_fn' => 'last', 'trend_window' => '2m',
                 'staleness_threshold_s' => 120, 'coverage_window_s' => 300, 'coverage_min' => 0.5,
                 'enabled' => true, 'description' => 'True heading in degrees (SignalK rad → deg, magnetic fallback).',
                 'sources' => [
@@ -104,7 +104,7 @@ class CanonicalBaseline
             [
                 'key' => 'heading_magnetic', 'label' => 'Heading (Magnetic)', 'group' => 'nav',
                 'storage_unit' => 'deg', 'display_unit' => '°', 'volatile' => true,
-                'trend_fn' => 'last', 'trend_window' => 120,
+                'trend_fn' => 'last', 'trend_window' => '2m',
                 'staleness_threshold_s' => 120, 'coverage_window_s' => 300, 'coverage_min' => 0.5,
                 'enabled' => true, 'description' => 'Magnetic heading in degrees (SignalK rad → deg).',
                 'sources' => [
@@ -114,7 +114,7 @@ class CanonicalBaseline
             [
                 'key' => 'cog', 'label' => 'Course Over Ground', 'group' => 'nav',
                 'storage_unit' => 'deg', 'display_unit' => '°', 'volatile' => true,
-                'trend_fn' => 'last', 'trend_window' => 120,
+                'trend_fn' => 'last', 'trend_window' => '2m',
                 'staleness_threshold_s' => 120, 'coverage_window_s' => 300, 'coverage_min' => 0.5,
                 'enabled' => true, 'description' => 'Course over ground true in degrees (SignalK rad → deg).',
                 'sources' => [
@@ -124,7 +124,7 @@ class CanonicalBaseline
             [
                 'key' => 'magnetic_variation', 'label' => 'Magnetic Variation', 'group' => 'nav',
                 'storage_unit' => 'deg', 'display_unit' => '°', 'volatile' => true,
-                'trend_fn' => 'last', 'trend_window' => 120,
+                'trend_fn' => 'last', 'trend_window' => '2m',
                 'staleness_threshold_s' => 120, 'coverage_window_s' => 300, 'coverage_min' => 0.5,
                 'enabled' => true, 'description' => 'Magnetic variation in degrees (SignalK rad → deg).',
                 'sources' => [
@@ -134,7 +134,7 @@ class CanonicalBaseline
             [
                 'key' => 'depth_below_surface', 'label' => 'Depth', 'group' => 'nav',
                 'storage_unit' => 'm', 'display_unit' => 'm', 'volatile' => true,
-                'trend_fn' => 'last', 'trend_window' => 120,
+                'trend_fn' => 'last', 'trend_window' => '2m',
                 'staleness_threshold_s' => 120, 'coverage_window_s' => 300, 'coverage_min' => 0.5,
                 'enabled' => true, 'description' => 'Water depth below surface in metres.',
                 'sources' => [
@@ -144,7 +144,7 @@ class CanonicalBaseline
             [
                 'key' => 'depth_below_transducer', 'label' => 'Depth (Transducer)', 'group' => 'nav',
                 'storage_unit' => 'm', 'display_unit' => 'm', 'volatile' => true,
-                'trend_fn' => 'last', 'trend_window' => 120,
+                'trend_fn' => 'last', 'trend_window' => '2m',
                 'staleness_threshold_s' => 120, 'coverage_window_s' => 300, 'coverage_min' => 0.5,
                 'enabled' => true, 'description' => 'Water depth below transducer in metres.',
                 'sources' => [
@@ -154,7 +154,7 @@ class CanonicalBaseline
             [
                 'key' => 'rate_of_turn', 'label' => 'Rate of Turn', 'group' => 'nav',
                 'storage_unit' => 'deg_s', 'display_unit' => '°/s', 'volatile' => true,
-                'trend_fn' => 'last', 'trend_window' => 120,
+                'trend_fn' => 'last', 'trend_window' => '2m',
                 'staleness_threshold_s' => 120, 'coverage_window_s' => 300, 'coverage_min' => 0.5,
                 'enabled' => true, 'description' => 'Rate of turn in degrees/second (SignalK rad/s → deg/s).',
                 'sources' => [
@@ -164,7 +164,7 @@ class CanonicalBaseline
             [
                 'key' => 'heel', 'label' => 'Heel', 'group' => 'nav',
                 'storage_unit' => 'deg', 'display_unit' => '°', 'volatile' => true,
-                'trend_fn' => 'last', 'trend_window' => 120,
+                'trend_fn' => 'last', 'trend_window' => '2m',
                 'staleness_threshold_s' => 120, 'coverage_window_s' => 300, 'coverage_min' => 0.5,
                 'enabled' => true, 'description' => 'Heel angle in degrees (SignalK attitude roll rad → deg).',
                 'sources' => [
@@ -174,7 +174,7 @@ class CanonicalBaseline
             [
                 'key' => 'pitch', 'label' => 'Pitch', 'group' => 'nav',
                 'storage_unit' => 'deg', 'display_unit' => '°', 'volatile' => true,
-                'trend_fn' => 'last', 'trend_window' => 120,
+                'trend_fn' => 'last', 'trend_window' => '2m',
                 'staleness_threshold_s' => 120, 'coverage_window_s' => 300, 'coverage_min' => 0.5,
                 'enabled' => true, 'description' => 'Pitch angle in degrees (SignalK attitude pitch rad → deg).',
                 'sources' => [
@@ -184,7 +184,7 @@ class CanonicalBaseline
             [
                 'key' => 'trip_log', 'label' => 'Trip Log', 'group' => 'nav',
                 'storage_unit' => 'nm', 'display_unit' => 'nm', 'volatile' => true,
-                'trend_fn' => 'last', 'trend_window' => 120,
+                'trend_fn' => 'last', 'trend_window' => '2m',
                 'staleness_threshold_s' => 120, 'coverage_window_s' => 300, 'coverage_min' => 0.5,
                 'enabled' => true, 'description' => 'Trip log distance in nautical miles (SignalK m → nm).',
                 'sources' => [
@@ -197,7 +197,7 @@ class CanonicalBaseline
             [
                 'key' => 'xte', 'label' => 'Cross-Track Error', 'group' => 'nav',
                 'storage_unit' => 'm', 'display_unit' => 'm', 'volatile' => true,
-                'trend_fn' => 'last', 'trend_window' => 120,
+                'trend_fn' => 'last', 'trend_window' => '2m',
                 'staleness_threshold_s' => 120, 'coverage_window_s' => 300, 'coverage_min' => 0.5,
                 'enabled' => true, 'description' => 'Cross-track error in metres (SignalK courseGreatCircle XTE).',
                 'sources' => [
@@ -207,7 +207,7 @@ class CanonicalBaseline
             [
                 'key' => 'bearing_to_wp_true', 'label' => 'Bearing to Waypoint', 'group' => 'nav',
                 'storage_unit' => 'deg', 'display_unit' => '°', 'volatile' => true,
-                'trend_fn' => 'last', 'trend_window' => 120,
+                'trend_fn' => 'last', 'trend_window' => '2m',
                 'staleness_threshold_s' => 120, 'coverage_window_s' => 300, 'coverage_min' => 0.5,
                 'enabled' => true, 'description' => 'True bearing to next waypoint in degrees.',
                 'sources' => [
@@ -217,7 +217,7 @@ class CanonicalBaseline
             [
                 'key' => 'track_bearing_true', 'label' => 'Track Bearing (True)', 'group' => 'nav',
                 'storage_unit' => 'deg', 'display_unit' => '°', 'volatile' => true,
-                'trend_fn' => 'last', 'trend_window' => 120,
+                'trend_fn' => 'last', 'trend_window' => '2m',
                 'staleness_threshold_s' => 120, 'coverage_window_s' => 300, 'coverage_min' => 0.5,
                 'enabled' => true, 'description' => 'True bearing of active track in degrees.',
                 'sources' => [
@@ -227,7 +227,7 @@ class CanonicalBaseline
             [
                 'key' => 'wp_distance', 'label' => 'Distance to Waypoint', 'group' => 'nav',
                 'storage_unit' => 'nm', 'display_unit' => 'nm', 'volatile' => true,
-                'trend_fn' => 'last', 'trend_window' => 120,
+                'trend_fn' => 'last', 'trend_window' => '2m',
                 'staleness_threshold_s' => 120, 'coverage_window_s' => 300, 'coverage_min' => 0.5,
                 'enabled' => true, 'description' => 'Distance to next waypoint in nautical miles (m → nm).',
                 'sources' => [
@@ -237,7 +237,7 @@ class CanonicalBaseline
             [
                 'key' => 'wp_ttg', 'label' => 'Time to Waypoint', 'group' => 'nav',
                 'storage_unit' => 's', 'display_unit' => 's', 'volatile' => true,
-                'trend_fn' => 'last', 'trend_window' => 120,
+                'trend_fn' => 'last', 'trend_window' => '2m',
                 'staleness_threshold_s' => 120, 'coverage_window_s' => 300, 'coverage_min' => 0.5,
                 'enabled' => true, 'description' => 'Time to go to next waypoint in seconds.',
                 'sources' => [
@@ -247,7 +247,7 @@ class CanonicalBaseline
             [
                 'key' => 'current_set_true', 'label' => 'Current Set (True)', 'group' => 'nav',
                 'storage_unit' => 'deg', 'display_unit' => '°', 'volatile' => true,
-                'trend_fn' => 'last', 'trend_window' => 120,
+                'trend_fn' => 'last', 'trend_window' => '2m',
                 'staleness_threshold_s' => 120, 'coverage_window_s' => 300, 'coverage_min' => 0.5,
                 'enabled' => true, 'description' => 'True direction of water current in degrees.',
                 'sources' => [
@@ -257,7 +257,7 @@ class CanonicalBaseline
             [
                 'key' => 'current_drift', 'label' => 'Current Drift', 'group' => 'nav',
                 'storage_unit' => 'kn', 'display_unit' => 'kn', 'volatile' => true,
-                'trend_fn' => 'last', 'trend_window' => 120,
+                'trend_fn' => 'last', 'trend_window' => '2m',
                 'staleness_threshold_s' => 120, 'coverage_window_s' => 300, 'coverage_min' => 0.5,
                 'enabled' => true, 'description' => 'Water current speed in knots (m/s → kn).',
                 'sources' => [
@@ -267,7 +267,7 @@ class CanonicalBaseline
             [
                 'key' => 'rudder_angle', 'label' => 'Rudder Angle', 'group' => 'nav',
                 'storage_unit' => 'deg', 'display_unit' => '°', 'volatile' => true,
-                'trend_fn' => 'last', 'trend_window' => 120,
+                'trend_fn' => 'last', 'trend_window' => '2m',
                 'staleness_threshold_s' => 120, 'coverage_window_s' => 300, 'coverage_min' => 0.5,
                 'enabled' => true, 'description' => 'Rudder angle in degrees (SignalK rad → deg).',
                 'sources' => [
@@ -277,7 +277,7 @@ class CanonicalBaseline
             [
                 'key' => 'autopilot_state', 'label' => 'Autopilot State', 'group' => 'nav',
                 'storage_unit' => 'state', 'display_unit' => '', 'volatile' => true,
-                'trend_fn' => 'last', 'trend_window' => 120,
+                'trend_fn' => 'last', 'trend_window' => '2m',
                 'staleness_threshold_s' => 120, 'coverage_window_s' => 300, 'coverage_min' => 0.5,
                 'enabled' => true, 'description' => 'Autopilot engaged state (enum 0=standby, 1=auto, 2=wind, 3=track).',
                 'sources' => [
@@ -290,7 +290,7 @@ class CanonicalBaseline
             [
                 'key' => 'wind_speed_apparent', 'label' => 'Apparent Wind Speed', 'group' => 'wind',
                 'storage_unit' => 'kn', 'display_unit' => 'kn', 'volatile' => true,
-                'trend_fn' => 'last', 'trend_window' => 120,
+                'trend_fn' => 'last', 'trend_window' => '2m',
                 'staleness_threshold_s' => 120, 'coverage_window_s' => 300, 'coverage_min' => 0.5,
                 'enabled' => true, 'description' => 'Apparent wind speed in knots (SignalK m/s → kn).',
                 'sources' => [
@@ -300,31 +300,9 @@ class CanonicalBaseline
             [
                 'key' => 'wind_angle_apparent', 'label' => 'Apparent Wind Angle', 'group' => 'wind',
                 'storage_unit' => 'deg', 'display_unit' => '°', 'volatile' => true,
-                'trend_fn' => 'last', 'trend_window' => 120,
+                'trend_fn' => 'last', 'trend_window' => '2m',
                 'staleness_threshold_s' => 120, 'coverage_window_s' => 300, 'coverage_min' => 0.5,
                 'enabled' => true, 'description' => 'Apparent wind angle in degrees (SignalK rad → deg).',
-                'sources' => [
-                    ['priority' => 1, 'source_metric_name' => 'scarlet_signalk_environment_wind_angleApparent', 'label_matchers' => [], 'source_class' => 'both', 'source_kind' => 'angle_rad', 'select_fn' => 'last', 'unit_transform' => $radToDeg, 'staleness_threshold_s' => null],
-                ],
-            ],
-            [
-                'key' => 'wind_speed_true', 'label' => 'True Wind Speed', 'group' => 'wind',
-                'storage_unit' => 'kn', 'display_unit' => 'kn', 'volatile' => true,
-                'trend_fn' => 'last', 'trend_window' => 120,
-                'staleness_threshold_s' => 120, 'coverage_window_s' => 300, 'coverage_min' => 0.5,
-                'enabled' => true,
-                'description' => 'True wind speed in knots. No direct VM series found; derived from apparent speed + SOG + COG in MetricsService. Source entry documents the inputs used for derivation.',
-                'sources' => [
-                    ['priority' => 1, 'source_metric_name' => 'scarlet_signalk_environment_wind_speedApparent', 'label_matchers' => [], 'source_class' => 'both', 'source_kind' => 'speed_ms', 'select_fn' => 'last', 'unit_transform' => $msToKn, 'staleness_threshold_s' => null],
-                ],
-            ],
-            [
-                'key' => 'wind_direction_true', 'label' => 'True Wind Direction', 'group' => 'wind',
-                'storage_unit' => 'deg', 'display_unit' => '°', 'volatile' => true,
-                'trend_fn' => 'last', 'trend_window' => 120,
-                'staleness_threshold_s' => 120, 'coverage_window_s' => 300, 'coverage_min' => 0.5,
-                'enabled' => true,
-                'description' => 'True wind direction in degrees. No direct VM series found; derived in MetricsService. Source entry documents the primary input.',
                 'sources' => [
                     ['priority' => 1, 'source_metric_name' => 'scarlet_signalk_environment_wind_angleApparent', 'label_matchers' => [], 'source_class' => 'both', 'source_kind' => 'angle_rad', 'select_fn' => 'last', 'unit_transform' => $radToDeg, 'staleness_threshold_s' => null],
                 ],
@@ -335,7 +313,7 @@ class CanonicalBaseline
             [
                 'key' => 'house_battery_soc', 'label' => 'House Battery SOC', 'group' => 'power',
                 'storage_unit' => 'pct', 'display_unit' => '%', 'volatile' => true,
-                'trend_fn' => 'last', 'trend_window' => 120,
+                'trend_fn' => 'last', 'trend_window' => '2m',
                 'staleness_threshold_s' => 300, 'coverage_window_s' => 600, 'coverage_min' => 0.5,
                 'enabled' => true, 'description' => 'House battery state of charge in percent (SignalK ratio → %).',
                 'sources' => [
@@ -345,7 +323,7 @@ class CanonicalBaseline
             [
                 'key' => 'house_battery_voltage', 'label' => 'House Battery Voltage', 'group' => 'power',
                 'storage_unit' => 'v', 'display_unit' => 'V', 'volatile' => true,
-                'trend_fn' => 'last', 'trend_window' => 120,
+                'trend_fn' => 'last', 'trend_window' => '2m',
                 'staleness_threshold_s' => 300, 'coverage_window_s' => 600, 'coverage_min' => 0.5,
                 'enabled' => true, 'description' => 'House battery voltage in volts.',
                 'sources' => [
@@ -355,7 +333,7 @@ class CanonicalBaseline
             [
                 'key' => 'house_battery_current', 'label' => 'House Battery Current', 'group' => 'power',
                 'storage_unit' => 'a', 'display_unit' => 'A', 'volatile' => true,
-                'trend_fn' => 'last', 'trend_window' => 120,
+                'trend_fn' => 'last', 'trend_window' => '2m',
                 'staleness_threshold_s' => 300, 'coverage_window_s' => 600, 'coverage_min' => 0.5,
                 'enabled' => true, 'description' => 'House battery current in amps (positive = charging).',
                 'sources' => [
@@ -363,21 +341,9 @@ class CanonicalBaseline
                 ],
             ],
             [
-                'key' => 'house_battery_power', 'label' => 'House Battery Power', 'group' => 'power',
-                'storage_unit' => 'w', 'display_unit' => 'W', 'volatile' => true,
-                'trend_fn' => 'last', 'trend_window' => 120,
-                'staleness_threshold_s' => 300, 'coverage_window_s' => 600, 'coverage_min' => 0.5,
-                'enabled' => true,
-                'description' => 'House battery power in watts. No direct VM series; computed as voltage × current in MetricsService. Source entries document the inputs.',
-                'sources' => [
-                    ['priority' => 1, 'source_metric_name' => 'scarlet_signalk_electrical_batteries_0_voltage', 'label_matchers' => [], 'source_class' => 'both', 'source_kind' => 'voltage', 'select_fn' => 'last', 'unit_transform' => [], 'staleness_threshold_s' => null],
-                    ['priority' => 2, 'source_metric_name' => 'scarlet_signalk_electrical_batteries_0_current', 'label_matchers' => [], 'source_class' => 'both', 'source_kind' => 'current', 'select_fn' => 'last', 'unit_transform' => [], 'staleness_threshold_s' => null],
-                ],
-            ],
-            [
                 'key' => 'house_battery_time_remaining', 'label' => 'Battery Time Remaining', 'group' => 'power',
                 'storage_unit' => 'h', 'display_unit' => 'h', 'volatile' => true,
-                'trend_fn' => 'last', 'trend_window' => 120,
+                'trend_fn' => 'last', 'trend_window' => '2m',
                 'staleness_threshold_s' => 300, 'coverage_window_s' => 600, 'coverage_min' => 0.5,
                 'enabled' => true, 'description' => 'Estimated time remaining on house battery in hours (SignalK seconds → hours).',
                 'sources' => [
@@ -387,7 +353,7 @@ class CanonicalBaseline
             [
                 'key' => 'engine_battery_voltage', 'label' => 'Engine Battery Voltage', 'group' => 'power',
                 'storage_unit' => 'v', 'display_unit' => 'V', 'volatile' => true,
-                'trend_fn' => 'last', 'trend_window' => 120,
+                'trend_fn' => 'last', 'trend_window' => '2m',
                 'staleness_threshold_s' => 300, 'coverage_window_s' => 600, 'coverage_min' => 0.5,
                 'enabled' => true, 'description' => 'Engine (starter) battery voltage in volts.',
                 'sources' => [
@@ -400,7 +366,7 @@ class CanonicalBaseline
             [
                 'key' => 'ecoflow_soc', 'label' => 'EcoFlow SOC', 'group' => 'power',
                 'storage_unit' => 'pct', 'display_unit' => '%', 'volatile' => false,
-                'trend_fn' => 'median', 'trend_window' => 600,
+                'trend_fn' => 'median', 'trend_window' => '10m',
                 'staleness_threshold_s' => 3600, 'coverage_window_s' => 3600, 'coverage_min' => 0.3,
                 'enabled' => true, 'description' => 'EcoFlow Delta state of charge (BMS actSoc).',
                 'sources' => [
@@ -410,7 +376,7 @@ class CanonicalBaseline
             [
                 'key' => 'ecoflow_input_watts', 'label' => 'EcoFlow Input', 'group' => 'power',
                 'storage_unit' => 'w', 'display_unit' => 'W', 'volatile' => false,
-                'trend_fn' => 'median', 'trend_window' => 600,
+                'trend_fn' => 'median', 'trend_window' => '10m',
                 'staleness_threshold_s' => 3600, 'coverage_window_s' => 3600, 'coverage_min' => 0.3,
                 'enabled' => true, 'description' => 'EcoFlow Delta total input power.',
                 'sources' => [
@@ -420,7 +386,7 @@ class CanonicalBaseline
             [
                 'key' => 'ecoflow_output_watts', 'label' => 'EcoFlow Output', 'group' => 'power',
                 'storage_unit' => 'w', 'display_unit' => 'W', 'volatile' => false,
-                'trend_fn' => 'median', 'trend_window' => 600,
+                'trend_fn' => 'median', 'trend_window' => '10m',
                 'staleness_threshold_s' => 3600, 'coverage_window_s' => 3600, 'coverage_min' => 0.3,
                 'enabled' => true, 'description' => 'EcoFlow Delta total output power.',
                 'sources' => [
@@ -430,7 +396,7 @@ class CanonicalBaseline
             [
                 'key' => 'ecoflow_remain_time', 'label' => 'EcoFlow Remaining Time', 'group' => 'power',
                 'storage_unit' => 'min', 'display_unit' => 'min', 'volatile' => false,
-                'trend_fn' => 'median', 'trend_window' => 600,
+                'trend_fn' => 'median', 'trend_window' => '10m',
                 'staleness_threshold_s' => 3600, 'coverage_window_s' => 3600, 'coverage_min' => 0.3,
                 'enabled' => true, 'description' => 'EcoFlow Delta estimated time remaining in minutes (BMS remainTime).',
                 'sources' => [
@@ -440,7 +406,7 @@ class CanonicalBaseline
             [
                 'key' => 'ecoflow_voltage', 'label' => 'EcoFlow Voltage', 'group' => 'power',
                 'storage_unit' => 'v', 'display_unit' => 'V', 'volatile' => false,
-                'trend_fn' => 'median', 'trend_window' => 600,
+                'trend_fn' => 'median', 'trend_window' => '10m',
                 'staleness_threshold_s' => 3600, 'coverage_window_s' => 3600, 'coverage_min' => 0.3,
                 'enabled' => true, 'description' => 'EcoFlow Delta battery voltage (BMS vol, mV → V).',
                 'sources' => [
@@ -453,7 +419,7 @@ class CanonicalBaseline
             [
                 'key' => 'cabin_temp_forepeak', 'label' => 'Temp: Forepeak', 'group' => 'cabin',
                 'storage_unit' => 'c', 'display_unit' => '°C', 'volatile' => false,
-                'trend_fn' => 'last', 'trend_window' => 120,
+                'trend_fn' => 'last', 'trend_window' => '2m',
                 'staleness_threshold_s' => 3600, 'coverage_window_s' => 3600, 'coverage_min' => 0.3,
                 'enabled' => true, 'description' => 'Forepeak cabin temperature in °C (Zigbee2MQTT).',
                 'sources' => [
@@ -463,7 +429,7 @@ class CanonicalBaseline
             [
                 'key' => 'cabin_temp_quarterberth', 'label' => 'Temp: Quarterberth', 'group' => 'cabin',
                 'storage_unit' => 'c', 'display_unit' => '°C', 'volatile' => false,
-                'trend_fn' => 'last', 'trend_window' => 120,
+                'trend_fn' => 'last', 'trend_window' => '2m',
                 'staleness_threshold_s' => 3600, 'coverage_window_s' => 3600, 'coverage_min' => 0.3,
                 'enabled' => true, 'description' => 'Quarterberth cabin temperature in °C (Zigbee2MQTT).',
                 'sources' => [
@@ -473,7 +439,7 @@ class CanonicalBaseline
             [
                 'key' => 'cabin_temp_main', 'label' => 'Temp: Main Cabin', 'group' => 'cabin',
                 'storage_unit' => 'c', 'display_unit' => '°C', 'volatile' => false,
-                'trend_fn' => 'last', 'trend_window' => 120,
+                'trend_fn' => 'last', 'trend_window' => '2m',
                 'staleness_threshold_s' => 3600, 'coverage_window_s' => 3600, 'coverage_min' => 0.3,
                 'enabled' => true, 'description' => 'Main cabin temperature in °C (Zigbee2MQTT).',
                 'sources' => [
@@ -483,7 +449,7 @@ class CanonicalBaseline
             [
                 'key' => 'cabin_humidity_forepeak', 'label' => 'Humidity: Forepeak', 'group' => 'cabin',
                 'storage_unit' => 'pct', 'display_unit' => '%', 'volatile' => false,
-                'trend_fn' => 'last', 'trend_window' => 120,
+                'trend_fn' => 'last', 'trend_window' => '2m',
                 'staleness_threshold_s' => 3600, 'coverage_window_s' => 3600, 'coverage_min' => 0.3,
                 'enabled' => true, 'description' => 'Forepeak cabin humidity in % (Zigbee2MQTT).',
                 'sources' => [
@@ -493,7 +459,7 @@ class CanonicalBaseline
             [
                 'key' => 'cabin_humidity_quarterberth', 'label' => 'Humidity: Quarterberth', 'group' => 'cabin',
                 'storage_unit' => 'pct', 'display_unit' => '%', 'volatile' => false,
-                'trend_fn' => 'last', 'trend_window' => 120,
+                'trend_fn' => 'last', 'trend_window' => '2m',
                 'staleness_threshold_s' => 3600, 'coverage_window_s' => 3600, 'coverage_min' => 0.3,
                 'enabled' => true, 'description' => 'Quarterberth cabin humidity in % (Zigbee2MQTT).',
                 'sources' => [
@@ -503,7 +469,7 @@ class CanonicalBaseline
             [
                 'key' => 'cabin_humidity_main', 'label' => 'Humidity: Main Cabin', 'group' => 'cabin',
                 'storage_unit' => 'pct', 'display_unit' => '%', 'volatile' => false,
-                'trend_fn' => 'last', 'trend_window' => 120,
+                'trend_fn' => 'last', 'trend_window' => '2m',
                 'staleness_threshold_s' => 3600, 'coverage_window_s' => 3600, 'coverage_min' => 0.3,
                 'enabled' => true, 'description' => 'Main cabin humidity in % (Zigbee2MQTT).',
                 'sources' => [
@@ -513,7 +479,7 @@ class CanonicalBaseline
             [
                 'key' => 'cabin_pressure_forepeak', 'label' => 'Barometric Pressure', 'group' => 'cabin',
                 'storage_unit' => 'hpa', 'display_unit' => 'hPa', 'volatile' => false,
-                'trend_fn' => 'last', 'trend_window' => 120,
+                'trend_fn' => 'last', 'trend_window' => '2m',
                 'staleness_threshold_s' => 3600, 'coverage_window_s' => 3600, 'coverage_min' => 0.3,
                 'enabled' => true, 'description' => 'Barometric pressure from forepeak sensor in hPa (Zigbee2MQTT).',
                 'sources' => [
@@ -523,7 +489,7 @@ class CanonicalBaseline
             [
                 'key' => 'water_temp', 'label' => 'Sea Water Temperature', 'group' => 'environment',
                 'storage_unit' => 'c', 'display_unit' => '°C', 'volatile' => true,
-                'trend_fn' => 'last', 'trend_window' => 120,
+                'trend_fn' => 'last', 'trend_window' => '2m',
                 'staleness_threshold_s' => 120, 'coverage_window_s' => 300, 'coverage_min' => 0.5,
                 'enabled' => true, 'description' => 'Sea water temperature in °C (SignalK Kelvin → °C).',
                 'sources' => [
@@ -536,7 +502,7 @@ class CanonicalBaseline
             [
                 'key' => 'wx_air_temp', 'label' => 'Air Temperature', 'group' => 'weather',
                 'storage_unit' => 'c', 'display_unit' => '°C', 'volatile' => false,
-                'trend_fn' => 'last', 'trend_window' => 1800,
+                'trend_fn' => 'last', 'trend_window' => '30m',
                 'staleness_threshold_s' => 1800, 'coverage_window_s' => 7200, 'coverage_min' => 0.3,
                 'enabled' => true, 'description' => 'Forecast air temperature in °C (open-meteo, job="weather").',
                 'sources' => [
@@ -546,7 +512,7 @@ class CanonicalBaseline
             [
                 'key' => 'wx_wind_speed', 'label' => 'Forecast Wind Speed', 'group' => 'weather',
                 'storage_unit' => 'kn', 'display_unit' => 'kn', 'volatile' => false,
-                'trend_fn' => 'last', 'trend_window' => 1800,
+                'trend_fn' => 'last', 'trend_window' => '30m',
                 'staleness_threshold_s' => 1800, 'coverage_window_s' => 7200, 'coverage_min' => 0.3,
                 'enabled' => true, 'description' => 'Forecast wind speed in knots (job="weather").',
                 'sources' => [
@@ -556,7 +522,7 @@ class CanonicalBaseline
             [
                 'key' => 'wx_wind_gust', 'label' => 'Forecast Wind Gust', 'group' => 'weather',
                 'storage_unit' => 'kn', 'display_unit' => 'kn', 'volatile' => false,
-                'trend_fn' => 'last', 'trend_window' => 1800,
+                'trend_fn' => 'last', 'trend_window' => '30m',
                 'staleness_threshold_s' => 1800, 'coverage_window_s' => 7200, 'coverage_min' => 0.3,
                 'enabled' => true, 'description' => 'Forecast wind gust speed in knots (job="weather").',
                 'sources' => [
@@ -566,7 +532,7 @@ class CanonicalBaseline
             [
                 'key' => 'wx_wind_dir', 'label' => 'Forecast Wind Direction', 'group' => 'weather',
                 'storage_unit' => 'deg', 'display_unit' => '°', 'volatile' => false,
-                'trend_fn' => 'last', 'trend_window' => 1800,
+                'trend_fn' => 'last', 'trend_window' => '30m',
                 'staleness_threshold_s' => 1800, 'coverage_window_s' => 7200, 'coverage_min' => 0.3,
                 'enabled' => true, 'description' => 'Forecast wind direction in degrees (job="weather").',
                 'sources' => [
@@ -576,7 +542,7 @@ class CanonicalBaseline
             [
                 'key' => 'wx_pressure', 'label' => 'Forecast Pressure', 'group' => 'weather',
                 'storage_unit' => 'hpa', 'display_unit' => 'hPa', 'volatile' => false,
-                'trend_fn' => 'last', 'trend_window' => 1800,
+                'trend_fn' => 'last', 'trend_window' => '30m',
                 'staleness_threshold_s' => 1800, 'coverage_window_s' => 7200, 'coverage_min' => 0.3,
                 'enabled' => true, 'description' => 'Forecast sea-level pressure in hPa (job="weather").',
                 'sources' => [
@@ -586,7 +552,7 @@ class CanonicalBaseline
             [
                 'key' => 'sea_wave_height', 'label' => 'Wave Height', 'group' => 'weather',
                 'storage_unit' => 'm', 'display_unit' => 'm', 'volatile' => false,
-                'trend_fn' => 'last', 'trend_window' => 1800,
+                'trend_fn' => 'last', 'trend_window' => '30m',
                 'staleness_threshold_s' => 1800, 'coverage_window_s' => 7200, 'coverage_min' => 0.3,
                 'enabled' => true, 'description' => 'Significant wave height in metres (job="weather").',
                 'sources' => [
@@ -596,7 +562,7 @@ class CanonicalBaseline
             [
                 'key' => 'sea_wave_period', 'label' => 'Wave Period', 'group' => 'weather',
                 'storage_unit' => 's', 'display_unit' => 's', 'volatile' => false,
-                'trend_fn' => 'last', 'trend_window' => 1800,
+                'trend_fn' => 'last', 'trend_window' => '30m',
                 'staleness_threshold_s' => 1800, 'coverage_window_s' => 7200, 'coverage_min' => 0.3,
                 'enabled' => true, 'description' => 'Mean wave period in seconds (job="weather").',
                 'sources' => [
@@ -606,7 +572,7 @@ class CanonicalBaseline
             [
                 'key' => 'sea_wave_direction', 'label' => 'Wave Direction', 'group' => 'weather',
                 'storage_unit' => 'deg', 'display_unit' => '°', 'volatile' => false,
-                'trend_fn' => 'last', 'trend_window' => 1800,
+                'trend_fn' => 'last', 'trend_window' => '30m',
                 'staleness_threshold_s' => 1800, 'coverage_window_s' => 7200, 'coverage_min' => 0.3,
                 'enabled' => true, 'description' => 'Mean wave direction in degrees (job="weather").',
                 'sources' => [
@@ -616,7 +582,7 @@ class CanonicalBaseline
             [
                 'key' => 'sea_current_speed', 'label' => 'Sea Current Speed', 'group' => 'weather',
                 'storage_unit' => 'kn', 'display_unit' => 'kn', 'volatile' => false,
-                'trend_fn' => 'last', 'trend_window' => 1800,
+                'trend_fn' => 'last', 'trend_window' => '30m',
                 'staleness_threshold_s' => 1800, 'coverage_window_s' => 7200, 'coverage_min' => 0.3,
                 'enabled' => true, 'description' => 'Ocean surface current speed in knots (job="weather").',
                 'sources' => [
@@ -626,7 +592,7 @@ class CanonicalBaseline
             [
                 'key' => 'sea_current_dir', 'label' => 'Sea Current Direction', 'group' => 'weather',
                 'storage_unit' => 'deg', 'display_unit' => '°', 'volatile' => false,
-                'trend_fn' => 'last', 'trend_window' => 1800,
+                'trend_fn' => 'last', 'trend_window' => '30m',
                 'staleness_threshold_s' => 1800, 'coverage_window_s' => 7200, 'coverage_min' => 0.3,
                 'enabled' => true, 'description' => 'Ocean surface current direction in degrees (job="weather").',
                 'sources' => [
@@ -639,7 +605,7 @@ class CanonicalBaseline
             [
                 'key' => 'tracker_battery_voltage', 'label' => 'Tracker Battery', 'group' => 'tracker',
                 'storage_unit' => 'v', 'display_unit' => 'V', 'volatile' => true,
-                'trend_fn' => 'last', 'trend_window' => 120,
+                'trend_fn' => 'last', 'trend_window' => '2m',
                 'staleness_threshold_s' => 120, 'coverage_window_s' => 300, 'coverage_min' => 0.5,
                 'enabled' => true, 'description' => 'ESP32 tracker battery voltage in volts (job="boat-tracker").',
                 'sources' => [
@@ -649,7 +615,7 @@ class CanonicalBaseline
             [
                 'key' => 'tracker_cpu', 'label' => 'Tracker CPU', 'group' => 'tracker',
                 'storage_unit' => 'pct', 'display_unit' => '%', 'volatile' => true,
-                'trend_fn' => 'last', 'trend_window' => 120,
+                'trend_fn' => 'last', 'trend_window' => '2m',
                 'staleness_threshold_s' => 120, 'coverage_window_s' => 300, 'coverage_min' => 0.5,
                 'enabled' => true, 'description' => 'ESP32 tracker CPU usage in % (job="boat-tracker").',
                 'sources' => [
@@ -659,7 +625,7 @@ class CanonicalBaseline
             [
                 'key' => 'tracker_free_heap', 'label' => 'Tracker Free Heap', 'group' => 'tracker',
                 'storage_unit' => 'bytes', 'display_unit' => 'B', 'volatile' => true,
-                'trend_fn' => 'last', 'trend_window' => 120,
+                'trend_fn' => 'last', 'trend_window' => '2m',
                 'staleness_threshold_s' => 120, 'coverage_window_s' => 300, 'coverage_min' => 0.5,
                 'enabled' => true, 'description' => 'ESP32 tracker free heap memory in bytes (job="boat-tracker").',
                 'sources' => [
@@ -669,7 +635,7 @@ class CanonicalBaseline
             [
                 'key' => 'tracker_temp', 'label' => 'Tracker Temperature', 'group' => 'tracker',
                 'storage_unit' => 'c', 'display_unit' => '°C', 'volatile' => true,
-                'trend_fn' => 'last', 'trend_window' => 120,
+                'trend_fn' => 'last', 'trend_window' => '2m',
                 'staleness_threshold_s' => 120, 'coverage_window_s' => 300, 'coverage_min' => 0.5,
                 'enabled' => true, 'description' => 'ESP32 tracker board temperature in °C (job="boat-tracker").',
                 'sources' => [
@@ -679,7 +645,7 @@ class CanonicalBaseline
             [
                 'key' => 'tracker_humidity', 'label' => 'Tracker Humidity', 'group' => 'tracker',
                 'storage_unit' => 'pct', 'display_unit' => '%', 'volatile' => true,
-                'trend_fn' => 'last', 'trend_window' => 120,
+                'trend_fn' => 'last', 'trend_window' => '2m',
                 'staleness_threshold_s' => 120, 'coverage_window_s' => 300, 'coverage_min' => 0.5,
                 'enabled' => true, 'description' => 'ESP32 tracker ambient humidity in % (job="boat-tracker").',
                 'sources' => [
@@ -689,7 +655,7 @@ class CanonicalBaseline
             [
                 'key' => 'tracker_lte_connected', 'label' => 'LTE Connected', 'group' => 'tracker',
                 'storage_unit' => 'bool', 'display_unit' => '', 'volatile' => true,
-                'trend_fn' => 'last', 'trend_window' => 120,
+                'trend_fn' => 'last', 'trend_window' => '2m',
                 'staleness_threshold_s' => 120, 'coverage_window_s' => 300, 'coverage_min' => 0.5,
                 'enabled' => true, 'description' => 'LTE connection state (1=connected, job="boat-tracker").',
                 'sources' => [
@@ -699,7 +665,7 @@ class CanonicalBaseline
             [
                 'key' => 'tracker_lte_rssi', 'label' => 'LTE RSSI', 'group' => 'tracker',
                 'storage_unit' => 'dbm', 'display_unit' => 'dBm', 'volatile' => true,
-                'trend_fn' => 'last', 'trend_window' => 120,
+                'trend_fn' => 'last', 'trend_window' => '2m',
                 'staleness_threshold_s' => 120, 'coverage_window_s' => 300, 'coverage_min' => 0.5,
                 'enabled' => true, 'description' => 'LTE signal strength in dBm (job="boat-tracker").',
                 'sources' => [
@@ -709,7 +675,7 @@ class CanonicalBaseline
             [
                 'key' => 'tracker_lte_quality', 'label' => 'LTE Signal Quality', 'group' => 'tracker',
                 'storage_unit' => 'score', 'display_unit' => '', 'volatile' => true,
-                'trend_fn' => 'last', 'trend_window' => 120,
+                'trend_fn' => 'last', 'trend_window' => '2m',
                 'staleness_threshold_s' => 120, 'coverage_window_s' => 300, 'coverage_min' => 0.5,
                 'enabled' => true, 'description' => 'LTE signal quality score (job="boat-tracker").',
                 'sources' => [
@@ -719,7 +685,7 @@ class CanonicalBaseline
             [
                 'key' => 'tracker_lte_rat', 'label' => 'LTE Radio Access Type', 'group' => 'tracker',
                 'storage_unit' => 'state', 'display_unit' => '', 'volatile' => true,
-                'trend_fn' => 'last', 'trend_window' => 120,
+                'trend_fn' => 'last', 'trend_window' => '2m',
                 'staleness_threshold_s' => 120, 'coverage_window_s' => 300, 'coverage_min' => 0.5,
                 'enabled' => true, 'description' => 'LTE radio access technology type (job="boat-tracker").',
                 'sources' => [
@@ -729,7 +695,7 @@ class CanonicalBaseline
             [
                 'key' => 'tracker_wifi_connected', 'label' => 'WiFi Connected', 'group' => 'tracker',
                 'storage_unit' => 'bool', 'display_unit' => '', 'volatile' => true,
-                'trend_fn' => 'last', 'trend_window' => 120,
+                'trend_fn' => 'last', 'trend_window' => '2m',
                 'staleness_threshold_s' => 120, 'coverage_window_s' => 300, 'coverage_min' => 0.5,
                 'enabled' => true, 'description' => 'WiFi connection state (1=connected, job="boat-tracker").',
                 'sources' => [
@@ -739,7 +705,7 @@ class CanonicalBaseline
             [
                 'key' => 'tracker_wifi_rssi', 'label' => 'WiFi RSSI', 'group' => 'tracker',
                 'storage_unit' => 'dbm', 'display_unit' => 'dBm', 'volatile' => true,
-                'trend_fn' => 'last', 'trend_window' => 120,
+                'trend_fn' => 'last', 'trend_window' => '2m',
                 'staleness_threshold_s' => 120, 'coverage_window_s' => 300, 'coverage_min' => 0.5,
                 'enabled' => true, 'description' => 'WiFi signal strength in dBm (job="boat-tracker").',
                 'sources' => [
@@ -749,7 +715,7 @@ class CanonicalBaseline
             [
                 'key' => 'tracker_mode', 'label' => 'Tracker Mode', 'group' => 'tracker',
                 'storage_unit' => 'state', 'display_unit' => '', 'volatile' => true,
-                'trend_fn' => 'last', 'trend_window' => 120,
+                'trend_fn' => 'last', 'trend_window' => '2m',
                 'staleness_threshold_s' => 120, 'coverage_window_s' => 300, 'coverage_min' => 0.5,
                 'enabled' => true, 'description' => 'Tracker operating mode (job="boat-tracker").',
                 'sources' => [
@@ -759,7 +725,7 @@ class CanonicalBaseline
             [
                 'key' => 'tracker_uptime', 'label' => 'Tracker Uptime', 'group' => 'tracker',
                 'storage_unit' => 's', 'display_unit' => 's', 'volatile' => true,
-                'trend_fn' => 'last', 'trend_window' => 120,
+                'trend_fn' => 'last', 'trend_window' => '2m',
                 'staleness_threshold_s' => 120, 'coverage_window_s' => 300, 'coverage_min' => 0.5,
                 'enabled' => true, 'description' => 'Tracker uptime in seconds (job="boat-tracker").',
                 'sources' => [
@@ -769,7 +735,7 @@ class CanonicalBaseline
             [
                 'key' => 'tracker_usb_powered', 'label' => 'Tracker USB Power', 'group' => 'tracker',
                 'storage_unit' => 'bool', 'display_unit' => '', 'volatile' => true,
-                'trend_fn' => 'last', 'trend_window' => 120,
+                'trend_fn' => 'last', 'trend_window' => '2m',
                 'staleness_threshold_s' => 120, 'coverage_window_s' => 300, 'coverage_min' => 0.5,
                 'enabled' => true, 'description' => 'Tracker USB power connected (1=yes, job="boat-tracker").',
                 'sources' => [
@@ -782,7 +748,7 @@ class CanonicalBaseline
             [
                 'key' => 'srt_up', 'label' => 'SRT Up', 'group' => 'streaming',
                 'storage_unit' => 'bool', 'display_unit' => '', 'volatile' => true,
-                'trend_fn' => 'last', 'trend_window' => 60,
+                'trend_fn' => 'last', 'trend_window' => '1m',
                 'staleness_threshold_s' => 60, 'coverage_window_s' => 120, 'coverage_min' => 0.5,
                 'enabled' => true, 'description' => 'SRT server up state (1=up, job="scarlet-srt").',
                 'sources' => [
@@ -792,7 +758,7 @@ class CanonicalBaseline
             [
                 'key' => 'srt_pub_connected', 'label' => 'SRT Publisher Connected', 'group' => 'streaming',
                 'storage_unit' => 'bool', 'display_unit' => '', 'volatile' => true,
-                'trend_fn' => 'last', 'trend_window' => 60,
+                'trend_fn' => 'last', 'trend_window' => '1m',
                 'staleness_threshold_s' => 60, 'coverage_window_s' => 120, 'coverage_min' => 0.5,
                 'enabled' => true, 'description' => 'SRT publisher connected (1=yes, job="scarlet-srt").',
                 'sources' => [
@@ -802,7 +768,7 @@ class CanonicalBaseline
             [
                 'key' => 'srt_pub_bitrate', 'label' => 'SRT Publisher Bitrate', 'group' => 'streaming',
                 'storage_unit' => 'bps', 'display_unit' => 'bps', 'volatile' => true,
-                'trend_fn' => 'last', 'trend_window' => 60,
+                'trend_fn' => 'last', 'trend_window' => '1m',
                 'staleness_threshold_s' => 60, 'coverage_window_s' => 120, 'coverage_min' => 0.5,
                 'enabled' => true, 'description' => 'SRT publisher stream bitrate in bps (job="scarlet-srt").',
                 'sources' => [
@@ -812,7 +778,7 @@ class CanonicalBaseline
             [
                 'key' => 'srt_pub_rtt', 'label' => 'SRT Publisher RTT', 'group' => 'streaming',
                 'storage_unit' => 'ms', 'display_unit' => 'ms', 'volatile' => true,
-                'trend_fn' => 'last', 'trend_window' => 60,
+                'trend_fn' => 'last', 'trend_window' => '1m',
                 'staleness_threshold_s' => 60, 'coverage_window_s' => 120, 'coverage_min' => 0.5,
                 'enabled' => true, 'description' => 'SRT publisher round-trip time in ms (job="scarlet-srt").',
                 'sources' => [
@@ -822,7 +788,7 @@ class CanonicalBaseline
             [
                 'key' => 'srt_pub_latency', 'label' => 'SRT Publisher Latency', 'group' => 'streaming',
                 'storage_unit' => 'ms', 'display_unit' => 'ms', 'volatile' => true,
-                'trend_fn' => 'last', 'trend_window' => 60,
+                'trend_fn' => 'last', 'trend_window' => '1m',
                 'staleness_threshold_s' => 60, 'coverage_window_s' => 120, 'coverage_min' => 0.5,
                 'enabled' => true, 'description' => 'SRT publisher negotiated latency in ms (job="scarlet-srt").',
                 'sources' => [
@@ -832,7 +798,7 @@ class CanonicalBaseline
             [
                 'key' => 'srt_pub_dropped', 'label' => 'SRT Publisher Dropped', 'group' => 'streaming',
                 'storage_unit' => 'count', 'display_unit' => '', 'volatile' => true,
-                'trend_fn' => 'last', 'trend_window' => 60,
+                'trend_fn' => 'last', 'trend_window' => '1m',
                 'staleness_threshold_s' => 60, 'coverage_window_s' => 120, 'coverage_min' => 0.5,
                 'enabled' => true, 'description' => 'SRT publisher cumulative dropped packets (job="scarlet-srt").',
                 'sources' => [
@@ -842,7 +808,7 @@ class CanonicalBaseline
             [
                 'key' => 'srt_pub_network', 'label' => 'SRT Publisher Network', 'group' => 'streaming',
                 'storage_unit' => 'bps', 'display_unit' => 'bps', 'volatile' => true,
-                'trend_fn' => 'last', 'trend_window' => 60,
+                'trend_fn' => 'last', 'trend_window' => '1m',
                 'staleness_threshold_s' => 60, 'coverage_window_s' => 120, 'coverage_min' => 0.5,
                 'enabled' => true, 'description' => 'SRT publisher total network bytes/s (job="scarlet-srt").',
                 'sources' => [
@@ -852,7 +818,7 @@ class CanonicalBaseline
             [
                 'key' => 'srt_con_bitrate', 'label' => 'SRT Consumer Bitrate', 'group' => 'streaming',
                 'storage_unit' => 'bps', 'display_unit' => 'bps', 'volatile' => true,
-                'trend_fn' => 'last', 'trend_window' => 60,
+                'trend_fn' => 'last', 'trend_window' => '1m',
                 'staleness_threshold_s' => 60, 'coverage_window_s' => 120, 'coverage_min' => 0.5,
                 'enabled' => true, 'description' => 'SRT consumer (relay/ingest) stream bitrate in bps (job="scarlet-srt").',
                 'sources' => [
@@ -862,7 +828,7 @@ class CanonicalBaseline
             [
                 'key' => 'srt_con_rtt', 'label' => 'SRT Consumer RTT', 'group' => 'streaming',
                 'storage_unit' => 'ms', 'display_unit' => 'ms', 'volatile' => true,
-                'trend_fn' => 'last', 'trend_window' => 60,
+                'trend_fn' => 'last', 'trend_window' => '1m',
                 'staleness_threshold_s' => 60, 'coverage_window_s' => 120, 'coverage_min' => 0.5,
                 'enabled' => true, 'description' => 'SRT consumer round-trip time in ms (job="scarlet-srt").',
                 'sources' => [
@@ -872,7 +838,7 @@ class CanonicalBaseline
             [
                 'key' => 'srt_con_latency', 'label' => 'SRT Consumer Latency', 'group' => 'streaming',
                 'storage_unit' => 'ms', 'display_unit' => 'ms', 'volatile' => true,
-                'trend_fn' => 'last', 'trend_window' => 60,
+                'trend_fn' => 'last', 'trend_window' => '1m',
                 'staleness_threshold_s' => 60, 'coverage_window_s' => 120, 'coverage_min' => 0.5,
                 'enabled' => true, 'description' => 'SRT consumer negotiated latency in ms (job="scarlet-srt").',
                 'sources' => [
@@ -882,7 +848,7 @@ class CanonicalBaseline
             [
                 'key' => 'srt_con_dropped', 'label' => 'SRT Consumer Dropped', 'group' => 'streaming',
                 'storage_unit' => 'count', 'display_unit' => '', 'volatile' => true,
-                'trend_fn' => 'last', 'trend_window' => 60,
+                'trend_fn' => 'last', 'trend_window' => '1m',
                 'staleness_threshold_s' => 60, 'coverage_window_s' => 120, 'coverage_min' => 0.5,
                 'enabled' => true, 'description' => 'SRT consumer cumulative dropped packets (job="scarlet-srt").',
                 'sources' => [

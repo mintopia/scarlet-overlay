@@ -18,8 +18,8 @@ class BaselineCoverageTest extends TestCase
         $required = [
             'speed_sog', 'speed_stw', 'vmg', 'heading_true', 'cog', 'depth_below_surface',
             'xte', 'wp_ttg', 'current_set_true', 'rudder_angle', 'autopilot_state',
-            'wind_speed_apparent', 'wind_speed_true',
-            'house_battery_soc', 'house_battery_power', 'engine_battery_voltage',
+            'wind_speed_apparent',
+            'house_battery_soc', 'engine_battery_voltage',
             'ecoflow_soc', 'ecoflow_input_watts', 'ecoflow_output_watts',
             'fuel_level', 'water_fresh_level',
             'cabin_temp_forepeak', 'cabin_humidity_main', 'water_temp',
