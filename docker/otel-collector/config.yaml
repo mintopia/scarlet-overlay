@@ -24,11 +24,18 @@ processors:
     limit_mib: 256
     spike_limit_mib: 64
 
+  # Drop datapoints that lack device identity (non-boat / stray series).
+  # NOTE: the in-pipeline resource key is DOTTED `device.id` (confirmed via a
+  # 0.154.0 debug dump), NOT `device_id`. The underscore form is only created
+  # later by the prometheusremotewrite exporter's resource_to_telemetry_conversion.
+  # The previous `device_id` (underscore) condition was nil for EVERY datapoint,
+  # so this filter silently dropped 100% of telemetry after the collector rolled
+  # to 0.154.0 — the 2026-06-19 outage. Match the dotted key. See ADR 0006.
   filter/dedup:
     error_mode: ignore
     metrics:
       datapoint:
-        - 'resource.attributes["device_id"] == nil'
+        - 'resource.attributes["device.id"] == nil'
 
 exporters:
   prometheusremotewrite:

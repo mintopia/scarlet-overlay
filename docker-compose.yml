@@ -81,7 +81,10 @@ services:
       - scarlet
 
   otel-collector:
-    image: otel/opentelemetry-collector-contrib:latest
+    # Pinned, NOT :latest — an unpinned roll to 0.154.0 during a compose down/up
+    # silently changed OTTL attribute handling and dropped 100% of telemetry for
+    # ~7h on 2026-06-19. Bump deliberately, with the config re-validated. See ADR 0006.
+    image: otel/opentelemetry-collector-contrib:0.154.0
     ports:
       - "${OTEL_GRPC_PORT:-4317}:4317"
       - "${OTEL_HTTP_PORT:-4318}:4318"
