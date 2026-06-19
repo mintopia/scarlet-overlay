@@ -8,6 +8,7 @@ use App\Http\Controllers\Admin\CanonicalCatalogController;
 use App\Http\Controllers\Admin\ExploreController;
 use App\Http\Controllers\Admin\JourneyController;
 use App\Http\Controllers\Admin\JourneyViewController as AdminJourneyViewController;
+use App\Http\Controllers\Admin\MainDashboardController;
 use App\Http\Controllers\Admin\OpsDashboardController;
 use App\Http\Controllers\Admin\PlanGroupController;
 use App\Http\Controllers\Admin\PlannerController;
@@ -143,6 +144,7 @@ Route::middleware('auth')->prefix('admin')->group(function () {
     Route::delete('/planner/routes/{route}', [PlanRouteController::class, 'destroy'])->name('admin.planner.routes.destroy');
 
     // Audience dashboards
+    Route::get('dash/main', [MainDashboardController::class, 'index'])->name('admin.dash.main');
     Route::get('dash/tech', [TechDashboardController::class, 'index'])->name('admin.dash.tech');
     Route::get('dash/ops', [OpsDashboardController::class, 'index'])->name('admin.dash.ops');
     Route::get('dash/skipper', [SkipperDashboardController::class, 'index'])->name('admin.dash.skipper');
