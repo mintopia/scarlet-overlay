@@ -20,7 +20,7 @@ class SettingsTest extends TestCase
 
     public function test_can_save_boat_identity(): void
     {
-        $user = User::factory()->owner()->create();
+        $user = User::factory()->create();
 
         $response = $this->actingAs($user)->put('/admin/settings/identity', [
             'boat_name' => 'Scarlet',
@@ -34,7 +34,7 @@ class SettingsTest extends TestCase
 
     public function test_can_save_camera_settings(): void
     {
-        $user = User::factory()->owner()->create();
+        $user = User::factory()->create();
 
         $response = $this->actingAs($user)->put('/admin/settings/camera', [
             'camera_url' => 'https://cam.example.com/embed',

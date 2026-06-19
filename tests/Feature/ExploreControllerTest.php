@@ -16,7 +16,7 @@ class ExploreControllerTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        $this->user = User::factory()->owner()->create();
+        $this->user = User::factory()->create();
     }
 
     public function test_explore_page_requires_auth(): void

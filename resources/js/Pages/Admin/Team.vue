@@ -7,7 +7,6 @@
             <div class="flex items-center justify-between px-4 md:px-6 py-4 border-b border-border">
                 <h2 class="text-[15px] font-semibold">Members</h2>
                 <button
-                    v-if="isOwner"
                     @click="showInviteModal = true"
                     class="px-3.5 h-11 bg-scarlet text-white text-[13px] font-semibold rounded-[7px] hover:bg-scarlet-hover"
                 >
@@ -19,7 +18,6 @@
                 <thead>
                     <tr class="border-b border-border">
                         <th class="px-4 md:px-6 py-3 text-left text-[12px] font-semibold text-text-secondary uppercase tracking-wide">User</th>
-                        <th class="px-4 md:px-6 py-3 text-left text-[12px] font-semibold text-text-secondary uppercase tracking-wide">Role</th>
                         <th class="px-4 md:px-6 py-3 text-left text-[12px] font-semibold text-text-secondary uppercase tracking-wide">Last Active</th>
                         <th class="px-6 py-3"></th>
                     </tr>
@@ -32,7 +30,7 @@
                     >
                         <td class="px-6 py-4">
                             <div class="flex items-center gap-3">
-                                <div class="member-avatar" :class="member.role === 'owner' ? 'member-avatar--owner' : 'member-avatar--crew'">
+                                <div class="member-avatar">
                                     {{ member.initials }}
                                 </div>
                                 <div>
@@ -41,17 +39,12 @@
                                 </div>
                             </div>
                         </td>
-                        <td class="px-6 py-4">
-                            <span class="role-badge" :class="member.role === 'owner' ? 'role-badge--owner' : 'role-badge--crew'">
-                                {{ member.role === 'owner' ? 'Owner' : 'Crew' }}
-                            </span>
-                        </td>
                         <td class="px-6 py-4 text-[13px] text-text-secondary">
                             {{ member.last_active }}
                         </td>
                         <td class="px-6 py-4 text-right">
                             <button
-                                v-if="isOwner && member.id !== currentUserId"
+                                v-if="member.id !== currentUserId"
                                 @click="confirmRemove(member)"
                                 class="text-[13px] text-error hover:text-scarlet-hover font-medium"
                             >
@@ -64,7 +57,7 @@
         </div>
 
         <!-- Pending Invites -->
-        <div v-if="isOwner && invites.length > 0" class="bg-surface border border-border rounded-[10px] overflow-x-auto">
+        <div v-if="invites.length > 0" class="bg-surface border border-border rounded-[10px] overflow-x-auto">
             <div class="px-4 md:px-6 py-4 border-b border-border">
                 <h2 class="text-[15px] font-semibold">Pending Invites</h2>
             </div>
@@ -176,7 +169,6 @@ const props = defineProps({
 
 const page = usePage();
 const currentUserId = page.props.auth?.user?.id;
-const isOwner = page.props.auth?.user?.role === 'owner';
 
 const showInviteModal = ref(false);
 const removingMember = ref(null);
@@ -237,30 +229,6 @@ function trapFocus(event) {
     font-size: 13px; font-weight: 700; letter-spacing: 0.02em;
     flex-shrink: 0;
 }
-.member-avatar--owner {
-    background: var(--color-scarlet-light);
-    color: var(--color-scarlet);
-}
-.member-avatar--crew {
-    background: var(--color-bg);
-    color: var(--color-text-secondary);
-}
-
-.role-badge {
-    display: inline-flex; align-items: center;
-    padding: 2px 9px;
-    border-radius: 99px;
-    font-size: 12px; font-weight: 600;
-}
-.role-badge--owner {
-    background: var(--color-scarlet-light);
-    color: var(--color-scarlet);
-}
-.role-badge--crew {
-    background: var(--color-bg);
-    color: var(--color-text-secondary);
-}
-
 .modal-overlay {
     position: fixed; inset: 0;
     background: rgba(0, 0, 0, 0.45);

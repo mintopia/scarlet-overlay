@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers\Auth;
 
-use App\Enums\UserRole;
 use App\Http\Controllers\Controller;
 use App\Models\Invite;
 use App\Models\User;
@@ -41,8 +40,6 @@ class RegisterController extends Controller
             'email' => $validated['email'],
             'password' => $validated['password'],
         ]);
-        $user->role = UserRole::Crew;
-        $user->save();
 
         $invite->delete();
 

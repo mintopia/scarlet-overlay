@@ -11,7 +11,7 @@ class DatabaseSeeder extends Seeder
     public function run(): void
     {
         if (User::count() === 0) {
-            User::factory()->owner()->create([
+            User::factory()->create([
                 'name' => 'Jessica Smith',
                 'email' => 'jess@mintopia.net',
             ]);

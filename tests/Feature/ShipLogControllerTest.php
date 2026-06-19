@@ -17,7 +17,7 @@ class ShipLogControllerTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        $this->user = User::factory()->owner()->create();
+        $this->user = User::factory()->create();
     }
 
     public function test_log_page_renders_with_db_entries(): void

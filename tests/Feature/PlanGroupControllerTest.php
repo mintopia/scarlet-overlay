@@ -20,7 +20,7 @@ class PlanGroupControllerTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        $this->user = User::factory()->owner()->create();
+        $this->user = User::factory()->create();
         $this->plan = Plan::factory()->create();
     }
 

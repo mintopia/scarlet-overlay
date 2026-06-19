@@ -2,7 +2,6 @@
 
 namespace Tests\Feature;
 
-use App\Enums\UserRole;
 use App\Mail\TeamInviteMail;
 use App\Models\Invite;
 use App\Models\User;
@@ -14,12 +13,12 @@ class TeamTest extends TestCase
 {
     use RefreshDatabase;
 
-    public function test_owner_can_invite_member(): void
+    public function test_authenticated_user_can_invite_member(): void
     {
         Mail::fake();
-        $owner = User::factory()->owner()->create();
+        $user = User::factory()->create();
 
-        $response = $this->actingAs($owner)->post('/admin/team/invite', [
+        $response = $this->actingAs($user)->post('/admin/team/invite', [
             'email' => 'newcrew@example.com',
         ]);
 
@@ -28,15 +27,14 @@ class TeamTest extends TestCase
         Mail::assertSent(TeamInviteMail::class);
     }
 
-    public function test_crew_cannot_invite(): void
+    public function test_guest_cannot_invite(): void
     {
-        $crew = User::factory()->create(['role' => UserRole::Crew]);
-
-        $response = $this->actingAs($crew)->post('/admin/team/invite', [
+        $response = $this->post('/admin/team/invite', [
             'email' => 'another@example.com',
         ]);
 
-        $response->assertForbidden();
+        $response->assertRedirect(route('login'));
+        $this->assertDatabaseMissing('invites', ['email' => 'another@example.com']);
     }
 
     public function test_can_register_with_valid_invite(): void
@@ -44,7 +42,7 @@ class TeamTest extends TestCase
         $invite = Invite::create([
             'email' => 'newcrew@example.com',
             'token' => 'valid-token',
-            'invited_by' => User::factory()->owner()->create()->id,
+            'invited_by' => User::factory()->create()->id,
         ]);
 
         $response = $this->post('/register', [
@@ -56,18 +54,18 @@ class TeamTest extends TestCase
         ]);
 
         $response->assertRedirect('/admin/settings');
-        $this->assertDatabaseHas('users', ['email' => 'newcrew@example.com', 'role' => 'crew']);
+        $this->assertDatabaseHas('users', ['email' => 'newcrew@example.com']);
         $this->assertDatabaseMissing('invites', ['token' => 'valid-token']);
     }
 
-    public function test_owner_can_remove_crew(): void
+    public function test_authenticated_user_can_remove_member(): void
     {
-        $owner = User::factory()->owner()->create();
-        $crew = User::factory()->create(['role' => UserRole::Crew]);
+        $user = User::factory()->create();
+        $member = User::factory()->create();
 
-        $response = $this->actingAs($owner)->delete("/admin/team/{$crew->id}");
+        $response = $this->actingAs($user)->delete("/admin/team/{$member->id}");
 
         $response->assertRedirect();
-        $this->assertDatabaseMissing('users', ['id' => $crew->id]);
+        $this->assertDatabaseMissing('users', ['id' => $member->id]);
     }
 }

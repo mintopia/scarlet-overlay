@@ -18,9 +18,8 @@ class HandleInertiaRequests extends Middleware
                     'id' => $request->user()->id,
                     'name' => $request->user()->name,
                     'email' => $request->user()->email,
-                    'role' => $request->user()->role,
                     'initials' => $request->user()->initials,
-                    'gravatar_url' => 'https://www.gravatar.com/avatar/' . md5(strtolower(trim($request->user()->email))) . '?s=64&d=mp',
+                    'gravatar_url' => 'https://www.gravatar.com/avatar/'.md5(strtolower(trim($request->user()->email))).'?s=64&d=mp',
                 ] : null,
             ],
             'flash' => [

@@ -24,7 +24,7 @@ class PlanRouteControllerTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        $this->user = User::factory()->owner()->create();
+        $this->user = User::factory()->create();
         $this->plan = Plan::factory()->create();
         $this->group = PlanGroup::factory()->create(['plan_id' => $this->plan->id]);
     }

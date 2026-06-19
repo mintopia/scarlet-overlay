@@ -16,14 +16,13 @@ class TeamController extends Controller
     public function index()
     {
         return Inertia::render('Admin/Team', [
-            'members' => User::select('id', 'name', 'email', 'role', 'updated_at')
-                ->orderByDesc('role')
+            'members' => User::select('id', 'name', 'email', 'updated_at')
+                ->orderBy('name')
                 ->get()
                 ->map(fn ($u) => [
                     'id' => $u->id,
                     'name' => $u->name,
                     'email' => $u->email,
-                    'role' => $u->role,
                     'initials' => $u->initials,
                     'last_active' => $u->updated_at->diffForHumans(),
                 ]),
@@ -33,10 +32,6 @@ class TeamController extends Controller
 
     public function invite(Request $request)
     {
-        if (!$request->user()->isOwner()) {
-            abort(403);
-        }
-
         $validated = $request->validate([
             'email' => ['required', 'email', 'unique:users,email', 'unique:invites,email'],
         ]);
@@ -54,10 +49,6 @@ class TeamController extends Controller
 
     public function resend(Request $request, Invite $invite)
     {
-        if (!$request->user()->isOwner()) {
-            abort(403);
-        }
-
         Mail::to($invite->email)->send(new TeamInviteMail($invite));
 
         return back()->with('success', 'Invite resent.');
@@ -65,7 +56,7 @@ class TeamController extends Controller
 
     public function destroy(Request $request, User $user)
     {
-        if (!$request->user()->isOwner() || $user->id === $request->user()->id) {
+        if ($user->id === $request->user()->id) {
             abort(403);
         }
 
@@ -76,10 +67,6 @@ class TeamController extends Controller
 
     public function destroyInvite(Request $request, Invite $invite)
     {
-        if (!$request->user()->isOwner()) {
-            abort(403);
-        }
-
         $invite->delete();
 
         return back()->with('success', 'Invite cancelled.');

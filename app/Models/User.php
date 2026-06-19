@@ -2,7 +2,6 @@
 
 namespace App\Models;
 
-use App\Enums\UserRole;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
@@ -22,7 +21,6 @@ class User extends Authenticatable implements WebAuthnAuthenticatable
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
-            'role' => UserRole::class,
         ];
     }
 
@@ -32,10 +30,5 @@ class User extends Authenticatable implements WebAuthnAuthenticatable
             ->map(fn ($part) => mb_strtoupper(mb_substr($part, 0, 1)))
             ->take(2)
             ->join('');
-    }
-
-    public function isOwner(): bool
-    {
-        return $this->role === UserRole::Owner;
     }
 }

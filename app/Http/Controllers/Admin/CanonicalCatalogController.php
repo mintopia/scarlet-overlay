@@ -8,7 +8,6 @@ use App\Models\CanonicalMetric;
 use App\Services\CanonicalCatalog;
 use App\Services\PrometheusService;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Gate;
 use Inertia\Inertia;
 
 class CanonicalCatalogController extends Controller
@@ -39,7 +38,6 @@ class CanonicalCatalogController extends Controller
 
     public function store(Request $request, CanonicalCatalog $catalog)
     {
-        Gate::authorize('manageCanonicalCatalog');
         $data = $this->validateMetric($request);
         $metric = CanonicalMetric::create(collect($data)->except('sources')->all());
         foreach ($data['sources'] as $s) {
@@ -52,7 +50,6 @@ class CanonicalCatalogController extends Controller
 
     public function update(Request $request, CanonicalMetric $metric, CanonicalCatalog $catalog)
     {
-        Gate::authorize('manageCanonicalCatalog');
         $data = $this->validateMetric($request);
         $metric->update(collect($data)->except('sources')->all());
         $metric->sources()->delete();
@@ -66,7 +63,6 @@ class CanonicalCatalogController extends Controller
 
     public function destroy(Request $request, CanonicalMetric $metric, CanonicalCatalog $catalog)
     {
-        Gate::authorize('manageCanonicalCatalog');
         $metric->delete();
         $catalog->recordVersion('delete', $request->user()->email);
 
@@ -85,7 +81,6 @@ class CanonicalCatalogController extends Controller
 
     public function rollback(Request $request, CanonicalCatalog $catalog)
     {
-        Gate::authorize('manageCanonicalCatalog');
         $validated = $request->validate(['version' => ['required', 'integer', 'min:1']]);
         $catalog->rollback($validated['version'], $request->user()->email);
 

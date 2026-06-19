@@ -19,7 +19,7 @@ class JourneyControllerTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        $this->user = User::factory()->owner()->create();
+        $this->user = User::factory()->create();
     }
 
     public function test_journey_list_page_renders(): void

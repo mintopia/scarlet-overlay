@@ -2,9 +2,7 @@
 
 namespace App\Providers;
 
-use App\Models\User;
 use Illuminate\Http\Resources\Json\JsonResource;
-use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\ServiceProvider;
 use Intervention\Image\Drivers\Gd\Driver;
 use Intervention\Image\ImageManager;
@@ -32,8 +30,5 @@ class AppServiceProvider extends ServiceProvider
     public function boot(): void
     {
         JsonResource::withoutWrapping();
-
-        // Catalog mutation is restricted to owners — distinct from generic admin access.
-        Gate::define('manageCanonicalCatalog', fn (User $user): bool => $user->isOwner());
     }
 }
