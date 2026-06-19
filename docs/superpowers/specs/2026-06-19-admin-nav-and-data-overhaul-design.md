@@ -37,7 +37,7 @@ DASHBOARDS
   Skipper        /admin/dash/skipper
   Stream         /admin/stream        (new)
 SYSTEM
-  Data           /admin/metrics/catalog   (label renamed)
+  Data           /admin/data          (renamed + moved from /admin/metrics/catalog)
   Settings       /admin/settings
   Team           /admin/team
 (external, pinned bottom)
@@ -46,7 +46,7 @@ SYSTEM
 ```
 
 - Add a small uppercase **section-header** element (e.g. `.nav-section`) styled like the existing dim section labels; it replaces the lone `.nav-divider`. Keep one subtle divider/spacing between sections.
-- **`breadcrumbMap`**: remove entries for `Admin/Tracker`, `Admin/Broadcast`, `Admin/Environment`, `Admin/Explore`, `Admin/ExploreDashboard`. Change `Admin/Catalog` label from `Data Mapping` to `Data`. Add `Admin/Stream` → `[home, { label: 'Stream' }]` and `Admin/MetricExplorer` → `[home, { label: 'Data', href: '/admin/metrics/catalog' }, { label: <metric> }]`.
+- **`breadcrumbMap`**: remove entries for `Admin/Tracker`, `Admin/Broadcast`, `Admin/Environment`, `Admin/Explore`, `Admin/ExploreDashboard`. Replace the `Admin/Catalog` key with `Admin/Data` → `[home, { label: 'Data' }]`. Add `Admin/Stream` → `[home, { label: 'Stream' }]` and `Admin/MetricExplorer` → `[home, { label: 'Data', href: '/admin/data' }, { label: <metric> }]`.
 
 ## B. Remove Tracker / Broadcast / Environment
 
@@ -93,20 +93,32 @@ The House and EcoFlow cells (`.ops-power` grid) drift vertically because their t
 
 ## E. Data page + per-metric explorer
 
-### E1. Rename Data Mapping → Data (`resources/js/Pages/Admin/Catalog.vue`)
+### E1. Rename Data Mapping → Data — full naming consistency
 
-- Page `<h1>`, `<Head title>`, and sidebar/breadcrumb labels change to "Data". **Route name and path stay** (`admin.catalog`, `/admin/metrics/catalog`) to avoid churn across `route()` references.
+Rename the page, route names, and path so everything lives under `admin.data.*` / `/admin/data`.
+
+- Rename the page component `resources/js/Pages/Admin/Catalog.vue` → `resources/js/Pages/Admin/Data.vue`; update `Inertia::render('Admin/Catalog')` → `Inertia::render('Admin/Data')` and the `breadcrumbMap` key `Admin/Catalog` → `Admin/Data`. Page `<h1>` and `<Head title>` become "Data".
+- Rename the catalog routes (controller class `CanonicalCatalogController` keeps its name — it accurately manages the canonical catalog):
+  - `admin.catalog` `GET /admin/metrics/catalog` → **`admin.data.index` `GET /admin/data`**
+  - `admin.catalog.inventory` → **`admin.data.inventory`** (`GET /admin/data/inventory`)
+  - `admin.catalog.test` → **`admin.data.test`** (`POST /admin/data/test`)
+  - `admin.catalog.store` → **`admin.data.store`** (`POST /admin/data`)
+  - `admin.catalog.update` → **`admin.data.update`** (`PUT /admin/data/{metric}`)
+  - `admin.catalog.destroy` → **`admin.data.destroy`** (`DELETE /admin/data/{metric}`)
+  - `admin.catalog.rollback` → **`admin.data.rollback`** (`POST /admin/data/rollback`)
+- Update every `route('admin.catalog…')` reference in the page (and anywhere else) to the new `admin.data.*` names.
+- **Route ordering:** the literal GET routes (`/admin/data/inventory`, `/admin/data/current`, `/admin/data/series`) and the explorer wildcard `GET /admin/data/{metric}` (E3) share the `/admin/data` prefix. Register the literal segments **before** the `{metric}` wildcard, or constrain `{metric}` with a `where` pattern, so they don't get swallowed.
 
 ### E2. Live "last value + age" per metric
 
 - On mount, fetch current canonical values for all catalog metrics in one request and render a compact readout on each metric row, e.g. `12.3 kn · 4s ago`, dimmed when stale / `—` when absent.
-- New endpoint: `GET admin.catalog.current` (or extend the existing inventory fetch) returning `{ [metricKey]: { value, display_unit, age_s, stale } }`, read via **`CanonicalReader`** (the sole metrics read path; the legacy registry is removed). Reuses the same staleness semantics already used by the per-source "Test" button.
+- New endpoint: `GET admin.data.current` (`/admin/data/current`) returning `{ [metricKey]: { value, display_unit, age_s, stale } }`, read via **`CanonicalReader`** (the sole metrics read path; the legacy registry is removed). Reuses the same staleness semantics already used by the per-source "Test" button.
 - This is advisory/live data: failure leaves the row showing `—`, the catalog still works.
 
 ### E3. Metric explorer page (Grafana-style) — replaces Explore
 
-- Route: `GET /admin/data/{metric}` → name `admin.data.show`, served by a new `Admin/DataController`. `{metric}` is the canonical metric key.
-- Time-series endpoint: `GET admin.data.series` → `DataController@series`, params `metrics` (comma-separated keys) + `range` (`6h|24h|7d|30d`), reading **`CanonicalReader::readRange`**. Returns per-metric `{ label, display_unit, data: [{ t, value }], current }`. (Repurposes what the old `ExploreController@series` did.)
+- Route: `GET /admin/data/{metric}` → name `admin.data.show`, served by a new `Admin/DataController@show`. `{metric}` is the canonical metric key. Registered after the literal `/admin/data/*` GET routes (see E1 ordering note).
+- Time-series endpoint: `GET /admin/data/series` → name `admin.data.series` → `DataController@series`, params `metrics` (comma-separated keys) + `range` (`6h|24h|7d|30d`), reading **`CanonicalReader::readRange`**. Returns per-metric `{ label, display_unit, data: [{ t, value }], current }`. (Repurposes what the old `ExploreController@series` did.)
 - `resources/js/Pages/Admin/MetricExplorer.vue`:
   - Header: metric label/key + **time-range pills** (`6h / 24h / 7d / 30d`). uPlot provides drag-to-zoom; double-click resets.
   - Opens with the routed metric charted in the first graph panel.
@@ -139,13 +151,16 @@ Stroke width then stays constant in device pixels regardless of the viewBox aspe
 - `resources/js/components/Admin/UplotChart.vue`
 - `app/Http/Controllers/Admin/DataController.php` (+ a Stream controller method)
 
+**Renamed**
+- `resources/js/Pages/Admin/Catalog.vue` → `resources/js/Pages/Admin/Data.vue` (rename + last value/age + `route('admin.data.*')` refs)
+
 **Modified**
 - `resources/js/Layouts/AdminLayout.vue` (sections, links, breadcrumbs)
 - `resources/js/Pages/Admin/Dash/Ops.vue` (weather de-dup + battery alignment)
 - `resources/js/Pages/Admin/Dash/Tech.vue` (Stream link card)
-- `resources/js/Pages/Admin/Catalog.vue` (rename + last value/age)
 - `resources/js/components/Admin/Sparkline.vue`, `TrendChart.vue`, LCARS line graph(s)
-- `routes/web.php`
+- `routes/web.php` (catalog routes → `admin.data.*`; remove Tracker/Broadcast-GET/Environment/Explore; add Stream + explorer)
+- `CanonicalCatalogController` (route names change; class name unchanged; add `current` action)
 - `StreamMonitorController` (trim to used methods)
 
 **Deleted**
@@ -155,11 +170,12 @@ Stroke width then stays constant in device pixels regardless of the viewBox aspe
 ## Testing
 
 PHPUnit feature tests (the project's standard):
-- Removed routes return 404: `/admin/tracker`, `/admin/broadcast` (GET), `/admin/environment`, `/admin/weather`, `/admin/explore`.
+- Removed routes return 404: `/admin/tracker`, `/admin/broadcast` (GET), `/admin/environment`, `/admin/weather`, `/admin/explore`, and the old `/admin/metrics/catalog`.
 - `POST /admin/broadcast/pull` still works (Tech's Start/Stop).
 - `GET /admin/stream` renders `Admin/Stream`.
-- `GET /admin/metrics/catalog` still renders (now "Data") and the current-values endpoint returns the expected shape.
-- `GET /admin/data/{metric}` renders `Admin/MetricExplorer`; `GET /admin/data/series` returns the expected per-metric shape for a known metric.
+- `GET /admin/data` renders `Admin/Data`; `GET /admin/data/current` returns the expected value/age shape.
+- `GET /admin/data/{metric}` renders `Admin/MetricExplorer`; `GET /admin/data/series?metrics=…&range=…` returns the expected per-metric shape for a known metric — and the literal `/admin/data/series`, `/admin/data/current`, `/admin/data/inventory` routes are not shadowed by the `{metric}` wildcard.
+- Catalog CRUD still works under the new names (`admin.data.store/update/destroy/rollback`).
 - A nav assertion (or page render) confirms the removed links are gone and Stream/Data are present.
 
 Manual verification in-app (`npm run dev`): uPlot explorer (add graph / overlay axis / range / zoom), MetricSelect autocomplete, Ops layout, and crisp SVG lines across themes.
