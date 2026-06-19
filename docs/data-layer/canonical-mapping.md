@@ -1,5 +1,11 @@
 # Canonical mapping (inclusion matrix)
 
+> **Model note (2026-06-19):** canonical metrics are **config-driven, not written.** There is no
+> canonical *output* series and no canonical writer — the canonical source for a logical metric is
+> configured in management (which raw series + transform) and resolved at read time by `CanonicalReader`.
+> The "canonical output metric / output name" wording below is therefore a **source-selection reference**
+> (what maps to what, with which transform), not a set of series to materialise in VM.
+
 Maps every live raw `scarlet_*` series → disposition, per the Phase-0 inclusion-matrix model.
 **This is a PROPOSED matrix for owner (Jess) approval** — only the rows marked **`baseline`** are
 already defined in `App\Support\CanonicalBaseline`; the rest are candidates.

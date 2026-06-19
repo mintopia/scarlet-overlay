@@ -26,6 +26,7 @@ directly in collector config (the earlier catalog-coupled generator approach was
 |---|---|
 | `attributes/strip` delete `value`, `key`, `instance` (datapoint) | Removes the **changing `value`** attribute that spawned a new series per value on `mqtt.last_seen` and the signalk string metrics — the main cardinality win. |
 | `prometheusremotewrite.disable_scope_info: true` | Drops `otel_scope_name` / `otel_scope_version`. |
+| `resource/strip` delete `device.mode` (added 2026-06-19) | Drops the `device_mode` label (device mode is its own metric). |
 
 **Deliberately NOT stripped:** `service.name`. The exporter derives BOTH the redundant
 `service_name` label AND the wanted `job` label from it, with no declarative way to split them
@@ -34,10 +35,12 @@ directly in collector config (the earlier catalog-coupled generator approach was
 
 ### Label shape (verified in VM, post-deploy)
 
-- **Kept:** `device_id`, `device_mode`, `gps_source` (gps), `topic` (mqtt), `job`, `service_name`.
-- **Gone:** `otel_scope_name`, `otel_scope_version`, the changing `value` datapoint attribute.
+- **Kept:** `device_id`, `gps_source` (gps lat/lon), `topic` (mqtt), `job`, `service_name`.
+- **Gone:** `otel_scope_name`, `otel_scope_version`, the changing `value` datapoint attribute, and
+  (since 2026-06-19) `device_mode`.
 
-Example: `scarlet_gps_latitude_deg{device_id="scarlet", device_mode="realtime", gps_source="signalk", job="boat-tracker", service_name="boat-tracker"}`.
+Example: `scarlet_gps_latitude_deg{device_id="scarlet", gps_source="signalk", job="boat-tracker", service_name="boat-tracker"}`.
+See `phase-5-backfill.md` for the historical relabel + GPS lat/lon collation that aligned history to this shape.
 
 ## Pipeline order (Stage 1)
 
