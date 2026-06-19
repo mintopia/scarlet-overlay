@@ -1,0 +1,198 @@
+<h2>Main — Helm-led, de-carded (v2)</h2>
+<p class="subtitle">Same helm-first idea you picked, but the boxes are gone. <strong>One</strong> bordered element (the map). The real <code>CompassRose</code> from the current dashboard is the hero, floating on the page. Sailing numbers sit beside it as type with their own hierarchy (SOG leads), grouped by whitespace and hairlines. Resources are a quiet strip. Compare against the wall-of-cards version below.</p>
+
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Nunito+Sans:opsz,wght@6..12,400;6..12,600;6..12,700;6..12,800&family=DM+Sans:wght@400;500;700;800&display=swap');
+.sc-card { cursor:pointer; border-radius:14px; transition:transform .35s cubic-bezier(.2,.8,.2,1); outline:2px solid transparent; margin-top:14px; }
+.sc-card.selected { outline:2px solid oklch(0.48 0.22 25); transform:translateY(-2px); }
+.sc-tag{display:flex;align-items:baseline;gap:10px;margin:0 0 8px;}
+.sc-letter{font:800 12px 'DM Sans';letter-spacing:1px;color:oklch(0.48 0.22 25);background:oklch(0.92 0.06 25);padding:3px 9px;border-radius:6px;}
+.sc-name{font:800 14px 'DM Sans';color:#333;}
+.sc-why{font:500 12px 'DM Sans';color:#999;margin-left:auto;}
+
+.sc{
+  --color-bg:oklch(0.96 0.01 205); --color-surface:oklch(0.99 0.004 205);
+  --color-border:oklch(0.89 0.012 205); --color-border-light:oklch(0.93 0.006 205);
+  --t1:oklch(0.15 0.025 205); --t2:oklch(0.38 0.02 205); --color-text-dim:oklch(0.52 0.014 205); --t3:oklch(0.52 0.014 205);
+  --color-teal:oklch(0.42 0.14 178); --color-amber:oklch(0.48 0.17 70); --color-blue:oklch(0.42 0.14 245);
+  --color-green:oklch(0.45 0.16 150); --color-scarlet:oklch(0.48 0.22 25); --color-pink:oklch(0.6 0.16 0);
+  background:var(--color-bg); border-radius:14px; padding:26px 30px; border:1px solid var(--color-border);
+  font-family:'DM Sans',sans-serif; box-shadow:0 1px 5px oklch(0.2 0.02 205/0.08);
+}
+.sc *{box-sizing:border-box;}
+.sc .seclabel{font:800 10px 'DM Sans';letter-spacing:2.4px;text-transform:uppercase;color:var(--t3);}
+.sc .num{font-family:'Nunito Sans';font-weight:700;color:var(--t1);line-height:.95;letter-spacing:-1px;}
+.sc .u{font:500 12px 'DM Sans';color:var(--t3);margin-left:3px;letter-spacing:0;}
+/* status line, no box */
+.sc .status{display:flex;align-items:center;gap:16px;margin-bottom:22px;}
+.sc .badge{display:inline-flex;align-items:center;gap:7px;background:oklch(0.92 0.05 150);color:oklch(0.28 0.1 150);font:800 11px 'DM Sans';letter-spacing:1px;text-transform:uppercase;padding:5px 11px;border-radius:20px;}
+.sc .badge .dot{width:7px;height:7px;border-radius:50%;background:var(--color-green);}
+.sc .hdot{display:flex;align-items:center;gap:5px;font:600 11px 'DM Sans';color:var(--t3);}
+.sc .hdot::before{content:'';width:7px;height:7px;border-radius:50%;background:var(--color-green);}
+.sc .passage{margin-left:auto;font:700 13px 'DM Sans';color:var(--t2);}
+.sc .passage b{font-family:'Nunito Sans';color:var(--t1);}
+/* hero zone */
+.sc .hero{display:grid;grid-template-columns:300px 1fr;gap:40px;align-items:center;}
+.sc .compass-cap{text-align:center;margin-top:6px;font:600 11px 'DM Sans';color:var(--t3);}
+.sc .compass-cap b{font-family:'Nunito Sans';font-weight:700;color:var(--t2);}
+.sc .readings{}
+.sc .sog{display:flex;align-items:baseline;gap:10px;padding-bottom:16px;border-bottom:1px solid var(--color-border-light);margin-bottom:18px;}
+.sc .sog .num{font-size:58px;color:var(--color-teal);}
+.sc .sog .meta{display:flex;flex-direction:column;}
+.sc .micro{display:grid;grid-template-columns:repeat(3,1fr);gap:26px;}
+.sc .micro .k .seclabel{display:block;margin-bottom:5px;}
+.sc .micro .k .num{font-size:30px;}
+/* map band, the one container */
+.sc .mapband{margin-top:30px;}
+.sc .map{height:150px;border-radius:14px;position:relative;overflow:hidden;border:1px solid var(--color-border);background:linear-gradient(160deg,oklch(0.9 0.03 210),oklch(0.85 0.045 200));}
+.sc .map svg{position:absolute;inset:0;width:100%;height:100%;}
+.sc .navline{display:flex;gap:34px;margin-top:14px;align-items:baseline;}
+.sc .navline .k .seclabel{display:block;margin-bottom:4px;}
+.sc .navline .k .num{font-size:22px;}
+.sc .navline .next{margin-left:auto;font:600 12px 'DM Sans';color:var(--t3);}
+.sc .navline .next b{font-family:'Nunito Sans';color:var(--t2);font-weight:700;}
+/* resource strip, no box */
+.sc .resources{display:grid;grid-template-columns:1.3fr 1fr 1fr;gap:34px;margin-top:30px;padding-top:22px;border-top:1px solid var(--color-border-light);}
+.sc .lvl .seclabel{display:block;margin-bottom:8px;}
+.sc .lvl .bar{display:flex;align-items:center;gap:12px;}
+.sc .track{flex:1;height:10px;border-radius:5px;background:oklch(0.93 0.01 205);overflow:hidden;}
+.sc .fill{height:100%;border-radius:5px;}
+.sc .pct{font-family:'Nunito Sans';font-weight:700;font-size:15px;color:var(--t1);}
+.sc .subnote{font:500 11px 'DM Sans';color:var(--t3);margin-top:5px;}
+
+/* ---- the OLD wall-of-cards, shrunk for contrast ---- */
+.old{margin-top:30px;opacity:.92;}
+.old .grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;}
+.old .box{background:oklch(0.99 0.004 205);border:1px solid oklch(0.89 0.012 205);border-radius:10px;padding:12px;height:74px;display:flex;flex-direction:column;justify-content:center;}
+.old .box .l{font:700 8px 'DM Sans';letter-spacing:1.5px;text-transform:uppercase;color:oklch(0.52 0.014 205);}
+.old .box .vv{font-family:'Nunito Sans';font-weight:700;font-size:22px;color:oklch(0.15 0.025 205);margin-top:3px;}
+</style>
+
+<div class="sc-card" data-choice="helm-v2" onclick="toggleSelect(this)">
+  <div class="sc-tag"><span class="sc-letter">A·v2</span><span class="sc-name">Helm-led, de-carded</span><span class="sc-why">click to approve this direction</span></div>
+  <div class="sc">
+    <div class="status">
+      <span class="badge"><span class="dot"></span>Under Sail</span>
+      <span class="hdot">Tracker</span><span class="hdot">Stream</span><span class="hdot">Publisher</span>
+      <span class="passage">Falmouth → Plymouth · <b>13:42</b></span>
+    </div>
+
+    <div class="hero">
+      <div>
+        <!-- real CompassRose, heading 274 / COG 268 / TWA 52 / AWA 48 -->
+        <svg width="300" height="300" viewBox="-12 -12 204 204">
+          <circle cx="90" cy="90" r="84" fill="var(--color-surface)" stroke="var(--color-border)" stroke-width="0.75"/>
+          <!-- point of sail zones (fixed) -->
+          <path d="M27.07,27.07 A89,89 0 0,1 152.93,27.07" fill="none" stroke="var(--color-scarlet)" stroke-opacity="0.45" stroke-width="5"/>
+          <path d="M152.93,27.07 A89,89 0 0,1 167.07,45.5" fill="none" stroke="var(--color-teal)" stroke-opacity="0.55" stroke-width="5"/>
+          <path d="M12.93,45.5 A89,89 0 0,1 27.07,27.07" fill="none" stroke="var(--color-teal)" stroke-opacity="0.55" stroke-width="5"/>
+          <path d="M167.07,45.5 A89,89 0 0,1 177.65,74.55" fill="none" stroke="var(--color-teal)" stroke-opacity="0.35" stroke-width="5"/>
+          <path d="M2.35,74.55 A89,89 0 0,1 12.93,45.5" fill="none" stroke="var(--color-teal)" stroke-opacity="0.35" stroke-width="5"/>
+          <path d="M177.65,74.55 A89,89 0 0,1 177.65,105.45" fill="none" stroke="var(--color-amber)" stroke-opacity="0.5" stroke-width="5"/>
+          <path d="M2.35,105.45 A89,89 0 0,1 2.35,74.55" fill="none" stroke="var(--color-amber)" stroke-opacity="0.5" stroke-width="5"/>
+          <path d="M177.65,105.45 A89,89 0 0,1 134.5,167.07" fill="none" stroke="var(--color-amber)" stroke-opacity="0.65" stroke-width="5"/>
+          <path d="M45.5,167.07 A89,89 0 0,1 2.35,105.45" fill="none" stroke="var(--color-amber)" stroke-opacity="0.65" stroke-width="5"/>
+          <path d="M134.5,167.07 A89,89 0 0,1 90,179" fill="none" stroke="var(--color-green)" stroke-opacity="0.5" stroke-width="5"/>
+          <path d="M90,179 A89,89 0 0,1 45.5,167.07" fill="none" stroke="var(--color-green)" stroke-opacity="0.5" stroke-width="5"/>
+          <!-- rotating ring -->
+          <g transform="rotate(-274 90 90)">
+            <circle cx="90" cy="90" r="80" fill="none" stroke="var(--color-border-light)" stroke-width="0.5"/>
+            <circle cx="90" cy="90" r="55" fill="none" stroke="var(--color-border-light)" stroke-width="0.3" stroke-dasharray="2 3"/>
+            <line x1="90" y1="16" x2="90" y2="6" stroke="var(--color-text-dim)" stroke-width="1.2"/>
+            <line x1="164" y1="90" x2="174" y2="90" stroke="var(--color-text-dim)" stroke-width="1.2"/>
+            <line x1="90" y1="164" x2="90" y2="174" stroke="var(--color-text-dim)" stroke-width="1.2"/>
+            <line x1="16" y1="90" x2="6" y2="90" stroke="var(--color-text-dim)" stroke-width="1.2"/>
+            <line x1="128" y1="24.18" x2="131" y2="18.98" stroke="var(--color-border)" stroke-width="0.5"/>
+            <line x1="155.82" y1="52" x2="161.01" y2="49" stroke="var(--color-border)" stroke-width="0.5"/>
+            <line x1="155.82" y1="128" x2="161.01" y2="131" stroke="var(--color-border)" stroke-width="0.5"/>
+            <line x1="128" y1="155.82" x2="131" y2="161.01" stroke="var(--color-border)" stroke-width="0.5"/>
+            <line x1="52" y1="155.82" x2="49" y2="161.01" stroke="var(--color-border)" stroke-width="0.5"/>
+            <line x1="24.18" y1="128" x2="18.98" y2="131" stroke="var(--color-border)" stroke-width="0.5"/>
+            <line x1="24.18" y1="52" x2="18.98" y2="49" stroke="var(--color-border)" stroke-width="0.5"/>
+            <line x1="52" y1="24.18" x2="49" y2="18.98" stroke="var(--color-border)" stroke-width="0.5"/>
+            <text x="90" y="30" text-anchor="middle" fill="var(--color-scarlet)" font-size="12" font-weight="800" font-family="Nunito Sans" dominant-baseline="central">N</text>
+            <text x="153" y="93" text-anchor="middle" fill="var(--color-text-dim)" font-size="9" font-family="Nunito Sans" font-weight="600" dominant-baseline="central">E</text>
+            <text x="90" y="158" text-anchor="middle" fill="var(--color-text-dim)" font-size="9" font-family="Nunito Sans" font-weight="600" dominant-baseline="central">S</text>
+            <text x="27" y="93" text-anchor="middle" fill="var(--color-text-dim)" font-size="9" font-family="Nunito Sans" font-weight="600" dominant-baseline="central">W</text>
+            <text x="140.9" y="39.1" text-anchor="middle" fill="var(--color-text-dim)" font-size="7" font-family="Nunito Sans" font-weight="600" dominant-baseline="central">NE</text>
+            <text x="140.9" y="140.9" text-anchor="middle" fill="var(--color-text-dim)" font-size="7" font-family="Nunito Sans" font-weight="600" dominant-baseline="central">SE</text>
+            <text x="39.1" y="140.9" text-anchor="middle" fill="var(--color-text-dim)" font-size="7" font-family="Nunito Sans" font-weight="600" dominant-baseline="central">SW</text>
+            <text x="39.1" y="39.1" text-anchor="middle" fill="var(--color-text-dim)" font-size="7" font-family="Nunito Sans" font-weight="600" dominant-baseline="central">NW</text>
+          </g>
+          <!-- fixed: heading index, COG, AWA, TWA, boat -->
+          <polygon points="90,-4 86,4 94,4" fill="var(--color-teal)" opacity="0.7"/>
+          <line x1="90" y1="90" x2="82.06" y2="14.4" stroke="var(--color-blue)" stroke-width="1.5" stroke-dasharray="5 3" opacity="0.55"/>
+          <line x1="90" y1="90" x2="142.0" y2="43.2" stroke="var(--color-pink)" stroke-width="1.5" stroke-dasharray="4 3" opacity="0.45"/>
+          <polygon points="140.5,44.5 130.9,46.1 137.9,53.9" fill="var(--color-pink)" opacity="0.6"/>
+          <line x1="90" y1="90" x2="148.3" y2="44.4" stroke="var(--color-amber)" stroke-width="2" stroke-dasharray="6 4" opacity="0.6"/>
+          <polygon points="146.7,45.7 136.1,47.0 142.8,55.7" fill="var(--color-amber)" opacity="0.7"/>
+          <path d="M90,58 C87,65 84.5,73 84.5,83 L84.5,94 C84.5,99 86.5,101.5 90,101.5 C93.5,101.5 95.5,99 95.5,94 L95.5,83 C95.5,73 93,65 90,58 Z" fill="var(--color-surface)" stroke="var(--color-teal)" stroke-width="1.5" stroke-linejoin="round"/>
+          <line x1="90" y1="64" x2="90" y2="98" stroke="var(--color-teal)" stroke-width="0.5" opacity="0.3"/>
+        </svg>
+        <div class="compass-cap"><b>274°</b> HDG &nbsp;·&nbsp; COG <b>268°</b> &nbsp;·&nbsp; TWA <b>52°</b> S</div>
+      </div>
+
+      <div class="readings">
+        <div class="sog">
+          <span class="num">6.2</span>
+          <span class="meta"><span class="seclabel">Speed over ground</span><span class="u" style="font-size:13px;margin:4px 0 0;">knots · SOW 5.9</span></span>
+        </div>
+        <div class="micro">
+          <div class="k"><span class="seclabel">True Wind</span><span class="num" style="color:var(--color-amber)">14<span class="u">kts</span></span></div>
+          <div class="k"><span class="seclabel">Depth</span><span class="num" style="color:var(--color-blue)">18.4<span class="u">m</span></span></div>
+          <div class="k"><span class="seclabel">Heel</span><span class="num">7<span class="u">°</span></span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="mapband">
+      <div class="map">
+        <svg viewBox="0 0 900 150" preserveAspectRatio="none">
+          <path d="M0 110 C160 96 280 104 440 70 S760 36 900 30" fill="oklch(0.82 0.05 130)" opacity="0.25"/>
+          <path d="M40 124 C220 100 360 104 520 60 S820 26 880 20" fill="none" stroke="oklch(0.48 0.22 25)" stroke-width="3"/>
+          <circle cx="40" cy="124" r="5" fill="oklch(0.42 0.14 178)"/>
+          <circle cx="520" cy="60" r="6" fill="oklch(0.99 0.004 205)" stroke="oklch(0.48 0.22 25)" stroke-width="3"/>
+          <circle cx="880" cy="20" r="6" fill="oklch(0.48 0.22 25)"/>
+          <g transform="translate(520 60) rotate(-32)"><polygon points="0,-11 6,7 0,3 -6,7" fill="oklch(0.15 0.025 205)"/></g>
+        </svg>
+      </div>
+      <div class="navline">
+        <div class="k"><span class="seclabel">Dist to waypoint</span><span class="num">4.2<span class="u">nm</span></span></div>
+        <div class="k"><span class="seclabel">Time to go</span><span class="num">41<span class="u">min</span></span></div>
+        <div class="k"><span class="seclabel">ETA</span><span class="num">14:23</span></div>
+        <span class="next">Next waypoint · <b>Rame Head</b></span>
+      </div>
+    </div>
+
+    <div class="resources">
+      <div class="lvl">
+        <span class="seclabel">House Battery</span>
+        <div class="bar"><span class="pct" style="color:var(--color-green)">82%</span><div class="track"><div class="fill" style="width:82%;background:linear-gradient(90deg,oklch(0.62 0.14 150),oklch(0.45 0.16 150))"></div></div></div>
+        <div class="subnote">12.8 V · −4.2 A discharge</div>
+      </div>
+      <div class="lvl">
+        <span class="seclabel">Fuel</span>
+        <div class="bar"><span class="pct">64%</span><div class="track"><div class="fill" style="width:64%;background:linear-gradient(90deg,oklch(0.7 0.16 70),oklch(0.48 0.17 70))"></div></div></div>
+      </div>
+      <div class="lvl">
+        <span class="seclabel">Fresh Water</span>
+        <div class="bar"><span class="pct">48%</span><div class="track"><div class="fill" style="width:48%;background:linear-gradient(90deg,oklch(0.6 0.13 245),oklch(0.42 0.14 245))"></div></div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<p class="subtitle" style="margin-top:30px;font-weight:700;color:#b00;">↓ For contrast: the "wall of cards" failure mode we're avoiding</p>
+<div class="sc old">
+  <div class="grid">
+    <div class="box"><span class="l">SOG</span><span class="vv">6.2</span></div>
+    <div class="box"><span class="l">Heading</span><span class="vv">274°</span></div>
+    <div class="box"><span class="l">True Wind</span><span class="vv">14</span></div>
+    <div class="box"><span class="l">Depth</span><span class="vv">18.4</span></div>
+    <div class="box"><span class="l">Battery</span><span class="vv">82%</span></div>
+    <div class="box"><span class="l">Fuel</span><span class="vv">64%</span></div>
+    <div class="box"><span class="l">Water</span><span class="vv">48%</span></div>
+    <div class="box"><span class="l">ETA</span><span class="vv">14:23</span></div>
+  </div>
+  <p class="subtitle" style="margin-top:10px;">Eight equal boxes, no entry point, no story. This is what v2 above refuses.</p>
+</div>

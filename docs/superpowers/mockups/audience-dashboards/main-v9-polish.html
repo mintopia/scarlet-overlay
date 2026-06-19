@@ -1,0 +1,254 @@
+<h2>Main — v9 · Polished, weather added</h2>
+<p class="subtitle">Polish pass: tokens aligned (16px radii / 16px gaps), top-left panel dropped (passage + distance moved to the status bar), a compact weather cluster fills that corner and balances all four. Atmospheric vignette on the chart, reduced-motion respected, optical cluster alignment.</p>
+
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Nunito+Sans:opsz,wght@6..12,400;6..12,600;6..12,700;6..12,800&family=DM+Sans:wght@400;500;700;800&display=swap');
+.sc-card{cursor:pointer;border-radius:16px;transition:transform .35s cubic-bezier(.2,.8,.2,1);outline:2px solid transparent;margin-top:14px;}
+.sc-card.selected{outline:2px solid oklch(0.48 0.22 25);transform:translateY(-2px);}
+.sc-tag{display:flex;align-items:baseline;gap:10px;margin:0 0 8px;}
+.sc-letter{font:800 12px 'DM Sans';letter-spacing:1px;color:oklch(0.48 0.22 25);background:oklch(0.92 0.06 25);padding:3px 9px;border-radius:6px;}
+.sc-name{font:800 14px 'DM Sans';color:#333;}
+.sc-why{font:500 12px 'DM Sans';color:#999;margin-left:auto;}
+
+.sc{
+  --color-bg:oklch(0.96 0.01 205);--color-surface:oklch(0.99 0.004 205);
+  --color-border:oklch(0.89 0.012 205);--color-border-light:oklch(0.93 0.006 205);
+  --t1:oklch(0.15 0.025 205);--t2:oklch(0.38 0.02 205);--color-text-dim:oklch(0.52 0.014 205);--t3:oklch(0.52 0.014 205);
+  --color-teal:oklch(0.42 0.14 178);--color-amber:oklch(0.48 0.17 70);--color-blue:oklch(0.42 0.14 245);
+  --color-green:oklch(0.45 0.16 150);--color-scarlet:oklch(0.48 0.22 25);--color-pink:oklch(0.6 0.16 0);
+  --gap:16px;
+  background:var(--color-bg);border-radius:16px;padding:26px 30px;border:1px solid var(--color-border);
+  font-family:'DM Sans',sans-serif;box-shadow:0 1px 5px oklch(0.2 0.02 205/0.08);
+}
+.sc *{box-sizing:border-box;}
+.sc .seclabel{font:800 10px 'DM Sans';letter-spacing:2px;text-transform:uppercase;color:var(--t3);}
+.sc .num{font-family:'Nunito Sans';font-weight:700;color:var(--t1);line-height:.95;letter-spacing:-1px;}
+.sc .u{font:500 11px 'DM Sans';color:var(--t3);margin-left:3px;letter-spacing:0;}
+.sc .axis{display:flex;justify-content:space-between;margin-top:6px;font:600 9.5px 'DM Sans';color:var(--t3);letter-spacing:.3px;}
+.sc .status{display:flex;align-items:center;gap:16px;margin-bottom:18px;flex-wrap:wrap;}
+.sc .badge{display:inline-flex;align-items:center;gap:7px;background:oklch(0.92 0.05 150);color:oklch(0.28 0.1 150);font:800 11px 'DM Sans';letter-spacing:1px;text-transform:uppercase;padding:5px 11px;border-radius:20px;}
+.sc .badge .dot{width:7px;height:7px;border-radius:50%;background:var(--color-green);}
+.sc .hdot{display:flex;align-items:center;gap:5px;font:600 11px 'DM Sans';color:var(--t3);}
+.sc .hdot::before{content:'';width:7px;height:7px;border-radius:50%;background:var(--color-green);}
+.sc .passage{margin-left:auto;font:700 13px 'DM Sans';color:var(--t2);}
+.sc .passage b{font-family:'Nunito Sans';color:var(--t1);}
+
+.sc .herorow{display:grid;grid-template-columns:2.1fr minmax(280px,1fr);gap:var(--gap);align-items:stretch;}
+
+/* MAP HERO */
+.sc .map{height:100%;min-height:440px;border-radius:16px;position:relative;overflow:hidden;border:1px solid var(--color-border);background:linear-gradient(165deg,oklch(0.91 0.03 215),oklch(0.86 0.05 205) 55%,oklch(0.82 0.058 200));}
+.sc .map>svg.chart{position:absolute;inset:0;width:100%;height:100%;}
+/* bounded atmospheric vignette */
+.sc .map::after{content:'';position:absolute;inset:0;pointer-events:none;background:radial-gradient(120% 90% at 50% 18%, transparent 55%, oklch(0.3 0.04 220 / 0.16));}
+.sc .cluster{position:absolute;z-index:2;background:oklch(0.99 0.004 205 / 0.92);border:1px solid var(--color-border);border-radius:12px;padding:9px 13px;box-shadow:0 2px 10px oklch(0.2 0.02 205/0.12);}
+.sc .cluster.tr{top:14px;right:14px;font-family:'Nunito Sans';font-weight:700;font-size:12px;color:var(--t1);}
+/* weather (top-left) */
+.sc .cluster.weather{top:14px;left:14px;}
+.sc .cluster.weather .wtop{display:flex;align-items:center;gap:10px;}
+.sc .cluster.weather .wtemp{font-family:'Nunito Sans';font-weight:700;font-size:28px;letter-spacing:-1px;color:var(--t1);}
+.sc .cluster.weather .wcond{font:600 11px 'DM Sans';color:var(--t2);}
+.sc .cluster.weather .wsub{margin-top:5px;font:600 10px 'DM Sans';color:var(--t3);}
+.sc .cluster.weather .wsub b{font-family:'Nunito Sans';font-weight:700;color:var(--t2);}
+.sc .cluster.weather .wsub .up{color:var(--color-green);}
+.sc .cluster.bl{bottom:14px;left:14px;display:flex;gap:22px;align-items:flex-end;}
+.sc .cluster.bl .k .seclabel{display:block;margin-bottom:3px;}
+.sc .cluster.bl .sogn{font-family:'Nunito Sans';font-weight:700;font-size:46px;line-height:.9;letter-spacing:-1.5px;color:var(--color-teal);}
+.sc .cluster.bl .k2 .num{font-size:20px;}
+.sc .cluster.br{bottom:14px;right:14px;display:flex;gap:20px;align-items:flex-end;}
+.sc .cluster.br .k .seclabel{display:block;margin-bottom:3px;}
+.sc .cluster.br .num{font-size:20px;}
+.sc .cluster.br .nxt{font:700 10px 'DM Sans';color:var(--t3);margin-top:2px;}
+.sc .cluster.br .nxt b{font-family:'Nunito Sans';color:var(--t2);}
+
+/* RAIL */
+.sc .rail{display:flex;flex-direction:column;background:var(--color-surface);border:1px solid var(--color-border);border-radius:16px;padding:18px 20px;}
+.sc .rail .compass{display:flex;flex-direction:column;align-items:center;padding-bottom:14px;border-bottom:1px solid var(--color-border-light);}
+.sc .rail .pos{margin-top:9px;text-align:center;}
+.sc .rail .pos .name{font:800 16px 'DM Sans';letter-spacing:.5px;color:var(--color-amber);}
+.sc .rail .pos .sub{margin-top:3px;font:600 10.5px 'DM Sans';color:var(--t3);}
+.sc .rail .pos .sub b{font-family:'Nunito Sans';font-weight:700;color:var(--t2);}
+.sc .rail .gblock{padding:15px 0;border-bottom:1px solid var(--color-border-light);}
+.sc .rail .gblock:last-child{border-bottom:none;padding-bottom:2px;}
+.sc .rail .gblock .top{display:flex;align-items:flex-end;gap:14px;}
+.sc .rail .gblock .top .seclabel{display:block;margin-bottom:5px;}
+.sc .rail .speed .stw .num{font-size:32px;color:var(--t1);}
+.sc .rail .speed .delta{margin-left:auto;text-align:right;}
+.sc .rail .speed .delta .dn{font-family:'Nunito Sans';font-weight:800;font-size:18px;color:oklch(0.4 0.13 150);}
+.sc .rail .speed .delta .dl{font:700 8.5px 'DM Sans';letter-spacing:.6px;text-transform:uppercase;color:var(--t3);}
+.sc .rail .depth .num{font-size:28px;color:var(--color-blue);margin-left:auto;}
+.sc .rail .gblock svg{width:100%;height:66px;display:block;margin-top:10px;}
+
+/* FOOTER */
+.sc .resources{display:grid;grid-template-columns:repeat(3,1fr);gap:30px;margin-top:var(--gap);padding-top:18px;border-top:1px solid var(--color-border-light);}
+.sc .res .top{display:flex;align-items:baseline;gap:14px;margin-bottom:8px;}
+.sc .res .vals{margin-left:auto;font-family:'Nunito Sans';font-weight:700;font-size:15px;color:var(--t2);letter-spacing:-.3px;}
+.sc .res .vals .pct{font-size:22px;}
+.sc .res .vals .pct.g{color:var(--color-green);} .sc .res .vals .pct.a{color:var(--color-amber);} .sc .res .vals .pct.b{color:var(--color-blue);}
+.sc .res .vals .sub{font-family:'DM Sans';font-weight:500;font-size:11px;color:var(--t3);margin-left:5px;letter-spacing:0;}
+.sc .res svg{width:100%;height:52px;display:block;}
+
+@media (prefers-reduced-motion: reduce){ .sc-card{transition:none;} }
+@media (max-width: 880px){
+  .sc .herorow{grid-template-columns:1fr;}
+  .sc .map{min-height:300px;height:300px;order:-1;}
+  .sc .resources{grid-template-columns:1fr;gap:18px;}
+  .sc .passage{margin-left:0;width:100%;}
+}
+</style>
+
+<div class="sc-card" data-choice="main-v9" onclick="toggleSelect(this)">
+  <div class="sc-tag"><span class="sc-letter">v9</span><span class="sc-name">Map-led · polished + weather</span><span class="sc-why">click to approve · notes in terminal</span></div>
+  <div class="sc">
+    <div class="status">
+      <span class="badge"><span class="dot"></span>Under Sail</span>
+      <span class="hdot">Tracker</span><span class="hdot">Stream</span><span class="hdot">Publisher</span>
+      <span class="passage">Falmouth → Plymouth · 23.4 nm · <b>13:42</b></span>
+    </div>
+
+    <div class="herorow">
+      <div class="map">
+        <svg class="chart" viewBox="0 0 1100 460" preserveAspectRatio="xMidYMid slice">
+          <g stroke="oklch(0.5 0.02 205 / 0.13)" stroke-width="1">
+            <line x1="220" y1="0" x2="220" y2="460"/><line x1="440" y1="0" x2="440" y2="460"/><line x1="660" y1="0" x2="660" y2="460"/><line x1="880" y1="0" x2="880" y2="460"/>
+            <line x1="0" y1="115" x2="1100" y2="115"/><line x1="0" y1="230" x2="1100" y2="230"/><line x1="0" y1="345" x2="1100" y2="345"/>
+          </g>
+          <path d="M0 460 L0 360 C165 342 290 368 440 333 C590 298 700 244 840 256 C950 266 1040 248 1100 256 L1100 460 Z" fill="oklch(0.84 0.045 130)" opacity="0.6"/>
+          <path d="M0 360 C165 342 290 368 440 333 C590 298 700 244 840 256 C950 266 1040 248 1100 256" fill="none" stroke="oklch(0.6 0.06 130)" stroke-width="1.5" opacity="0.55"/>
+          <path d="M165 165 C190 155 222 165 218 192 C212 214 175 214 165 195 Z" fill="oklch(0.84 0.045 130)" opacity="0.5"/>
+          <path d="M100 395 C285 352 430 358 595 272" fill="none" stroke="oklch(0.42 0.14 178)" stroke-width="2.5" stroke-dasharray="2 6" stroke-linecap="round" opacity="0.75"/>
+          <path d="M595 272 C725 220 845 165 935 132 S1035 100 1048 94" fill="none" stroke="oklch(0.48 0.22 25)" stroke-width="3"/>
+          <circle cx="100" cy="395" r="5.5" fill="oklch(0.42 0.14 178)"/>
+          <circle cx="935" cy="132" r="5.5" fill="oklch(0.99 0.004 205)" stroke="oklch(0.48 0.22 25)" stroke-width="2.5"/>
+          <circle cx="1048" cy="94" r="6.5" fill="oklch(0.48 0.22 25)"/>
+          <g transform="translate(595 272) rotate(-32)"><polygon points="0,-16 8,10 0,4 -8,10" fill="oklch(0.15 0.025 205)"/></g>
+        </svg>
+
+        <div class="cluster weather">
+          <div class="wtop">
+            <svg width="34" height="34" viewBox="0 0 34 34"><circle cx="13" cy="13" r="7.5" fill="oklch(0.82 0.13 80)"/><ellipse cx="21" cy="22" rx="11.5" ry="6.5" fill="oklch(0.97 0.008 205)" stroke="oklch(0.86 0.02 205)" stroke-width="0.8"/></svg>
+            <div><div class="wtemp">17°</div></div>
+            <div class="wcond">Partly<br>cloudy</div>
+          </div>
+          <div class="wsub">Sea <b>15°</b> · <b>1014</b> hPa <span class="up">▲</span></div>
+        </div>
+
+        <div class="cluster tr">50°18.4′N · 004°47.2′W</div>
+
+        <div class="cluster bl">
+          <div class="k"><span class="seclabel" style="color:var(--color-teal)">Speed o.g.</span><span class="sogn">6.2</span></div>
+          <div class="k k2"><span class="seclabel">COG</span><span class="num" style="color:var(--color-teal)">268°</span></div>
+          <div class="k k2"><span class="seclabel">HDG</span><span class="num">274°</span></div>
+        </div>
+
+        <div class="cluster br">
+          <div class="k"><span class="seclabel">To waypoint</span><span class="num">4.2<span class="u">nm</span></span></div>
+          <div class="k"><span class="seclabel">TTG</span><span class="num">41<span class="u">m</span></span></div>
+          <div class="k"><span class="seclabel">ETA</span><span class="num">14:23</span><div class="nxt">Next · <b>Rame Head</b></div></div>
+        </div>
+      </div>
+
+      <div class="rail">
+        <div class="compass">
+          <svg width="196" height="196" viewBox="-12 -12 204 204">
+            <circle cx="90" cy="90" r="84" fill="var(--color-surface)" stroke="var(--color-border)" stroke-width="0.75"/>
+            <path d="M27.07,27.07 A89,89 0 0,1 152.93,27.07" fill="none" stroke="var(--color-scarlet)" stroke-opacity="0.45" stroke-width="5"/>
+            <path d="M152.93,27.07 A89,89 0 0,1 167.07,45.5" fill="none" stroke="var(--color-teal)" stroke-opacity="0.55" stroke-width="5"/>
+            <path d="M12.93,45.5 A89,89 0 0,1 27.07,27.07" fill="none" stroke="var(--color-teal)" stroke-opacity="0.55" stroke-width="5"/>
+            <path d="M167.07,45.5 A89,89 0 0,1 177.65,74.55" fill="none" stroke="var(--color-teal)" stroke-opacity="0.35" stroke-width="5"/>
+            <path d="M2.35,74.55 A89,89 0 0,1 12.93,45.5" fill="none" stroke="var(--color-teal)" stroke-opacity="0.35" stroke-width="5"/>
+            <path d="M177.65,74.55 A89,89 0 0,1 177.65,105.45" fill="none" stroke="var(--color-amber)" stroke-opacity="0.5" stroke-width="5"/>
+            <path d="M2.35,105.45 A89,89 0 0,1 2.35,74.55" fill="none" stroke="var(--color-amber)" stroke-opacity="0.5" stroke-width="5"/>
+            <path d="M177.65,105.45 A89,89 0 0,1 134.5,167.07" fill="none" stroke="var(--color-amber)" stroke-opacity="0.65" stroke-width="5"/>
+            <path d="M45.5,167.07 A89,89 0 0,1 2.35,105.45" fill="none" stroke="var(--color-amber)" stroke-opacity="0.65" stroke-width="5"/>
+            <path d="M134.5,167.07 A89,89 0 0,1 90,179" fill="none" stroke="var(--color-green)" stroke-opacity="0.5" stroke-width="5"/>
+            <path d="M90,179 A89,89 0 0,1 45.5,167.07" fill="none" stroke="var(--color-green)" stroke-opacity="0.5" stroke-width="5"/>
+            <path d="M152.93,27.07 A89,89 0 0,1 167.07,45.5" fill="none" stroke="var(--color-amber)" stroke-opacity="0.95" stroke-width="6"/>
+            <g transform="rotate(-274 90 90)">
+              <circle cx="90" cy="90" r="80" fill="none" stroke="var(--color-border-light)" stroke-width="0.5"/>
+              <circle cx="90" cy="90" r="55" fill="none" stroke="var(--color-border-light)" stroke-width="0.3" stroke-dasharray="2 3"/>
+              <line x1="90" y1="16" x2="90" y2="6" stroke="var(--color-text-dim)" stroke-width="1.2"/>
+              <line x1="164" y1="90" x2="174" y2="90" stroke="var(--color-text-dim)" stroke-width="1.2"/>
+              <line x1="90" y1="164" x2="90" y2="174" stroke="var(--color-text-dim)" stroke-width="1.2"/>
+              <line x1="16" y1="90" x2="6" y2="90" stroke="var(--color-text-dim)" stroke-width="1.2"/>
+              <text x="90" y="30" text-anchor="middle" fill="var(--color-scarlet)" font-size="12" font-weight="800" font-family="Nunito Sans" dominant-baseline="central">N</text>
+              <text x="153" y="93" text-anchor="middle" fill="var(--color-text-dim)" font-size="9" font-family="Nunito Sans" font-weight="600" dominant-baseline="central">E</text>
+              <text x="90" y="158" text-anchor="middle" fill="var(--color-text-dim)" font-size="9" font-family="Nunito Sans" font-weight="600" dominant-baseline="central">S</text>
+              <text x="27" y="93" text-anchor="middle" fill="var(--color-text-dim)" font-size="9" font-family="Nunito Sans" font-weight="600" dominant-baseline="central">W</text>
+            </g>
+            <polygon points="90,-4 86,4 94,4" fill="var(--color-teal)" opacity="0.7"/>
+            <line x1="90" y1="90" x2="82.06" y2="14.4" stroke="var(--color-blue)" stroke-width="1.5" stroke-dasharray="5 3" opacity="0.55"/>
+            <line x1="90" y1="90" x2="148.3" y2="44.4" stroke="var(--color-amber)" stroke-width="2" stroke-dasharray="6 4" opacity="0.6"/>
+            <polygon points="146.7,45.7 136.1,47.0 142.8,55.7" fill="var(--color-amber)" opacity="0.7"/>
+            <path d="M90,58 C87,65 84.5,73 84.5,83 L84.5,94 C84.5,99 86.5,101.5 90,101.5 C93.5,101.5 95.5,99 95.5,94 L95.5,83 C95.5,73 93,65 90,58 Z" fill="var(--color-surface)" stroke="var(--color-teal)" stroke-width="1.5" stroke-linejoin="round"/>
+          </svg>
+          <div class="pos">
+            <div class="name">Close Hauled</div>
+            <div class="sub">TWA <b>52°</b> stbd · TWS <b>14</b> kts</div>
+          </div>
+        </div>
+
+        <div class="gblock speed">
+          <div class="top">
+            <div class="stw"><span class="seclabel">Speed thru water</span><span class="num">5.9<span class="u">kts</span></span></div>
+            <div class="delta"><div class="dn">+0.3 kt</div><div class="dl">fair tide ▲</div></div>
+          </div>
+          <svg viewBox="0 0 260 66" preserveAspectRatio="none">
+            <line x1="0" y1="60" x2="260" y2="60" stroke="oklch(0.89 0.012 205)" stroke-width="1"/>
+            <path d="M0,28 L43,24 L86,22 L130,32 L173,18 L216,20 L260,20 L260,32 L216,32 L173,30 L130,42 L86,34 L43,38 L0,40 Z" fill="oklch(0.45 0.16 150 / 0.12)"/>
+            <polyline points="0,28 43,24 86,22 130,32 173,18 216,20 260,20" fill="none" stroke="var(--color-teal)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+            <polyline points="0,40 43,38 86,34 130,42 173,30 216,32 260,32" fill="none" stroke="var(--color-blue)" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" opacity="0.7"/>
+            <circle cx="260" cy="20" r="2.8" fill="var(--color-teal)" stroke="white" stroke-width="1.3"/>
+            <circle cx="260" cy="32" r="2.5" fill="var(--color-blue)" stroke="white" stroke-width="1.3"/>
+          </svg>
+          <div class="axis"><span>12:42</span><span>13:12</span><span>13:42</span></div>
+        </div>
+
+        <div class="gblock depth">
+          <div class="top"><span class="seclabel">Depth under keel</span><span class="num">18.4<span class="u">m</span></span></div>
+          <svg viewBox="0 0 260 66" preserveAspectRatio="none">
+            <defs><linearGradient id="w9" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0" stop-color="oklch(0.7 0.1 230)" stop-opacity="0.32"/>
+              <stop offset="1" stop-color="oklch(0.42 0.14 245)" stop-opacity="0.5"/></linearGradient></defs>
+            <path d="M0,0 L260,0 L260,40 L216,38 L173,36 L130,32 L86,26 L43,23 L0,21 Z" fill="url(#w9)"/>
+            <path d="M0,21 L43,23 L86,26 L130,32 L173,36 L216,38 L260,40 L260,66 L0,66 Z" fill="oklch(0.72 0.07 80 / 0.5)"/>
+            <polyline points="0,21 43,23 86,26 130,32 173,36 216,38 260,40" fill="none" stroke="oklch(0.42 0.14 245)" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/>
+            <circle cx="260" cy="40" r="2.8" fill="oklch(0.42 0.14 245)" stroke="white" stroke-width="1.3"/>
+          </svg>
+          <div class="axis"><span>12:42</span><span>13:12</span><span>13:42</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="resources">
+      <div class="res">
+        <div class="top"><span class="seclabel">House Battery</span><span class="vals"><span class="pct g">82%</span><span class="sub">12.8 V · −54 W</span></span></div>
+        <svg viewBox="0 0 320 52" preserveAspectRatio="none">
+          <line x1="0" y1="26" x2="320" y2="26" stroke="oklch(0.85 0.02 205)" stroke-width="1" stroke-dasharray="3 3"/>
+          <polyline points="0,34 40,38 80,30 120,40 160,36 200,12 240,36 280,38 320,36" fill="none" stroke="var(--color-scarlet)" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"/>
+          <circle cx="320" cy="36" r="3" fill="var(--color-scarlet)" stroke="white" stroke-width="1.3"/>
+        </svg>
+        <div class="axis"><span>12:42</span><span>13:12</span><span>13:42</span></div>
+      </div>
+      <div class="res">
+        <div class="top"><span class="seclabel">Fuel</span><span class="vals"><span class="pct a">64%</span></span></div>
+        <svg viewBox="0 0 320 52" preserveAspectRatio="none">
+          <path d="M0,14 L53,15 L106,18 L160,20 L213,23 L266,25 L320,27 L320,52 L0,52 Z" fill="oklch(0.48 0.17 70 / 0.1)"/>
+          <polyline points="0,14 53,15 106,18 160,20 213,23 266,25 320,27" fill="none" stroke="var(--color-amber)" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"/>
+          <circle cx="320" cy="27" r="3" fill="var(--color-amber)" stroke="white" stroke-width="1.3"/>
+        </svg>
+        <div class="axis"><span>07:42</span><span>10:42</span><span>13:42</span></div>
+      </div>
+      <div class="res">
+        <div class="top"><span class="seclabel">Fresh Water</span><span class="vals"><span class="pct b">48%</span></span></div>
+        <svg viewBox="0 0 320 52" preserveAspectRatio="none">
+          <path d="M0,16 L48,19 L88,22 L128,25 L128,10 L192,13 L256,16 L320,19 L320,52 L0,52 Z" fill="oklch(0.42 0.14 245 / 0.1)"/>
+          <polyline points="0,16 48,19 88,22 128,25 128,10 192,13 256,16 320,19" fill="none" stroke="var(--color-blue)" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"/>
+          <circle cx="320" cy="19" r="3" fill="var(--color-blue)" stroke="white" stroke-width="1.3"/>
+        </svg>
+        <div class="axis"><span>07:42</span><span>10:42</span><span>13:42</span></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<p class="subtitle" style="margin-top:24px;">Four balanced corners now: weather (TL), position (TR), nav + SOG headline (BL), waypoint/ETA (BR). Tokens aligned to the design system, subtle chart vignette for depth, reduced-motion respected. Weather is compact so it doesn't fight the SOG headline. If you'd rather weather sat in the rail (or carried temperatures too), say so and I'll move it.</p>

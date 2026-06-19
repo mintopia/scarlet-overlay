@@ -1,0 +1,247 @@
+<h2>Ops — v3 · Power instrument hero</h2>
+<p class="subtitle">Ops now has a hero OBJECT, like Main's map and Skipper's compass: a radial power instrument — outer ring House SOC, inner ring EcoFlow SOC, centre net flow (charge/discharge). Then a deliberate sequence of differently-shaped zones: a detail list, tank level bars, a temperature scale, a footer. Variety of form, not a grid of boxes.</p>
+
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Nunito+Sans:opsz,wght@6..12,400;6..12,600;6..12,700;6..12,800&family=DM+Sans:wght@400;500;700;800&display=swap');
+.sc-card{cursor:pointer;border-radius:16px;transition:transform .35s cubic-bezier(.2,.8,.2,1);outline:2px solid transparent;margin-top:14px;}
+.sc-card.selected{outline:2px solid oklch(0.48 0.22 25);transform:translateY(-2px);}
+.sc-tag{display:flex;align-items:baseline;gap:10px;margin:0 0 8px;}
+.sc-letter{font:800 12px 'DM Sans';letter-spacing:1px;color:oklch(0.48 0.22 25);background:oklch(0.92 0.06 25);padding:3px 9px;border-radius:6px;}
+.sc-name{font:800 14px 'DM Sans';color:#333;}
+.sc-why{font:500 12px 'DM Sans';color:#999;margin-left:auto;}
+
+.sc{
+  --color-bg:oklch(0.96 0.01 205);--color-surface:oklch(0.99 0.004 205);
+  --color-border:oklch(0.89 0.012 205);--color-border-light:oklch(0.93 0.006 205);
+  --t1:oklch(0.15 0.025 205);--t2:oklch(0.38 0.02 205);--color-text-dim:oklch(0.52 0.014 205);--t3:oklch(0.52 0.014 205);
+  --color-teal:oklch(0.42 0.14 178);--color-amber:oklch(0.48 0.17 70);--color-blue:oklch(0.42 0.14 245);
+  --color-green:oklch(0.45 0.16 150);--color-scarlet:oklch(0.48 0.22 25);--color-pink:oklch(0.6 0.16 0);
+  background:var(--color-bg);border-radius:16px;padding:26px 30px;border:1px solid var(--color-border);
+  font-family:'DM Sans',sans-serif;box-shadow:0 1px 5px oklch(0.2 0.02 205/0.08);
+}
+.sc *{box-sizing:border-box;}
+.sc .seclabel{font:800 10px 'DM Sans';letter-spacing:2px;text-transform:uppercase;color:var(--t3);}
+.sc .num{font-family:'Nunito Sans';font-weight:700;color:var(--t1);line-height:.95;letter-spacing:-1px;}
+.sc .u{font:500 11px 'DM Sans';color:var(--t3);margin-left:3px;letter-spacing:0;}
+.sc .status{display:flex;align-items:center;gap:16px;margin-bottom:20px;flex-wrap:wrap;}
+.sc .badge{display:inline-flex;align-items:center;gap:7px;background:oklch(0.92 0.05 150);color:oklch(0.28 0.1 150);font:800 11px 'DM Sans';letter-spacing:1px;text-transform:uppercase;padding:5px 11px;border-radius:20px;}
+.sc .badge .dot{width:7px;height:7px;border-radius:50%;background:var(--color-green);}
+.sc .hdot{display:flex;align-items:center;gap:5px;font:600 11px 'DM Sans';color:var(--t3);}
+.sc .hdot::before{content:'';width:7px;height:7px;border-radius:50%;background:var(--color-green);}
+.sc .passage{margin-left:auto;font:700 13px 'DM Sans';color:var(--t2);}
+.sc .passage b{font-family:'Nunito Sans';color:var(--t1);}
+
+/* HERO: power instrument + detail list */
+.sc .hero{display:grid;grid-template-columns:300px 1fr;gap:40px;align-items:center;padding-bottom:22px;border-bottom:1px solid var(--color-border-light);}
+.sc .inst{display:flex;justify-content:center;}
+.sc .inst svg{width:288px;height:288px;display:block;}
+.sc .pwrlist{display:grid;grid-template-columns:1fr 1fr;gap:0 34px;}
+.sc .pwrlist .grp{}
+.sc .pwrlist .grp.eco{padding-left:34px;border-left:1px solid var(--color-border-light);}
+.sc .pwrlist .gh{display:flex;align-items:baseline;gap:10px;margin-bottom:8px;}
+.sc .pwrlist .gh .seclabel{}
+.sc .pwrlist .gh .pc{margin-left:auto;font-family:'Nunito Sans';font-weight:700;font-size:18px;}
+.sc .pwrlist .gh .pc.house{color:var(--color-green);} .sc .pwrlist .gh .pc.eco{color:var(--color-teal);}
+.sc .pwrlist .r{display:flex;align-items:baseline;justify-content:space-between;padding:5px 0;border-bottom:1px solid var(--color-border-light);}
+.sc .pwrlist .r .l{font:500 11px 'DM Sans';color:var(--t3);}
+.sc .pwrlist .r .v{font-family:'Nunito Sans';font-weight:600;font-size:15px;color:var(--t1);}
+.sc .pwrlist .r .v.chg{color:var(--color-green);} .sc .pwrlist .r .v.dis{color:var(--color-scarlet);}
+.sc .pwrlist svg{width:100%;height:30px;display:block;margin-top:9px;}
+
+/* CONSUMABLES: tank level bars */
+.sc .consumables{padding:20px 0;border-bottom:1px solid var(--color-border-light);}
+.sc .consumables>.seclabel{display:block;margin-bottom:14px;}
+.sc .tankbars{display:grid;grid-template-columns:1fr 1fr;gap:34px;}
+.sc .tb .th{display:flex;align-items:baseline;justify-content:space-between;margin-bottom:7px;}
+.sc .tb .th .l{font:500 12px 'DM Sans';color:var(--t3);}
+.sc .tb .th .v{font-family:'Nunito Sans';font-weight:700;font-size:22px;}
+.sc .tb.fuel .v{color:var(--color-amber);} .sc .tb.water .v{color:var(--color-blue);}
+.sc .tb .track{height:12px;border-radius:6px;background:oklch(0.93 0.01 205);overflow:hidden;}
+.sc .tb .fill{height:100%;border-radius:6px;}
+.sc .tb .note{font:500 10px 'DM Sans';color:var(--t3);margin-top:6px;}
+
+/* TEMPERATURES: shared temperature scale */
+.sc .thermal{padding:20px 0;border-bottom:1px solid var(--color-border-light);}
+.sc .thermal>.seclabel{display:block;margin-bottom:10px;}
+.sc .scale{position:relative;height:112px;margin:0 14px;}
+.sc .scale .track{position:absolute;left:0;right:0;top:54px;height:8px;border-radius:4px;background:linear-gradient(90deg,oklch(0.7 0.1 240),oklch(0.78 0.1 150) 55%,oklch(0.74 0.16 60));opacity:.5;}
+.sc .scale .tick{position:absolute;top:66px;transform:translateX(-50%);font:600 9px 'DM Sans';color:var(--t3);}
+.sc .scale .tick::before{content:'';position:absolute;left:50%;top:-14px;width:1px;height:9px;background:oklch(0.88 0.012 205);}
+.sc .scale .mk{position:absolute;top:0;width:0;}
+.sc .scale .mk .dot{position:absolute;top:48px;left:0;transform:translateX(-50%);width:15px;height:15px;border-radius:50%;border:3px solid;background:var(--color-surface);}
+.sc .scale .mk .lab{position:absolute;left:0;transform:translateX(-50%);text-align:center;white-space:nowrap;}
+.sc .scale .mk.up .lab{top:4px;} .sc .scale .mk.down .lab{top:78px;}
+.sc .scale .mk .lab .t{font-family:'Nunito Sans';font-weight:700;font-size:17px;color:var(--t1);}
+.sc .scale .mk .lab .n{display:block;font:600 9px 'DM Sans';letter-spacing:.3px;color:var(--t3);margin-top:1px;}
+
+/* CONTEXT footer */
+.sc .context{display:grid;grid-template-columns:1.5fr 1fr;gap:32px;padding-top:20px;align-items:center;}
+.sc .cmap{height:150px;border-radius:16px;position:relative;overflow:hidden;border:1px solid var(--color-border);background:linear-gradient(165deg,oklch(0.9 0.035 215),oklch(0.84 0.05 205));}
+.sc .cmap>svg{position:absolute;inset:0;width:100%;height:100%;}
+.sc .cmap .chip{position:absolute;bottom:10px;left:10px;background:oklch(0.99 0.004 205 / 0.9);border:1px solid var(--color-border);border-radius:9px;padding:5px 9px;font:700 10px 'DM Sans';color:var(--t2);}
+.sc .ctx>.seclabel{display:block;margin-bottom:10px;}
+.sc .ctxrows{display:grid;grid-template-columns:1fr 1fr;gap:1px 24px;}
+.sc .ctxrows .r{display:flex;align-items:baseline;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--color-border-light);}
+.sc .ctxrows .r .l{font:500 11px 'DM Sans';color:var(--t3);}
+.sc .ctxrows .r .v{font-family:'Nunito Sans';font-weight:600;font-size:15px;color:var(--t1);}
+.sc .ctxrows .r .v.teal{color:var(--color-teal);} .sc .ctxrows .r .v.amber{color:var(--color-amber);}
+
+@media (prefers-reduced-motion: reduce){ .sc-card{transition:none;} }
+@media (max-width:900px){
+  .sc .hero,.sc .context{grid-template-columns:1fr;gap:24px;}
+  .sc .pwrlist .grp.eco{padding-left:0;border-left:none;}
+  .sc .passage{margin-left:0;width:100%;}
+}
+</style>
+
+<div class="sc-card" data-choice="ops-v3" onclick="toggleSelect(this)">
+  <div class="sc-tag"><span class="sc-letter">OPS v3</span><span class="sc-name">Power instrument hero</span><span class="sc-why">click to approve · notes in terminal</span></div>
+  <div class="sc">
+    <div class="status">
+      <span class="badge"><span class="dot"></span>Under Sail</span>
+      <span class="hdot">Tracker</span><span class="hdot">SignalK</span><span class="hdot">EcoFlow</span><span class="hdot">Sensors</span>
+      <span class="passage">Falmouth → Plymouth · <b>13:42</b></span>
+    </div>
+
+    <!-- HERO: radial power instrument -->
+    <div class="hero">
+      <div class="inst">
+        <svg viewBox="0 0 240 240">
+          <!-- outer ring: House SOC -->
+          <circle cx="120" cy="120" r="100" fill="none" stroke="oklch(0.93 0.01 205)" stroke-width="15" stroke-dasharray="471 157" stroke-linecap="round" transform="rotate(135 120 120)"/>
+          <circle cx="120" cy="120" r="100" fill="none" stroke="oklch(0.52 0.16 150)" stroke-width="15" stroke-dasharray="386 700" stroke-linecap="round" transform="rotate(135 120 120)"/>
+          <!-- inner ring: EcoFlow SOC -->
+          <circle cx="120" cy="120" r="80" fill="none" stroke="oklch(0.93 0.01 205)" stroke-width="11" stroke-dasharray="377 126" stroke-linecap="round" transform="rotate(135 120 120)"/>
+          <circle cx="120" cy="120" r="80" fill="none" stroke="oklch(0.48 0.14 178)" stroke-width="11" stroke-dasharray="287 600" stroke-linecap="round" transform="rotate(135 120 120)"/>
+          <!-- ring identity ticks -->
+          <text x="120" y="20" text-anchor="middle" font-family="DM Sans" font-weight="800" font-size="8" letter-spacing="1" fill="oklch(0.42 0.14 150)">HOUSE</text>
+          <text x="120" y="44" text-anchor="middle" font-family="DM Sans" font-weight="800" font-size="7.5" letter-spacing="1" fill="oklch(0.42 0.14 178)">ECOFLOW</text>
+          <!-- centre: net flow + house state -->
+          <text x="120" y="104" text-anchor="middle" font-family="DM Sans" font-weight="800" font-size="9" letter-spacing="1.5" fill="var(--color-text-dim)">NET FLOW</text>
+          <text x="120" y="138" text-anchor="middle" font-family="Nunito Sans" font-weight="800" font-size="40" letter-spacing="-2" fill="oklch(0.55 0.16 150)">+26<tspan font-size="18" fill="var(--color-text-dim)" dx="2">W</tspan></text>
+          <text x="120" y="158" text-anchor="middle" font-family="DM Sans" font-weight="600" font-size="10" fill="var(--t3)">charging · house ~18 h</text>
+          <!-- flow arrows: discharge out (scarlet), charge in (green) -->
+          <g transform="rotate(135 120 120)">
+            <polygon points="220,120 212,114 212,126" fill="oklch(0.48 0.22 25)"/>
+          </g>
+          <!-- bottom gap labels -->
+          <text x="120" y="210" text-anchor="middle" font-family="Nunito Sans" font-weight="700" font-size="13" fill="oklch(0.42 0.14 150)">House 82%</text>
+          <text x="120" y="226" text-anchor="middle" font-family="Nunito Sans" font-weight="700" font-size="12" fill="oklch(0.42 0.14 178)">EcoFlow 76%</text>
+        </svg>
+      </div>
+
+      <div class="pwrlist">
+        <div class="grp house">
+          <div class="gh"><span class="seclabel" style="color:var(--color-green)">House Battery</span><span class="pc house">82%</span></div>
+          <div class="r"><span class="l">Voltage</span><span class="v">12.8 V</span></div>
+          <div class="r"><span class="l">Power</span><span class="v dis">−54 W</span></div>
+          <div class="r"><span class="l">Current</span><span class="v dis">−4.2 A</span></div>
+          <div class="r"><span class="l">Time remaining</span><span class="v">~18 h</span></div>
+          <svg viewBox="0 0 300 30" preserveAspectRatio="none">
+            <line x1="0" y1="15" x2="300" y2="15" stroke="oklch(0.88 0.012 205)" stroke-width="1" stroke-dasharray="3 3"/>
+            <polyline points="0,20 50,22 100,17 150,23 200,5 250,21 300,20" fill="none" stroke="var(--color-scarlet)" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </div>
+        <div class="grp eco">
+          <div class="gh"><span class="seclabel" style="color:var(--color-teal)">EcoFlow Delta</span><span class="pc eco">76%</span></div>
+          <div class="r"><span class="l">Input</span><span class="v chg">120 W</span></div>
+          <div class="r"><span class="l">Output</span><span class="v dis">40 W</span></div>
+          <div class="r"><span class="l">AC · USB out</span><span class="v">40 · 8 W</span></div>
+          <div class="r"><span class="l">Remaining · temp</span><span class="v">9h10 · 28°</span></div>
+          <svg viewBox="0 0 300 30" preserveAspectRatio="none">
+            <line x1="0" y1="15" x2="300" y2="15" stroke="oklch(0.88 0.012 205)" stroke-width="1" stroke-dasharray="3 3"/>
+            <polyline points="0,21 50,19 100,9 150,8 200,7 250,9 300,8" fill="none" stroke="var(--color-green)" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </div>
+      </div>
+    </div>
+
+    <!-- CONSUMABLES -->
+    <div class="consumables">
+      <span class="seclabel">Consumables</span>
+      <div class="tankbars">
+        <div class="tb fuel">
+          <div class="th"><span class="l">Fuel · diesel</span><span class="v">64%</span></div>
+          <div class="track"><div class="fill" style="width:64%;background:linear-gradient(90deg,oklch(0.7 0.16 70),oklch(0.48 0.17 70))"></div></div>
+          <div class="note">6-hr trend −3% · ~5 days at current burn</div>
+        </div>
+        <div class="tb water">
+          <div class="th"><span class="l">Fresh water</span><span class="v">48%</span></div>
+          <div class="track"><div class="fill" style="width:48%;background:linear-gradient(90deg,oklch(0.6 0.13 245),oklch(0.42 0.14 245))"></div></div>
+          <div class="note">6-hr trend −7% · refilled 11:20</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TEMPERATURES: shared scale -->
+    <div class="thermal">
+      <span class="seclabel">Temperatures &amp; Humidity</span>
+      <div class="scale">
+        <svg viewBox="0 0 760 96" preserveAspectRatio="none">
+          <!-- scale track 10–30°C with warm gradient -->
+          <defs><linearGradient id="tg" x1="0" y1="0" x2="1" y2="0">
+            <stop offset="0" stop-color="oklch(0.7 0.1 240)"/><stop offset="0.5" stop-color="oklch(0.75 0.1 150)"/><stop offset="1" stop-color="oklch(0.72 0.15 60)"/>
+          </linearGradient></defs>
+          <rect x="0" y="52" width="760" height="6" rx="3" fill="url(#tg)" opacity="0.5"/>
+          <!-- ticks -->
+          <g font-family="DM Sans" font-size="9" font-weight="600" fill="var(--color-text-dim)" text-anchor="middle">
+            <line x1="0" y1="48" x2="0" y2="62" stroke="oklch(0.88 0.012 205)"/><text x="0" y="76">10°</text>
+            <line x1="190" y1="48" x2="190" y2="62" stroke="oklch(0.88 0.012 205)"/><text x="190" y="76">15°</text>
+            <line x1="380" y1="48" x2="380" y2="62" stroke="oklch(0.88 0.012 205)"/><text x="380" y="76">20°</text>
+            <line x1="570" y1="48" x2="570" y2="62" stroke="oklch(0.88 0.012 205)"/><text x="570" y="76">25°</text>
+            <line x1="760" y1="48" x2="760" y2="62" stroke="oklch(0.88 0.012 205)"/><text x="760" y="76">30°</text>
+          </g>
+          <!-- markers: sea 15 (x190 blue), Quarterberth 19 (342), Forepeak 21 (418), Main 22 (456) -->
+          <g>
+            <circle cx="190" cy="55" r="7" fill="oklch(0.99 0.004 205)" stroke="oklch(0.42 0.14 245)" stroke-width="2.5"/>
+            <text x="190" y="28" text-anchor="middle" font-family="Nunito Sans" font-weight="700" font-size="15" fill="oklch(0.42 0.14 245)">15°</text>
+            <text x="190" y="42" text-anchor="middle" font-family="DM Sans" font-weight="700" font-size="8" letter-spacing=".5" fill="var(--t3)">SEA</text>
+          </g>
+          <g>
+            <circle cx="342" cy="55" r="7" fill="oklch(0.55 0.13 70)"/>
+            <text x="342" y="28" text-anchor="middle" font-family="Nunito Sans" font-weight="700" font-size="15" fill="var(--t1)">19°</text>
+            <text x="342" y="42" text-anchor="middle" font-family="DM Sans" font-weight="600" font-size="8" fill="var(--t3)">Q'berth 58%</text>
+          </g>
+          <g>
+            <circle cx="418" cy="55" r="7" fill="oklch(0.55 0.13 60)"/>
+            <text x="418" y="92" text-anchor="middle" font-family="Nunito Sans" font-weight="700" font-size="15" fill="var(--t1)">21°</text>
+            <text x="418" y="92" text-anchor="middle" font-family="DM Sans" font-weight="600" font-size="8" fill="var(--t3)" dy="-18">Forepeak 54%</text>
+          </g>
+          <g>
+            <circle cx="456" cy="55" r="7" fill="oklch(0.55 0.14 50)"/>
+            <text x="456" y="28" text-anchor="middle" font-family="Nunito Sans" font-weight="700" font-size="15" fill="var(--t1)">22°</text>
+            <text x="456" y="42" text-anchor="middle" font-family="DM Sans" font-weight="600" font-size="8" fill="var(--t3)">Main 51%</text>
+          </g>
+        </svg>
+      </div>
+    </div>
+
+    <!-- CONTEXT FOOTER -->
+    <div class="context">
+      <div class="cmap">
+        <svg viewBox="0 0 700 150" preserveAspectRatio="xMidYMid slice">
+          <path d="M0 150 L0 116 C120 104 220 120 340 102 C460 84 540 62 700 70 L700 150 Z" fill="oklch(0.84 0.045 130)" opacity="0.55"/>
+          <path d="M60 126 C200 102 300 104 400 68" fill="none" stroke="oklch(0.42 0.14 178)" stroke-width="2.5" stroke-dasharray="2 6" stroke-linecap="round" opacity="0.8"/>
+          <path d="M400 68 C500 46 600 34 660 28" fill="none" stroke="oklch(0.48 0.22 25)" stroke-width="2.5"/>
+          <circle cx="400" cy="68" r="5" fill="oklch(0.99 0.004 205)" stroke="oklch(0.48 0.22 25)" stroke-width="2.5"/>
+          <circle cx="660" cy="28" r="5.5" fill="oklch(0.48 0.22 25)"/>
+          <g transform="translate(400 68) rotate(-30)"><polygon points="0,-11 6,7 0,3 -6,7" fill="oklch(0.15 0.025 205)"/></g>
+        </svg>
+        <div class="chip">50°18.4′N · 004°47.2′W · 4.2 nm to Rame Head · ETA 14:23</div>
+      </div>
+      <div class="ctx">
+        <span class="seclabel">Sailing · Nav · Weather</span>
+        <div class="ctxrows">
+          <div class="r"><span class="l">SOG</span><span class="v teal">6.2 kts</span></div>
+          <div class="r"><span class="l">Heading</span><span class="v teal">274°</span></div>
+          <div class="r"><span class="l">True Wind</span><span class="v amber">14 kts</span></div>
+          <div class="r"><span class="l">Depth</span><span class="v" style="color:var(--color-blue)">18.4 m</span></div>
+          <div class="r"><span class="l">Weather</span><span class="v">17° cloud</span></div>
+          <div class="r"><span class="l">Pressure</span><span class="v" style="color:var(--color-blue)">1014 ▲</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<p class="subtitle" style="margin-top:24px;">A real hero object now: the dual-ring power instrument (House outer / EcoFlow inner / net-flow centre) is the page's focal point, mirroring Skipper's compass so the set feels related. Below it, the form changes each band — detail list → horizontal tank bars → a shared temperature scale with cabin markers → a map footer — so the eye reads a composed page, not a wall. Tune the instrument or any band.</p>

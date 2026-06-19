@@ -1,0 +1,205 @@
+<h2>Main — Helm-led v3 · Speed delta + Battery power</h2>
+<p class="subtitle">De-carded helm from v2, now featuring the metrics you called out. <strong>Speed:</strong> SOG and STW together with the live delta (favourable vs foul current) and a 1-hour dual-line graph. <strong>House Battery:</strong> SOC, Voltage, and Power in watts (charge green / discharge scarlet) with a power sparkline. Still one bordered element (the map); everything else is type + instrument on the page.</p>
+
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Nunito+Sans:opsz,wght@6..12,400;6..12,600;6..12,700;6..12,800&family=DM+Sans:wght@400;500;700;800&display=swap');
+.sc-card{cursor:pointer;border-radius:14px;transition:transform .35s cubic-bezier(.2,.8,.2,1);outline:2px solid transparent;margin-top:14px;}
+.sc-card.selected{outline:2px solid oklch(0.48 0.22 25);transform:translateY(-2px);}
+.sc-tag{display:flex;align-items:baseline;gap:10px;margin:0 0 8px;}
+.sc-letter{font:800 12px 'DM Sans';letter-spacing:1px;color:oklch(0.48 0.22 25);background:oklch(0.92 0.06 25);padding:3px 9px;border-radius:6px;}
+.sc-name{font:800 14px 'DM Sans';color:#333;}
+.sc-why{font:500 12px 'DM Sans';color:#999;margin-left:auto;}
+
+.sc{
+  --color-bg:oklch(0.96 0.01 205);--color-surface:oklch(0.99 0.004 205);
+  --color-border:oklch(0.89 0.012 205);--color-border-light:oklch(0.93 0.006 205);
+  --t1:oklch(0.15 0.025 205);--t2:oklch(0.38 0.02 205);--color-text-dim:oklch(0.52 0.014 205);--t3:oklch(0.52 0.014 205);
+  --color-teal:oklch(0.42 0.14 178);--color-amber:oklch(0.48 0.17 70);--color-blue:oklch(0.42 0.14 245);
+  --color-green:oklch(0.45 0.16 150);--color-scarlet:oklch(0.48 0.22 25);--color-pink:oklch(0.6 0.16 0);
+  background:var(--color-bg);border-radius:14px;padding:26px 30px;border:1px solid var(--color-border);
+  font-family:'DM Sans',sans-serif;box-shadow:0 1px 5px oklch(0.2 0.02 205/0.08);
+}
+.sc *{box-sizing:border-box;}
+.sc .seclabel{font:800 10px 'DM Sans';letter-spacing:2.4px;text-transform:uppercase;color:var(--t3);}
+.sc .num{font-family:'Nunito Sans';font-weight:700;color:var(--t1);line-height:.95;letter-spacing:-1px;}
+.sc .u{font:500 12px 'DM Sans';color:var(--t3);margin-left:3px;letter-spacing:0;}
+.sc .status{display:flex;align-items:center;gap:16px;margin-bottom:22px;}
+.sc .badge{display:inline-flex;align-items:center;gap:7px;background:oklch(0.92 0.05 150);color:oklch(0.28 0.1 150);font:800 11px 'DM Sans';letter-spacing:1px;text-transform:uppercase;padding:5px 11px;border-radius:20px;}
+.sc .badge .dot{width:7px;height:7px;border-radius:50%;background:var(--color-green);}
+.sc .hdot{display:flex;align-items:center;gap:5px;font:600 11px 'DM Sans';color:var(--t3);}
+.sc .hdot::before{content:'';width:7px;height:7px;border-radius:50%;background:var(--color-green);}
+.sc .passage{margin-left:auto;font:700 13px 'DM Sans';color:var(--t2);}
+.sc .passage b{font-family:'Nunito Sans';color:var(--t1);}
+
+.sc .hero{display:grid;grid-template-columns:290px 1fr;gap:38px;align-items:start;}
+.sc .compass-cap{text-align:center;margin-top:8px;font:600 11px 'DM Sans';color:var(--t3);}
+.sc .compass-cap b{font-family:'Nunito Sans';font-weight:700;color:var(--t2);}
+
+/* SPEED feature */
+.sc .speed{padding-bottom:20px;border-bottom:1px solid var(--color-border-light);}
+.sc .speed-head{display:flex;align-items:flex-end;gap:34px;}
+.sc .speed-head .k .seclabel{display:block;margin-bottom:6px;}
+.sc .sog .num{font-size:56px;color:var(--color-teal);}
+.sc .stw .num{font-size:40px;color:var(--t1);}
+.sc .delta{display:flex;flex-direction:column;gap:3px;padding:7px 13px;border-radius:9px;background:oklch(0.93 0.05 150);align-self:center;}
+.sc .delta .dn{font-family:'Nunito Sans';font-weight:800;font-size:20px;color:oklch(0.32 0.12 150);}
+.sc .delta .dl{font:700 9px 'DM Sans';letter-spacing:1px;text-transform:uppercase;color:oklch(0.38 0.08 150);}
+.sc .speed-graph{margin-top:16px;}
+.sc .speed-graph svg{width:100%;height:64px;display:block;}
+.sc .glabel{display:flex;gap:18px;margin-top:6px;font:600 10px 'DM Sans';color:var(--t3);}
+.sc .glabel i{font-style:normal;display:inline-flex;align-items:center;gap:5px;}
+.sc .glabel i::before{content:'';width:14px;height:2.5px;border-radius:2px;}
+.sc .glabel .sog-k::before{background:var(--color-teal);}
+.sc .glabel .stw-k::before{background:var(--color-blue);}
+.sc .glabel .span{margin-left:auto;}
+
+.sc .micro{display:grid;grid-template-columns:repeat(3,1fr);gap:26px;margin-top:18px;}
+.sc .micro .k .seclabel{display:block;margin-bottom:5px;}
+.sc .micro .k .num{font-size:28px;}
+
+.sc .mapband{margin-top:28px;}
+.sc .map{height:140px;border-radius:14px;position:relative;overflow:hidden;border:1px solid var(--color-border);background:linear-gradient(160deg,oklch(0.9 0.03 210),oklch(0.85 0.045 200));}
+.sc .map svg{position:absolute;inset:0;width:100%;height:100%;}
+.sc .navline{display:flex;gap:32px;margin-top:13px;align-items:baseline;}
+.sc .navline .k .seclabel{display:block;margin-bottom:4px;}
+.sc .navline .k .num{font-size:21px;}
+.sc .navline .next{margin-left:auto;font:600 12px 'DM Sans';color:var(--t3);}
+.sc .navline .next b{font-family:'Nunito Sans';color:var(--t2);font-weight:700;}
+
+/* RESOURCES — battery rich, fuel/water simple */
+.sc .resources{display:grid;grid-template-columns:1.7fr 1fr 1fr;gap:36px;margin-top:28px;padding-top:22px;border-top:1px solid var(--color-border-light);align-items:start;}
+.sc .battery .seclabel{display:block;margin-bottom:10px;}
+.sc .batt-vals{display:flex;align-items:baseline;gap:24px;margin-bottom:10px;}
+.sc .batt-vals .soc .num{font-size:38px;color:var(--color-green);}
+.sc .batt-vals .v .num{font-size:22px;}
+.sc .batt-vals .p .num{font-size:22px;color:var(--color-scarlet);}
+.sc .batt-spark svg{width:100%;height:34px;display:block;}
+.sc .lvl .seclabel{display:block;margin-bottom:8px;}
+.sc .lvl .bar{display:flex;align-items:center;gap:11px;}
+.sc .track{flex:1;height:10px;border-radius:5px;background:oklch(0.93 0.01 205);overflow:hidden;}
+.sc .fill{height:100%;border-radius:5px;}
+.sc .pct{font-family:'Nunito Sans';font-weight:700;font-size:15px;color:var(--t1);}
+</style>
+
+<div class="sc-card" data-choice="helm-v3" onclick="toggleSelect(this)">
+  <div class="sc-tag"><span class="sc-letter">A·v3</span><span class="sc-name">Helm-led + your metrics</span><span class="sc-why">click to approve · tell me what to tune</span></div>
+  <div class="sc">
+    <div class="status">
+      <span class="badge"><span class="dot"></span>Under Sail</span>
+      <span class="hdot">Tracker</span><span class="hdot">Stream</span><span class="hdot">Publisher</span>
+      <span class="passage">Falmouth → Plymouth · <b>13:42</b></span>
+    </div>
+
+    <div class="hero">
+      <div>
+        <svg width="290" height="290" viewBox="-12 -12 204 204">
+          <circle cx="90" cy="90" r="84" fill="var(--color-surface)" stroke="var(--color-border)" stroke-width="0.75"/>
+          <path d="M27.07,27.07 A89,89 0 0,1 152.93,27.07" fill="none" stroke="var(--color-scarlet)" stroke-opacity="0.45" stroke-width="5"/>
+          <path d="M152.93,27.07 A89,89 0 0,1 167.07,45.5" fill="none" stroke="var(--color-teal)" stroke-opacity="0.55" stroke-width="5"/>
+          <path d="M12.93,45.5 A89,89 0 0,1 27.07,27.07" fill="none" stroke="var(--color-teal)" stroke-opacity="0.55" stroke-width="5"/>
+          <path d="M167.07,45.5 A89,89 0 0,1 177.65,74.55" fill="none" stroke="var(--color-teal)" stroke-opacity="0.35" stroke-width="5"/>
+          <path d="M2.35,74.55 A89,89 0 0,1 12.93,45.5" fill="none" stroke="var(--color-teal)" stroke-opacity="0.35" stroke-width="5"/>
+          <path d="M177.65,74.55 A89,89 0 0,1 177.65,105.45" fill="none" stroke="var(--color-amber)" stroke-opacity="0.5" stroke-width="5"/>
+          <path d="M2.35,105.45 A89,89 0 0,1 2.35,74.55" fill="none" stroke="var(--color-amber)" stroke-opacity="0.5" stroke-width="5"/>
+          <path d="M177.65,105.45 A89,89 0 0,1 134.5,167.07" fill="none" stroke="var(--color-amber)" stroke-opacity="0.65" stroke-width="5"/>
+          <path d="M45.5,167.07 A89,89 0 0,1 2.35,105.45" fill="none" stroke="var(--color-amber)" stroke-opacity="0.65" stroke-width="5"/>
+          <path d="M134.5,167.07 A89,89 0 0,1 90,179" fill="none" stroke="var(--color-green)" stroke-opacity="0.5" stroke-width="5"/>
+          <path d="M90,179 A89,89 0 0,1 45.5,167.07" fill="none" stroke="var(--color-green)" stroke-opacity="0.5" stroke-width="5"/>
+          <g transform="rotate(-274 90 90)">
+            <circle cx="90" cy="90" r="80" fill="none" stroke="var(--color-border-light)" stroke-width="0.5"/>
+            <circle cx="90" cy="90" r="55" fill="none" stroke="var(--color-border-light)" stroke-width="0.3" stroke-dasharray="2 3"/>
+            <line x1="90" y1="16" x2="90" y2="6" stroke="var(--color-text-dim)" stroke-width="1.2"/>
+            <line x1="164" y1="90" x2="174" y2="90" stroke="var(--color-text-dim)" stroke-width="1.2"/>
+            <line x1="90" y1="164" x2="90" y2="174" stroke="var(--color-text-dim)" stroke-width="1.2"/>
+            <line x1="16" y1="90" x2="6" y2="90" stroke="var(--color-text-dim)" stroke-width="1.2"/>
+            <text x="90" y="30" text-anchor="middle" fill="var(--color-scarlet)" font-size="12" font-weight="800" font-family="Nunito Sans" dominant-baseline="central">N</text>
+            <text x="153" y="93" text-anchor="middle" fill="var(--color-text-dim)" font-size="9" font-family="Nunito Sans" font-weight="600" dominant-baseline="central">E</text>
+            <text x="90" y="158" text-anchor="middle" fill="var(--color-text-dim)" font-size="9" font-family="Nunito Sans" font-weight="600" dominant-baseline="central">S</text>
+            <text x="27" y="93" text-anchor="middle" fill="var(--color-text-dim)" font-size="9" font-family="Nunito Sans" font-weight="600" dominant-baseline="central">W</text>
+          </g>
+          <polygon points="90,-4 86,4 94,4" fill="var(--color-teal)" opacity="0.7"/>
+          <line x1="90" y1="90" x2="82.06" y2="14.4" stroke="var(--color-blue)" stroke-width="1.5" stroke-dasharray="5 3" opacity="0.55"/>
+          <line x1="90" y1="90" x2="148.3" y2="44.4" stroke="var(--color-amber)" stroke-width="2" stroke-dasharray="6 4" opacity="0.6"/>
+          <polygon points="146.7,45.7 136.1,47.0 142.8,55.7" fill="var(--color-amber)" opacity="0.7"/>
+          <path d="M90,58 C87,65 84.5,73 84.5,83 L84.5,94 C84.5,99 86.5,101.5 90,101.5 C93.5,101.5 95.5,99 95.5,94 L95.5,83 C95.5,73 93,65 90,58 Z" fill="var(--color-surface)" stroke="var(--color-teal)" stroke-width="1.5" stroke-linejoin="round"/>
+        </svg>
+        <div class="compass-cap"><b>274°</b> HDG &nbsp;·&nbsp; COG <b>268°</b> &nbsp;·&nbsp; TWA <b>52°</b> S</div>
+      </div>
+
+      <div class="readings">
+        <div class="speed">
+          <div class="speed-head">
+            <div class="k sog"><span class="seclabel">Speed over ground</span><span class="num">6.2<span class="u">kts</span></span></div>
+            <div class="k stw"><span class="seclabel">Speed thru water</span><span class="num">5.9<span class="u">kts</span></span></div>
+            <div class="delta"><span class="dn">+0.3</span><span class="dl">kt fair tide</span></div>
+          </div>
+          <div class="speed-graph">
+            <svg viewBox="0 0 240 64" preserveAspectRatio="none">
+              <line x1="0" y1="58" x2="240" y2="58" stroke="oklch(0.89 0.012 205)" stroke-width="1"/>
+              <!-- delta band between SOG and STW -->
+              <path d="M0,27 L30,25 L60,23 L90,29 L120,21 L150,19 L180,21 L210,17 L240,21 L240,27 L210,25 L180,27 L150,25 L120,27 L90,33 L60,29 L30,31 L0,33 Z" fill="oklch(0.45 0.16 150 / 0.1)"/>
+              <polyline points="0,27 30,25 60,23 90,29 120,21 150,19 180,21 210,17 240,21" fill="none" stroke="var(--color-teal)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+              <polyline points="0,33 30,31 60,29 90,33 120,27 150,25 180,27 210,25 240,27" fill="none" stroke="var(--color-blue)" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" opacity="0.7"/>
+              <circle cx="240" cy="21" r="3" fill="var(--color-teal)" stroke="white" stroke-width="1.3"/>
+              <circle cx="240" cy="27" r="2.6" fill="var(--color-blue)" stroke="white" stroke-width="1.3"/>
+            </svg>
+          </div>
+          <div class="glabel"><i class="sog-k">SOG</i><i class="stw-k">STW</i><span class="span">last 60 min · band = current</span></div>
+        </div>
+
+        <div class="micro">
+          <div class="k"><span class="seclabel">True Wind</span><span class="num" style="color:var(--color-amber)">14<span class="u">kts</span></span></div>
+          <div class="k"><span class="seclabel">Depth</span><span class="num" style="color:var(--color-blue)">18.4<span class="u">m</span></span></div>
+          <div class="k"><span class="seclabel">Heel</span><span class="num">7<span class="u">°</span></span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="mapband">
+      <div class="map">
+        <svg viewBox="0 0 900 140" preserveAspectRatio="none">
+          <path d="M0 104 C160 92 280 98 440 66 S760 34 900 28" fill="oklch(0.82 0.05 130)" opacity="0.25"/>
+          <path d="M40 118 C220 96 360 100 520 56 S820 24 880 18" fill="none" stroke="oklch(0.48 0.22 25)" stroke-width="3"/>
+          <circle cx="40" cy="118" r="5" fill="oklch(0.42 0.14 178)"/>
+          <circle cx="520" cy="56" r="6" fill="oklch(0.99 0.004 205)" stroke="oklch(0.48 0.22 25)" stroke-width="3"/>
+          <circle cx="880" cy="18" r="6" fill="oklch(0.48 0.22 25)"/>
+          <g transform="translate(520 56) rotate(-32)"><polygon points="0,-11 6,7 0,3 -6,7" fill="oklch(0.15 0.025 205)"/></g>
+        </svg>
+      </div>
+      <div class="navline">
+        <div class="k"><span class="seclabel">Dist to waypoint</span><span class="num">4.2<span class="u">nm</span></span></div>
+        <div class="k"><span class="seclabel">Time to go</span><span class="num">41<span class="u">min</span></span></div>
+        <div class="k"><span class="seclabel">ETA</span><span class="num">14:23</span></div>
+        <span class="next">Next waypoint · <b>Rame Head</b></span>
+      </div>
+    </div>
+
+    <div class="resources">
+      <div class="battery">
+        <span class="seclabel">House Battery</span>
+        <div class="batt-vals">
+          <div class="soc"><span class="num">82<span class="u">%</span></span></div>
+          <div class="v"><span class="num">12.8<span class="u">V</span></span></div>
+          <div class="p"><span class="num">−54<span class="u">W</span></span></div>
+        </div>
+        <div class="batt-spark">
+          <svg viewBox="0 0 240 34" preserveAspectRatio="none">
+            <line x1="0" y1="17" x2="240" y2="17" stroke="oklch(0.85 0.02 205)" stroke-width="1" stroke-dasharray="3 3"/>
+            <polyline points="0,23 30,26 60,21 90,27 120,25 150,9 180,24 210,26 240,25" fill="none" stroke="var(--color-scarlet)" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/>
+            <circle cx="240" cy="25" r="2.8" fill="var(--color-scarlet)" stroke="white" stroke-width="1.3"/>
+          </svg>
+        </div>
+      </div>
+      <div class="lvl">
+        <span class="seclabel">Fuel</span>
+        <div class="bar"><span class="pct">64%</span><div class="track"><div class="fill" style="width:64%;background:linear-gradient(90deg,oklch(0.7 0.16 70),oklch(0.48 0.17 70))"></div></div></div>
+      </div>
+      <div class="lvl">
+        <span class="seclabel">Fresh Water</span>
+        <div class="bar"><span class="pct">48%</span><div class="track"><div class="fill" style="width:48%;background:linear-gradient(90deg,oklch(0.6 0.13 245),oklch(0.42 0.14 245))"></div></div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<p class="subtitle" style="margin-top:26px;">The speed graph shades the gap between SOG and STW so the current jumps out visually, and the delta chip names it (fair vs foul tide). Battery now reads SOC · Voltage · Power(W) with a discharge/charge sparkline (the small spike is a charge pulse). Want the hour-graph treatment extended to other metrics (battery SOC trend, depth), or the delta shown differently?</p>
