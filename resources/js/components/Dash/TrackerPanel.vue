@@ -539,17 +539,17 @@ const humidityPct = computed(() => {
 .tp-res {
     display: flex;
     flex-direction: column;
-    gap: 8px;
-    margin-top: 4px;
+    gap: 12px;
+    margin-top: 6px;
 }
 
-.tp-rc { display: flex; flex-direction: column; gap: 3px; }
+.tp-rc { display: flex; flex-direction: column; gap: 6px; }
 
 .tp-rl {
     display: flex;
     justify-content: space-between;
     font-size: 11px;
-    color: var(--color-text-dim);
+    color: var(--color-text-secondary);
 }
 
 .tp-rl b {
@@ -558,7 +558,7 @@ const humidityPct = computed(() => {
 }
 
 .tp-rb {
-    height: 5px;
+    height: 6px;
     background: var(--color-bg);
     border-radius: 3px;
     overflow: hidden;

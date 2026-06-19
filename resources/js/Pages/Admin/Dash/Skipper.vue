@@ -38,24 +38,26 @@
                 <div class="sk-sail">
                     <!-- Speed head + tidal set/drift -->
                     <div class="sk-speed-head">
-                        <Link :href="route('admin.data.show', { metric: 'speed_sog' })" class="metric-link sk-k sk-k--sog">
-                            <span class="sk-seclabel">SOG</span>
-                            <span class="sk-num sk-num--sog" :class="{ 'sk-stale': stale('speed_sog') }">
-                                {{ sogDisplay }}<span class="sk-u">kts</span>
-                            </span>
-                        </Link>
-                        <Link :href="route('admin.data.show', { metric: 'speed_stw' })" class="metric-link sk-k sk-k--stw">
-                            <span class="sk-seclabel">STW</span>
-                            <span class="sk-num sk-num--stw" :class="{ 'sk-stale': stale('speed_stw') }">
-                                {{ stwDisplay }}<span class="sk-u">kts</span>
-                            </span>
-                        </Link>
-                        <Link :href="route('admin.data.show', { metric: 'vmg' })" class="metric-link sk-k sk-k--vmg">
-                            <span class="sk-seclabel">VMG → WP</span>
-                            <span class="sk-num sk-num--vmg" :class="{ 'sk-stale': stale('vmg') }">
-                                {{ vmgDisplay }}<span class="sk-u">kts</span>
-                            </span>
-                        </Link>
+                        <div class="sk-speed-vals">
+                            <Link :href="route('admin.data.show', { metric: 'speed_sog' })" class="metric-link sk-k sk-k--sog">
+                                <span class="sk-seclabel">SOG</span>
+                                <span class="sk-num sk-num--sog" :class="{ 'sk-stale': stale('speed_sog') }">
+                                    {{ sogDisplay }}<span class="sk-u">kts</span>
+                                </span>
+                            </Link>
+                            <Link :href="route('admin.data.show', { metric: 'speed_stw' })" class="metric-link sk-k sk-k--stw">
+                                <span class="sk-seclabel">STW</span>
+                                <span class="sk-num sk-num--stw" :class="{ 'sk-stale': stale('speed_stw') }">
+                                    {{ stwDisplay }}<span class="sk-u">kts</span>
+                                </span>
+                            </Link>
+                            <Link :href="route('admin.data.show', { metric: 'vmg' })" class="metric-link sk-k sk-k--vmg">
+                                <span class="sk-seclabel">VMG → WP</span>
+                                <span class="sk-num sk-num--vmg" :class="{ 'sk-stale': stale('vmg') }">
+                                    {{ vmgDisplay }}<span class="sk-u">kts</span>
+                                </span>
+                            </Link>
+                        </div>
                         <div class="sk-tide">
                             <div class="sk-tide__delta">
                                 <div class="sk-tide__dn" :class="{ 'sk-stale': stale('current_drift') }">{{ tideDeltaDisplay }}</div>
@@ -828,8 +830,16 @@ const fuelDisplay = computed(() => {
 }
 
 .sk-speed-head {
+    display: grid;
+    grid-template-columns: 1.35fr 1fr;
+    gap: 26px;
+    align-items: flex-end;
+}
+
+.sk-speed-vals {
     display: flex;
     align-items: flex-end;
+    justify-content: space-between;
     gap: 22px;
 }
 
@@ -854,7 +864,6 @@ const fuelDisplay = computed(() => {
 }
 
 .sk-tide {
-    margin-left: auto;
     display: flex;
     flex-direction: column;
     gap: 5px;
@@ -905,14 +914,25 @@ const fuelDisplay = computed(() => {
 }
 
 .sk-graph-empty {
+    position: relative;
     height: 80px;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 12px;
-    color: var(--color-text-dim);
+    font-size: 11px;
+    letter-spacing: 0.04em;
+    color: var(--color-text-tertiary, var(--color-text-dim));
     background: var(--color-bg);
     border-radius: 6px;
+}
+
+.sk-graph-empty::before {
+    content: '';
+    position: absolute;
+    left: 8px;
+    right: 8px;
+    top: 64%;
+    border-top: 1px dashed var(--color-border-light);
 }
 
 .sk-instlist {
@@ -1052,7 +1072,7 @@ const fuelDisplay = computed(() => {
     display: flex;
     align-items: center;
     gap: 10px;
-    padding: 9px 11px;
+    padding: 9px 16px;
     border-radius: 10px;
     margin-bottom: 12px;
 }
@@ -1181,12 +1201,23 @@ const fuelDisplay = computed(() => {
 }
 
 .sk-chart-empty {
+    position: relative;
     height: 78px;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 12px;
-    color: var(--color-text-dim);
+    font-size: 11px;
+    letter-spacing: 0.04em;
+    color: var(--color-text-tertiary, var(--color-text-dim));
+}
+
+.sk-chart-empty::before {
+    content: '';
+    position: absolute;
+    left: 4px;
+    right: 4px;
+    top: 64%;
+    border-top: 1px dashed var(--color-border-light);
 }
 
 /* ── Footer resources ───────────────────────────────────────────────────────── */
@@ -1233,12 +1264,23 @@ const fuelDisplay = computed(() => {
 }
 
 .sk-res__empty {
+    position: relative;
     height: 70px;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 12px;
-    color: var(--color-text-dim);
+    font-size: 11px;
+    letter-spacing: 0.04em;
+    color: var(--color-text-tertiary, var(--color-text-dim));
+}
+
+.sk-res__empty::before {
+    content: '';
+    position: absolute;
+    left: 4px;
+    right: 4px;
+    top: 64%;
+    border-top: 1px dashed var(--color-border-light);
 }
 
 .sk-res__empty--sm {

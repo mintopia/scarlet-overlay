@@ -397,6 +397,7 @@ const droppedMarkers = computed(() => {
 .sc-chain {
     display: flex;
     align-items: center;
+    justify-content: center;
     gap: 0;
     flex-wrap: nowrap;
     overflow-x: auto;
@@ -444,7 +445,8 @@ const droppedMarkers = computed(() => {
 .sc-node--live .sc-nst { color: var(--color-scarlet); }
 .sc-node--ok .sc-nst { color: var(--color-teal); }
 
-/* Link connector — grows to stretch the chain across the full card width */
+/* Link connector — grows to bridge the nodes, but capped so a wide card
+   doesn't leave the readouts stranded in cavernous connectors. */
 .sc-link {
     flex: 1 1 auto;
     display: flex;
@@ -452,6 +454,7 @@ const droppedMarkers = computed(() => {
     align-items: center;
     padding: 0 10px;
     min-width: 110px;
+    max-width: 220px;
 }
 
 .sc-ltag {
@@ -510,12 +513,23 @@ const droppedMarkers = computed(() => {
 }
 
 .sc-bgraph-empty {
+    position: relative;
     height: 46px;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 12px;
-    color: var(--color-text-dim);
+    font-size: 11px;
+    letter-spacing: 0.04em;
+    color: var(--color-text-tertiary, var(--color-text-dim));
+}
+
+.sc-bgraph-empty::before {
+    content: '';
+    position: absolute;
+    left: 2px;
+    right: 2px;
+    top: 64%;
+    border-top: 1px dashed var(--color-border-light);
 }
 
 .sc-axis {

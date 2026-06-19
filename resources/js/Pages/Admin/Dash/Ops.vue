@@ -308,7 +308,10 @@
                             <div v-for="day in forecastDays" :key="day.key" class="ops-wfc__p">
                                 <span class="ops-wfc__ph">{{ day.label }}</span>
                                 <span class="ops-wfc__pi" :title="day.title">{{ day.icon }}</span>
-                                <span class="ops-wfc__pt">{{ day.temp }}</span>
+                                <span class="ops-wfc__temps">
+                                    <span class="ops-wfc__pt">{{ day.hi }}</span>
+                                    <span class="ops-wfc__pt-lo">{{ day.lo }}</span>
+                                </span>
                                 <span class="ops-wfc__pw">{{ day.wind }}</span>
                             </div>
                         </div>
@@ -577,7 +580,8 @@ const forecastDays = computed(() => {
             label: date ? date.toLocaleDateString(undefined, { weekday: 'short' }) : '—',
             icon: wmoIcon(day.code),
             title: wmoLabel(day.code),
-            temp: `${hi}/${lo}`,
+            hi,
+            lo,
             wind,
         };
     });
@@ -887,12 +891,23 @@ const etaDisplay = computed(() => {
 }
 
 .ops-chart__empty {
+    position: relative;
     height: 104px;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 12px;
-    color: var(--color-text-dim);
+    font-size: 11px;
+    letter-spacing: 0.04em;
+    color: var(--color-text-tertiary, var(--color-text-dim));
+}
+
+.ops-chart__empty::before {
+    content: '';
+    position: absolute;
+    left: 4px;
+    right: 4px;
+    top: 64%;
+    border-top: 1px dashed var(--color-border-light);
 }
 
 .ops-axis {
@@ -1094,11 +1109,25 @@ const etaDisplay = computed(() => {
     line-height: 1;
 }
 
+.ops-wfc__temps {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    line-height: 1.05;
+}
+
 .ops-wfc__pt {
     font-family: 'Nunito Sans', sans-serif;
     font-weight: 700;
     font-size: 15px;
     color: var(--color-text-primary);
+}
+
+.ops-wfc__pt-lo {
+    font-family: 'Nunito Sans', sans-serif;
+    font-weight: 600;
+    font-size: 12px;
+    color: var(--color-text-dim);
 }
 
 .ops-wfc__pt--dim {

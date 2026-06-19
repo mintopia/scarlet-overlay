@@ -49,6 +49,13 @@ class AdminNavOverhaulTest extends TestCase
             ->assertNotFound();
     }
 
+    public function test_legacy_boat_metrics_page_is_removed(): void
+    {
+        $this->actingAs(User::factory()->create())
+            ->get('/admin/metrics')
+            ->assertNotFound();
+    }
+
     public function test_ops_dashboard_still_renders(): void
     {
         $this->actingAs(User::factory()->create())

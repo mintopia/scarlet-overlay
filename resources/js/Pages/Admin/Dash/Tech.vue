@@ -1,5 +1,5 @@
 <template>
-    <AdminLayout>
+    <AdminLayout :breadcrumbs="[{ label: 'Tech' }]">
         <Head title="Tech Dashboard" />
 
         <div class="tech-dash">
@@ -345,12 +345,23 @@ const ecoflowRemDisplay = computed(() => {
 }
 
 .power-chart-empty {
+    position: relative;
     height: 88px;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 12px;
-    color: var(--color-text-dim);
+    font-size: 11px;
+    letter-spacing: 0.04em;
+    color: var(--color-text-tertiary, var(--color-text-dim));
+}
+
+.power-chart-empty::before {
+    content: '';
+    position: absolute;
+    left: 4px;
+    right: 4px;
+    top: 64%;
+    border-top: 1px dashed var(--color-border-light);
 }
 
 .power-axis {

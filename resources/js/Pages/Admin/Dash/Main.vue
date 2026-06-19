@@ -918,12 +918,23 @@ const publisherOnline = computed(() =>
 
 /* Empty states */
 .mn-rail__empty {
+    position: relative;
     height: 66px;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 12px;
-    color: var(--color-text-dim);
+    font-size: 11px;
+    letter-spacing: 0.04em;
+    color: var(--color-text-tertiary, var(--color-text-dim));
+}
+
+.mn-rail__empty::before {
+    content: '';
+    position: absolute;
+    left: 4px;
+    right: 4px;
+    top: 64%;
+    border-top: 1px dashed var(--color-border-light);
 }
 
 /* ── Footer resources ───────────────────────────────────────────────────────── */
@@ -969,12 +980,23 @@ const publisherOnline = computed(() =>
 }
 
 .mn-res__empty {
+    position: relative;
     height: 52px;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 12px;
-    color: var(--color-text-dim);
+    font-size: 11px;
+    letter-spacing: 0.04em;
+    color: var(--color-text-tertiary, var(--color-text-dim));
+}
+
+.mn-res__empty::before {
+    content: '';
+    position: absolute;
+    left: 4px;
+    right: 4px;
+    top: 64%;
+    border-top: 1px dashed var(--color-border-light);
 }
 
 /* ── Stale state ────────────────────────────────────────────────────────────── */

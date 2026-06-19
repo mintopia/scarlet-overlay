@@ -2,7 +2,6 @@
 
 namespace Tests\Feature;
 
-use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Http;
@@ -10,8 +9,8 @@ use Inertia\Testing\AssertableInertia as Assert;
 use Tests\TestCase;
 
 /**
- * Regression guard: public dashboard and admin metrics routes must render correctly
- * when canonical.enabled=true, exercising the expanded override map.
+ * Regression guard: the public dashboard must render correctly when
+ * canonical.enabled=true, exercising the expanded override map.
  */
 class CanonicalIntegrationTest extends TestCase
 {
@@ -36,16 +35,6 @@ class CanonicalIntegrationTest extends TestCase
         $this->get(route('dashboard'))
             ->assertOk()
             ->assertInertia(fn (Assert $page) => $page->component('Public/Dashboard'));
-    }
-
-    public function test_admin_metrics_renders_with_canonical_enabled(): void
-    {
-        $user = User::factory()->create();
-
-        $this->actingAs($user)
-            ->get(route('admin.metrics'))
-            ->assertOk()
-            ->assertInertia(fn (Assert $page) => $page->component('Admin/BoatMetrics'));
     }
 
     public function test_public_dashboard_boat_metrics_keys_present_with_canonical_enabled(): void
