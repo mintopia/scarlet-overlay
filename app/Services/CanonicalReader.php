@@ -91,37 +91,93 @@ class CanonicalReader
     }
 
     /**
-     * Return a time-ordered series of transformed values for the canonical key.
+     * Resolve the canonical key at a past instant (e.g. ship-log generation at an hour
+     * boundary). Walks the priority chain using last-known value at/before the timestamp,
+     * applies the gate + validity, and returns the first valid source. No trend/median.
+     *
+     * @return array{value: float, raw: float, unit: string, timestamp: int, age: int, stale: bool, resolved_source: string}|null
+     */
+    public function readAt(string $key, int $timestamp): ?array
+    {
+        $def = $this->catalog->definition($key);
+        if ($def === null) {
+            return null;
+        }
+
+        if (! empty($def['gate']['selector'])) {
+            $gate = $this->prometheus->queryLastOverTimeAt($def['gate']['selector'], $timestamp);
+            $gateMax = $def['gate']['max'] ?? null;
+            if ($gate === null || ($gateMax !== null && $gate > $gateMax)) {
+                return null;
+            }
+        }
+
+        foreach ($def['sources'] as $source) {
+            $raw = $this->prometheus->queryLastOverTimeAt($source['selector'], $timestamp);
+            if ($raw === null) {
+                continue;
+            }
+
+            $value = $this->applyArithmetic($raw, $source);
+            if (! $this->isValidReading($def, $value)) {
+                continue;
+            }
+
+            return [
+                'value' => $value,
+                'raw' => $value,
+                'unit' => $def['unit'],
+                'timestamp' => $timestamp,
+                'age' => 0,
+                'stale' => false,
+                'resolved_source' => $source['selector'],
+            ];
+        }
+
+        return null;
+    }
+
+    /**
+     * Return a time-ordered series of transformed values, stitched left-to-right across
+     * the priority chain: at each timestamp the highest-priority source with a valid value
+     * wins (matching the legacy `default` fallback). Validity bounds filter per point.
      *
      * @return array<int, array{t: int, v: float}>
      */
-    public function readRange(string $key, string $duration, string $step = '300s'): array
+    public function readRange(string $key, ?string $duration = null, string $step = '300s', ?int $start = null, ?int $end = null, bool $fillGaps = false): array
     {
         $def = $this->catalog->definition($key);
         if ($def === null) {
             return [];
         }
 
-        $source = $def['sources'][0] ?? null;
-        if ($source === null) {
+        // Fill lowest priority first so higher-priority sources overwrite per timestamp.
+        $byTimestamp = [];
+        foreach (array_reverse($def['sources']) as $source) {
+            $raw = $this->prometheus->queryRange($source['selector'], $duration, $step, $start, $end, $fillGaps);
+            foreach ($raw as $point) {
+                if (($point['value'] ?? null) === null) {
+                    continue;
+                }
+
+                $value = $this->applyArithmetic((float) $point['value'], $source);
+                if (! $this->isValidReading($def, $value)) {
+                    continue;
+                }
+
+                $byTimestamp[(int) $point['timestamp']] = $value;
+            }
+        }
+
+        if ($byTimestamp === []) {
             return [];
         }
 
-        $raw = $this->prometheus->queryRange($source['selector'], $duration, $step, fillGaps: false);
-        if (empty($raw)) {
-            return [];
-        }
+        ksort($byTimestamp);
 
         $points = [];
-        foreach ($raw as $point) {
-            if ($point['value'] === null) {
-                continue;
-            }
-
-            $points[] = [
-                't' => (int) $point['timestamp'],
-                'v' => $this->applyArithmetic((float) $point['value'], $source),
-            ];
+        foreach ($byTimestamp as $t => $v) {
+            $points[] = ['t' => $t, 'v' => $v];
         }
 
         return $points;

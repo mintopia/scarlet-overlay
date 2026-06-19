@@ -294,6 +294,87 @@ class CanonicalBaseline
                 ],
             ],
 
+            // ── Position (GPS / SignalK position) ─────────────────────────────────
+
+            [
+                'key' => 'position_latitude', 'label' => 'Latitude', 'group' => 'position',
+                'storage_unit' => 'deg', 'display_unit' => '°', 'volatile' => true,
+                'trend_fn' => 'last', 'trend_window' => '2m',
+                'staleness_threshold_s' => 120, 'coverage_window_s' => 300, 'coverage_min' => 0.5,
+                'reject_null_island' => true,
+                'valid_min' => -90.0, 'valid_max' => 90.0,
+                'enabled' => true, 'description' => 'Latitude in degrees (SignalK preferred, GPS signalk then onboard fallback).',
+                'sources' => [
+                    ['priority' => 1, 'source_metric_name' => 'scarlet_signalk_navigation_position_latitude', 'label_matchers' => [], 'source_class' => 'both', 'source_kind' => 'angle_deg', 'select_fn' => 'last', 'unit_transform' => [], 'staleness_threshold_s' => null],
+                    ['priority' => 2, 'source_metric_name' => 'scarlet_gps_latitude_deg', 'label_matchers' => [['label' => 'gps_source', 'op' => 'equals', 'value' => 'signalk']], 'source_class' => 'both', 'source_kind' => 'angle_deg', 'select_fn' => 'last', 'unit_transform' => [], 'staleness_threshold_s' => null],
+                    ['priority' => 3, 'source_metric_name' => 'scarlet_gps_latitude_deg', 'label_matchers' => [['label' => 'gps_source', 'op' => 'equals', 'value' => 'onboard']], 'source_class' => 'both', 'source_kind' => 'angle_deg', 'select_fn' => 'last', 'unit_transform' => [], 'staleness_threshold_s' => null],
+                ],
+            ],
+            [
+                'key' => 'position_longitude', 'label' => 'Longitude', 'group' => 'position',
+                'storage_unit' => 'deg', 'display_unit' => '°', 'volatile' => true,
+                'trend_fn' => 'last', 'trend_window' => '2m',
+                'staleness_threshold_s' => 120, 'coverage_window_s' => 300, 'coverage_min' => 0.5,
+                'reject_null_island' => true,
+                'valid_min' => -180.0, 'valid_max' => 180.0,
+                'enabled' => true, 'description' => 'Longitude in degrees (SignalK preferred, GPS signalk then onboard fallback).',
+                'sources' => [
+                    ['priority' => 1, 'source_metric_name' => 'scarlet_signalk_navigation_position_longitude', 'label_matchers' => [], 'source_class' => 'both', 'source_kind' => 'angle_deg', 'select_fn' => 'last', 'unit_transform' => [], 'staleness_threshold_s' => null],
+                    ['priority' => 2, 'source_metric_name' => 'scarlet_gps_longitude_deg', 'label_matchers' => [['label' => 'gps_source', 'op' => 'equals', 'value' => 'signalk']], 'source_class' => 'both', 'source_kind' => 'angle_deg', 'select_fn' => 'last', 'unit_transform' => [], 'staleness_threshold_s' => null],
+                    ['priority' => 3, 'source_metric_name' => 'scarlet_gps_longitude_deg', 'label_matchers' => [['label' => 'gps_source', 'op' => 'equals', 'value' => 'onboard']], 'source_class' => 'both', 'source_kind' => 'angle_deg', 'select_fn' => 'last', 'unit_transform' => [], 'staleness_threshold_s' => null],
+                ],
+            ],
+            [
+                'key' => 'gps_altitude', 'label' => 'Altitude', 'group' => 'position',
+                'storage_unit' => 'm', 'display_unit' => 'm', 'volatile' => false,
+                'trend_fn' => 'last', 'trend_window' => '2m',
+                'staleness_threshold_s' => 120, 'coverage_window_s' => 300, 'coverage_min' => 0.5,
+                'enabled' => true, 'description' => 'GPS altitude in metres.',
+                'sources' => [
+                    ['priority' => 1, 'source_metric_name' => 'scarlet_gps_altitude_meters', 'label_matchers' => [], 'source_class' => 'both', 'source_kind' => 'distance_m', 'select_fn' => 'last', 'unit_transform' => [], 'staleness_threshold_s' => null],
+                ],
+            ],
+            [
+                'key' => 'gps_satellites', 'label' => 'Satellites', 'group' => 'position',
+                'storage_unit' => 'count', 'display_unit' => 'count', 'volatile' => false,
+                'trend_fn' => 'last', 'trend_window' => '2m',
+                'staleness_threshold_s' => 120, 'coverage_window_s' => 300, 'coverage_min' => 0.5,
+                'enabled' => true, 'description' => 'Number of GPS satellites in use.',
+                'sources' => [
+                    ['priority' => 1, 'source_metric_name' => 'scarlet_gps_satellites', 'label_matchers' => [], 'source_class' => 'both', 'source_kind' => 'count', 'select_fn' => 'last', 'unit_transform' => [], 'staleness_threshold_s' => null],
+                ],
+            ],
+            [
+                'key' => 'gps_hdop', 'label' => 'HDOP', 'group' => 'position',
+                'storage_unit' => '', 'display_unit' => '', 'volatile' => false,
+                'trend_fn' => 'last', 'trend_window' => '2m',
+                'staleness_threshold_s' => 120, 'coverage_window_s' => 300, 'coverage_min' => 0.5,
+                'enabled' => true, 'description' => 'GPS horizontal dilution of precision.',
+                'sources' => [
+                    ['priority' => 1, 'source_metric_name' => 'scarlet_gps_hdop', 'label_matchers' => [], 'source_class' => 'both', 'source_kind' => 'ratio', 'select_fn' => 'last', 'unit_transform' => [], 'staleness_threshold_s' => null],
+                ],
+            ],
+            [
+                'key' => 'gps_speed', 'label' => 'GPS Speed', 'group' => 'position',
+                'storage_unit' => 'kn', 'display_unit' => 'kn', 'volatile' => true,
+                'trend_fn' => 'last', 'trend_window' => '2m',
+                'staleness_threshold_s' => 120, 'coverage_window_s' => 300, 'coverage_min' => 0.5,
+                'enabled' => true, 'description' => 'GPS speed over ground in knots (already knots).',
+                'sources' => [
+                    ['priority' => 1, 'source_metric_name' => 'scarlet_gps_speed_kn', 'label_matchers' => [], 'source_class' => 'both', 'source_kind' => 'speed_kn', 'select_fn' => 'last', 'unit_transform' => [], 'staleness_threshold_s' => null],
+                ],
+            ],
+            [
+                'key' => 'gps_heading', 'label' => 'GPS Heading', 'group' => 'position',
+                'storage_unit' => 'deg', 'display_unit' => '°', 'volatile' => true,
+                'trend_fn' => 'last', 'trend_window' => '2m',
+                'staleness_threshold_s' => 120, 'coverage_window_s' => 300, 'coverage_min' => 0.5,
+                'enabled' => true, 'description' => 'GPS heading in degrees (already degrees).',
+                'sources' => [
+                    ['priority' => 1, 'source_metric_name' => 'scarlet_gps_heading_deg', 'label_matchers' => [], 'source_class' => 'both', 'source_kind' => 'angle_deg', 'select_fn' => 'last', 'unit_transform' => [], 'staleness_threshold_s' => null],
+                ],
+            ],
+
             // ── Wind ──────────────────────────────────────────────────────────────
 
             [

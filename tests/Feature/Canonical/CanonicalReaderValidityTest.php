@@ -127,6 +127,38 @@ class CanonicalReaderValidityTest extends TestCase
         $this->assertEqualsWithDelta(-50.42, $result['value'], 0.001);
     }
 
+    public function test_read_at_resolves_value_at_timestamp(): void
+    {
+        $catalog = Mockery::mock(CanonicalCatalog::class);
+        $catalog->shouldReceive('definition')->with('xte')->andReturn($this->xteDefinition());
+
+        $prom = Mockery::mock(PrometheusService::class);
+        $prom->shouldReceive('queryLastOverTimeAt')
+            ->with('scarlet_signalk_navigation_course_calcValues_crossTrackError', 1_700_000_000)
+            ->andReturn(120.0);
+
+        $reader = new CanonicalReader($prom, $catalog);
+
+        $result = $reader->readAt('xte', 1_700_000_000);
+
+        $this->assertNotNull($result);
+        $this->assertEqualsWithDelta(120.0, $result['value'], 0.001);
+        $this->assertSame(1_700_000_000, $result['timestamp']);
+    }
+
+    public function test_read_at_rejects_out_of_range_sentinel(): void
+    {
+        $catalog = Mockery::mock(CanonicalCatalog::class);
+        $catalog->shouldReceive('definition')->with('xte')->andReturn($this->xteDefinition());
+
+        $prom = Mockery::mock(PrometheusService::class);
+        $prom->shouldReceive('queryLastOverTimeAt')->andReturn(-3_790_772.0);
+
+        $reader = new CanonicalReader($prom, $catalog);
+
+        $this->assertNull($reader->readAt('xte', 1_700_000_000));
+    }
+
     public function test_closed_gate_returns_null(): void
     {
         $catalog = Mockery::mock(CanonicalCatalog::class);

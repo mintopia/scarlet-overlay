@@ -82,6 +82,24 @@ class BaselineCoverageTest extends TestCase
         }
     }
 
+    public function test_position_keys_present(): void
+    {
+        $defs = collect(CanonicalBaseline::definitions())->keyBy('key');
+
+        $required = [
+            'position_latitude', 'position_longitude', 'gps_altitude',
+            'gps_satellites', 'gps_hdop', 'gps_speed', 'gps_heading',
+        ];
+
+        foreach ($required as $key) {
+            $this->assertTrue($defs->has($key), "Baseline missing canonical key: {$key}");
+            $this->assertNotEmpty($defs[$key]['sources'], "Key {$key} has no sources");
+        }
+
+        $this->assertTrue($defs['position_latitude']['reject_null_island'] === true, 'position_latitude must reject null island');
+        $this->assertCount(3, $defs['position_latitude']['sources'], 'position_latitude must declare 3 sources');
+    }
+
     public function test_baseline_applies_cleanly(): void
     {
         $version = app(CanonicalCatalog::class)->applyBaseline(
