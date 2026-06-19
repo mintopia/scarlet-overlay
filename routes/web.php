@@ -4,6 +4,7 @@ use App\Http\Controllers\Admin\AdminDashboardController;
 use App\Http\Controllers\Admin\AdminEnvironmentController;
 use App\Http\Controllers\Admin\AdminLogController;
 use App\Http\Controllers\Admin\BoatMetricsController;
+use App\Http\Controllers\Admin\CanonicalCatalogController;
 use App\Http\Controllers\Admin\ExploreController;
 use App\Http\Controllers\Admin\JourneyController;
 use App\Http\Controllers\Admin\JourneyViewController as AdminJourneyViewController;
@@ -137,4 +138,12 @@ Route::middleware('auth')->prefix('admin')->group(function () {
     Route::post('/planner/groups/{group}/routes', [PlanRouteController::class, 'store'])->name('admin.planner.routes.store');
     Route::put('/planner/routes/{route}', [PlanRouteController::class, 'update'])->name('admin.planner.routes.update');
     Route::delete('/planner/routes/{route}', [PlanRouteController::class, 'destroy'])->name('admin.planner.routes.destroy');
+
+    // Canonical metric catalog
+    Route::get('metrics/catalog', [CanonicalCatalogController::class, 'index'])->name('admin.catalog');
+    Route::post('metrics/catalog', [CanonicalCatalogController::class, 'store'])->name('admin.catalog.store');
+    Route::put('metrics/catalog/{metric}', [CanonicalCatalogController::class, 'update'])->name('admin.catalog.update');
+    Route::delete('metrics/catalog/{metric}', [CanonicalCatalogController::class, 'destroy'])->name('admin.catalog.destroy');
+    Route::post('metrics/catalog/test', [CanonicalCatalogController::class, 'test'])->name('admin.catalog.test');
+    Route::post('metrics/catalog/rollback', [CanonicalCatalogController::class, 'rollback'])->name('admin.catalog.rollback');
 });
