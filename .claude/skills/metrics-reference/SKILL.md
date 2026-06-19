@@ -1,17 +1,29 @@
 ---
 name: metrics-reference
-description: "Reference for all Scarlet boat metrics — sources, PromQL queries, units, ingestion architecture, and query patterns. Activate when working with Prometheus/VictoriaMetrics queries, ship log commands, dashboard metrics, config/scarlet.php metric mappings, or any code that reads sensor data."
+description: "Reference for all Scarlet boat metrics — sources, units, ingestion architecture, and PromQL patterns for authoring canonical-catalog source descriptors. Activate when working with VictoriaMetrics series, the canonical catalog / CanonicalReader, ship log commands, dashboard metrics, or any code that reads sensor data. NOTE: the legacy config metric registry + MetricRegistry are removed — reads go through CanonicalReader + the DB catalog."
 metadata:
   author: scarlet
 ---
 
 # Scarlet Metrics Reference
 
+> **⚠️ UPDATED 2026-06-19 — reads go through the canonical catalog now.**
+> The app reads **every** metric through `App\Services\CanonicalReader` (`read` / `readMany` /
+> `readAt` / `readRange`), resolving the **DB-backed canonical catalog** (`canonical_metrics` +
+> `canonical_metric_sources`, baseline in `App\Support\CanonicalBaseline`, editable at
+> `/admin/metrics/catalog`). `App\Services\MetricRegistry` and the `config/scarlet.php`
+> `metrics.registry` / `metrics.groups` / `canonical.overrides` sections **no longer exist**.
+> The series names, units, ingestion paths, and PromQL conversion patterns below remain accurate
+> as **reference for authoring catalog source descriptors** — but do NOT reach for `MetricRegistry`
+> or a `config` registry; add/point a canonical key instead. Source priority, unit transforms,
+> validity bounds (`valid_min`/`valid_max`/`reject_null_island`), the route-active gate, and
+> staleness all live on the catalog entry and are applied by the reader.
+
 ## When to Apply
 
 Activate this skill when:
 
-- Working with `config/scarlet.php` metric mappings
+- Authoring or editing canonical catalog entries (`CanonicalBaseline` / `/admin/metrics/catalog`)
 - Modifying ship log generate/backfill commands
 - Building or changing dashboard metric displays
 - Writing PromQL queries for any Scarlet data
