@@ -10,7 +10,7 @@ class WeatherMetricsController extends Controller
     {
         $weather = $metrics->getWeatherData();
 
-        if (!$weather) {
+        if (! $weather) {
             return response("# Weather data unavailable\nscarlet_weather_up 0\n", 200)
                 ->header('Content-Type', 'text/plain; version=0.0.4; charset=utf-8');
         }
@@ -31,6 +31,7 @@ class WeatherMetricsController extends Controller
         $this->gauge($lines, 'scarlet_weather_wave_period_s', 'Wave period in seconds', $weather['waves']->period ?? null);
         $this->gauge($lines, 'scarlet_weather_current_speed_kn', 'Ocean current speed in knots', $weather['current']->speed ?? null);
         $this->gauge($lines, 'scarlet_weather_current_direction_deg', 'Ocean current direction in degrees', $weather['current']->direction ?? null);
+        $this->gauge($lines, 'scarlet_weather_condition_code', 'WMO weather condition code', $weather['code'] ?? null);
 
         $lines[] = '';
 
