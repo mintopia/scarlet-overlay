@@ -483,7 +483,9 @@ async function testSource(src) {
             },
             body: JSON.stringify({ source_id: src.id }),
         });
-        const data = await response.json();
+        const data = response.ok
+            ? await response.json()
+            : { ok: false, value: null, age: null, selector: `HTTP ${response.status}` };
         testResults.value = { ...testResults.value, [src.id]: data };
     } catch {
         testResults.value = { ...testResults.value, [src.id]: { ok: false, value: null, age: null, selector: 'Network error' } };
