@@ -76,6 +76,12 @@ GPS is already unit-suffixed at source (`_deg`/`_kn`/`_meters`). MQTT tank `_per
 > "no active route" sentinels (xte ≈ −3.79 M m, wp_distance ≈ 2642 nm): `xte` ±100 nm (±185200 m),
 > `wp_distance` 0–1000 nm, `wp_ttg` 0–14 d. Bounds are applied by `CanonicalReader` in both the fresh and
 > stale passes (read contract, Phase 3 item 10a).
+>
+> **Null Island filter.** A per-metric `reject_null_island` option (configurable in the management UI)
+> discards lat/long readings of ≈ 0,0 (`abs < 0.1`, the app-wide no-GPS-fix convention) so a position
+> metric reads null instead of (0,0). Off by default; no baseline key enables it yet — intended for any
+> lat/long series mapped via the UI. Caveat: at single-series granularity this also rejects legitimate
+> positions within ~0.1° of the prime meridian / equator, so enable per coordinate with that in mind.
 
 ## Wind & Environment (domains `wind`, `environment`)
 
