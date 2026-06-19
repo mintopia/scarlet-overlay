@@ -20,6 +20,7 @@
             <template v-else-if="icon === 'anchor'"><circle cx="12" cy="5" r="3"/><line x1="12" y1="22" x2="12" y2="8"/><path d="M5 12H2a10 10 0 0 0 20 0h-3"/></template>
             <template v-else-if="icon === 'globe'"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></template>
             <template v-else-if="icon === 'video'"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></template>
+            <template v-else-if="icon === 'navigation'"><polygon points="3 11 22 2 13 21 11 13 3 11"/></template>
         </svg>
         <slot />
     </Link>
