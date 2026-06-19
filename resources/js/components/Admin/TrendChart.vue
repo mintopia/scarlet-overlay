@@ -90,7 +90,7 @@ const bipolarData = computed(() => {
     if (pts.length < 2) return null
 
     // buildSegments expects x already in SVG space (0..width) — svgPoints satisfies this.
-    const { above, below, line } = buildSegments(pts, {
+    const { above, below, aboveFill, belowFill, line } = buildSegments(pts, {
         width: props.width,
         height: props.height,
         zeroValue: props.zeroValue,
@@ -109,7 +109,7 @@ const bipolarData = computed(() => {
     const lastY = props.height * (maxV - lastPt.v) / rangeV
     const last = { x: lastPt.x, y: lastY }
 
-    return { above, below, line, zeroY, last }
+    return { above, below, aboveFill, belowFill, line, zeroY, last }
 })
 
 /** Water fill via trendPath.waterFillPath. */
@@ -224,6 +224,24 @@ const endDotColor = computed(() => {
                 stroke-dasharray="4 3"
                 opacity="0.35"
                 vector-effect="non-scaling-stroke"
+            />
+            <!-- Above-zero filled areas (charge) -->
+            <path
+                v-for="(seg, i) in bipolarData.aboveFill"
+                :key="'af' + i"
+                :d="seg"
+                :fill="colorPositive"
+                opacity="0.15"
+                stroke="none"
+            />
+            <!-- Below-zero filled areas (discharge) -->
+            <path
+                v-for="(seg, i) in bipolarData.belowFill"
+                :key="'bf' + i"
+                :d="seg"
+                :fill="colorNegative"
+                opacity="0.15"
+                stroke="none"
             />
             <!-- Above-zero segments (positive color) -->
             <path

@@ -67,14 +67,16 @@ function polylinePath(coords) {
  *
  * @param {{x: number, v: number}[]} points   - data points; x already in SVG space
  * @param {{width: number, height: number, zeroValue: number}} opts
- * @returns {{ above: string[], below: string[], line: string }}
- *   above  — array of "M…L…" path strings, one per contiguous run above zeroValue
- *   below  — array of "M…L…" path strings, one per contiguous run below zeroValue
- *   line   — full polyline path string (unsplit)
+ * @returns {{ above: string[], below: string[], aboveFill: string[], belowFill: string[], line: string }}
+ *   above      — array of "M…L…" path strings, one per contiguous run above zeroValue
+ *   below      — array of "M…L…" path strings, one per contiguous run below zeroValue
+ *   aboveFill  — array of closed area paths for above-zero segments (closed along zero baseline)
+ *   belowFill  — array of closed area paths for below-zero segments (closed along zero baseline)
+ *   line       — full polyline path string (unsplit)
  */
 export function buildSegments(points, { width, height, zeroValue = 0 }) {
     if (points.length === 0) {
-        return { above: [], below: [], line: '' };
+        return { above: [], below: [], aboveFill: [], belowFill: [], line: '' };
     }
 
     // Compute value range for y mapping
@@ -99,17 +101,39 @@ export function buildSegments(points, { width, height, zeroValue = 0 }) {
     // inserting interpolated zero-crossings where sign changes.
     const aboveSegments = [];
     const belowSegments = [];
+    const aboveFillSegments = [];
+    const belowFillSegments = [];
 
     let currentSegment = null; // { side: 'above'|'below', coords: [{x,y}] }
+
+    function closedFillPath(coords) {
+        if (coords.length < 2) {
+            return '';
+        }
+        const first = coords[0];
+        const last = coords[coords.length - 1];
+        // Polyline of the segment, then close along the zero baseline back to start
+        return polylinePath(coords)
+            + ` L ${fmt(last.x)} ${fmt(zeroY)}`
+            + ` L ${fmt(first.x)} ${fmt(zeroY)}`
+            + ' Z';
+    }
 
     function commitSegment() {
         if (currentSegment && currentSegment.coords.length >= 1) {
             const path = polylinePath(currentSegment.coords);
+            const fill = closedFillPath(currentSegment.coords);
             if (path) {
                 if (currentSegment.side === 'above') {
                     aboveSegments.push(path);
+                    if (fill) {
+                        aboveFillSegments.push(fill);
+                    }
                 } else {
                     belowSegments.push(path);
+                    if (fill) {
+                        belowFillSegments.push(fill);
+                    }
                 }
             }
         }
@@ -152,7 +176,7 @@ export function buildSegments(points, { width, height, zeroValue = 0 }) {
 
     commitSegment();
 
-    return { above: aboveSegments, below: belowSegments, line };
+    return { above: aboveSegments, below: belowSegments, aboveFill: aboveFillSegments, belowFill: belowFillSegments, line };
 }
 
 /**
