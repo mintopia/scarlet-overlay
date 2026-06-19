@@ -2,7 +2,9 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Http\Controllers\Admin\Concerns\BuildsGpsTrack;
 use App\Http\Controllers\Admin\Concerns\ReadsDashboardPower;
+use App\Http\Controllers\Admin\Concerns\ResolvesCanonicalContracts;
 use App\Http\Controllers\Controller;
 use App\Models\BoatSetting;
 use App\Services\CanonicalCatalog;
@@ -12,7 +14,7 @@ use Inertia\Response;
 
 class TechDashboardController extends Controller
 {
-    use ReadsDashboardPower;
+    use BuildsGpsTrack, ReadsDashboardPower, ResolvesCanonicalContracts;
 
     public function index(CanonicalReader $reader, CanonicalCatalog $catalog): Response
     {
@@ -31,19 +33,5 @@ class TechDashboardController extends Controller
             'reverb' => config('scarlet.reverb'),
             'reverbKey' => config('broadcasting.connections.reverb.key'),
         ]);
-    }
-
-    /**
-     * @return array<string, array<string, mixed>>
-     */
-    private function resolveContracts(CanonicalReader $reader, CanonicalCatalog $catalog): array
-    {
-        if (! config('scarlet.canonical.enabled')) {
-            return [];
-        }
-
-        $keys = array_keys($catalog->all());
-
-        return array_filter($reader->readMany($keys), fn ($c) => $c !== null);
     }
 }
