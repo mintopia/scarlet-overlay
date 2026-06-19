@@ -108,7 +108,7 @@ class CanonicalCatalog
                 'note' => $note, 'snapshot' => $this->snapshot(),
             ]);
 
-            Cache::forever(self::VERSION_KEY, $newVersion);
+            $this->bustCache($newVersion);
 
             return $newVersion;
         });
@@ -167,6 +167,48 @@ class CanonicalCatalog
         }
 
         return $name.'{'.implode(',', $parts).'}';
+    }
+
+    public function recordVersion(string $action, ?string $actor = null, ?string $note = null): int
+    {
+        $snapshot = $this->snapshot();
+        $newVersion = (int) (CanonicalCatalogVersion::max('version') ?? 0) + 1;
+
+        CanonicalCatalogVersion::create([
+            'version' => $newVersion,
+            'action' => $action,
+            'actor' => $actor,
+            'note' => $note,
+            'snapshot' => $snapshot,
+        ]);
+
+        $this->bustCache($newVersion);
+
+        return $newVersion;
+    }
+
+    /**
+     * @param  array{source_metric_name:string,label_matchers?:array<int,array{label:string,op:string,value:mixed}>}  $source
+     * @return array{ok:bool,value:?float,age:?int,selector:string}
+     */
+    public function testSource(array $source): array
+    {
+        $selector = $this->compileSelector($source);
+        $hit = app(PrometheusService::class)->queryWithTimestamp($selector);
+
+        return [
+            'ok' => $hit !== null,
+            'value' => $hit['value'] ?? null,
+            'age' => $hit['age'] ?? null,
+            'selector' => $selector,
+        ];
+    }
+
+    private function bustCache(int $newVersion): void
+    {
+        $oldKey = $this->cacheKey();
+        Cache::forget($oldKey);
+        Cache::forever(self::VERSION_KEY, $newVersion);
     }
 
     private function cacheKey(): string
