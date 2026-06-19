@@ -21,7 +21,7 @@
             <p class="text-text-secondary text-[13px] max-w-xs mx-auto">Plan your first passage or import tracks from your sailing history.</p>
         </div>
 
-        <div v-else class="panel overflow-x-auto">
+        <div v-else class="panel scroll-affordance overflow-x-auto">
             <table class="w-full text-[13px] min-w-[540px]">
                 <thead>
                     <tr class="border-b border-border-light text-left text-text-dim text-[11px] uppercase tracking-wide">
@@ -178,5 +178,13 @@ function fmtDate(iso) {
     padding: 28px 28px 24px;
     width: 100%; max-width: 400px;
     box-shadow: 0 8px 40px rgba(0, 0, 0, 0.14);
+}
+
+/* Mobile-only right-edge fade hinting that the table scrolls horizontally. */
+@media (max-width: 767px) {
+    .scroll-affordance {
+        -webkit-mask-image: linear-gradient(to right, #000 calc(100% - 28px), transparent 100%);
+        mask-image: linear-gradient(to right, #000 calc(100% - 28px), transparent 100%);
+    }
 }
 </style>

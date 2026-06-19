@@ -2,7 +2,14 @@
     <div class="panel">
         <!-- Group header -->
         <div class="group-header">
-            <span class="group-swatch" :style="{ background: swatchColor }"></span>
+            <span
+                class="group-swatch"
+                :class="{ 'group-swatch--night': theme === 'night' }"
+                :style="{ background: swatchColor }"
+                :title="theme === 'night' ? `Line pattern: ${dashGlyph}` : null"
+            >
+                <span v-if="theme === 'night'" class="group-swatch__glyph" aria-hidden="true">{{ dashGlyph }}</span>
+            </span>
             <span
                 v-if="!editing"
                 class="group-name"
@@ -88,7 +95,8 @@
 import { ref, computed, nextTick, watch } from 'vue';
 import { router } from '@inertiajs/vue3';
 import PlanRouteRow from './PlanRouteRow.vue';
-import { groupColor } from '@/helpers/planColors.js';
+import { groupColor, routeDashPattern } from '@/helpers/planColors.js';
+import { theme } from '@/composables/useTheme.js';
 
 const props = defineProps({
     group: { type: Object, required: true },
@@ -98,6 +106,25 @@ const props = defineProps({
 defineEmits(['delete', 'toggleGroup', 'toggleRoute', 'removeRoute', 'focusWaypoint']);
 
 const swatchColor = groupColor(props.group.color_index);
+
+/**
+ * A short text glyph that mirrors the polyline dash pattern used on the map
+ * for this group in the "night" theme, so the legend stays in sync when hues
+ * collapse to red. Returns a solid em-dash for the (solid) default pattern.
+ *
+ * @type {import('vue').ComputedRef<string>}
+ */
+const dashGlyph = computed(() => {
+    const pattern = routeDashPattern(props.group.color_index);
+    if (!pattern) {
+        return '—'; // — solid
+    }
+    const segments = pattern.split(' ').map(Number);
+    return segments
+        .map((len, i) => (i % 2 === 0 ? (len <= 3 ? '·' : '–') : ' '))
+        .join('')
+        .trim() || '—';
+});
 const allVisible = computed(() => props.group.routes.length > 0 && props.group.routes.every(r => r.is_enabled));
 const editing = ref(false);
 const editName = ref(props.group.name);
@@ -200,6 +227,15 @@ function handleFileSelect(e) {
     padding: 14px 16px; border-bottom: 1px solid var(--color-border-light);
 }
 .group-swatch { width: 16px; height: 16px; border-radius: 5px; flex-shrink: 0; }
+.group-swatch--night {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: auto; min-width: 16px; height: 16px; padding: 0 4px;
+}
+.group-swatch__glyph {
+    font-size: 10px; line-height: 1; font-weight: 900; letter-spacing: -1px;
+    color: #fff; white-space: nowrap;
+    text-shadow: 0 0 2px rgba(0, 0, 0, 0.6);
+}
 .group-name { font-size: 15px; font-weight: 700; color: var(--color-text-primary); flex: 1; cursor: default; }
 .group-name-input {
     font-size: 15px; font-weight: 700; color: var(--color-text-primary); flex: 1;

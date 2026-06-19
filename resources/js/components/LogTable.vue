@@ -174,6 +174,7 @@ function cssVar(name) {
 
 const chartEl = ref(null);
 let chart = null;
+let themeObserver = null;
 
 const progressData = computed(() => {
     return props.rows.filter(r => r.cum_diff != null);
@@ -280,11 +281,20 @@ function handleResize() {
 onMounted(() => {
     nextTick(() => initChart());
     window.addEventListener('resize', handleResize);
+
+    // Re-read CSS-variable colors when the active theme changes so the chart
+    // adapts to dark / Night Watch without a remount.
+    themeObserver = new MutationObserver(() => { nextTick(() => initChart()); });
+    themeObserver.observe(document.documentElement, {
+        attributes: true,
+        attributeFilter: ['data-theme'],
+    });
 });
 
 onUnmounted(() => {
     if (chart) chart.destroy();
     window.removeEventListener('resize', handleResize);
+    themeObserver?.disconnect();
 });
 
 watch(() => props.rows, () => nextTick(() => initChart()), { deep: true });

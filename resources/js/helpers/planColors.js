@@ -26,4 +26,33 @@ export function routeColorDim(groupColorIndex, routeColorIndex) {
     return `oklch(${l} ${family.chroma * 0.4} ${family.hue})`;
 }
 
-export { HUE_FAMILIES };
+/**
+ * Distinct stroke dash patterns keyed by group index. Used to keep routes
+ * tellable apart by line texture (not just hue) — essential in the "night"
+ * theme where every hue is mapped to the red spectrum.
+ *
+ * Index 0 maps to a solid line so the common single-group case is unaffected.
+ *
+ * @type {Array<string|null>}
+ */
+const DASH_PATTERNS = [
+    null, // solid
+    '10 6', // dashed
+    '2 6', // dotted
+    '12 6 2 6', // dash-dot
+    '16 6 2 6 2 6', // dash-dot-dot
+    '6 6', // short dash
+];
+
+/**
+ * Return a Leaflet `dashArray` value derived from a group's colour index so
+ * each group's polylines have a distinct line texture in addition to colour.
+ *
+ * @param {number} groupColorIndex
+ * @returns {string|null} A Leaflet dashArray string, or null for a solid line.
+ */
+export function routeDashPattern(groupColorIndex) {
+    return DASH_PATTERNS[groupColorIndex % DASH_PATTERNS.length];
+}
+
+export { HUE_FAMILIES, DASH_PATTERNS };

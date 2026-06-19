@@ -3,7 +3,7 @@
         <Head title="Team" />
 
         <!-- Members -->
-        <div class="bg-surface border border-border rounded-[10px] mb-6 overflow-x-auto">
+        <div class="relative bg-surface border border-border rounded-[10px] mb-6">
             <div class="flex items-center justify-between px-4 md:px-6 py-4 border-b border-border">
                 <h2 class="text-[15px] font-semibold">Members</h2>
                 <button
@@ -14,6 +14,7 @@
                 </button>
             </div>
 
+            <div class="scroll-affordance overflow-x-auto rounded-b-[10px]">
             <table class="w-full min-w-[480px]">
                 <thead>
                     <tr class="border-b border-border">
@@ -54,14 +55,16 @@
                     </tr>
                 </tbody>
             </table>
+            </div>
         </div>
 
         <!-- Pending Invites -->
-        <div v-if="invites.length > 0" class="bg-surface border border-border rounded-[10px] overflow-x-auto">
+        <div v-if="invites.length > 0" class="bg-surface border border-border rounded-[10px]">
             <div class="px-4 md:px-6 py-4 border-b border-border">
                 <h2 class="text-[15px] font-semibold">Pending Invites</h2>
             </div>
 
+            <div class="scroll-affordance overflow-x-auto rounded-b-[10px]">
             <table class="w-full min-w-[400px]">
                 <thead>
                     <tr class="border-b border-border">
@@ -97,6 +100,7 @@
                     </tr>
                 </tbody>
             </table>
+            </div>
         </div>
 
         <!-- Invite Modal -->
@@ -250,5 +254,13 @@ function trapFocus(event) {
     padding: 28px 28px 24px;
     width: 100%; max-width: 400px;
     box-shadow: 0 8px 40px rgba(0, 0, 0, 0.14);
+}
+
+/* Mobile-only right-edge fade hinting that the table scrolls horizontally. */
+@media (max-width: 767px) {
+    .scroll-affordance {
+        -webkit-mask-image: linear-gradient(to right, #000 calc(100% - 28px), transparent 100%);
+        mask-image: linear-gradient(to right, #000 calc(100% - 28px), transparent 100%);
+    }
 }
 </style>

@@ -112,7 +112,7 @@ import 'leaflet/dist/leaflet.css';
 import AdminLayout from '@/Layouts/AdminLayout.vue';
 import PlanGroupCard from '@/components/Admin/PlanGroupCard.vue';
 import MapLayerControl from '@/components/MapLayerControl.vue';
-import { routeColor, routeColorDim } from '@/helpers/planColors.js';
+import { routeColor, routeColorDim, routeDashPattern } from '@/helpers/planColors.js';
 import { useMapLayers } from '@/composables/useMapLayers.js';
 import { useToast } from '@/composables/useToast.js';
 
@@ -132,8 +132,31 @@ const { base, seamark, contours, attach } = useMapLayers();
 
 let map = null;
 let routeLayers = {};
+let themeObserver = null;
 
 const totalRoutes = computed(() => props.plan.groups.reduce((sum, g) => sum + g.routes.length, 0));
+
+/**
+ * In the "night" theme the whole UI is mapped to the red spectrum, so routes
+ * can no longer be told apart by hue. When active we add a distinct dash
+ * pattern per group so the lines stay distinguishable in monochrome-red.
+ *
+ * @returns {boolean}
+ */
+function isNightTheme() {
+    return document.documentElement.getAttribute('data-theme') === 'night';
+}
+
+/**
+ * Resolve the dashArray for an enabled route's polyline. In night theme this
+ * is the group-derived texture; otherwise lines stay solid as before.
+ *
+ * @param {number} groupColorIndex
+ * @returns {string|null}
+ */
+function enabledDashArray(groupColorIndex) {
+    return isNightTheme() ? routeDashPattern(groupColorIndex) : null;
+}
 
 function buildRouteLayers() {
     Object.values(routeLayers).forEach(layers => {
@@ -160,7 +183,7 @@ function buildRouteLayers() {
                 color: route.is_enabled ? color : dimColor,
                 weight: route.is_enabled ? 3 : 2,
                 opacity: route.is_enabled ? 0.85 : 0.3,
-                dashArray: route.is_enabled ? null : '6 4',
+                dashArray: route.is_enabled ? enabledDashArray(group.color_index) : '6 4',
             }).addTo(map);
             layers.push(polyline);
 
@@ -287,14 +310,37 @@ function formatDate(iso) {
     return new Date(iso).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
 }
 
+/**
+ * Re-apply only the night-theme dash pattern to enabled route polylines
+ * in place, without rebuilding all layers (keeps map state / fit bounds).
+ */
+function restyleForTheme() {
+    if (!map) return;
+    for (const group of props.plan.groups) {
+        for (const route of group.routes) {
+            if (!route.is_enabled) continue;
+            const layers = routeLayers[route.id];
+            const polyline = layers?.[0];
+            if (polyline && typeof polyline.setStyle === 'function') {
+                polyline.setStyle({ dashArray: enabledDashArray(group.color_index) });
+            }
+        }
+    }
+}
+
 onMounted(() => {
     if (!mapEl.value) return;
     map = L.map(mapEl.value, { zoomControl: true, attributionControl: false }).setView(props.defaultCenter, 8);
     attach(map);
     buildRouteLayers();
+
+    themeObserver = new MutationObserver(restyleForTheme);
+    themeObserver.observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
 });
 
 onUnmounted(() => {
+    themeObserver?.disconnect();
+    themeObserver = null;
     map?.remove();
     map = null;
 });

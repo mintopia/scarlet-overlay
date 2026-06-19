@@ -1,6 +1,9 @@
 <script setup>
-import { computed } from 'vue'
+import { computed, useId } from 'vue'
 import { buildSegments, waterFillPath } from '@/lib/trendPath.js'
+
+/** Unique marker id so multiple charts on a page don't collide. */
+const endDotMarkerId = `trend-end-dot-${useId()}`
 
 const props = defineProps({
     data: { type: Array, required: true },
@@ -182,6 +185,32 @@ const endDotColor = computed(() => {
     >
         <title>{{ ariaSummary }}</title>
 
+        <!--
+            End dot rendered as a marker so it stays circular.
+            markerUnits="userSpaceOnUse" decouples the marker from the
+            non-uniform viewport scaling caused by preserveAspectRatio="none".
+        -->
+        <defs>
+            <marker
+                v-if="endDot"
+                :id="endDotMarkerId"
+                markerUnits="userSpaceOnUse"
+                :markerWidth="9"
+                :markerHeight="9"
+                :refX="4.5"
+                :refY="4.5"
+            >
+                <circle
+                    cx="4.5"
+                    cy="4.5"
+                    r="3"
+                    :fill="endDotColor"
+                    stroke="var(--color-surface)"
+                    stroke-width="1.5"
+                />
+            </marker>
+        </defs>
+
         <!-- ── LINE variant ─────────────────────────────────────────── -->
         <template v-if="variant === 'line' && linePath">
             <path
@@ -298,15 +327,17 @@ const endDotColor = computed(() => {
             opacity="0.55"
         />
 
-        <!-- ── END DOT ───────────────────────────────────────────────── -->
-        <circle
+        <!--
+            ── END DOT ──────────────────────────────────────────────────
+            A degenerate path positioned at the last point hosts the
+            user-space marker, keeping the dot perfectly circular.
+        -->
+        <path
             v-if="endDot"
-            :cx="endDot.x"
-            :cy="endDot.y"
-            r="3"
-            :fill="endDotColor"
-            stroke="var(--color-surface)"
-            stroke-width="1.5"
+            :d="`M${(endDot.x - 0.01).toFixed(3)},${endDot.y} L${endDot.x},${endDot.y}`"
+            fill="none"
+            stroke="none"
+            :marker-end="`url(#${endDotMarkerId})`"
         />
     </svg>
 </template>

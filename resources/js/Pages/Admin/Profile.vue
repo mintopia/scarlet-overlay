@@ -45,8 +45,8 @@
         <!-- Change Password -->
         <form @submit.prevent="passwordForm.put(route('admin.profile.password'))" class="bg-surface border border-border rounded-[10px] p-6 mb-6">
             <h2 class="text-[15px] font-semibold mb-4">Change Password</h2>
-            <div class="grid grid-cols-1 gap-4">
-                <div>
+            <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                <div class="sm:col-span-2">
                     <label for="current-password" class="field-label">Current Password</label>
                     <input
                         id="current-password"
@@ -54,7 +54,7 @@
                         type="password"
                         required
                         autocomplete="current-password"
-                        class="field-input sm:max-w-sm"
+                        class="field-input"
                     />
                     <p v-if="passwordForm.errors.current_password" class="field-error">{{ passwordForm.errors.current_password }}</p>
                 </div>
@@ -66,7 +66,7 @@
                         type="password"
                         required
                         autocomplete="new-password"
-                        class="field-input sm:max-w-sm"
+                        class="field-input"
                     />
                     <p v-if="passwordForm.errors.password" class="field-error">{{ passwordForm.errors.password }}</p>
                 </div>
@@ -78,7 +78,7 @@
                         type="password"
                         required
                         autocomplete="new-password"
-                        class="field-input sm:max-w-sm"
+                        class="field-input"
                     />
                 </div>
             </div>

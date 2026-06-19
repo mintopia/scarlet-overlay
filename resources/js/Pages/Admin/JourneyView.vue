@@ -255,6 +255,17 @@ function buildMap() {
 }
 
 const resizeObservers = [];
+let themeObserver = null;
+
+/** Rebuild every chart so CSS-variable colors re-resolve after a theme change. */
+function rebuildAllCharts() {
+    for (const key of chartKeys) {
+        const el = chartEls[key];
+        if (el) {
+            buildChart(key, el);
+        }
+    }
+}
 
 function setupChartResize(key, el) {
     const ro = new ResizeObserver(() => {
@@ -276,6 +287,14 @@ onMounted(() => {
             setupChartResize(key, el);
         }
     }
+
+    // Re-read CSS-variable colors when the active theme changes so the charts
+    // adapt to dark / Night Watch without a remount.
+    themeObserver = new MutationObserver(() => { rebuildAllCharts(); });
+    themeObserver.observe(document.documentElement, {
+        attributes: true,
+        attributeFilter: ['data-theme'],
+    });
 });
 
 onUnmounted(() => {
@@ -289,6 +308,8 @@ onUnmounted(() => {
     for (const ro of resizeObservers) {
         ro.disconnect();
     }
+
+    themeObserver?.disconnect();
 });
 </script>
 
