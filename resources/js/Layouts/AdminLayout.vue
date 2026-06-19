@@ -21,19 +21,21 @@
             </div>
 
             <nav class="px-2.5 py-3 flex-1 flex flex-col gap-0.5 overflow-y-auto">
+                <div class="nav-section">Voyage</div>
                 <NavLink href="/admin" icon="home" :active="currentPage === 'Admin/Dashboard'" @click="sidebarOpen = false">Dashboard</NavLink>
                 <NavLink href="/admin/journeys" icon="compass" :active="currentPage?.startsWith('Admin/Journey')" @click="sidebarOpen = false">Journeys</NavLink>
                 <NavLink href="/admin/log" icon="clipboard" :active="currentPage === 'Admin/Log'" @click="sidebarOpen = false">Ship's Log</NavLink>
                 <NavLink href="/admin/planner" icon="route" :active="currentPage?.startsWith('Admin/Planner')" @click="sidebarOpen = false">Planner</NavLink>
                 <NavLink href="/admin/tracks" icon="map" :active="currentPage === 'Admin/Tracks'" @click="sidebarOpen = false">Tracks</NavLink>
 
-                <div class="nav-divider"></div>
-
+                <div class="nav-section">Dashboards</div>
                 <NavLink href="/admin/dash/main" icon="globe" :active="currentPage === 'Admin/Dash/Main'" @click="sidebarOpen = false">Main</NavLink>
                 <NavLink href="/admin/dash/tech" icon="cpu" :active="currentPage === 'Admin/Dash/Tech'" @click="sidebarOpen = false">Tech</NavLink>
                 <NavLink href="/admin/dash/ops" icon="anchor" :active="currentPage === 'Admin/Dash/Ops'" @click="sidebarOpen = false">Ops</NavLink>
                 <NavLink href="/admin/dash/skipper" icon="navigation" :active="currentPage === 'Admin/Dash/Skipper'" @click="sidebarOpen = false">Skipper</NavLink>
                 <NavLink href="/admin/stream" icon="video" :active="currentPage === 'Admin/Stream'" @click="sidebarOpen = false">Stream</NavLink>
+
+                <div class="nav-section">System</div>
                 <NavLink href="/admin/data" icon="layers" :active="currentPage === 'Admin/Data'" @click="sidebarOpen = false">Data</NavLink>
                 <NavLink href="/admin/settings" icon="settings" :active="currentPage === 'Admin/Settings'" @click="sidebarOpen = false">Settings</NavLink>
                 <NavLink href="/admin/team" icon="users" :active="currentPage === 'Admin/Team'" @click="sidebarOpen = false">Team</NavLink>
@@ -273,11 +275,15 @@ onUnmounted(() => {
     opacity: 0;
 }
 
-.nav-divider {
-    height: 1px;
-    background: var(--color-border-light);
-    margin: 6px 12px;
+.nav-section {
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--color-text-dim);
+    padding: 14px 12px 4px;
 }
+.nav-section:first-child { padding-top: 4px; }
 
 .nav-link {
     display: flex;
