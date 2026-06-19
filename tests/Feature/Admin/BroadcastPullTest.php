@@ -56,4 +56,10 @@ class BroadcastPullTest extends TestCase
         $this->post(route('admin.broadcast.pull'), ['enabled' => true])
             ->assertRedirect(route('login'));
     }
+
+    public function test_force_reload_endpoint_requires_authentication(): void
+    {
+        $this->post(route('admin.settings.force-reload'))
+            ->assertRedirect(route('login'));
+    }
 }

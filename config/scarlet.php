@@ -517,15 +517,55 @@ return [
     ],
 
     'canonical' => [
-        'enabled' => (bool) env('CANONICAL_READER_ENABLED', false),
+        'enabled' => (bool) env('CANONICAL_READER_ENABLED', true),
 
         // EcoFlow Delta device serial — typed param substituted into canonical EcoFlow source topics.
         'ecoflow_serial' => env('CANONICAL_ECOFLOW_SERIAL', 'P231ZE1APJ3P0446'),
 
         // Maps a canonical key onto the legacy boat-metric key it overrides when the reader is enabled.
+        // Canonical reader delivers the same unit the registry produced, so it is a drop-in replacement.
+        // Keys where canonical_key === boat_metric_key are listed first.
+        // Raw intermediates (_raw suffix, used for true-wind calculation) are intentionally excluded.
         'overrides' => [
+            // ── Tanks (original two) ───────────────────────────────────────────────
             'fuel_level' => 'fuel_level',
             'water_fresh_level' => 'water_level',
+
+            // ── Navigation (speeds in kn, angles/headings in deg) ─────────────────
+            'speed_sog' => 'speed_sog',
+            'speed_stw' => 'speed_stw',
+            'vmg' => 'vmg',
+            'cog' => 'cog',
+            'magnetic_variation' => 'magnetic_variation',
+            'heel' => 'heel',
+            'trip_log' => 'trip_log',
+
+            // Non-identical name mappings (canonical → legacy boat-metric key)
+            'heading_true' => 'heading',
+            'heading_magnetic' => 'heading_magnetic',
+            'depth_below_surface' => 'depth',
+            'wp_distance' => 'nav_wp_distance',
+            'wp_ttg' => 'nav_wp_ttg',
+
+            // ── Wind (converted, not raw intermediates) ───────────────────────────
+            'wind_speed_apparent' => 'wind_speed_apparent',
+            'wind_angle_apparent' => 'wind_angle_apparent',
+
+            // ── Power ─────────────────────────────────────────────────────────────
+            'house_battery_soc' => 'house_battery_soc',
+            'house_battery_voltage' => 'house_battery_voltage',
+            'house_battery_current' => 'house_battery_current',
+            'house_battery_time_remaining' => 'house_battery_time_remaining',
+            'engine_battery_voltage' => 'engine_battery_voltage',
+
+            // ── Cabin environment ─────────────────────────────────────────────────
+            'cabin_temp_forepeak' => 'cabin_temp_forepeak',
+            'cabin_temp_quarterberth' => 'cabin_temp_quarterberth',
+            'cabin_temp_main' => 'cabin_temp_main',
+            'cabin_humidity_forepeak' => 'cabin_humidity_forepeak',
+            'cabin_humidity_quarterberth' => 'cabin_humidity_quarterberth',
+            'cabin_humidity_main' => 'cabin_humidity_main',
+            'cabin_pressure_forepeak' => 'cabin_pressure_forepeak',
         ],
     ],
 ];

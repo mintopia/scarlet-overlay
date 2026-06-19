@@ -4,16 +4,21 @@ use App\Http\Controllers\Admin\AdminDashboardController;
 use App\Http\Controllers\Admin\AdminEnvironmentController;
 use App\Http\Controllers\Admin\AdminLogController;
 use App\Http\Controllers\Admin\BoatMetricsController;
+use App\Http\Controllers\Admin\CanonicalCatalogController;
 use App\Http\Controllers\Admin\ExploreController;
 use App\Http\Controllers\Admin\JourneyController;
 use App\Http\Controllers\Admin\JourneyViewController as AdminJourneyViewController;
+use App\Http\Controllers\Admin\MainDashboardController;
+use App\Http\Controllers\Admin\OpsDashboardController;
 use App\Http\Controllers\Admin\PlanGroupController;
 use App\Http\Controllers\Admin\PlannerController;
 use App\Http\Controllers\Admin\PlanRouteController;
 use App\Http\Controllers\Admin\ProfileController;
 use App\Http\Controllers\Admin\SettingsController;
+use App\Http\Controllers\Admin\SkipperDashboardController;
 use App\Http\Controllers\Admin\StreamMonitorController;
 use App\Http\Controllers\Admin\TeamController;
+use App\Http\Controllers\Admin\TechDashboardController;
 use App\Http\Controllers\Admin\TrackerController;
 use App\Http\Controllers\Admin\TracksController;
 use App\Http\Controllers\Auth\LoginController;
@@ -137,4 +142,18 @@ Route::middleware('auth')->prefix('admin')->group(function () {
     Route::post('/planner/groups/{group}/routes', [PlanRouteController::class, 'store'])->name('admin.planner.routes.store');
     Route::put('/planner/routes/{route}', [PlanRouteController::class, 'update'])->name('admin.planner.routes.update');
     Route::delete('/planner/routes/{route}', [PlanRouteController::class, 'destroy'])->name('admin.planner.routes.destroy');
+
+    // Audience dashboards
+    Route::get('dash/main', [MainDashboardController::class, 'index'])->name('admin.dash.main');
+    Route::get('dash/tech', [TechDashboardController::class, 'index'])->name('admin.dash.tech');
+    Route::get('dash/ops', [OpsDashboardController::class, 'index'])->name('admin.dash.ops');
+    Route::get('dash/skipper', [SkipperDashboardController::class, 'index'])->name('admin.dash.skipper');
+
+    // Canonical metric catalog
+    Route::get('metrics/catalog', [CanonicalCatalogController::class, 'index'])->name('admin.catalog');
+    Route::post('metrics/catalog', [CanonicalCatalogController::class, 'store'])->name('admin.catalog.store');
+    Route::put('metrics/catalog/{metric}', [CanonicalCatalogController::class, 'update'])->name('admin.catalog.update');
+    Route::delete('metrics/catalog/{metric}', [CanonicalCatalogController::class, 'destroy'])->name('admin.catalog.destroy');
+    Route::post('metrics/catalog/test', [CanonicalCatalogController::class, 'test'])->name('admin.catalog.test');
+    Route::post('metrics/catalog/rollback', [CanonicalCatalogController::class, 'rollback'])->name('admin.catalog.rollback');
 });

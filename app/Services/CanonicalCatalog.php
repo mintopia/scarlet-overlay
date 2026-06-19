@@ -108,7 +108,7 @@ class CanonicalCatalog
                 'note' => $note, 'snapshot' => $this->snapshot(),
             ]);
 
-            Cache::forever(self::VERSION_KEY, $newVersion);
+            $this->bustCache($newVersion);
 
             return $newVersion;
         });
@@ -131,7 +131,10 @@ class CanonicalCatalog
                 'coverage_window_seconds' => $metric->coverage_window_s,
                 'coverage_min' => $metric->coverage_min,
                 'sources' => $metric->sources->map(fn ($s) => array_filter([
-                    'selector' => $this->compileSelector($s->source_metric_name, $s->label_matchers ?? []),
+                    'selector' => $this->compileSelector([
+                        'source_metric_name' => $s->source_metric_name,
+                        'label_matchers' => $s->label_matchers ?? [],
+                    ]),
                     'transforms' => $s->unit_transform ?? [],
                     'staleness' => $s->staleness_threshold_s,
                 ], fn ($v) => $v !== null))->all(),
@@ -142,21 +145,70 @@ class CanonicalCatalog
     }
 
     /**
-     * @param  array<int, array<string, mixed>>  $matchers
+     * Build the PromQL selector for a single source row.
+     *
+     * @param  array{source_metric_name:string,label_matchers?:array<int,array{label:string,op:string,value:mixed}>}  $source
      */
-    private function compileSelector(string $name, array $matchers): string
+    public function compileSelector(array $source): string
     {
+        $name = $source['source_metric_name'];
+        $matchers = $source['label_matchers'] ?? [];
+
         if ($matchers === []) {
             return $name;
         }
 
         $parts = [];
         foreach ($matchers as $m) {
-            $value = ($m['op'] ?? 'equals') === 'absent' ? '' : ($m['value'] ?? '');
-            $parts[] = $m['label'].'="'.$value.'"';
+            $label = $m['label'];
+            $op = $m['op'] ?? 'equals';
+            $value = $op === 'absent' ? '' : (string) ($m['value'] ?? '');
+            $parts[] = $label.'="'.$value.'"';
         }
 
         return $name.'{'.implode(',', $parts).'}';
+    }
+
+    public function recordVersion(string $action, ?string $actor = null, ?string $note = null): int
+    {
+        $snapshot = $this->snapshot();
+        $newVersion = (int) (CanonicalCatalogVersion::max('version') ?? 0) + 1;
+
+        CanonicalCatalogVersion::create([
+            'version' => $newVersion,
+            'action' => $action,
+            'actor' => $actor,
+            'note' => $note,
+            'snapshot' => $snapshot,
+        ]);
+
+        $this->bustCache($newVersion);
+
+        return $newVersion;
+    }
+
+    /**
+     * @param  array{source_metric_name:string,label_matchers?:array<int,array{label:string,op:string,value:mixed}>}  $source
+     * @return array{ok:bool,value:?float,age:?int,selector:string}
+     */
+    public function testSource(array $source): array
+    {
+        $selector = $this->compileSelector($source);
+        $hit = app(PrometheusService::class)->queryWithTimestamp($selector);
+
+        return [
+            'ok' => $hit !== null,
+            'value' => $hit['value'] ?? null,
+            'age' => $hit['age'] ?? null,
+            'selector' => $selector,
+        ];
+    }
+
+    private function bustCache(int $newVersion): void
+    {
+        $oldKey = $this->cacheKey();
+        Cache::forget($oldKey);
+        Cache::forever(self::VERSION_KEY, $newVersion);
     }
 
     private function cacheKey(): string

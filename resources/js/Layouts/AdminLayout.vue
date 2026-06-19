@@ -33,6 +33,11 @@
 
                 <NavLink href="/admin/tracker" icon="activity" :active="currentPage === 'Admin/Tracker'" @click="sidebarOpen = false">Tracker</NavLink>
                 <NavLink href="/admin/broadcast" icon="radio" :active="currentPage === 'Admin/Broadcast'" @click="sidebarOpen = false">Broadcast</NavLink>
+                <NavLink href="/admin/dash/main" icon="globe" :active="currentPage === 'Admin/Dash/Main'" @click="sidebarOpen = false">Main</NavLink>
+                <NavLink href="/admin/dash/tech" icon="cpu" :active="currentPage === 'Admin/Dash/Tech'" @click="sidebarOpen = false">Tech</NavLink>
+                <NavLink href="/admin/dash/ops" icon="anchor" :active="currentPage === 'Admin/Dash/Ops'" @click="sidebarOpen = false">Ops</NavLink>
+                <NavLink href="/admin/dash/skipper" icon="navigation" :active="currentPage === 'Admin/Dash/Skipper'" @click="sidebarOpen = false">Skipper</NavLink>
+                <NavLink href="/admin/metrics/catalog" icon="layers" :active="currentPage === 'Admin/Catalog'" @click="sidebarOpen = false">Data Mapping</NavLink>
                 <NavLink href="/admin/settings" icon="settings" :active="currentPage === 'Admin/Settings'" @click="sidebarOpen = false">Settings</NavLink>
                 <NavLink href="/admin/team" icon="users" :active="currentPage === 'Admin/Team'" @click="sidebarOpen = false">Team</NavLink>
 
@@ -163,6 +168,11 @@ const breadcrumbMap = {
     'Admin/Explore': [home, { label: 'Explore', href: '/admin/explore' }],
     'Admin/Profile': [home, { label: 'Profile' }],
     'Admin/Team': [home, { label: 'Team' }],
+    'Admin/Catalog': [home, { label: 'Data Mapping' }],
+    'Admin/Dash/Main': [home, { label: 'Dashboards', href: '/admin/dash/main' }, { label: 'Main' }],
+    'Admin/Dash/Tech': [home, { label: 'Dashboards', href: '/admin/dash/tech' }, { label: 'Tech' }],
+    'Admin/Dash/Ops': [home, { label: 'Dashboards', href: '/admin/dash/ops' }, { label: 'Ops' }],
+    'Admin/Dash/Skipper': [home, { label: 'Dashboards', href: '/admin/dash/skipper' }, { label: 'Skipper' }],
 };
 
 const computedBreadcrumbs = computed(() => {

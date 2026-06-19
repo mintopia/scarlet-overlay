@@ -10,3 +10,4 @@ Artisan::command('inspire', function () {
 
 Schedule::command('mediamtx:sync')->everyFiveMinutes();
 Schedule::command('ship-log:generate')->hourly();
+Schedule::command('weather:refresh')->everyFifteenMinutes();
