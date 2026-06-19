@@ -48,7 +48,7 @@
                             <div v-else class="power-chart-empty">No Data</div>
                         </div>
                         <div class="power-axis">
-                            <span>net power · 6 h · <span style="color: oklch(0.34 0.11 150)">charge</span>/<span style="color: var(--color-scarlet)">discharge</span></span>
+                            <span>net power · 6 h · <span style="color: var(--color-green)">charge</span>/<span style="color: var(--color-scarlet)">discharge</span></span>
                             <span>now</span>
                         </div>
                     </div>
@@ -83,7 +83,7 @@
                             <div v-else class="power-chart-empty">No Data</div>
                         </div>
                         <div class="power-axis">
-                            <span>net flow · 6 h · <span style="color: oklch(0.34 0.11 150)">charge</span>/<span style="color: var(--color-scarlet)">discharge</span></span>
+                            <span>net flow · 6 h · <span style="color: var(--color-green)">charge</span>/<span style="color: var(--color-scarlet)">discharge</span></span>
                             <span>now</span>
                         </div>
                     </div>
@@ -326,7 +326,7 @@ const ecoflowRemDisplay = computed(() => {
 
 .power-det b { font-weight: 700; color: var(--color-text-primary); }
 
-.power-chg { color: oklch(0.34 0.11 150); font-weight: 600; }
+.power-chg { color: var(--color-green); font-weight: 600; }
 .power-dis { color: var(--color-scarlet); font-weight: 600; }
 
 .power-chart {

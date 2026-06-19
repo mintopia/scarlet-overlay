@@ -4,22 +4,25 @@
             class="route-row"
             :class="{ 'route-row--dim': !route.is_enabled, 'route-row--dragging': isDragging }"
             :draggable="!readonly"
-            role="button"
-            tabindex="0"
-            :aria-expanded="expanded"
             @dragstart="onDragStart"
             @dragend="onDragEnd"
             @dragover.prevent="$emit('dragover', $event)"
             @drop.prevent="$emit('drop', route)"
             @click="expanded = !expanded"
-            @keydown.enter="expanded = !expanded"
-            @keydown.space.prevent="expanded = !expanded"
         >
             <span v-if="!readonly" class="route-grip" @mousedown.stop>
                 <svg width="10" height="14" viewBox="0 0 10 14" fill="currentColor"><circle cx="3" cy="2" r="1.2"/><circle cx="7" cy="2" r="1.2"/><circle cx="3" cy="7" r="1.2"/><circle cx="7" cy="7" r="1.2"/><circle cx="3" cy="12" r="1.2"/><circle cx="7" cy="12" r="1.2"/></svg>
             </span>
             <span class="route-dot" :style="{ background: color }"></span>
-            <svg class="route-chevron" :class="{ 'route-chevron--open': expanded }" viewBox="0 0 24 24" width="14" height="14"><polyline points="6 9 12 15 18 9" stroke="currentColor" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            <button
+                type="button"
+                class="route-chevron-btn"
+                :aria-expanded="expanded"
+                :aria-label="expanded ? 'Collapse route' : 'Expand route'"
+                @click.stop="expanded = !expanded"
+            >
+                <svg class="route-chevron" :class="{ 'route-chevron--open': expanded }" viewBox="0 0 24 24" width="14" height="14"><polyline points="6 9 12 15 18 9" stroke="currentColor" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </button>
             <span class="route-name">{{ route.name }}</span>
             <span class="route-stat"><span class="route-stat-val">{{ route.distance_nm }}</span> nm</span>
             <span class="route-stat"><span class="route-stat-val">{{ route.waypoints?.length ?? 0 }}</span> wpt</span>
@@ -105,6 +108,15 @@ function badgeClass(i) {
     padding: 9px 16px;
     border-bottom: 1px solid var(--color-border-light);
     cursor: pointer; transition: background 0.1s;
+}
+.route-chevron-btn {
+    display: inline-flex;
+    align-items: center;
+    padding: 0;
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: inherit;
 }
 .route-row:hover { background: var(--color-bg); }
 .route-row--dim { opacity: 0.45; }

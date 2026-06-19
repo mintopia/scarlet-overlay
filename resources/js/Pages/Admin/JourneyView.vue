@@ -165,7 +165,9 @@ function buildChart(key, el) {
     const color = meta.color ?? cssVar('--color-scarlet');
     const fillColor = color.includes('oklch(')
         ? color.replace(')', ' / 0.08)')
-        : color + '14';
+        : /^#[0-9a-f]{6}$/i.test(color)
+            ? color + '14'
+            : undefined;
 
     const axisStroke = cssVar('--color-text-dim');
     const gridStroke = cssVar('--color-border');

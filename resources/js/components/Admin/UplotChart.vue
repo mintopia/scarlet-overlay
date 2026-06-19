@@ -23,6 +23,19 @@ function cssVar(name, fallback) {
     return v || fallback;
 }
 
+/**
+ * Resolve a caller-supplied color to a concrete value before it reaches the
+ * canvas. uPlot draws to <canvas>, which cannot resolve CSS var() tokens, so a
+ * series color passed as `var(--color-x)` must be computed first.
+ */
+function resolveColor(c) {
+    if (typeof c === 'string') {
+        const m = c.match(/^var\((--[\w-]+)\)$/);
+        if (m) { return cssVar(m[1], c); }
+    }
+    return c;
+}
+
 /** Merge all series onto one shared, sorted timestamp axis. */
 function toAlignedData(series) {
     const times = new Set();
@@ -65,7 +78,7 @@ function buildOptions() {
     props.series.forEach((s, i) => {
         uSeries.push({
             label: `${s.label}${s.unit ? ' (' + s.unit + ')' : ''}`,
-            stroke: s.color || palette[i % palette.length],
+            stroke: resolveColor(s.color) || palette[i % palette.length],
             width: 2,
             scale: s.axis === 'right' ? 'right' : 'left',
             points: { show: false },
