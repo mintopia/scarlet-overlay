@@ -33,6 +33,7 @@
 
                 <NavLink href="/admin/tracker" icon="activity" :active="currentPage === 'Admin/Tracker'" @click="sidebarOpen = false">Tracker</NavLink>
                 <NavLink href="/admin/broadcast" icon="radio" :active="currentPage === 'Admin/Broadcast'" @click="sidebarOpen = false">Broadcast</NavLink>
+                <NavLink href="/admin/dash/tech" icon="activity" :active="currentPage === 'Admin/Dash/Tech'" @click="sidebarOpen = false">Tech</NavLink>
                 <NavLink href="/admin/metrics/catalog" icon="layers" :active="currentPage === 'Admin/Catalog'" @click="sidebarOpen = false">Data Mapping</NavLink>
                 <NavLink href="/admin/settings" icon="settings" :active="currentPage === 'Admin/Settings'" @click="sidebarOpen = false">Settings</NavLink>
                 <NavLink href="/admin/team" icon="users" :active="currentPage === 'Admin/Team'" @click="sidebarOpen = false">Team</NavLink>
@@ -165,6 +166,7 @@ const breadcrumbMap = {
     'Admin/Profile': [home, { label: 'Profile' }],
     'Admin/Team': [home, { label: 'Team' }],
     'Admin/Catalog': [home, { label: 'Data Mapping' }],
+    'Admin/Dash/Tech': [home, { label: 'Dashboards', href: '/admin/dash/tech' }, { label: 'Tech' }],
 };
 
 const computedBreadcrumbs = computed(() => {
