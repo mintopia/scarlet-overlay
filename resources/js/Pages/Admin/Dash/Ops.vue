@@ -28,10 +28,11 @@
                                 <span class="ops-seclabel ops-seclabel--inline" style="color: var(--color-green)">House Battery</span>
                             </div>
                             <div class="ops-sys__main">
-                                <span
-                                    class="ops-sys__soc ops-sys__soc--house"
+                                <Link
+                                    :href="route('admin.data.show', { metric: 'house_battery_soc' })"
+                                    class="metric-link ops-sys__soc ops-sys__soc--house"
                                     :class="{ 'ops-stale': stale('house_battery_soc') }"
-                                >{{ houseSocDisplay }}</span>
+                                >{{ houseSocDisplay }}</Link>
                                 <span class="ops-sys__rem">
                                     <span class="ops-sys__rem-lab">runtime</span>
                                     <span class="ops-sys__rem-val">~18 h</span>
@@ -65,10 +66,11 @@
                                 <span class="ops-seclabel ops-seclabel--inline" style="color: var(--color-teal)">EcoFlow Delta</span>
                             </div>
                             <div class="ops-sys__main">
-                                <span
-                                    class="ops-sys__soc ops-sys__soc--eco"
+                                <Link
+                                    :href="route('admin.data.show', { metric: 'ecoflow_soc' })"
+                                    class="metric-link ops-sys__soc ops-sys__soc--eco"
                                     :class="{ 'ops-stale': stale('ecoflow_soc') }"
-                                >{{ ecoflowSocDisplay }}</span>
+                                >{{ ecoflowSocDisplay }}</Link>
                                 <span class="ops-sys__rem">
                                     <span class="ops-sys__rem-lab">{{ ecoflowRemLabel }}</span>
                                     <span class="ops-sys__rem-val">{{ ecoflowRemDisplay }}</span>
@@ -102,20 +104,26 @@
                         <div class="ops-tank ops-tank--fuel">
                             <div class="ops-tank__header">
                                 <span class="ops-tank__label">Fuel · diesel</span>
-                                <span
-                                    class="ops-tank__pct ops-tank__pct--fuel"
+                                <Link
+                                    :href="route('admin.data.show', { metric: 'fuel_level' })"
+                                    class="metric-link ops-tank__pct ops-tank__pct--fuel"
                                     :class="{ 'ops-stale': stale('fuel_level') }"
-                                >{{ fuelPctDisplay }}</span>
+                                >{{ fuelPctDisplay }}</Link>
                                 <span class="ops-tank__days">{{ fuelDaysDisplay }}</span>
                             </div>
                             <div class="ops-tank__chart">
-                                <TrendChart
+                                <Link
                                     v-if="fuelHistory.length > 0"
-                                    :data="fuelHistory"
-                                    variant="area"
-                                    color="var(--color-amber)"
-                                    :height="54"
-                                />
+                                    :href="route('admin.data.show', { metric: 'fuel_level' })"
+                                    class="metric-link metric-link--block"
+                                >
+                                    <TrendChart
+                                        :data="fuelHistory"
+                                        variant="area"
+                                        color="var(--color-amber)"
+                                        :height="54"
+                                    />
+                                </Link>
                                 <div v-else class="ops-tank__empty-wrap">
                                     <svg viewBox="0 0 360 54" preserveAspectRatio="none" class="ops-tank__empty-svg">
                                         <line x1="0" y1="27" x2="360" y2="27" stroke="var(--color-border-light)" stroke-width="1" stroke-dasharray="3 3"/>
@@ -133,20 +141,26 @@
                         <div class="ops-tank ops-tank--water">
                             <div class="ops-tank__header">
                                 <span class="ops-tank__label">Fresh water</span>
-                                <span
-                                    class="ops-tank__pct ops-tank__pct--water"
+                                <Link
+                                    :href="route('admin.data.show', { metric: 'water_fresh_level' })"
+                                    class="metric-link ops-tank__pct ops-tank__pct--water"
                                     :class="{ 'ops-stale': stale('water_fresh_level') }"
-                                >{{ waterPctDisplay }}</span>
+                                >{{ waterPctDisplay }}</Link>
                                 <span class="ops-tank__days">{{ waterDaysDisplay }}</span>
                             </div>
                             <div class="ops-tank__chart">
-                                <TrendChart
+                                <Link
                                     v-if="waterHistory.length > 0"
-                                    :data="waterHistory"
-                                    variant="area"
-                                    color="var(--color-blue)"
-                                    :height="54"
-                                />
+                                    :href="route('admin.data.show', { metric: 'water_fresh_level' })"
+                                    class="metric-link metric-link--block"
+                                >
+                                    <TrendChart
+                                        :data="waterHistory"
+                                        variant="area"
+                                        color="var(--color-blue)"
+                                        :height="54"
+                                    />
+                                </Link>
                                 <div v-else class="ops-tank__empty-wrap">
                                     <svg viewBox="0 0 360 54" preserveAspectRatio="none" class="ops-tank__empty-svg">
                                         <line x1="0" y1="27" x2="360" y2="27" stroke="var(--color-border-light)" stroke-width="1" stroke-dasharray="3 3"/>
@@ -232,39 +246,39 @@
                     <!-- Atmosphere -->
                     <div class="ops-wcol ops-wcol--atmos">
                         <div class="ops-wcl">Atmosphere</div>
-                        <div class="ops-wcol__row">
+                        <Link :href="route('admin.data.show', { metric: 'wx_wind_speed' })" class="metric-link ops-wcol__row">
                             <span class="ops-wcol__l">Wind</span>
                             <span class="ops-wcol__v ops-wcol__v--amber" :class="{ 'ops-stale': stale('wx_wind_speed') }">{{ windSpeedDisplay }}</span>
-                        </div>
-                        <div class="ops-wcol__row">
+                        </Link>
+                        <Link :href="route('admin.data.show', { metric: 'wx_wind_dir' })" class="metric-link ops-wcol__row">
                             <span class="ops-wcol__l">Direction</span>
                             <span class="ops-wcol__v" :class="{ 'ops-stale': stale('wx_wind_dir') }">{{ windDirDisplay }}</span>
-                        </div>
-                        <div class="ops-wcol__row">
+                        </Link>
+                        <Link :href="route('admin.data.show', { metric: 'wx_wind_gust' })" class="metric-link ops-wcol__row">
                             <span class="ops-wcol__l">Gust</span>
                             <span class="ops-wcol__v" :class="{ 'ops-stale': stale('wx_wind_gust') }">{{ gustDisplay }}</span>
-                        </div>
-                        <div class="ops-wcol__row">
+                        </Link>
+                        <Link :href="route('admin.data.show', { metric: 'wx_pressure' })" class="metric-link ops-wcol__row">
                             <span class="ops-wcol__l">Pressure</span>
                             <span class="ops-wcol__v ops-wcol__v--blue" :class="{ 'ops-stale': stale('wx_pressure') }">{{ pressureDisplay }}</span>
-                        </div>
+                        </Link>
                     </div>
 
                     <!-- Sea State -->
                     <div class="ops-wcol ops-wcol--sea">
                         <div class="ops-wcl">Sea State</div>
-                        <div class="ops-wcol__row">
+                        <Link :href="route('admin.data.show', { metric: 'sea_wave_height' })" class="metric-link ops-wcol__row">
                             <span class="ops-wcol__l">Wave height</span>
                             <span class="ops-wcol__v ops-wcol__v--blue" :class="{ 'ops-stale': stale('sea_wave_height') }">{{ waveHeightDisplay }}</span>
-                        </div>
-                        <div class="ops-wcol__row">
+                        </Link>
+                        <Link :href="route('admin.data.show', { metric: 'sea_wave_period' })" class="metric-link ops-wcol__row">
                             <span class="ops-wcol__l">Wave period</span>
                             <span class="ops-wcol__v ops-wcol__v--blue" :class="{ 'ops-stale': stale('sea_wave_period') }">{{ wavePeriodDisplay }}</span>
-                        </div>
-                        <div class="ops-wcol__row">
+                        </Link>
+                        <Link :href="route('admin.data.show', { metric: 'sea_wave_direction' })" class="metric-link ops-wcol__row">
                             <span class="ops-wcol__l">Swell dir.</span>
                             <span class="ops-wcol__v" :class="{ 'ops-stale': stale('sea_wave_direction') }">{{ waveDirectionDisplay }}</span>
-                        </div>
+                        </Link>
                         <div class="ops-wcol__row">
                             <span class="ops-wcol__l">Current</span>
                             <span class="ops-wcol__v" :class="{ 'ops-stale': stale('sea_current_speed') }">{{ seaCurrentDisplay }}</span>
@@ -311,26 +325,26 @@
                     <div class="ops-saildata">
                         <span class="ops-seclabel ops-seclabel--inline">Sailing &amp; Navigation</span>
                         <div class="ops-sdrows">
-                            <div class="ops-sdrow">
+                            <Link :href="route('admin.data.show', { metric: 'speed_sog' })" class="metric-link ops-sdrow">
                                 <span class="ops-sdrow__l">SOG</span>
                                 <span class="ops-sdrow__v ops-sdrow__v--teal" :class="{ 'ops-stale': stale('speed_sog') }">{{ sogDisplay }}</span>
-                            </div>
-                            <div class="ops-sdrow">
+                            </Link>
+                            <Link :href="route('admin.data.show', { metric: 'heading_true' })" class="metric-link ops-sdrow">
                                 <span class="ops-sdrow__l">Heading</span>
                                 <span class="ops-sdrow__v ops-sdrow__v--teal" :class="{ 'ops-stale': stale('heading_true') }">{{ headingDisplay }}</span>
-                            </div>
-                            <div class="ops-sdrow">
+                            </Link>
+                            <Link :href="route('admin.data.show', { metric: 'cog' })" class="metric-link ops-sdrow">
                                 <span class="ops-sdrow__l">COG</span>
                                 <span class="ops-sdrow__v ops-sdrow__v--teal" :class="{ 'ops-stale': stale('cog') }">{{ cogDisplay }}</span>
-                            </div>
-                            <div class="ops-sdrow">
+                            </Link>
+                            <Link :href="route('admin.data.show', { metric: 'depth_below_surface' })" class="metric-link ops-sdrow">
                                 <span class="ops-sdrow__l">Depth</span>
                                 <span class="ops-sdrow__v ops-sdrow__v--blue" :class="{ 'ops-stale': stale('depth_below_surface') }">{{ depthDisplay }}</span>
-                            </div>
-                            <div class="ops-sdrow">
+                            </Link>
+                            <Link :href="route('admin.data.show', { metric: 'wp_ttg' })" class="metric-link ops-sdrow">
                                 <span class="ops-sdrow__l">ETA</span>
                                 <span class="ops-sdrow__v" :class="{ 'ops-stale': stale('wp_ttg') }">{{ etaDisplay }}</span>
-                            </div>
+                            </Link>
                         </div>
                     </div>
                 </div>
@@ -341,7 +355,7 @@
 
 <script setup>
 import { ref, computed, onMounted, onUnmounted } from 'vue';
-import { Head } from '@inertiajs/vue3';
+import { Head, Link } from '@inertiajs/vue3';
 import AdminLayout from '@/Layouts/AdminLayout.vue';
 import TrendChart from '@/components/Admin/TrendChart.vue';
 import TemperatureGauge from '@/components/Admin/TemperatureGauge.vue';
@@ -674,6 +688,22 @@ const etaDisplay = computed(() => {
 </script>
 
 <style scoped>
+/* ── Metric → data-explorer links ──────────────────────────────────────────── */
+.metric-link {
+    text-decoration: none;
+    color: inherit;
+    cursor: pointer;
+    transition: opacity 0.12s ease;
+}
+
+.metric-link--block {
+    display: block;
+}
+
+.metric-link:hover {
+    opacity: 0.85;
+}
+
 /* ── Shell ─────────────────────────────────────────────────────────────────── */
 .ops-dash {
     max-width: 1100px;

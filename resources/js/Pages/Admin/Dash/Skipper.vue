@@ -38,24 +38,24 @@
                 <div class="sk-sail">
                     <!-- Speed head + tidal set/drift -->
                     <div class="sk-speed-head">
-                        <div class="sk-k sk-k--sog">
+                        <Link :href="route('admin.data.show', { metric: 'speed_sog' })" class="metric-link sk-k sk-k--sog">
                             <span class="sk-seclabel">SOG</span>
                             <span class="sk-num sk-num--sog" :class="{ 'sk-stale': stale('speed_sog') }">
                                 {{ sogDisplay }}<span class="sk-u">kts</span>
                             </span>
-                        </div>
-                        <div class="sk-k sk-k--stw">
+                        </Link>
+                        <Link :href="route('admin.data.show', { metric: 'speed_stw' })" class="metric-link sk-k sk-k--stw">
                             <span class="sk-seclabel">STW</span>
                             <span class="sk-num sk-num--stw" :class="{ 'sk-stale': stale('speed_stw') }">
                                 {{ stwDisplay }}<span class="sk-u">kts</span>
                             </span>
-                        </div>
-                        <div class="sk-k sk-k--vmg">
+                        </Link>
+                        <Link :href="route('admin.data.show', { metric: 'vmg' })" class="metric-link sk-k sk-k--vmg">
                             <span class="sk-seclabel">VMG → WP</span>
                             <span class="sk-num sk-num--vmg" :class="{ 'sk-stale': stale('vmg') }">
                                 {{ vmgDisplay }}<span class="sk-u">kts</span>
                             </span>
-                        </div>
+                        </Link>
                         <div class="sk-tide">
                             <div class="sk-tide__delta">
                                 <div class="sk-tide__dn" :class="{ 'sk-stale': stale('current_drift') }">{{ tideDeltaDisplay }}</div>
@@ -70,13 +70,18 @@
                     <!-- Lower: speed graph beside instrument list -->
                     <div class="sk-lower">
                         <div class="sk-graphwrap">
-                            <TrendChart
+                            <Link
                                 v-if="speedHistory.length > 0"
-                                :data="speedHistory"
-                                variant="line"
-                                color="var(--color-teal)"
-                                :height="80"
-                            />
+                                :href="route('admin.data.show', { metric: 'speed_sog' })"
+                                class="metric-link metric-link--block"
+                            >
+                                <TrendChart
+                                    :data="speedHistory"
+                                    variant="line"
+                                    color="var(--color-teal)"
+                                    :height="80"
+                                />
+                            </Link>
                             <div v-else class="sk-graph-empty">No Data</div>
                             <div class="sk-axis">
                                 <span>SOG · 6 h</span>
@@ -84,36 +89,36 @@
                             </div>
                         </div>
                         <div class="sk-instlist">
-                            <div class="sk-ir">
+                            <Link :href="route('admin.data.show', { metric: 'wind_speed_apparent' })" class="metric-link sk-ir">
                                 <span class="sk-ir__l">True Wind</span>
                                 <span class="sk-ir__v sk-ir__v--amber" :class="{ 'sk-stale': stale('wind_speed_apparent') }">
                                     {{ twsDisplay }}<span class="sk-u">kts</span>
                                 </span>
-                            </div>
-                            <div class="sk-ir">
+                            </Link>
+                            <Link :href="route('admin.data.show', { metric: 'wind_angle_apparent' })" class="metric-link sk-ir">
                                 <span class="sk-ir__l">App. Wind Angle</span>
                                 <span class="sk-ir__v" :class="{ 'sk-stale': stale('wind_angle_apparent') }">
                                     {{ awaDisplay }}<span v-if="val('wind_angle_apparent') != null" class="sk-u">°</span>
                                 </span>
-                            </div>
-                            <div class="sk-ir">
+                            </Link>
+                            <Link :href="route('admin.data.show', { metric: 'heel' })" class="metric-link sk-ir">
                                 <span class="sk-ir__l">Heel</span>
                                 <span class="sk-ir__v" :class="{ 'sk-stale': stale('heel') }">
                                     {{ heelDisplay }}<span v-if="val('heel') != null" class="sk-u">°</span>
                                 </span>
-                            </div>
-                            <div class="sk-ir">
+                            </Link>
+                            <Link :href="route('admin.data.show', { metric: 'pitch' })" class="metric-link sk-ir">
                                 <span class="sk-ir__l">Pitch</span>
                                 <span class="sk-ir__v" :class="{ 'sk-stale': stale('pitch') }">
                                     {{ pitchDisplay }}<span v-if="val('pitch') != null" class="sk-u">°</span>
                                 </span>
-                            </div>
-                            <div class="sk-ir">
+                            </Link>
+                            <Link :href="route('admin.data.show', { metric: 'rate_of_turn' })" class="metric-link sk-ir">
                                 <span class="sk-ir__l">Rate of turn</span>
                                 <span class="sk-ir__v" :class="{ 'sk-stale': stale('rate_of_turn') }">
                                     {{ rotDisplay }}<span v-if="val('rate_of_turn') != null" class="sk-u">°/min</span>
                                 </span>
-                            </div>
+                            </Link>
                             <div class="sk-ir">
                                 <span class="sk-ir__l">Trip log</span>
                                 <span class="sk-ir__v">—<span class="sk-u">nm</span></span>
@@ -130,23 +135,23 @@
                     <div ref="mapContainerRef" class="sk-map__leaflet"></div>
                     <!-- Corner clusters -->
                     <div class="sk-cluster sk-cluster--tr">{{ coordDisplay }}</div>
-                    <div class="sk-cluster sk-cluster--xte">
+                    <Link :href="route('admin.data.show', { metric: 'xte' })" class="metric-link sk-cluster sk-cluster--xte">
                         <span class="sk-seclabel">Cross-track</span>
                         <span class="sk-num sk-num--xte" :class="{ 'sk-stale': stale('xte') }">
                             {{ xteDisplay }}
                         </span>
-                    </div>
+                    </Link>
                     <div class="sk-cluster sk-cluster--br">
-                        <div class="sk-cluster__k">
+                        <Link :href="route('admin.data.show', { metric: 'wp_distance' })" class="metric-link sk-cluster__k">
                             <span class="sk-seclabel">To WP</span>
                             <span class="sk-num sk-num--sm" :class="{ 'sk-stale': stale('wp_distance') }">
                                 {{ wpDistDisplay }}<span v-if="val('wp_distance') != null" class="sk-u">nm</span>
                             </span>
-                        </div>
-                        <div class="sk-cluster__k">
+                        </Link>
+                        <Link :href="route('admin.data.show', { metric: 'wp_ttg' })" class="metric-link sk-cluster__k">
                             <span class="sk-seclabel">ETA</span>
                             <span class="sk-num sk-num--sm" :class="{ 'sk-stale': stale('wp_ttg') }">{{ etaDisplay }}</span>
-                        </div>
+                        </Link>
                     </div>
                     <div class="sk-attr">Tiles · OpenSeaMap</div>
                 </div>
@@ -167,50 +172,50 @@
 
                     <!-- Nav grid -->
                     <div class="sk-navgrid">
-                        <div class="sk-nr">
+                        <Link :href="route('admin.data.show', { metric: 'heading_true' })" class="metric-link sk-nr">
                             <span class="sk-nr__l">Heading (T)</span>
                             <span class="sk-nr__v sk-nr__v--teal" :class="{ 'sk-stale': stale('heading_true') }">{{ headingTDisplay }}°</span>
-                        </div>
-                        <div class="sk-nr">
+                        </Link>
+                        <Link :href="route('admin.data.show', { metric: 'heading_magnetic' })" class="metric-link sk-nr">
                             <span class="sk-nr__l">Heading (M)</span>
                             <span class="sk-nr__v" :class="{ 'sk-stale': stale('heading_magnetic') }">{{ headingMDisplay }}°</span>
-                        </div>
-                        <div class="sk-nr">
+                        </Link>
+                        <Link :href="route('admin.data.show', { metric: 'cog' })" class="metric-link sk-nr">
                             <span class="sk-nr__l">COG</span>
                             <span class="sk-nr__v sk-nr__v--teal" :class="{ 'sk-stale': stale('cog') }">{{ cogDisplay }}°</span>
-                        </div>
-                        <div class="sk-nr">
+                        </Link>
+                        <Link :href="route('admin.data.show', { metric: 'magnetic_variation' })" class="metric-link sk-nr">
                             <span class="sk-nr__l">Variation</span>
                             <span class="sk-nr__v" :class="{ 'sk-stale': stale('magnetic_variation') }">{{ variationDisplay }}</span>
-                        </div>
-                        <div class="sk-nr">
+                        </Link>
+                        <Link :href="route('admin.data.show', { metric: 'rate_of_turn' })" class="metric-link sk-nr">
                             <span class="sk-nr__l">Rate of turn</span>
                             <span class="sk-nr__v" :class="{ 'sk-stale': stale('rate_of_turn') }">{{ rotNavDisplay }}</span>
-                        </div>
-                        <div class="sk-nr">
+                        </Link>
+                        <Link :href="route('admin.data.show', { metric: 'bearing_to_wp_true' })" class="metric-link sk-nr">
                             <span class="sk-nr__l">Bearing → WP</span>
                             <span class="sk-nr__v" :class="{ 'sk-stale': stale('bearing_to_wp_true') }">{{ bearingWpDisplay }}</span>
-                        </div>
-                        <div class="sk-nr">
+                        </Link>
+                        <Link :href="route('admin.data.show', { metric: 'track_bearing_true' })" class="metric-link sk-nr">
                             <span class="sk-nr__l">Track bearing</span>
                             <span class="sk-nr__v" :class="{ 'sk-stale': stale('track_bearing_true') }">{{ trackBearingDisplay }}</span>
-                        </div>
-                        <div class="sk-nr">
+                        </Link>
+                        <Link :href="route('admin.data.show', { metric: 'xte' })" class="metric-link sk-nr">
                             <span class="sk-nr__l">XTE</span>
                             <span class="sk-nr__v sk-nr__v--amber" :class="{ 'sk-stale': stale('xte') }">{{ xteNavDisplay }}</span>
-                        </div>
-                        <div class="sk-nr">
+                        </Link>
+                        <Link :href="route('admin.data.show', { metric: 'wp_distance' })" class="metric-link sk-nr">
                             <span class="sk-nr__l">Dist → WP</span>
                             <span class="sk-nr__v" :class="{ 'sk-stale': stale('wp_distance') }">{{ wpDistNavDisplay }}</span>
-                        </div>
-                        <div class="sk-nr">
+                        </Link>
+                        <Link :href="route('admin.data.show', { metric: 'wp_ttg' })" class="metric-link sk-nr">
                             <span class="sk-nr__l">TTG</span>
                             <span class="sk-nr__v" :class="{ 'sk-stale': stale('wp_ttg') }">{{ ttgDisplay }}</span>
-                        </div>
-                        <div class="sk-nr">
+                        </Link>
+                        <Link :href="route('admin.data.show', { metric: 'vmg' })" class="metric-link sk-nr">
                             <span class="sk-nr__l">VMG → WP</span>
                             <span class="sk-nr__v sk-nr__v--teal" :class="{ 'sk-stale': stale('vmg') }">{{ vmgNavDisplay }}</span>
-                        </div>
+                        </Link>
                         <div class="sk-nr">
                             <span class="sk-nr__l">Trip log</span>
                             <span class="sk-nr__v">—</span>
@@ -224,17 +229,22 @@
                 <div class="sk-gblock">
                     <div class="sk-gblock__top">
                         <span class="sk-seclabel">Depth below surface</span>
-                        <span class="sk-num sk-num--depth" :class="{ 'sk-stale': stale('depth_below_surface') }">
+                        <Link :href="route('admin.data.show', { metric: 'depth_below_surface' })" class="metric-link sk-num sk-num--depth" :class="{ 'sk-stale': stale('depth_below_surface') }">
                             {{ depthDisplay }}<span v-if="val('depth_below_surface') != null" class="sk-u">m</span>
-                        </span>
+                        </Link>
                     </div>
-                    <TrendChart
+                    <Link
                         v-if="depthHistory.length > 0"
-                        :data="depthHistory"
-                        variant="water"
-                        color="var(--color-blue)"
-                        :height="78"
-                    />
+                        :href="route('admin.data.show', { metric: 'depth_below_surface' })"
+                        class="metric-link metric-link--block"
+                    >
+                        <TrendChart
+                            :data="depthHistory"
+                            variant="water"
+                            color="var(--color-blue)"
+                            :height="78"
+                        />
+                    </Link>
                     <div v-else class="sk-chart-empty">No Data</div>
                     <div class="sk-axis">
                         <span>Depth · 6 h</span>
@@ -244,17 +254,22 @@
                 <div class="sk-gblock">
                     <div class="sk-gblock__top">
                         <span class="sk-seclabel">Barometric pressure</span>
-                        <span class="sk-num sk-num--depth" :class="{ 'sk-stale': stale('cabin_pressure_forepeak') }">
+                        <Link :href="route('admin.data.show', { metric: 'cabin_pressure_forepeak' })" class="metric-link sk-num sk-num--depth" :class="{ 'sk-stale': stale('cabin_pressure_forepeak') }">
                             {{ pressureDisplay }}<span class="sk-u">hPa</span>
-                        </span>
+                        </Link>
                     </div>
-                    <TrendChart
+                    <Link
                         v-if="pressureHistory.length > 0"
-                        :data="pressureHistory"
-                        variant="line"
-                        color="var(--color-blue)"
-                        :height="78"
-                    />
+                        :href="route('admin.data.show', { metric: 'cabin_pressure_forepeak' })"
+                        class="metric-link metric-link--block"
+                    >
+                        <TrendChart
+                            :data="pressureHistory"
+                            variant="line"
+                            color="var(--color-blue)"
+                            :height="78"
+                        />
+                    </Link>
                     <div v-else class="sk-chart-empty">No Data</div>
                     <div class="sk-axis">
                         <span>Pressure · 6 h</span>
@@ -293,9 +308,9 @@
                     <div class="sk-res__top">
                         <span class="sk-seclabel">Engine Battery</span>
                         <span class="sk-res__vals">
-                            <span class="sk-res__pct sk-res__pct--g" :class="{ 'sk-stale': stale('engine_battery_voltage') }">
+                            <Link :href="route('admin.data.show', { metric: 'engine_battery_voltage' })" class="metric-link sk-res__pct sk-res__pct--g" :class="{ 'sk-stale': stale('engine_battery_voltage') }">
                                 {{ engineVoltDisplay }}<span class="sk-u" style="font-size: 13px">V</span>
-                            </span>
+                            </Link>
                         </span>
                     </div>
                     <div class="sk-res__empty sk-res__empty--sm">No Data</div>
@@ -309,16 +324,21 @@
                     <div class="sk-res__top">
                         <span class="sk-seclabel">Fuel</span>
                         <span class="sk-res__vals">
-                            <span class="sk-res__pct sk-res__pct--a" :class="{ 'sk-stale': stale('fuel_level') }">{{ fuelDisplay }}</span>
+                            <Link :href="route('admin.data.show', { metric: 'fuel_level' })" class="metric-link sk-res__pct sk-res__pct--a" :class="{ 'sk-stale': stale('fuel_level') }">{{ fuelDisplay }}</Link>
                         </span>
                     </div>
-                    <TrendChart
+                    <Link
                         v-if="fuelHistory.length > 0"
-                        :data="fuelHistory"
-                        variant="area"
-                        color="var(--color-amber)"
-                        :height="70"
-                    />
+                        :href="route('admin.data.show', { metric: 'fuel_level' })"
+                        class="metric-link metric-link--block"
+                    >
+                        <TrendChart
+                            :data="fuelHistory"
+                            variant="area"
+                            color="var(--color-amber)"
+                            :height="70"
+                        />
+                    </Link>
                     <div v-else class="sk-res__empty">No Data</div>
                     <div class="sk-axis">
                         <span>fuel level · 24 h</span>
@@ -332,7 +352,7 @@
 
 <script setup>
 import { ref, computed, onMounted, onUnmounted } from 'vue';
-import { Head } from '@inertiajs/vue3';
+import { Head, Link } from '@inertiajs/vue3';
 import AdminLayout from '@/Layouts/AdminLayout.vue';
 import CompassRose from '@/components/Admin/CompassRose.vue';
 import TrendChart from '@/components/Admin/TrendChart.vue';
@@ -642,6 +662,22 @@ const fuelDisplay = computed(() => {
 </script>
 
 <style scoped>
+/* ── Metric → data-explorer links ──────────────────────────────────────────── */
+.metric-link {
+    text-decoration: none;
+    color: inherit;
+    cursor: pointer;
+    transition: opacity 0.12s ease;
+}
+
+.metric-link--block {
+    display: block;
+}
+
+.metric-link:hover {
+    opacity: 0.85;
+}
+
 /* ── Shell ─────────────────────────────────────────────────────────────────── */
 .sk-dash {
     max-width: 1100px;

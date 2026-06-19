@@ -39,9 +39,9 @@
                             <span class="power-seclabel" style="color: var(--color-green)">House Battery</span>
                         </div>
                         <div class="power-main">
-                            <span class="power-soc" :class="{ 'power-stale': stale('house_battery_soc') }">
+                            <Link :href="route('admin.data.show', { metric: 'house_battery_soc' })" class="metric-link power-soc" :class="{ 'power-stale': stale('house_battery_soc') }">
                                 {{ houseSocDisplay }}
-                            </span>
+                            </Link>
                             <span class="power-rem">
                                 <span class="power-rem__lab">runtime</span>
                                 <span class="power-rem__val">{{ houseRuntimeDisplay }}</span>
@@ -75,9 +75,9 @@
                             <span class="power-seclabel" style="color: var(--color-teal)">EcoFlow Delta</span>
                         </div>
                         <div class="power-main">
-                            <span class="power-soc" :class="{ 'power-stale': stale('ecoflow_soc') }">
+                            <Link :href="route('admin.data.show', { metric: 'ecoflow_soc' })" class="metric-link power-soc" :class="{ 'power-stale': stale('ecoflow_soc') }">
                                 {{ ecoflowSocDisplay }}
-                            </span>
+                            </Link>
                             <span class="power-rem">
                                 <span class="power-rem__lab">{{ ecoflowRemLabel }}</span>
                                 <span class="power-rem__val">{{ ecoflowRemDisplay }}</span>
@@ -241,6 +241,22 @@ const ecoflowRemDisplay = computed(() => {
 <style scoped>
 .tech-dash {
     max-width: 1100px;
+}
+
+/* ── Metric → data-explorer links ───────────────────────────────────────────── */
+.metric-link {
+    text-decoration: none;
+    color: inherit;
+    cursor: pointer;
+    transition: opacity 0.12s ease;
+}
+
+.metric-link--block {
+    display: block;
+}
+
+.metric-link:hover {
+    opacity: 0.85;
 }
 
 /* Shared section header */

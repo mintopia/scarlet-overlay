@@ -29,11 +29,11 @@
                                 <circle cx="13" cy="13" r="7.5" fill="var(--color-amber)" opacity="0.85" />
                                 <ellipse cx="21" cy="22" rx="11.5" ry="6.5" fill="var(--color-surface)" stroke="var(--color-border)" stroke-width="0.8" />
                             </svg>
-                            <span class="mn-weather__temp" :class="{ 'mn-stale': stale('wx_air_temp') }">{{ wxTempDisplay }}</span>
-                            <div class="mn-weather__wind" :class="{ 'mn-stale': stale('wx_wind_speed') }">
+                            <Link :href="route('admin.data.show', { metric: 'wx_air_temp' })" class="metric-link mn-weather__temp" :class="{ 'mn-stale': stale('wx_air_temp') }">{{ wxTempDisplay }}</Link>
+                            <Link :href="route('admin.data.show', { metric: 'wx_wind_speed' })" class="metric-link mn-weather__wind" :class="{ 'mn-stale': stale('wx_wind_speed') }">
                                 <span class="mn-seclabel">Wind</span>
                                 {{ wxWindKtsDisplay }}
-                            </div>
+                            </Link>
                         </div>
                         <div class="mn-weather__sub">
                             <span :class="{ 'mn-stale': stale('wx_pressure') }"><b>{{ wxPressureDisplay }}</b> hPa</span>
@@ -48,36 +48,36 @@
 
                     <!-- BL: SOG headline + COG + HDG -->
                     <div class="mn-cluster mn-cluster--bl">
-                        <div class="mn-bl__k">
+                        <Link :href="route('admin.data.show', { metric: 'speed_sog' })" class="metric-link mn-bl__k">
                             <span class="mn-seclabel" style="color: var(--color-teal)">Speed o.g.</span>
                             <span class="mn-bl__sog" :class="{ 'mn-stale': stale('speed_sog') }">{{ sogRawDisplay }}</span>
-                        </div>
-                        <div class="mn-bl__k mn-bl__k--sm">
+                        </Link>
+                        <Link :href="route('admin.data.show', { metric: 'cog' })" class="metric-link mn-bl__k mn-bl__k--sm">
                             <span class="mn-seclabel">COG</span>
                             <span class="mn-num" style="color: var(--color-teal)" :class="{ 'mn-stale': stale('cog') }">{{ cogRawDisplay }}</span>
-                        </div>
-                        <div class="mn-bl__k mn-bl__k--sm">
+                        </Link>
+                        <Link :href="route('admin.data.show', { metric: 'heading_true' })" class="metric-link mn-bl__k mn-bl__k--sm">
                             <span class="mn-seclabel">HDG</span>
                             <span class="mn-num" :class="{ 'mn-stale': stale('heading_true') }">{{ hdgRawDisplay }}</span>
-                        </div>
+                        </Link>
                     </div>
 
                     <!-- BR: Waypoint + TTG + ETA -->
                     <div class="mn-cluster mn-cluster--br">
-                        <div class="mn-br__k">
+                        <Link :href="route('admin.data.show', { metric: 'wp_distance' })" class="metric-link mn-br__k">
                             <span class="mn-seclabel">To waypoint</span>
                             <span class="mn-num" :class="{ 'mn-stale': stale('wp_distance') }">
                                 {{ wpDistDisplay }}<span v-if="val('wp_distance') != null" class="mn-u">nm</span>
                             </span>
-                        </div>
-                        <div class="mn-br__k">
+                        </Link>
+                        <Link :href="route('admin.data.show', { metric: 'wp_ttg' })" class="metric-link mn-br__k">
                             <span class="mn-seclabel">TTG</span>
                             <span class="mn-num" :class="{ 'mn-stale': stale('wp_ttg') }">{{ ttgDisplay }}</span>
-                        </div>
-                        <div class="mn-br__k">
+                        </Link>
+                        <Link :href="route('admin.data.show', { metric: 'wp_ttg' })" class="metric-link mn-br__k">
                             <span class="mn-seclabel">ETA</span>
                             <span class="mn-num" :class="{ 'mn-stale': stale('wp_ttg') }">{{ etaDisplay }}</span>
-                        </div>
+                        </Link>
                     </div>
 
                     <div class="mn-attr">Tiles · OpenSeaMap</div>
@@ -109,24 +109,29 @@
                     <!-- Speed through water + SOG/STW delta + sparkline -->
                     <div class="mn-rail__gblock mn-rail__gblock--speed">
                         <div class="mn-rail__gblock-top">
-                            <div class="mn-rail__stw">
+                            <Link :href="route('admin.data.show', { metric: 'speed_stw' })" class="metric-link mn-rail__stw">
                                 <span class="mn-seclabel">Speed thru water</span>
                                 <span class="mn-num mn-rail__stw-num" :class="{ 'mn-stale': stale('speed_stw') }">
                                     {{ stwDisplay }}<span class="mn-u">kts</span>
                                 </span>
-                            </div>
+                            </Link>
                             <div v-if="sogStwDelta != null" class="mn-rail__delta">
                                 <div class="mn-rail__delta-dn">{{ sogStwDeltaDisplay }}</div>
                                 <div v-if="tideFairFoul" class="mn-rail__delta-dl">{{ tideFairFoul }}</div>
                             </div>
                         </div>
-                        <TrendChart
+                        <Link
                             v-if="speedHistory.length > 0"
-                            :data="speedHistory"
-                            variant="area"
-                            color="var(--color-teal)"
-                            :height="66"
-                        />
+                            :href="route('admin.data.show', { metric: 'speed_stw' })"
+                            class="metric-link metric-link--block"
+                        >
+                            <TrendChart
+                                :data="speedHistory"
+                                variant="area"
+                                color="var(--color-teal)"
+                                :height="66"
+                            />
+                        </Link>
                         <div v-else class="mn-rail__empty">No Data</div>
                         <div class="mn-axis">
                             <span>1 h ago</span>
@@ -137,20 +142,25 @@
                     <!-- Depth water column + sparkline -->
                     <div class="mn-rail__gblock mn-rail__gblock--depth">
                         <div class="mn-rail__gblock-top">
-                            <div class="mn-rail__depth-head">
+                            <Link :href="route('admin.data.show', { metric: 'depth_below_surface' })" class="metric-link mn-rail__depth-head">
                                 <span class="mn-seclabel">Depth under keel</span>
                                 <span class="mn-num mn-rail__depth-num" :class="{ 'mn-stale': stale('depth_below_surface') }">
                                     {{ depthDisplay }}<span v-if="val('depth_below_surface') != null" class="mn-u">m</span>
                                 </span>
-                            </div>
+                            </Link>
                         </div>
-                        <TrendChart
+                        <Link
                             v-if="depthHistory.length > 0"
-                            :data="depthHistory"
-                            variant="water"
-                            color="var(--color-blue)"
-                            :height="66"
-                        />
+                            :href="route('admin.data.show', { metric: 'depth_below_surface' })"
+                            class="metric-link metric-link--block"
+                        >
+                            <TrendChart
+                                :data="depthHistory"
+                                variant="water"
+                                color="var(--color-blue)"
+                                :height="66"
+                            />
+                        </Link>
                         <div v-else class="mn-rail__empty">No Data</div>
                         <div class="mn-axis">
                             <span>3 h ago</span>
@@ -190,19 +200,24 @@
 
                 <!-- Fuel -->
                 <div class="mn-res">
-                    <div class="mn-res__top">
+                    <Link :href="route('admin.data.show', { metric: 'fuel_level' })" class="metric-link mn-res__top">
                         <span class="mn-seclabel">Fuel</span>
                         <span class="mn-res__vals">
                             <span class="mn-res__pct mn-res__pct--a" :class="{ 'mn-stale': stale('fuel_level') }">{{ fuelPctDisplay }}</span>
                         </span>
-                    </div>
-                    <TrendChart
+                    </Link>
+                    <Link
                         v-if="fuelHistory.length > 0"
-                        :data="fuelHistory"
-                        variant="area"
-                        color="var(--color-amber)"
-                        :height="52"
-                    />
+                        :href="route('admin.data.show', { metric: 'fuel_level' })"
+                        class="metric-link metric-link--block"
+                    >
+                        <TrendChart
+                            :data="fuelHistory"
+                            variant="area"
+                            color="var(--color-amber)"
+                            :height="52"
+                        />
+                    </Link>
                     <div v-else class="mn-res__empty">No Data</div>
                     <div class="mn-axis">
                         <span>24 h ago</span>
@@ -212,19 +227,24 @@
 
                 <!-- Fresh Water -->
                 <div class="mn-res">
-                    <div class="mn-res__top">
+                    <Link :href="route('admin.data.show', { metric: 'water_fresh_level' })" class="metric-link mn-res__top">
                         <span class="mn-seclabel">Fresh Water</span>
                         <span class="mn-res__vals">
                             <span class="mn-res__pct mn-res__pct--b" :class="{ 'mn-stale': stale('water_fresh_level') }">{{ waterPctDisplay }}</span>
                         </span>
-                    </div>
-                    <TrendChart
+                    </Link>
+                    <Link
                         v-if="waterHistory.length > 0"
-                        :data="waterHistory"
-                        variant="area"
-                        color="var(--color-blue)"
-                        :height="52"
-                    />
+                        :href="route('admin.data.show', { metric: 'water_fresh_level' })"
+                        class="metric-link metric-link--block"
+                    >
+                        <TrendChart
+                            :data="waterHistory"
+                            variant="area"
+                            color="var(--color-blue)"
+                            :height="52"
+                        />
+                    </Link>
                     <div v-else class="mn-res__empty">No Data</div>
                     <div class="mn-axis">
                         <span>24 h ago</span>
@@ -504,6 +524,22 @@ const publisherOnline = computed(() =>
 </script>
 
 <style scoped>
+/* ── Metric → data-explorer links ───────────────────────────────────────────── */
+.metric-link {
+    text-decoration: none;
+    color: inherit;
+    cursor: pointer;
+    transition: opacity 0.12s ease;
+}
+
+.metric-link--block {
+    display: block;
+}
+
+.metric-link:hover {
+    opacity: 0.85;
+}
+
 /* ── Shell ──────────────────────────────────────────────────────────────────── */
 .mn-dash {
     max-width: 1100px;
