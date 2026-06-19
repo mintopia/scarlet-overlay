@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Services\CanonicalReader;
 use App\Services\MetricRegistry;
 use App\Services\PrometheusService;
 use Illuminate\Support\Facades\Config;
@@ -51,8 +52,31 @@ class MetricRegistryTest extends TestCase
             'tracker' => ['gps_latitude', 'cabin_temp_main'],
         ]);
 
+        // This suite tests the legacy query-building / fetch path in isolation.
+        Config::set('scarlet.canonical.enabled', false);
+
         $this->prometheus = $this->createMock(PrometheusService::class);
-        $this->registry = new MetricRegistry($this->prometheus);
+        $this->registry = new MetricRegistry($this->prometheus, app(CanonicalReader::class));
+    }
+
+    public function test_fetch_instant_overlays_canonical_for_live_reads_only(): void
+    {
+        Config::set('scarlet.canonical.enabled', true);
+        Config::set('scarlet.canonical.overrides', ['speed_sog' => 'speed_sog']);
+
+        $this->prometheus->method('queryMultipleAt')->willReturn(['speed_sog' => 1.11]);
+
+        $reader = $this->createMock(CanonicalReader::class);
+        $reader->method('read')->with('speed_sog')->willReturn([
+            'value' => 9.99, 'raw' => 9.99, 'unit' => 'kn', 'timestamp' => 1, 'age' => 1, 'stale' => false, 'resolved_source' => 'x',
+        ]);
+
+        $registry = new MetricRegistry($this->prometheus, $reader);
+
+        // Live read resolves through the canonical reader.
+        $this->assertSame(9.99, $registry->fetchInstant(['speed_sog'])['speed_sog']);
+        // Historical (timestamped) read stays on the legacy query — the reader only reads "now".
+        $this->assertSame(1.11, $registry->fetchInstant(['speed_sog'], 1_700_000_000)['speed_sog']);
     }
 
     public function test_definition_returns_array_for_known_key(): void

@@ -123,7 +123,7 @@ return [
                 'cabin_temp_main', 'cabin_humidity_main',
                 'cabin_temp_forepeak', 'cabin_humidity_forepeak',
                 'cabin_pressure_forepeak',
-                'magnetic_variation',
+                'magnetic_variation', 'heading_magnetic',
             ],
             'tracker' => [
                 'tracker_battery', 'tracker_usb', 'tracker_lte_connected',

@@ -45,14 +45,7 @@ class MetricsService
         $metrics['wind_direction_true'] = $tw['direction'];
         unset($metrics['wind_speed_apparent_raw'], $metrics['wind_angle_apparent_raw'], $metrics['speed_stw_raw'], $metrics['heading_raw']);
 
-        if (config('scarlet.canonical.enabled')) {
-            foreach (config('scarlet.canonical.overrides', []) as $canonicalKey => $boatKey) {
-                $resolved = $this->canonical->read($canonicalKey);
-                if ($resolved !== null) {
-                    $metrics[$boatKey] = $resolved['value'];
-                }
-            }
-        }
+        // Canonical overlay is applied centrally in MetricRegistry::fetchInstant().
 
         return $metrics;
     }

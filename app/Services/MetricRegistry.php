@@ -6,7 +6,10 @@ namespace App\Services;
 
 class MetricRegistry
 {
-    public function __construct(protected PrometheusService $prometheus) {}
+    public function __construct(
+        protected PrometheusService $prometheus,
+        protected CanonicalReader $canonical,
+    ) {}
 
     public function definition(string $key): ?array
     {
@@ -59,7 +62,40 @@ class MetricRegistry
             $queries[$key] = $this->instantQuery($key);
         }
 
-        return $this->prometheus->queryMultipleAt($queries, $timestamp ?? now()->timestamp, fallback: $fallback);
+        $values = $this->prometheus->queryMultipleAt($queries, $timestamp ?? now()->timestamp, fallback: $fallback);
+
+        return $this->overlayCanonical($keys, $values, $timestamp);
+    }
+
+    /**
+     * Resolve mapped keys through the canonical reader (single cutover chokepoint).
+     * Only for LIVE reads — the reader reads "now", so historical (timestamped) fetches
+     * keep the legacy query. Keys without a canonical mapping are untouched.
+     *
+     * @param  array<int, string>  $keys
+     * @param  array<string, mixed>  $values
+     * @return array<string, mixed>
+     */
+    protected function overlayCanonical(array $keys, array $values, ?int $timestamp): array
+    {
+        if ($timestamp !== null || ! config('scarlet.canonical.enabled')) {
+            return $values;
+        }
+
+        $canonicalForLegacy = array_flip(config('scarlet.canonical.overrides', []));
+
+        foreach ($keys as $key) {
+            if (! isset($canonicalForLegacy[$key])) {
+                continue;
+            }
+
+            $resolved = $this->canonical->read($canonicalForLegacy[$key]);
+            if ($resolved !== null) {
+                $values[$key] = $resolved['value'];
+            }
+        }
+
+        return $values;
     }
 
     public function fetchInstantWithAge(array $keys): array
