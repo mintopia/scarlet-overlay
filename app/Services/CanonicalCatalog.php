@@ -131,7 +131,10 @@ class CanonicalCatalog
                 'coverage_window_seconds' => $metric->coverage_window_s,
                 'coverage_min' => $metric->coverage_min,
                 'sources' => $metric->sources->map(fn ($s) => array_filter([
-                    'selector' => $this->compileSelector($s->source_metric_name, $s->label_matchers ?? []),
+                    'selector' => $this->compileSelector([
+                        'source_metric_name' => $s->source_metric_name,
+                        'label_matchers' => $s->label_matchers ?? [],
+                    ]),
                     'transforms' => $s->unit_transform ?? [],
                     'staleness' => $s->staleness_threshold_s,
                 ], fn ($v) => $v !== null))->all(),
@@ -142,18 +145,25 @@ class CanonicalCatalog
     }
 
     /**
-     * @param  array<int, array<string, mixed>>  $matchers
+     * Build the PromQL selector for a single source row.
+     *
+     * @param  array{source_metric_name:string,label_matchers?:array<int,array{label:string,op:string,value:mixed}>}  $source
      */
-    private function compileSelector(string $name, array $matchers): string
+    public function compileSelector(array $source): string
     {
+        $name = $source['source_metric_name'];
+        $matchers = $source['label_matchers'] ?? [];
+
         if ($matchers === []) {
             return $name;
         }
 
         $parts = [];
         foreach ($matchers as $m) {
-            $value = ($m['op'] ?? 'equals') === 'absent' ? '' : ($m['value'] ?? '');
-            $parts[] = $m['label'].'="'.$value.'"';
+            $label = $m['label'];
+            $op = $m['op'] ?? 'equals';
+            $value = $op === 'absent' ? '' : (string) ($m['value'] ?? '');
+            $parts[] = $label.'="'.$value.'"';
         }
 
         return $name.'{'.implode(',', $parts).'}';
