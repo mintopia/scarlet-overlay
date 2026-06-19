@@ -158,10 +158,7 @@ const houseVoltDisplay = computed(() => {
 });
 
 const houseRuntimeDisplay = computed(() => {
-    const soc = val('house_battery_soc');
-    if (soc == null) return '—';
-    // Rough display estimate: assumes typical battery bank proportional runtime
-    return '~' + Math.round((soc / 100) * 18) + ' h';
+    return '—';
 });
 
 const housePowerDisplay = computed(() => {
@@ -209,31 +206,23 @@ const ecoflowPowerClass = computed(() => {
 });
 
 const ecoflowRemLabel = computed(() => {
-    const hist = props.ecoflowPowerHistory;
-    if (!hist || hist.length === 0) return 'status';
-    const last = hist[hist.length - 1];
-    const w = typeof last === 'object' ? last.v : last;
-    if (w == null) return 'status';
-    return w >= 0 ? 'to full' : 'remaining';
+    const inputW = val('ecoflow_input_watts');
+    const outputW = val('ecoflow_output_watts');
+    if (inputW != null && outputW != null) {
+        return inputW > outputW ? 'to full' : 'remaining';
+    }
+    return 'remaining';
 });
 
 const ecoflowRemDisplay = computed(() => {
-    const soc = val('ecoflow_soc');
-    if (soc == null) return '—';
-    const hist = props.ecoflowPowerHistory;
-    if (!hist || hist.length === 0) return '—';
-    const last = hist[hist.length - 1];
-    const w = typeof last === 'object' ? last.v : last;
-    if (!w || w === 0) return '—';
-    // EcoFlow Delta 2 = 1024 Wh usable capacity
-    const CAPACITY = 1024;
-    const absW = Math.abs(w);
-    const h = w >= 0
-        ? ((100 - soc) / 100 * CAPACITY) / absW
-        : (soc / 100 * CAPACITY) / absW;
-    const hInt = Math.floor(h);
-    const mInt = Math.round((h - hInt) * 60);
-    return `${hInt} h ${mInt.toString().padStart(2, '0')}`;
+    const minutes = val('ecoflow_remain_time');
+    if (minutes == null) return '—';
+    const totalMin = Math.round(minutes);
+    if (totalMin <= 0) return '—';
+    const h = Math.floor(totalMin / 60);
+    const m = totalMin % 60;
+    if (h === 0) return `${m} m`;
+    return `${h} h ${m.toString().padStart(2, '0')} m`;
 });
 </script>
 

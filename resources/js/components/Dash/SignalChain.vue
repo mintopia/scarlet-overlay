@@ -35,7 +35,7 @@
                 <div class="sc-node" :class="encoderNodeClass">
                     <div class="sc-nh">
                         <span class="sc-ico">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="oklch(0.42 0.14 245)" stroke-width="2"><rect x="2" y="6" width="14" height="12" rx="2"/><path d="M16 10l6-3v10l-6-3z"/></svg>
+                            <svg viewBox="0 0 24 24" fill="none" stroke="var(--color-blue)" stroke-width="2"><rect x="2" y="6" width="14" height="12" rx="2"/><path d="M16 10l6-3v10l-6-3z"/></svg>
                         </span>
                         <div>
                             <div class="sc-nm">Boat Encoder</div>
@@ -52,14 +52,14 @@
                         {{ pubBitrateDisplay }}<span class="sc-lu">Mb/s</span>
                     </span>
                     <div class="sc-flow" :class="{ 'sc-flow--active': srtPubConnected }"></div>
-                    <span class="sc-lr">RTT {{ pubRttDisplay }} ms · {{ pubDroppedDisplay }} dropped</span>
+                    <span class="sc-lr">RTT {{ pubRttDisplay }} ms · {{ pubDroppedDisplay }} total dropped</span>
                 </div>
 
                 <!-- Node 2: Relay -->
                 <div class="sc-node" :class="relayNodeClass">
                     <div class="sc-nh">
                         <span class="sc-ico">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="oklch(0.42 0.14 178)" stroke-width="2"><path d="M4 17a8 8 0 0 1 16 0"/><path d="M7 17a5 5 0 0 1 10 0"/><circle cx="12" cy="18" r="1.6" fill="oklch(0.42 0.14 178)"/></svg>
+                            <svg viewBox="0 0 24 24" fill="none" stroke="var(--color-teal)" stroke-width="2"><path d="M4 17a8 8 0 0 1 16 0"/><path d="M7 17a5 5 0 0 1 10 0"/><circle cx="12" cy="18" r="1.6" fill="var(--color-teal)"/></svg>
                         </span>
                         <div>
                             <div class="sc-nm">Relay</div>
@@ -415,7 +415,7 @@ const droppedMarkers = computed(() => {
 }
 
 .sc-node--live { border-color: var(--color-scarlet); }
-.sc-node--ok { border-color: oklch(0.42 0.14 178); }
+.sc-node--ok { border-color: var(--color-teal); }
 .sc-node--idle { opacity: 0.5; }
 
 .sc-nh { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; }
@@ -442,7 +442,7 @@ const droppedMarkers = computed(() => {
 }
 
 .sc-node--live .sc-nst { color: var(--color-scarlet); }
-.sc-node--ok .sc-nst { color: oklch(0.42 0.14 178); }
+.sc-node--ok .sc-nst { color: var(--color-teal); }
 
 /* Link connector */
 .sc-link {
