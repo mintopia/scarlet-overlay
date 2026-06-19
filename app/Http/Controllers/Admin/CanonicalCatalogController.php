@@ -14,7 +14,7 @@ class CanonicalCatalogController extends Controller
 {
     public function index(CanonicalCatalog $catalog)
     {
-        return Inertia::render('Admin/Catalog', [
+        return Inertia::render('Admin/Data', [
             'metrics' => CanonicalMetric::with(['sources' => fn ($q) => $q->orderBy('priority')])
                 ->orderBy('group')->orderBy('key')->get(),
             'versions' => CanonicalCatalogVersion::orderByDesc('version')->limit(20)->get(['version', 'action', 'actor', 'note', 'created_at']),

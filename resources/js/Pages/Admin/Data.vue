@@ -1,10 +1,10 @@
 <template>
     <AdminLayout>
-        <Head title="Data Mapping" />
+        <Head title="Data" />
 
         <div class="flex items-center justify-between mb-6">
             <div>
-                <h1 class="text-[22px] font-bold">Data Mapping</h1>
+                <h1 class="text-[22px] font-bold">Data</h1>
                 <p class="text-[13px] text-text-secondary mt-0.5">Catalog v{{ version }} &mdash; {{ metrics.length }} metrics across {{ groupNames.length }} groups</p>
             </div>
             <button type="button" @click="openAdd" class="btn btn--primary">
@@ -518,7 +518,7 @@ const inventoryLoaded = ref(false);
 
 onMounted(async () => {
     try {
-        const response = await fetch(route('admin.catalog.inventory'), {
+        const response = await fetch(route('admin.data.inventory'), {
             headers: { Accept: 'application/json' },
         });
         if (response.ok) {
@@ -589,7 +589,7 @@ const testingSourceId = ref(null);
 async function testSource(src) {
     testingSourceId.value = src.id;
     try {
-        const response = await fetch(route('admin.catalog.test'), {
+        const response = await fetch(route('admin.data.test'), {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -747,13 +747,13 @@ function moveSource(idx, dir) {
 
 function saveMetric() {
     if (editingMetric.value) {
-        metricForm.put(route('admin.catalog.update', { metric: editingMetric.value.id }), {
+        metricForm.put(route('admin.data.update', { metric: editingMetric.value.id }), {
             onSuccess: () => {
                 showEditor.value = false;
             },
         });
     } else {
-        metricForm.post(route('admin.catalog.store'), {
+        metricForm.post(route('admin.data.store'), {
             onSuccess: () => {
                 showEditor.value = false;
                 metricForm.reset();
@@ -781,7 +781,7 @@ watch(deletingMetric, (val) => {
 
 function confirmDelete() {
     deleting.value = true;
-    router.delete(route('admin.catalog.destroy', { metric: deletingMetric.value.id }), {
+    router.delete(route('admin.data.destroy', { metric: deletingMetric.value.id }), {
         onSuccess: () => {
             deletingMetric.value = null;
         },
@@ -809,7 +809,7 @@ watch(rollbackTarget, (val) => {
 
 function confirmRollback() {
     rollingBack.value = true;
-    router.post(route('admin.catalog.rollback'), { version: rollbackTarget.value.version }, {
+    router.post(route('admin.data.rollback'), { version: rollbackTarget.value.version }, {
         onSuccess: () => {
             rollbackTarget.value = null;
         },

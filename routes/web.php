@@ -137,12 +137,12 @@ Route::middleware('auth')->prefix('admin')->group(function () {
     Route::get('dash/ops', [OpsDashboardController::class, 'index'])->name('admin.dash.ops');
     Route::get('dash/skipper', [SkipperDashboardController::class, 'index'])->name('admin.dash.skipper');
 
-    // Canonical metric catalog
-    Route::get('metrics/catalog', [CanonicalCatalogController::class, 'index'])->name('admin.catalog');
-    Route::post('metrics/catalog', [CanonicalCatalogController::class, 'store'])->name('admin.catalog.store');
-    Route::get('metrics/catalog/inventory', [CanonicalCatalogController::class, 'inventory'])->name('admin.catalog.inventory');
-    Route::put('metrics/catalog/{metric}', [CanonicalCatalogController::class, 'update'])->name('admin.catalog.update');
-    Route::delete('metrics/catalog/{metric}', [CanonicalCatalogController::class, 'destroy'])->name('admin.catalog.destroy');
-    Route::post('metrics/catalog/test', [CanonicalCatalogController::class, 'test'])->name('admin.catalog.test');
-    Route::post('metrics/catalog/rollback', [CanonicalCatalogController::class, 'rollback'])->name('admin.catalog.rollback');
+    // Canonical metric catalog (Data)
+    Route::get('data', [CanonicalCatalogController::class, 'index'])->name('admin.data.index');
+    Route::post('data', [CanonicalCatalogController::class, 'store'])->name('admin.data.store');
+    Route::get('data/inventory', [CanonicalCatalogController::class, 'inventory'])->name('admin.data.inventory');
+    Route::post('data/test', [CanonicalCatalogController::class, 'test'])->name('admin.data.test');
+    Route::post('data/rollback', [CanonicalCatalogController::class, 'rollback'])->name('admin.data.rollback');
+    Route::put('data/{metric}', [CanonicalCatalogController::class, 'update'])->name('admin.data.update');
+    Route::delete('data/{metric}', [CanonicalCatalogController::class, 'destroy'])->name('admin.data.destroy');
 });

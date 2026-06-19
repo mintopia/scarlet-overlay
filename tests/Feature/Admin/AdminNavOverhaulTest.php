@@ -40,4 +40,11 @@ class AdminNavOverhaulTest extends TestCase
         $this->actingAs($user)->get('/admin/weather')->assertNotFound();
         $this->actingAs($user)->get('/admin/explore')->assertNotFound();
     }
+
+    public function test_old_catalog_path_is_removed(): void
+    {
+        $this->actingAs(User::factory()->create())
+            ->get('/admin/metrics/catalog')
+            ->assertNotFound();
+    }
 }
