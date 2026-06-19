@@ -59,31 +59,6 @@ processors:
       - key: instance
         action: delete
 
-  # --- Normalization (Phase 4, Stage 2: drop uncurated EcoFlow series) ---
-  # EcoFlow publishes ~125 fields as mqtt.value{topic="ecoflow/<serial>_<report>/<field>"}.
-  # Keep only the ~20 curated fields (jess-approved); drop the rest. The filter
-  # primitive is "drop the datapoint when the condition is true", so the single
-  # condition reads: it IS an mqtt.value datapoint AND it HAS a topic AND the topic
-  # is an ecoflow/ topic AND the trailing /<field> is NOT one of the curated fields.
-  #
-  # Why this cannot crash-loop (the earlier OTTL transform attempts did):
-  #  * error_mode: ignore  -> any per-datapoint evaluation error is logged and the
-  #    condition treated as false (datapoint kept), never a panic / dropped batch.
-  #  * The `attributes["topic"] != nil` guard runs BEFORE IsMatch and OTTL `and`
-  #    short-circuits, so IsMatch is never handed a nil -> no nil deref.
-  #  * Read-only predicates only (no set/replace/delete_key editors), so nothing
-  #    can fault while mutating a datapoint.
-  filter/ecoflow:
-    error_mode: ignore
-    metrics:
-      datapoint:
-        - >-
-          metric.name == "mqtt.value"
-          and attributes["topic"] != nil
-          and IsMatch(attributes["topic"], "^ecoflow/")
-          and not IsMatch(attributes["topic"],
-            "/(soc|f32ShowSoc|actSoc|inputWatts|outputWatts|powInSumW|powOutSumW|powGetAc|powGetAcIn|powGet_12v|powGetTypec1|powGetTypec2|powGetQcusb1|powGetQcusb2|vol|amp|temp|remainTime|cycles|soh)$")
-
 exporters:
   prometheusremotewrite:
     endpoint: http://victoriametrics:8428/api/v1/write
@@ -104,7 +79,6 @@ service:
   pipelines:
     metrics:
       receivers: [otlp]
-      # Order: declarative strips, then the EcoFlow drop, then batch last so
-      # batching sees the final normalized shape.
-      processors: [memory_limiter, filter/dedup, attributes/strip, filter/ecoflow, batch]
+      # Stage 1: declarative strips only. filter/ecoflow (OTTL) is added in Stage 2.
+      processors: [memory_limiter, filter/dedup, attributes/strip, batch]
       exporters: [prometheusremotewrite]
