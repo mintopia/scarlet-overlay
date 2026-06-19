@@ -41,9 +41,9 @@ processors:
   # Strip noise RESOURCE attributes. Keys are DOTTED in-pipeline (confirmed via
   # debug dump): only `service.name` is actually present (`service.instance.id`
   # is absent here, so that delete is a harmless no-op). Deleting `service.name`
-  # removes the redundant `service_name` label. CAVEAT: the exporter also derives
-  # the `job` label from `service.name` — verify post-deploy that `job` survives;
-  # if it does not, back this line out.
+  # removes the redundant `service_name` label. NOTE: the exporter also derives
+  # the `job` label from `service.name`, so deleting it drops `job` too — `job`
+  # is re-added as a static datapoint attribute in attributes/strip below.
   resource/strip:
     attributes:
       - key: service.name
@@ -51,11 +51,15 @@ processors:
       - key: service.instance.id
         action: delete
 
-  # Strip noise DATAPOINT attributes. `value` is the important one: on
-  # mqtt.last_seen and the signalk string metrics it carries a CHANGING string
-  # (timestamps, gnss.type, ...) that would spawn a new series on every change.
-  # `key` / `instance` are deleted defensively (no-op when absent). `topic` and
-  # `gps.source` are intentionally kept (they become useful labels).
+  # Strip noise DATAPOINT attributes, and re-add a static `job` label.
+  # `value` is the important strip: on mqtt.last_seen and the signalk string
+  # metrics it carries a CHANGING string (timestamps, gnss.type, ...) that would
+  # spawn a new series on every change. `key` / `instance` are deleted defensively
+  # (no-op when absent). `topic` and `gps.source` are intentionally kept.
+  # `job=boat-tracker` is re-inserted as a static label (it was lost when
+  # service.name was stripped above; nothing queries it today but we keep it for
+  # Prometheus convention / external tools). Single-boat deployment, so a constant
+  # value is correct.
   attributes/strip:
     actions:
       - key: value
@@ -64,6 +68,9 @@ processors:
         action: delete
       - key: instance
         action: delete
+      - key: job
+        value: boat-tracker
+        action: insert
 
 exporters:
   prometheusremotewrite:
