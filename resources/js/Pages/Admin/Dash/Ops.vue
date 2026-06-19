@@ -228,19 +228,19 @@
                         <div class="ops-wcl">Atmosphere</div>
                         <div class="ops-wcol__row">
                             <span class="ops-wcol__l">Wind</span>
-                            <span class="ops-wcol__v ops-wcol__v--amber" :class="{ 'ops-stale': stale('wx_wind_speed') }">{{ windDisplay }}</span>
+                            <span class="ops-wcol__v ops-wcol__v--amber" :class="{ 'ops-stale': stale('wx_wind_speed') }">{{ windSpeedDisplay }}</span>
                         </div>
                         <div class="ops-wcol__row">
                             <span class="ops-wcol__l">Direction</span>
                             <span class="ops-wcol__v" :class="{ 'ops-stale': stale('wx_wind_dir') }">{{ windDirDisplay }}</span>
                         </div>
                         <div class="ops-wcol__row">
-                            <span class="ops-wcol__l">Pressure</span>
-                            <span class="ops-wcol__v ops-wcol__v--blue" :class="{ 'ops-stale': stale('wx_pressure') }">{{ pressureDisplay }}</span>
-                        </div>
-                        <div class="ops-wcol__row">
                             <span class="ops-wcol__l">Gust</span>
                             <span class="ops-wcol__v" :class="{ 'ops-stale': stale('wx_wind_gust') }">{{ gustDisplay }}</span>
+                        </div>
+                        <div class="ops-wcol__row">
+                            <span class="ops-wcol__l">Pressure</span>
+                            <span class="ops-wcol__v ops-wcol__v--blue" :class="{ 'ops-stale': stale('wx_pressure') }">{{ pressureDisplay }}</span>
                         </div>
                     </div>
 
@@ -312,10 +312,6 @@
                             <div class="ops-sdrow">
                                 <span class="ops-sdrow__l">COG</span>
                                 <span class="ops-sdrow__v ops-sdrow__v--teal" :class="{ 'ops-stale': stale('cog') }">{{ cogDisplay }}</span>
-                            </div>
-                            <div class="ops-sdrow">
-                                <span class="ops-sdrow__l">Wind</span>
-                                <span class="ops-sdrow__v ops-sdrow__v--amber" :class="{ 'ops-stale': stale('wx_wind_speed') }">{{ windDisplay }}</span>
                             </div>
                             <div class="ops-sdrow">
                                 <span class="ops-sdrow__l">Depth</span>
@@ -518,12 +514,9 @@ const wxAirTempDisplay = computed(() => {
     return v == null ? '—°' : `${fmtFixed(v, 0)}°`;
 });
 
-const windDisplay = computed(() => {
+const windSpeedDisplay = computed(() => {
     const spd = val('wx_wind_speed');
-    const gust = val('wx_wind_gust');
-    if (spd == null) return '—';
-    const base = `${fmtInt(spd)} kts`;
-    return gust != null ? `${base} G${fmtInt(gust)}` : base;
+    return spd == null ? '—' : `${fmtInt(spd)} kts`;
 });
 
 const windKtsShort = computed(() => {
@@ -729,10 +722,12 @@ const etaDisplay = computed(() => {
 }
 
 .ops-sys__header {
+    min-height: 20px;
     margin-bottom: 8px;
 }
 
 .ops-sys__main {
+    min-height: 46px;
     display: flex;
     align-items: flex-end;
     gap: 14px;
@@ -774,6 +769,7 @@ const etaDisplay = computed(() => {
 }
 
 .ops-sys__det {
+    min-height: 18px;
     font-size: 11px;
     font-weight: 500;
     color: var(--color-text-dim);

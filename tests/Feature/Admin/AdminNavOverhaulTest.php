@@ -4,6 +4,7 @@ namespace Tests\Feature\Admin;
 
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Inertia\Testing\AssertableInertia;
 use Tests\TestCase;
 
 class AdminNavOverhaulTest extends TestCase
@@ -46,5 +47,12 @@ class AdminNavOverhaulTest extends TestCase
         $this->actingAs(User::factory()->create())
             ->get('/admin/metrics/catalog')
             ->assertNotFound();
+    }
+
+    public function test_ops_dashboard_still_renders(): void
+    {
+        $this->actingAs(User::factory()->create())
+            ->get(route('admin.dash.ops'))
+            ->assertInertia(fn (AssertableInertia $p) => $p->component('Admin/Dash/Ops'));
     }
 }
