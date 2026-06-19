@@ -107,6 +107,7 @@
 <script setup>
 import { ref, computed, onMounted, onUnmounted, watch, nextTick } from 'vue';
 import { Head, router } from '@inertiajs/vue3';
+import { formatDate } from '@/lib/datetime';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import AdminLayout from '@/Layouts/AdminLayout.vue';
@@ -304,10 +305,6 @@ function panToWaypoint(wp) {
     if (map && wp.lat && wp.lng) {
         map.setView([wp.lat, wp.lng], Math.max(map.getZoom(), 12));
     }
-}
-
-function formatDate(iso) {
-    return new Date(iso).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
 }
 
 /**

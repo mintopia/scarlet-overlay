@@ -81,6 +81,7 @@
 <script setup>
 import { ref, watch, onMounted, onUnmounted } from 'vue';
 import { Head, Link } from '@inertiajs/vue3';
+import { formatDate, formatDuration } from '@/lib/datetime';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import uPlot from 'uplot';
@@ -108,22 +109,8 @@ const chartEls = {};
 const chartPanels = {};
 const chartInstances = {};
 
-function fmtDuration(seconds) {
-    if (!seconds) return '—';
-    const d = Math.floor(seconds / 86400);
-    const h = Math.floor((seconds % 86400) / 3600);
-    const m = Math.floor((seconds % 3600) / 60);
-    const parts = [];
-    if (d) parts.push(`${d}d`);
-    if (h) parts.push(`${h}h`);
-    if (m) parts.push(`${m}m`);
-    return parts.join(' ') || '0m';
-}
-
-function fmtDate(iso) {
-    if (!iso) return '—';
-    return new Date(iso).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' });
-}
+const fmtDuration = formatDuration;
+const fmtDate = (iso) => formatDate(iso, { withTime: true });
 
 function drawGapLines(color) {
     return (u) => {

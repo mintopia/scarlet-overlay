@@ -82,6 +82,7 @@
 <script setup>
 import { ref, nextTick, watch } from 'vue';
 import { Head, Link, useForm } from '@inertiajs/vue3';
+import { formatDate } from '@/lib/datetime';
 import AdminLayout from '@/Layouts/AdminLayout.vue';
 
 defineProps({
@@ -121,9 +122,5 @@ function createPlan() {
             form.reset();
         },
     });
-}
-
-function formatDate(iso) {
-    return new Date(iso).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
 }
 </script>

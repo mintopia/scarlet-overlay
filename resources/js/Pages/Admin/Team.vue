@@ -165,6 +165,7 @@
 <script setup>
 import { ref, nextTick, watch } from 'vue';
 import { Head, useForm, usePage, router } from '@inertiajs/vue3';
+import { formatDate } from '@/lib/datetime';
 import AdminLayout from '@/Layouts/AdminLayout.vue';
 
 const props = defineProps({
@@ -213,10 +214,6 @@ function removeMember() {
     router.delete(route('admin.team.destroy', removingMember.value.id), {
         onSuccess: () => { removingMember.value = null; },
     });
-}
-
-function formatDate(dateStr) {
-    return new Date(dateStr).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
 }
 
 function trapFocus(event) {

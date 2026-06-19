@@ -87,6 +87,7 @@
 <script setup>
 import { ref, watch, nextTick } from 'vue';
 import { Head, Link, router } from '@inertiajs/vue3';
+import { formatDate as fmtDate } from '@/lib/datetime';
 import AdminLayout from '@/Layouts/AdminLayout.vue';
 import { fmtDuration } from '@/composables/useFormatters.js';
 import { useToast } from '@/composables/useToast.js';
@@ -152,11 +153,6 @@ function endJourney() {
     });
 }
 
-function fmtDate(iso) {
-    if (!iso) return '';
-    const d = new Date(iso);
-    return d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
-}
 </script>
 
 <style scoped>

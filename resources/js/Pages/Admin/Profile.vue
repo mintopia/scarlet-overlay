@@ -234,6 +234,7 @@
 <script setup>
 import { ref, nextTick, onMounted } from 'vue';
 import { Head, useForm } from '@inertiajs/vue3';
+import { formatDate } from '@/lib/datetime';
 import AdminLayout from '@/Layouts/AdminLayout.vue';
 import SavedCheck from '@/components/SavedCheck.vue';
 
@@ -270,10 +271,6 @@ function getCsrfToken() {
     return document.querySelector('meta[name="csrf-token"]')?.content ?? '';
 }
 
-function formatDate(dateStr) {
-    if (!dateStr) return '—';
-    return new Date(dateStr).toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' });
-}
 
 function lastUsedLabel(pk) {
     if (!pk.updated_at || pk.updated_at === pk.created_at) return 'Never';
