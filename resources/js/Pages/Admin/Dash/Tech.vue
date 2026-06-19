@@ -11,18 +11,6 @@
                 :pullEnabled="pullEnabled"
             />
 
-            <!-- Region 1b: Live camera link -->
-            <Link href="/admin/stream" class="tech-camlink">
-                <span class="tech-camlink__ico" aria-hidden="true">
-                    <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></svg>
-                </span>
-                <span class="tech-camlink__text">
-                    <span class="tech-camlink__title">Live Camera</span>
-                    <span class="tech-camlink__sub">Open the broadcast camera feed</span>
-                </span>
-                <span class="tech-camlink__arrow" aria-hidden="true">→</span>
-            </Link>
-
             <!-- Region 2: Tracker · ESP32 -->
             <TrackerPanel :contracts="liveContracts" />
 
@@ -373,27 +361,4 @@ const ecoflowRemDisplay = computed(() => {
 }
 
 .power-stale { opacity: 0.45; }
-
-.tech-camlink {
-    display: flex;
-    align-items: center;
-    gap: 14px;
-    background: var(--color-surface);
-    border: 1px solid var(--color-border);
-    border-radius: 14px;
-    padding: 16px 20px;
-    margin-bottom: 16px;
-    text-decoration: none;
-    color: var(--color-text-primary);
-    transition: border-color 0.15s, box-shadow 0.15s;
-}
-.tech-camlink:hover {
-    border-color: var(--color-scarlet);
-    box-shadow: 0 2px 12px oklch(0.5 0.1 25 / 0.08);
-}
-.tech-camlink__ico { color: var(--color-scarlet); display: flex; }
-.tech-camlink__text { display: flex; flex-direction: column; gap: 2px; }
-.tech-camlink__title { font-size: 14px; font-weight: 700; }
-.tech-camlink__sub { font-size: 12px; color: var(--color-text-dim); }
-.tech-camlink__arrow { margin-left: auto; color: var(--color-text-dim); font-size: 18px; }
 </style>
