@@ -38,28 +38,18 @@ processors:
         - 'resource.attributes["device.id"] == nil'
 
   # --- Normalization (Phase 4, Stage 1: declarative, panic-proof) ---
-  # Strip noise RESOURCE attributes. Keys are DOTTED in-pipeline (confirmed via
-  # debug dump): only `service.name` is actually present (`service.instance.id`
-  # is absent here, so that delete is a harmless no-op). Deleting `service.name`
-  # removes the redundant `service_name` label. NOTE: the exporter also derives
-  # the `job` label from `service.name`, so deleting it drops `job` too — `job`
-  # is re-added as a static datapoint attribute in attributes/strip below.
-  resource/strip:
-    attributes:
-      - key: service.name
-        action: delete
-      - key: service.instance.id
-        action: delete
-
-  # Strip noise DATAPOINT attributes, and re-add a static `job` label.
-  # `value` is the important strip: on mqtt.last_seen and the signalk string
-  # metrics it carries a CHANGING string (timestamps, gnss.type, ...) that would
-  # spawn a new series on every change. `key` / `instance` are deleted defensively
-  # (no-op when absent). `topic` and `gps.source` are intentionally kept.
-  # `job=boat-tracker` is re-inserted as a static label (it was lost when
-  # service.name was stripped above; nothing queries it today but we keep it for
-  # Prometheus convention / external tools). Single-boat deployment, so a constant
-  # value is correct.
+  # Strip noise DATAPOINT attributes. `value` is the important one: on
+  # mqtt.last_seen and the signalk string metrics it carries a CHANGING string
+  # (timestamps, gnss.type, ...) that would spawn a new series on every change.
+  # `key` / `instance` are deleted defensively (no-op when absent). `topic` and
+  # `gps.source` are intentionally kept (they become useful labels).
+  #
+  # We deliberately do NOT strip the `service.name` resource attribute: the
+  # exporter derives BOTH the redundant `service_name` label AND the wanted `job`
+  # label from it, with no declarative way to split them (a datapoint attribute
+  # named `job` is not promoted to a label — the exporter reserves job/instance
+  # for resource-derived values). `service_name` is a constant (zero cardinality
+  # cost), so keeping it to preserve `job` is the right trade.
   attributes/strip:
     actions:
       - key: value
@@ -68,9 +58,6 @@ processors:
         action: delete
       - key: instance
         action: delete
-      - key: job
-        value: boat-tracker
-        action: insert
 
 exporters:
   prometheusremotewrite:
@@ -93,5 +80,5 @@ service:
     metrics:
       receivers: [otlp]
       # Stage 1: declarative strips only. filter/ecoflow (OTTL) is added in Stage 2.
-      processors: [memory_limiter, filter/dedup, resource/strip, attributes/strip, batch]
+      processors: [memory_limiter, filter/dedup, attributes/strip, batch]
       exporters: [prometheusremotewrite]
