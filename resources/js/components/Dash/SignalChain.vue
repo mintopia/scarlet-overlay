@@ -444,9 +444,9 @@ const droppedMarkers = computed(() => {
 .sc-node--live .sc-nst { color: var(--color-scarlet); }
 .sc-node--ok .sc-nst { color: var(--color-teal); }
 
-/* Link connector */
+/* Link connector — grows to stretch the chain across the full card width */
 .sc-link {
-    flex-shrink: 0;
+    flex: 1 1 auto;
     display: flex;
     flex-direction: column;
     align-items: center;
