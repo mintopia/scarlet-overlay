@@ -358,47 +358,6 @@ return [
                 ],
             ],
 
-            'explore_groups' => [
-                'navigation' => [
-                    'label' => 'Navigation',
-                    'color' => 'oklch(0.42 0.14 178)',
-                    'expanded' => true,
-                ],
-                'wind' => [
-                    'label' => 'Wind',
-                    'color' => 'oklch(0.48 0.17 70)',
-                    'expanded' => false,
-                    'headlines' => ['wind_speed_true', 'wind_direction_true', 'wind_speed_apparent', 'wind_angle_apparent'],
-                ],
-                'power' => [
-                    'label' => 'Power',
-                    'color' => 'oklch(0.45 0.16 150)',
-                    'expanded' => true,
-                ],
-                'tanks' => [
-                    'label' => 'Tanks',
-                    'color' => 'oklch(0.48 0.17 70)',
-                    'expanded' => true,
-                ],
-                'cabin' => [
-                    'label' => 'Cabin',
-                    'color' => 'oklch(0.48 0.17 70)',
-                    'expanded' => false,
-                    'headlines' => ['temp_main_cabin', 'temp_forepeak', 'pressure_forepeak'],
-                ],
-                'environment' => [
-                    'label' => 'Environment',
-                    'color' => 'oklch(0.42 0.14 245)',
-                    'expanded' => false,
-                    'headlines' => ['water_temp'],
-                ],
-                'tracker' => [
-                    'label' => 'Tracker',
-                    'color' => 'oklch(0.52 0.014 205)',
-                    'expanded' => false,
-                    'headlines' => ['gps_satellites', 'lte_rssi', 'cpu_usage'],
-                ],
-            ],
         ],
     ],
 

@@ -145,7 +145,7 @@
             <div class="panel p-4 flex flex-col">
                 <div class="flex items-baseline justify-between mb-3">
                     <span class="text-[11px] font-body font-extrabold tracking-[2.5px] uppercase text-teal">Systems</span>
-                    <Link href="/admin/tracker" class="text-[11px] font-body font-bold text-teal hover:underline">Explore →</Link>
+                    <Link href="/admin/dash/ops" class="text-[11px] font-body font-bold text-teal hover:underline">Explore →</Link>
                 </div>
                 <div class="space-y-2.5 mb-3">
                     <LevelBar :value="batteryPct" label="Battery" color="green" />
@@ -171,9 +171,9 @@
                             {{ liveBoat?.house_battery_voltage != null && liveBoat?.house_battery_current != null ? (liveBoat.house_battery_current >= 0 ? '+' : '') + Math.round(liveBoat.house_battery_voltage * liveBoat.house_battery_current) + 'W' : '—' }}
                         </span>
                     </div>
-                    <a href="/admin/explore?metric=battery_power" class="block">
+                    <div class="block">
                         <Sparkline :data="powerData" color="var(--color-green)" :height="36" :fill="true" :showDot="true" :zeroLine="true" />
-                    </a>
+                    </div>
                 </div>
             </div>
 

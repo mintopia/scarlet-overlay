@@ -192,6 +192,7 @@ const endDotColor = computed(() => {
                 stroke-linecap="round"
                 stroke-linejoin="round"
                 opacity="0.85"
+                vector-effect="non-scaling-stroke"
             />
         </template>
 
@@ -206,6 +207,7 @@ const endDotColor = computed(() => {
                 stroke-linecap="round"
                 stroke-linejoin="round"
                 opacity="0.85"
+                vector-effect="non-scaling-stroke"
             />
         </template>
 
@@ -221,6 +223,7 @@ const endDotColor = computed(() => {
                 stroke-width="0.75"
                 stroke-dasharray="4 3"
                 opacity="0.35"
+                vector-effect="non-scaling-stroke"
             />
             <!-- Above-zero segments (positive color) -->
             <path
@@ -233,6 +236,7 @@ const endDotColor = computed(() => {
                 stroke-linecap="round"
                 stroke-linejoin="round"
                 opacity="0.85"
+                vector-effect="non-scaling-stroke"
             />
             <!-- Below-zero segments (negative color) -->
             <path
@@ -245,6 +249,7 @@ const endDotColor = computed(() => {
                 stroke-linecap="round"
                 stroke-linejoin="round"
                 opacity="0.85"
+                vector-effect="non-scaling-stroke"
             />
         </template>
 
@@ -259,6 +264,7 @@ const endDotColor = computed(() => {
                 stroke-linecap="round"
                 stroke-linejoin="round"
                 opacity="0.85"
+                vector-effect="non-scaling-stroke"
             />
         </template>
 

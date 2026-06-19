@@ -1,11 +1,10 @@
 <?php
 
 use App\Http\Controllers\Admin\AdminDashboardController;
-use App\Http\Controllers\Admin\AdminEnvironmentController;
 use App\Http\Controllers\Admin\AdminLogController;
 use App\Http\Controllers\Admin\BoatMetricsController;
 use App\Http\Controllers\Admin\CanonicalCatalogController;
-use App\Http\Controllers\Admin\ExploreController;
+use App\Http\Controllers\Admin\DataController;
 use App\Http\Controllers\Admin\JourneyController;
 use App\Http\Controllers\Admin\JourneyViewController as AdminJourneyViewController;
 use App\Http\Controllers\Admin\MainDashboardController;
@@ -16,10 +15,10 @@ use App\Http\Controllers\Admin\PlanRouteController;
 use App\Http\Controllers\Admin\ProfileController;
 use App\Http\Controllers\Admin\SettingsController;
 use App\Http\Controllers\Admin\SkipperDashboardController;
+use App\Http\Controllers\Admin\StreamController;
 use App\Http\Controllers\Admin\StreamMonitorController;
 use App\Http\Controllers\Admin\TeamController;
 use App\Http\Controllers\Admin\TechDashboardController;
-use App\Http\Controllers\Admin\TrackerController;
 use App\Http\Controllers\Admin\TracksController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\PasskeyController;
@@ -89,17 +88,8 @@ Route::middleware('auth')->prefix('admin')->group(function () {
     Route::put('/settings/stream', [SettingsController::class, 'updateStream'])->name('admin.settings.stream');
     Route::put('/settings/camera', [SettingsController::class, 'updateCamera'])->name('admin.settings.camera');
     Route::post('/settings/force-reload', [SettingsController::class, 'forceReload'])->name('admin.settings.force-reload');
-    Route::get('broadcast', [StreamMonitorController::class, 'index'])->name('admin.broadcast');
     Route::post('broadcast/pull', [StreamMonitorController::class, 'updatePull'])->name('admin.broadcast.pull');
-    Route::redirect('stream', 'broadcast');
-    Route::get('/tracker', [TrackerController::class, 'index'])->name('admin.tracker');
     Route::get('/metrics', [BoatMetricsController::class, 'index'])->name('admin.metrics');
-    Route::get('/explore', [ExploreController::class, 'index'])->name('admin.explore');
-    Route::get('/explore/series', [ExploreController::class, 'series'])->name('admin.explore.series');
-    Route::get('/explore/current', [ExploreController::class, 'current'])->name('admin.explore.current');
-    Route::get('/environment', [AdminEnvironmentController::class, 'index'])->name('admin.environment');
-    Route::get('/environment/series', [AdminEnvironmentController::class, 'series'])->name('admin.environment.series');
-    Route::redirect('/weather', '/admin/environment');
     Route::get('/log', [AdminLogController::class, 'index'])->name('admin.log');
     Route::get('/tracks', [TracksController::class, 'index'])->name('admin.tracks');
     Route::patch('/ship-log/{shipLog}', [AdminLogController::class, 'update'])->name('admin.ship-log.update');
@@ -143,18 +133,23 @@ Route::middleware('auth')->prefix('admin')->group(function () {
     Route::put('/planner/routes/{route}', [PlanRouteController::class, 'update'])->name('admin.planner.routes.update');
     Route::delete('/planner/routes/{route}', [PlanRouteController::class, 'destroy'])->name('admin.planner.routes.destroy');
 
+    Route::get('stream', [StreamController::class, 'index'])->name('admin.stream');
+
     // Audience dashboards
     Route::get('dash/main', [MainDashboardController::class, 'index'])->name('admin.dash.main');
     Route::get('dash/tech', [TechDashboardController::class, 'index'])->name('admin.dash.tech');
     Route::get('dash/ops', [OpsDashboardController::class, 'index'])->name('admin.dash.ops');
     Route::get('dash/skipper', [SkipperDashboardController::class, 'index'])->name('admin.dash.skipper');
 
-    // Canonical metric catalog
-    Route::get('metrics/catalog', [CanonicalCatalogController::class, 'index'])->name('admin.catalog');
-    Route::post('metrics/catalog', [CanonicalCatalogController::class, 'store'])->name('admin.catalog.store');
-    Route::get('metrics/catalog/inventory', [CanonicalCatalogController::class, 'inventory'])->name('admin.catalog.inventory');
-    Route::put('metrics/catalog/{metric}', [CanonicalCatalogController::class, 'update'])->name('admin.catalog.update');
-    Route::delete('metrics/catalog/{metric}', [CanonicalCatalogController::class, 'destroy'])->name('admin.catalog.destroy');
-    Route::post('metrics/catalog/test', [CanonicalCatalogController::class, 'test'])->name('admin.catalog.test');
-    Route::post('metrics/catalog/rollback', [CanonicalCatalogController::class, 'rollback'])->name('admin.catalog.rollback');
+    // Canonical metric catalog (Data)
+    Route::get('data', [CanonicalCatalogController::class, 'index'])->name('admin.data.index');
+    Route::post('data', [CanonicalCatalogController::class, 'store'])->name('admin.data.store');
+    Route::get('data/inventory', [CanonicalCatalogController::class, 'inventory'])->name('admin.data.inventory');
+    Route::get('data/current', [DataController::class, 'current'])->name('admin.data.current');
+    Route::get('data/series', [DataController::class, 'series'])->name('admin.data.series');
+    Route::post('data/test', [CanonicalCatalogController::class, 'test'])->name('admin.data.test');
+    Route::post('data/rollback', [CanonicalCatalogController::class, 'rollback'])->name('admin.data.rollback');
+    Route::get('data/{metric}', [DataController::class, 'show'])->name('admin.data.show')->where('metric', '[A-Za-z0-9_]+');
+    Route::put('data/{metric}', [CanonicalCatalogController::class, 'update'])->name('admin.data.update');
+    Route::delete('data/{metric}', [CanonicalCatalogController::class, 'destroy'])->name('admin.data.destroy');
 });

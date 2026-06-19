@@ -1,10 +1,10 @@
 <template>
     <AdminLayout>
-        <Head title="Data Mapping" />
+        <Head title="Data" />
 
         <div class="flex items-center justify-between mb-6">
             <div>
-                <h1 class="text-[22px] font-bold">Data Mapping</h1>
+                <h1 class="text-[22px] font-bold">Data</h1>
                 <p class="text-[13px] text-text-secondary mt-0.5">Catalog v{{ version }} &mdash; {{ metrics.length }} metrics across {{ groupNames.length }} groups</p>
             </div>
             <button type="button" @click="openAdd" class="btn btn--primary">
@@ -26,6 +26,7 @@
                         <tr class="border-b border-border">
                             <th class="px-5 py-2.5 text-left text-[11px] font-semibold text-text-secondary uppercase tracking-wide">Key</th>
                             <th class="px-5 py-2.5 text-left text-[11px] font-semibold text-text-secondary uppercase tracking-wide">Label</th>
+                            <th class="px-5 py-2.5 text-left text-[11px] font-semibold text-text-secondary uppercase tracking-wide">Live</th>
                             <th class="px-5 py-2.5 text-left text-[11px] font-semibold text-text-secondary uppercase tracking-wide">Unit</th>
                             <th class="px-5 py-2.5 text-left text-[11px] font-semibold text-text-secondary uppercase tracking-wide">Sources</th>
                             <th class="px-5 py-2.5 text-left text-[11px] font-semibold text-text-secondary uppercase tracking-wide">Status</th>
@@ -39,7 +40,13 @@
                                 <td class="px-5 py-3">
                                     <code class="text-[12px] font-mono bg-bg border border-border rounded px-1.5 py-0.5 text-text-primary">{{ metric.key }}</code>
                                 </td>
-                                <td class="px-5 py-3 text-[13px] font-medium">{{ metric.label }}</td>
+                                <td class="px-5 py-3 text-[13px] font-medium">
+                                    <Link :href="route('admin.data.show', { metric: metric.key })" class="text-text-primary hover:text-scarlet transition-colors">{{ metric.label }}</Link>
+                                </td>
+                                <td class="px-5 py-3 whitespace-nowrap" :class="{ 'opacity-45': liveStale(metric) }">
+                                    <span class="text-[13px] font-semibold tabular-nums">{{ liveValueDisplay(metric) }}</span>
+                                    <span v-if="liveAgeDisplay(metric)" class="text-[11px] text-text-dim ml-1.5">{{ liveAgeDisplay(metric) }}</span>
+                                </td>
                                 <td class="px-5 py-3 text-[13px] text-text-secondary">
                                     <span v-if="metric.display_unit">{{ metric.display_unit }}</span>
                                     <span v-else class="text-text-dim italic">—</span>
@@ -88,7 +95,7 @@
 
                             <!-- Expanded sources sub-rows -->
                             <tr v-if="expandedMetric === metric.id" :key="'src-' + metric.id">
-                                <td colspan="6" class="px-5 py-0 bg-bg border-b border-border">
+                                <td colspan="7" class="px-5 py-0 bg-bg border-b border-border">
                                     <div class="py-3 space-y-2">
                                         <div v-if="metric.sources.length === 0" class="text-[13px] text-text-dim italic py-2">No sources configured.</div>
                                         <div
@@ -501,7 +508,7 @@
 
 <script setup>
 import { ref, computed, watch, nextTick, onMounted } from 'vue';
-import { Head, useForm, router } from '@inertiajs/vue3';
+import { Head, Link, useForm, router } from '@inertiajs/vue3';
 import AdminLayout from '@/Layouts/AdminLayout.vue';
 
 const props = defineProps({
@@ -509,6 +516,45 @@ const props = defineProps({
     versions: { type: Array, default: () => [] },
     version: { type: Number, default: 0 },
 });
+
+// ── Live current values (value + age per metric) ───────────
+
+const liveValues = ref({});
+
+onMounted(async () => {
+    try {
+        const response = await fetch(route('admin.data.current'), { headers: { Accept: 'application/json' } });
+        if (response.ok) {
+            liveValues.value = await response.json();
+        }
+    } catch {
+        // Live values are advisory; the catalog still works without them.
+    }
+});
+
+function liveValueDisplay(metric) {
+    const live = liveValues.value[metric.key];
+    if (!live || live.value == null) {
+        return '—';
+    }
+    const num = Math.abs(live.value) >= 100 ? Math.round(live.value) : Number(live.value).toFixed(1);
+    return `${num}${live.unit ? ' ' + live.unit : ''}`;
+}
+
+function liveAgeDisplay(metric) {
+    const live = liveValues.value[metric.key];
+    if (!live || live.age_s == null) {
+        return '';
+    }
+    const s = Math.round(live.age_s);
+    if (s < 60) { return `${s}s ago`; }
+    if (s < 3600) { return `${Math.round(s / 60)}m ago`; }
+    return `${Math.round(s / 3600)}h ago`;
+}
+
+function liveStale(metric) {
+    return liveValues.value[metric.key]?.stale ?? false;
+}
 
 // ── Live VM inventory (series picker + drift detection) ─────
 
@@ -518,7 +564,7 @@ const inventoryLoaded = ref(false);
 
 onMounted(async () => {
     try {
-        const response = await fetch(route('admin.catalog.inventory'), {
+        const response = await fetch(route('admin.data.inventory'), {
             headers: { Accept: 'application/json' },
         });
         if (response.ok) {
@@ -589,7 +635,7 @@ const testingSourceId = ref(null);
 async function testSource(src) {
     testingSourceId.value = src.id;
     try {
-        const response = await fetch(route('admin.catalog.test'), {
+        const response = await fetch(route('admin.data.test'), {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -747,13 +793,13 @@ function moveSource(idx, dir) {
 
 function saveMetric() {
     if (editingMetric.value) {
-        metricForm.put(route('admin.catalog.update', { metric: editingMetric.value.id }), {
+        metricForm.put(route('admin.data.update', { metric: editingMetric.value.id }), {
             onSuccess: () => {
                 showEditor.value = false;
             },
         });
     } else {
-        metricForm.post(route('admin.catalog.store'), {
+        metricForm.post(route('admin.data.store'), {
             onSuccess: () => {
                 showEditor.value = false;
                 metricForm.reset();
@@ -781,7 +827,7 @@ watch(deletingMetric, (val) => {
 
 function confirmDelete() {
     deleting.value = true;
-    router.delete(route('admin.catalog.destroy', { metric: deletingMetric.value.id }), {
+    router.delete(route('admin.data.destroy', { metric: deletingMetric.value.id }), {
         onSuccess: () => {
             deletingMetric.value = null;
         },
@@ -809,7 +855,7 @@ watch(rollbackTarget, (val) => {
 
 function confirmRollback() {
     rollingBack.value = true;
-    router.post(route('admin.catalog.rollback'), { version: rollbackTarget.value.version }, {
+    router.post(route('admin.data.rollback'), { version: rollbackTarget.value.version }, {
         onSuccess: () => {
             rollbackTarget.value = null;
         },

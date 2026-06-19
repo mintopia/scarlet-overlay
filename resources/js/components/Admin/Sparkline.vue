@@ -94,16 +94,16 @@ const pathData = computed(() => {
     <svg :viewBox="`0 0 ${width} ${height}`" preserveAspectRatio="none" :style="{ width: '100%', height: height + 'px' }">
         <template v-if="pathData">
             <!-- Zero line -->
-            <line v-if="zeroLine && pathData.zeroY" x1="0" :y1="pathData.zeroY" :x2="width" :y2="pathData.zeroY" :stroke="color" stroke-width="0.5" stroke-dasharray="2 2" opacity="0.3"/>
+            <line v-if="zeroLine && pathData.zeroY" x1="0" :y1="pathData.zeroY" :x2="width" :y2="pathData.zeroY" :stroke="color" stroke-width="0.5" stroke-dasharray="2 2" opacity="0.3" vector-effect="non-scaling-stroke"/>
 
             <!-- Fill segments -->
             <path v-if="fill" v-for="(seg, i) in pathData.fillSegments" :key="'f'+i" :d="seg" :fill="color" opacity="0.06"/>
 
             <!-- Solid line segments -->
-            <path v-for="(seg, i) in pathData.lineSegments" :key="'l'+i" :d="seg" fill="none" :stroke="color" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" opacity="0.7"/>
+            <path v-for="(seg, i) in pathData.lineSegments" :key="'l'+i" :d="seg" fill="none" :stroke="color" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" opacity="0.7" vector-effect="non-scaling-stroke"/>
 
             <!-- Dotted gap connectors -->
-            <path v-for="(seg, i) in pathData.gapPaths" :key="'g'+i" :d="seg" fill="none" :stroke="color" stroke-width="1" stroke-dasharray="3 3" opacity="0.3"/>
+            <path v-for="(seg, i) in pathData.gapPaths" :key="'g'+i" :d="seg" fill="none" :stroke="color" stroke-width="1" stroke-dasharray="3 3" opacity="0.3" vector-effect="non-scaling-stroke"/>
 
             <!-- Current value dot -->
             <circle v-if="showDot && pathData.lastPoint" :cx="pathData.lastPoint.x" :cy="pathData.lastPoint.y" r="3" :fill="color" stroke="var(--color-surface)" stroke-width="1.5"/>

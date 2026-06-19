@@ -21,23 +21,22 @@
             </div>
 
             <nav class="px-2.5 py-3 flex-1 flex flex-col gap-0.5 overflow-y-auto">
+                <div class="nav-section">Voyage</div>
                 <NavLink href="/admin" icon="home" :active="currentPage === 'Admin/Dashboard'" @click="sidebarOpen = false">Dashboard</NavLink>
                 <NavLink href="/admin/journeys" icon="compass" :active="currentPage?.startsWith('Admin/Journey')" @click="sidebarOpen = false">Journeys</NavLink>
                 <NavLink href="/admin/log" icon="clipboard" :active="currentPage === 'Admin/Log'" @click="sidebarOpen = false">Ship's Log</NavLink>
                 <NavLink href="/admin/planner" icon="route" :active="currentPage?.startsWith('Admin/Planner')" @click="sidebarOpen = false">Planner</NavLink>
                 <NavLink href="/admin/tracks" icon="map" :active="currentPage === 'Admin/Tracks'" @click="sidebarOpen = false">Tracks</NavLink>
-                <NavLink href="/admin/environment" icon="thermometer" :active="currentPage === 'Admin/Environment'" @click="sidebarOpen = false">Environment</NavLink>
-                <NavLink href="/admin/explore" icon="search" :active="currentPage?.startsWith('Admin/Explore')" @click="sidebarOpen = false">Explore</NavLink>
 
-                <div class="nav-divider"></div>
-
-                <NavLink href="/admin/tracker" icon="activity" :active="currentPage === 'Admin/Tracker'" @click="sidebarOpen = false">Tracker</NavLink>
-                <NavLink href="/admin/broadcast" icon="radio" :active="currentPage === 'Admin/Broadcast'" @click="sidebarOpen = false">Broadcast</NavLink>
+                <div class="nav-section">Dashboards</div>
                 <NavLink href="/admin/dash/main" icon="globe" :active="currentPage === 'Admin/Dash/Main'" @click="sidebarOpen = false">Main</NavLink>
                 <NavLink href="/admin/dash/tech" icon="cpu" :active="currentPage === 'Admin/Dash/Tech'" @click="sidebarOpen = false">Tech</NavLink>
                 <NavLink href="/admin/dash/ops" icon="anchor" :active="currentPage === 'Admin/Dash/Ops'" @click="sidebarOpen = false">Ops</NavLink>
                 <NavLink href="/admin/dash/skipper" icon="navigation" :active="currentPage === 'Admin/Dash/Skipper'" @click="sidebarOpen = false">Skipper</NavLink>
-                <NavLink href="/admin/metrics/catalog" icon="layers" :active="currentPage === 'Admin/Catalog'" @click="sidebarOpen = false">Data Mapping</NavLink>
+                <NavLink href="/admin/stream" icon="video" :active="currentPage === 'Admin/Stream'" @click="sidebarOpen = false">Stream</NavLink>
+
+                <div class="nav-section">System</div>
+                <NavLink href="/admin/data" icon="layers" :active="currentPage === 'Admin/Data'" @click="sidebarOpen = false">Data</NavLink>
                 <NavLink href="/admin/settings" icon="settings" :active="currentPage === 'Admin/Settings'" @click="sidebarOpen = false">Settings</NavLink>
                 <NavLink href="/admin/team" icon="users" :active="currentPage === 'Admin/Team'" @click="sidebarOpen = false">Team</NavLink>
 
@@ -160,19 +159,16 @@ const breadcrumbMap = {
     'Admin/Log': [home, { label: "Ship's Log" }],
     'Admin/Planner': [home, { label: 'Planner' }],
     'Admin/PlannerShow': [home, { label: 'Planner', href: '/admin/planner' }],
-    'Admin/Tracker': [home, { label: 'Tracker' }],
     'Admin/BoatMetrics': [home, { label: 'Boat Metrics' }],
-    'Admin/Environment': [home, { label: 'Environment' }],
-    'Admin/Broadcast': [home, { label: 'Broadcast' }],
-    'Admin/ExploreDashboard': [home, { label: 'Explore' }],
-    'Admin/Explore': [home, { label: 'Explore', href: '/admin/explore' }],
     'Admin/Profile': [home, { label: 'Profile' }],
     'Admin/Team': [home, { label: 'Team' }],
-    'Admin/Catalog': [home, { label: 'Data Mapping' }],
+    'Admin/Data': [home, { label: 'Data' }],
+    'Admin/MetricExplorer': [home, { label: 'Data', href: '/admin/data' }, { label: 'Metric' }],
     'Admin/Dash/Main': [home, { label: 'Dashboards', href: '/admin/dash/main' }, { label: 'Main' }],
     'Admin/Dash/Tech': [home, { label: 'Dashboards', href: '/admin/dash/tech' }, { label: 'Tech' }],
     'Admin/Dash/Ops': [home, { label: 'Dashboards', href: '/admin/dash/ops' }, { label: 'Ops' }],
     'Admin/Dash/Skipper': [home, { label: 'Dashboards', href: '/admin/dash/skipper' }, { label: 'Skipper' }],
+    'Admin/Stream': [home, { label: 'Stream' }],
 };
 
 const computedBreadcrumbs = computed(() => {
@@ -279,11 +275,15 @@ onUnmounted(() => {
     opacity: 0;
 }
 
-.nav-divider {
-    height: 1px;
-    background: var(--color-border-light);
-    margin: 6px 12px;
+.nav-section {
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--color-text-dim);
+    padding: 14px 12px 4px;
 }
+.nav-section:first-child { padding-top: 4px; }
 
 .nav-link {
     display: flex;

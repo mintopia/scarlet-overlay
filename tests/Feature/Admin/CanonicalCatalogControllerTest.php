@@ -17,7 +17,7 @@ class CanonicalCatalogControllerTest extends TestCase
 
     public function test_requires_auth(): void
     {
-        $this->get(route('admin.catalog'))->assertRedirect(route('login'));
+        $this->get(route('admin.data.index'))->assertRedirect(route('login'));
     }
 
     public function test_index_lists_metrics_with_sources_and_versions(): void
@@ -29,9 +29,9 @@ class CanonicalCatalogControllerTest extends TestCase
         CanonicalCatalogVersion::create(['version' => 2, 'action' => 'edit', 'actor' => 'bob@example.com', 'snapshot' => []]);
 
         $this->actingAs(User::factory()->create())
-            ->get(route('admin.catalog'))
+            ->get(route('admin.data.index'))
             ->assertInertia(fn (Assert $p) => $p
-                ->component('Admin/Catalog')
+                ->component('Admin/Data')
                 ->has('metrics', 1)
                 ->where('metrics.0.key', 'fuel_level')
                 ->has('metrics.0.sources', 1)
@@ -50,7 +50,7 @@ class CanonicalCatalogControllerTest extends TestCase
         $metric->sources()->create(['priority' => 1, 'source_metric_name' => 'old_metric_name']);
 
         $this->actingAs(User::factory()->create())
-            ->put(route('admin.catalog.update', $metric), [
+            ->put(route('admin.data.update', $metric), [
                 'key' => 'fuel_level', 'label' => 'Diesel Updated', 'group' => 'tank',
                 'storage_unit' => 'pct', 'display_unit' => '%', 'staleness_threshold_s' => 3600,
                 'sources' => [[
@@ -68,7 +68,7 @@ class CanonicalCatalogControllerTest extends TestCase
         $metric = CanonicalMetric::create(['key' => 'fuel_level', 'label' => 'Diesel', 'storage_unit' => 'pct', 'display_unit' => '%', 'staleness_threshold_s' => 3600]);
 
         $this->actingAs(User::factory()->create())
-            ->delete(route('admin.catalog.destroy', $metric))
+            ->delete(route('admin.data.destroy', $metric))
             ->assertRedirect();
 
         $this->assertDatabaseMissing('canonical_metrics', ['key' => 'fuel_level']);
@@ -78,7 +78,7 @@ class CanonicalCatalogControllerTest extends TestCase
     public function test_store_creates_metric_with_sources_and_bumps_version(): void
     {
         $this->actingAs(User::factory()->create())
-            ->post(route('admin.catalog.store'), [
+            ->post(route('admin.data.store'), [
                 'key' => 'water_fresh_level', 'label' => 'Fresh Water', 'group' => 'tank',
                 'storage_unit' => 'pct', 'display_unit' => '%', 'staleness_threshold_s' => 3600,
                 'volatile' => true, 'trend_fn' => 'median', 'trend_window' => '10m',
@@ -97,7 +97,7 @@ class CanonicalCatalogControllerTest extends TestCase
     public function test_store_persists_validity_bounds_and_null_island_flag(): void
     {
         $this->actingAs(User::factory()->create())
-            ->post(route('admin.catalog.store'), [
+            ->post(route('admin.data.store'), [
                 'key' => 'position_lat', 'label' => 'Latitude', 'group' => 'nav',
                 'storage_unit' => 'deg', 'display_unit' => '°', 'staleness_threshold_s' => 120,
                 'valid_min' => -90, 'valid_max' => 90, 'reject_null_island' => true,
@@ -112,7 +112,7 @@ class CanonicalCatalogControllerTest extends TestCase
     public function test_store_persists_structured_matchers_and_transforms(): void
     {
         $this->actingAs(User::factory()->create())
-            ->post(route('admin.catalog.store'), [
+            ->post(route('admin.data.store'), [
                 'key' => 'water_fresh_level', 'label' => 'Fresh Water', 'group' => 'tank',
                 'storage_unit' => 'ratio', 'display_unit' => '%', 'staleness_threshold_s' => 3600,
                 'sources' => [[
@@ -130,7 +130,7 @@ class CanonicalCatalogControllerTest extends TestCase
     public function test_store_rejects_invalid_transform_op(): void
     {
         $this->actingAs(User::factory()->create())
-            ->postJson(route('admin.catalog.store'), [
+            ->postJson(route('admin.data.store'), [
                 'key' => 'bad', 'label' => 'Bad', 'storage_unit' => 'x', 'display_unit' => 'x',
                 'staleness_threshold_s' => 60,
                 'sources' => [[
@@ -148,7 +148,7 @@ class CanonicalCatalogControllerTest extends TestCase
         ], 200)]);
 
         $this->actingAs(User::factory()->create())
-            ->getJson(route('admin.catalog.inventory'))
+            ->getJson(route('admin.data.inventory'))
             ->assertOk()
             ->assertJson(['names' => ['scarlet_gps_latitude_deg', 'scarlet_signalk_navigation_speedOverGround']]);
     }
@@ -161,7 +161,7 @@ class CanonicalCatalogControllerTest extends TestCase
         ], 200)]);
 
         $this->actingAs(User::factory()->create())
-            ->postJson(route('admin.catalog.test'), [
+            ->postJson(route('admin.data.test'), [
                 'source_metric_name' => 'scarlet_signalk_electrical_batteries_house_voltage',
             ])->assertOk()->assertJson(['ok' => true, 'value' => 12.8]);
     }
