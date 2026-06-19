@@ -10,13 +10,14 @@
                     <span v-if="metricUnit"> · {{ metricUnit }}</span>
                 </p>
             </div>
-            <div class="flex gap-1">
+            <div class="flex gap-1" role="group" aria-label="Time range">
                 <button
                     v-for="r in ranges"
                     :key="r"
                     type="button"
                     class="range-pill"
                     :class="{ 'range-pill--active': range === r }"
+                    :aria-pressed="range === r"
                     @click="range = r"
                 >{{ r }}</button>
             </div>
@@ -157,7 +158,7 @@ onMounted(reloadAll);
 .range-pill--active {
     background: var(--color-scarlet);
     border-color: var(--color-scarlet);
-    color: white;
+    color: var(--color-surface);
 }
 .explorer-skeleton {
     height: 260px;

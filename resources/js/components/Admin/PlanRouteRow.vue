@@ -4,11 +4,16 @@
             class="route-row"
             :class="{ 'route-row--dim': !route.is_enabled, 'route-row--dragging': isDragging }"
             :draggable="!readonly"
+            role="button"
+            tabindex="0"
+            :aria-expanded="expanded"
             @dragstart="onDragStart"
             @dragend="onDragEnd"
             @dragover.prevent="$emit('dragover', $event)"
             @drop.prevent="$emit('drop', route)"
             @click="expanded = !expanded"
+            @keydown.enter="expanded = !expanded"
+            @keydown.space.prevent="expanded = !expanded"
         >
             <span v-if="!readonly" class="route-grip" @mousedown.stop>
                 <svg width="10" height="14" viewBox="0 0 10 14" fill="currentColor"><circle cx="3" cy="2" r="1.2"/><circle cx="7" cy="2" r="1.2"/><circle cx="3" cy="7" r="1.2"/><circle cx="7" cy="7" r="1.2"/><circle cx="3" cy="12" r="1.2"/><circle cx="7" cy="12" r="1.2"/></svg>
@@ -22,9 +27,13 @@
                 class="route-toggle"
                 :class="{ 'route-toggle--off': !route.is_enabled }"
                 @click.stop="$emit('toggle', route)"
+                @keydown.enter.stop
+                @keydown.space.stop
                 :title="route.is_enabled ? 'Hide route' : 'Show route'"
+                :aria-label="route.is_enabled ? 'Hide route' : 'Show route'"
+                :aria-pressed="route.is_enabled"
             ></button>
-            <button v-if="!readonly" class="route-remove" @click.stop="$emit('remove', route)" title="Remove route">&times;</button>
+            <button v-if="!readonly" class="route-remove" @click.stop="$emit('remove', route)" @keydown.enter.stop @keydown.space.stop title="Remove route" aria-label="Remove route">&times;</button>
         </div>
 
         <!-- Expanded waypoints -->
@@ -34,7 +43,11 @@
                     v-for="(wp, i) in route.waypoints"
                     :key="i"
                     class="waypoint-item"
+                    role="button"
+                    tabindex="0"
                     @click.stop="$emit('focusWaypoint', wp)"
+                    @keydown.enter.stop="$emit('focusWaypoint', wp)"
+                    @keydown.space.stop.prevent="$emit('focusWaypoint', wp)"
                 >
                     <span class="waypoint-dot" :class="{ 'waypoint-dot--endpoint': i === 0 || i === route.waypoints.length - 1 }"></span>
                     <span class="waypoint-badge" :class="badgeClass(i)">{{ badgeLabel(i) }}</span>
@@ -125,8 +138,8 @@ function badgeClass(i) {
 }
 .route-toggle::after {
     content: ''; position: absolute; top: 2px; right: 2px;
-    width: 13px; height: 13px; border-radius: 50%; background: #fff;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    width: 13px; height: 13px; border-radius: 50%; background: var(--color-surface);
+    box-shadow: var(--shadow-sm);
     transition: right 0.12s, left 0.12s;
 }
 .route-toggle--off { background: var(--color-border); }

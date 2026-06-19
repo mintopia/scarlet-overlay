@@ -56,9 +56,9 @@
         </div>
         <!-- Start Journey Confirm Modal -->
         <Transition name="modal">
-        <div v-if="startingJourney" class="modal-overlay" @click.self="startingJourney = null">
-            <div class="modal-card" role="dialog" aria-modal="true" aria-label="Confirm start journey">
-                <h3 class="text-[16px] font-semibold mb-2">Start recording?</h3>
+        <div v-if="startingJourney" class="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="start-journey-title" @click.self="startingJourney = null" @keydown.escape="startingJourney = null">
+            <div ref="startModalRef" tabindex="-1" class="modal-card" @keydown.tab="trapFocus($event, startModalRef)">
+                <h3 id="start-journey-title" class="text-[16px] font-semibold mb-2">Start recording?</h3>
                 <p class="text-[13px] text-text-secondary mb-5">This will begin track recording for <strong>{{ startingJourney.title }}</strong>. GPS position and boat data will be logged from now.</p>
                 <div class="flex items-center justify-end gap-3">
                     <button @click="startingJourney = null" class="btn btn--ghost">Cancel</button>
@@ -70,9 +70,9 @@
 
         <!-- End Journey Confirm Modal -->
         <Transition name="modal">
-        <div v-if="endingJourney" class="modal-overlay" @click.self="endingJourney = null">
-            <div class="modal-card" role="dialog" aria-modal="true" aria-label="Confirm end journey">
-                <h3 class="text-[16px] font-semibold mb-2">End this journey?</h3>
+        <div v-if="endingJourney" class="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="end-journey-title" @click.self="endingJourney = null" @keydown.escape="endingJourney = null">
+            <div ref="endModalRef" tabindex="-1" class="modal-card" @keydown.tab="trapFocus($event, endModalRef)">
+                <h3 id="end-journey-title" class="text-[16px] font-semibold mb-2">End this journey?</h3>
                 <p class="text-[13px] text-text-secondary mb-5">This will mark <strong>{{ endingJourney.title }}</strong> as completed. You can still edit it afterwards.</p>
                 <div class="flex items-center justify-end gap-3">
                     <button @click="endingJourney = null" class="btn btn--ghost">Cancel</button>
@@ -85,7 +85,7 @@
 </template>
 
 <script setup>
-import { ref } from 'vue';
+import { ref, watch, nextTick } from 'vue';
 import { Head, Link, router } from '@inertiajs/vue3';
 import AdminLayout from '@/Layouts/AdminLayout.vue';
 import { fmtDuration } from '@/composables/useFormatters.js';
@@ -97,6 +97,36 @@ defineProps({ journeys: Array });
 
 const startingJourney = ref(null);
 const endingJourney = ref(null);
+const startModalRef = ref(null);
+const endModalRef = ref(null);
+
+watch(startingJourney, (val) => {
+    if (val) {
+        nextTick(() => startModalRef.value?.focus());
+    }
+});
+watch(endingJourney, (val) => {
+    if (val) {
+        nextTick(() => endModalRef.value?.focus());
+    }
+});
+
+function trapFocus(event, containerRef) {
+    const modal = containerRef;
+    if (!modal) {
+        return;
+    }
+    const focusable = modal.querySelectorAll('input, button, textarea, select, [tabindex]:not([tabindex="-1"])');
+    const first = focusable[0];
+    const last = focusable[focusable.length - 1];
+    if (event.shiftKey && document.activeElement === first) {
+        event.preventDefault();
+        last?.focus();
+    } else if (!event.shiftKey && document.activeElement === last) {
+        event.preventDefault();
+        first?.focus();
+    }
+}
 
 function confirmStart(journey) {
     startingJourney.value = journey;

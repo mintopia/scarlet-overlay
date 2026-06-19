@@ -24,13 +24,13 @@
                 <table class="w-full min-w-[700px]">
                     <thead>
                         <tr class="border-b border-border">
-                            <th class="px-5 py-2.5 text-left text-[11px] font-semibold text-text-secondary uppercase tracking-wide">Key</th>
-                            <th class="px-5 py-2.5 text-left text-[11px] font-semibold text-text-secondary uppercase tracking-wide">Label</th>
-                            <th class="px-5 py-2.5 text-left text-[11px] font-semibold text-text-secondary uppercase tracking-wide">Live</th>
-                            <th class="px-5 py-2.5 text-left text-[11px] font-semibold text-text-secondary uppercase tracking-wide">Unit</th>
-                            <th class="px-5 py-2.5 text-left text-[11px] font-semibold text-text-secondary uppercase tracking-wide">Sources</th>
-                            <th class="px-5 py-2.5 text-left text-[11px] font-semibold text-text-secondary uppercase tracking-wide">Status</th>
-                            <th class="px-5 py-2.5"></th>
+                            <th scope="col" class="px-5 py-2.5 text-left text-[11px] font-semibold text-text-secondary uppercase tracking-wide">Key</th>
+                            <th scope="col" class="px-5 py-2.5 text-left text-[11px] font-semibold text-text-secondary uppercase tracking-wide">Label</th>
+                            <th scope="col" class="px-5 py-2.5 text-left text-[11px] font-semibold text-text-secondary uppercase tracking-wide">Live</th>
+                            <th scope="col" class="px-5 py-2.5 text-left text-[11px] font-semibold text-text-secondary uppercase tracking-wide">Unit</th>
+                            <th scope="col" class="px-5 py-2.5 text-left text-[11px] font-semibold text-text-secondary uppercase tracking-wide">Sources</th>
+                            <th scope="col" class="px-5 py-2.5 text-left text-[11px] font-semibold text-text-secondary uppercase tracking-wide">Status</th>
+                            <th scope="col" class="px-5 py-2.5"><span class="sr-only">Actions</span></th>
                         </tr>
                     </thead>
                     <tbody>
@@ -70,15 +70,15 @@
                                     </button>
                                 </td>
                                 <td class="px-5 py-3">
-                                    <div class="flex items-center gap-1.5 flex-wrap">
-                                        <span class="inline-flex items-center gap-1.5 text-[11px] font-semibold px-2 py-0.5 rounded-full"
-                                            :class="metric.enabled ? 'bg-green-bg text-green' : 'bg-bg text-text-dim'">
+                                    <div class="flex items-center gap-3 flex-wrap">
+                                        <span class="inline-flex items-center gap-1.5 text-[11px] font-semibold"
+                                            :class="metric.enabled ? 'text-green' : 'text-text-dim'">
                                             <span class="w-1.5 h-1.5 rounded-full inline-block"
                                                 :class="metric.enabled ? 'bg-green' : 'bg-text-dim'"></span>
                                             {{ metric.enabled ? 'Enabled' : 'Disabled' }}
                                         </span>
                                         <span v-if="metricDrift(metric) === 'missing'"
-                                            class="inline-flex items-center gap-1 text-[11px] font-semibold px-2 py-0.5 rounded-full bg-error-bg text-error"
+                                            class="inline-flex items-center gap-1 text-[11px] font-semibold text-error"
                                             title="Highest-priority source not found in live VictoriaMetrics">
                                             <svg viewBox="0 0 24 24" width="11" height="11" stroke="currentColor" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
                                             drift
@@ -346,8 +346,8 @@
                             <div class="flex items-center justify-between mb-2">
                                 <span class="text-[11px] font-bold text-text-dim uppercase tracking-wide">Source {{ idx + 1 }}</span>
                                 <div class="flex items-center gap-2">
-                                    <button v-if="idx > 0" type="button" @click="moveSource(idx, -1)" class="text-[11px] text-text-dim hover:text-text-primary">↑</button>
-                                    <button v-if="idx < metricForm.sources.length - 1" type="button" @click="moveSource(idx, 1)" class="text-[11px] text-text-dim hover:text-text-primary">↓</button>
+                                    <button v-if="idx > 0" type="button" @click="moveSource(idx, -1)" aria-label="Move source up" class="text-[11px] text-text-dim hover:text-text-primary">↑</button>
+                                    <button v-if="idx < metricForm.sources.length - 1" type="button" @click="moveSource(idx, 1)" aria-label="Move source down" class="text-[11px] text-text-dim hover:text-text-primary">↓</button>
                                     <button type="button" @click="removeSource(idx)" class="text-[11px] text-error hover:text-scarlet-hover">Remove</button>
                                 </div>
                             </div>
@@ -392,7 +392,7 @@
                                         <option value="absent">absent</option>
                                     </select>
                                     <input v-model="m.value" :disabled="m.op === 'absent'" type="text" class="field-input flex-1 disabled:opacity-40" placeholder="value" />
-                                    <button type="button" @click="removeMatcher(src, mi)" class="text-[12px] text-error hover:text-scarlet-hover px-1.5">✕</button>
+                                    <button type="button" @click="removeMatcher(src, mi)" aria-label="Remove label matcher" class="text-[12px] text-error hover:text-scarlet-hover px-1.5">✕</button>
                                 </div>
                             </div>
 
@@ -411,7 +411,7 @@
                                         <option value="subtract">− subtract</option>
                                     </select>
                                     <input v-model.number="t.value" type="number" step="any" class="field-input flex-1" placeholder="value e.g. 1.94384" />
-                                    <button type="button" @click="removeTransform(src, ti)" class="text-[12px] text-error hover:text-scarlet-hover px-1.5">✕</button>
+                                    <button type="button" @click="removeTransform(src, ti)" aria-label="Remove unit transform" class="text-[12px] text-error hover:text-scarlet-hover px-1.5">✕</button>
                                 </div>
                             </div>
                         </div>

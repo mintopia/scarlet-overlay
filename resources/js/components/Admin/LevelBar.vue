@@ -8,9 +8,9 @@ const props = defineProps({
 })
 
 const gradients = {
-    green: 'linear-gradient(90deg, var(--color-green), color-mix(in oklch, var(--color-green) 80%, white))',
-    amber: 'linear-gradient(90deg, var(--color-amber), color-mix(in oklch, var(--color-amber) 80%, white))',
-    blue: 'linear-gradient(90deg, var(--color-blue), color-mix(in oklch, var(--color-blue) 80%, white))',
+    green: 'linear-gradient(90deg, var(--color-green), color-mix(in oklab, var(--color-green) 70%, transparent))',
+    amber: 'linear-gradient(90deg, var(--color-amber), color-mix(in oklab, var(--color-amber) 70%, transparent))',
+    blue: 'linear-gradient(90deg, var(--color-blue), color-mix(in oklab, var(--color-blue) 70%, transparent))',
 }
 
 const glows = {
@@ -88,7 +88,7 @@ function formatAge(s) {
     opacity: 1;
 }
 .level-bar__value {
-    font-family: 'Nunito Sans', sans-serif;
+    font-family: var(--font-sans);
     font-size: 14px;
     font-weight: 600;
     width: 34px;

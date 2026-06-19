@@ -317,7 +317,7 @@
                     </div>
                     <div class="sk-res__empty sk-res__empty--sm">No Data</div>
                     <div class="sk-axis">
-                        <span>voltage · live</span>
+                        <span>voltage</span>
                         <span>now</span>
                     </div>
                 </div>
@@ -706,8 +706,8 @@ const fuelDisplay = computed(() => {
     display: inline-flex;
     align-items: center;
     gap: 7px;
-    background: oklch(0.92 0.05 150);
-    color: oklch(0.28 0.1 150);
+    background: var(--color-green-bg);
+    color: var(--color-green);
     font-size: 11px;
     font-weight: 800;
     letter-spacing: 1px;
@@ -720,7 +720,7 @@ const fuelDisplay = computed(() => {
     width: 7px;
     height: 7px;
     border-radius: 50%;
-    background: oklch(0.45 0.16 150);
+    background: var(--color-green);
 }
 
 .sk-hdot {
@@ -737,7 +737,7 @@ const fuelDisplay = computed(() => {
     width: 7px;
     height: 7px;
     border-radius: 50%;
-    background: oklch(0.45 0.16 150);
+    background: var(--color-green);
 }
 
 .sk-passage {
@@ -875,7 +875,7 @@ const fuelDisplay = computed(() => {
     font-family: 'Nunito Sans', sans-serif;
     font-weight: 800;
     font-size: 19px;
-    color: oklch(0.4 0.13 150);
+    color: var(--color-green);
 }
 
 .sk-tide__dl {
@@ -982,7 +982,7 @@ const fuelDisplay = computed(() => {
     position: relative;
     overflow: hidden;
     border: 1px solid var(--color-border);
-    background: linear-gradient(165deg, oklch(0.9 0.035 220), oklch(0.84 0.055 210) 55%, oklch(0.8 0.06 205));
+    background: linear-gradient(165deg, var(--color-blue-bg), var(--color-blue-bg) 55%, var(--color-blue-bg));
 }
 
 .sk-map__leaflet {
@@ -1003,11 +1003,11 @@ const fuelDisplay = computed(() => {
 .sk-cluster {
     position: absolute;
     z-index: 10;
-    background: oklch(0.99 0.004 205 / 0.92);
+    background: var(--color-surface);
     border: 1px solid var(--color-border);
     border-radius: 12px;
     padding: 8px 11px;
-    box-shadow: 0 2px 10px oklch(0.2 0.02 205 / 0.12);
+    box-shadow: var(--shadow-sm);
 }
 
 .sk-cluster--tr {
@@ -1053,7 +1053,7 @@ const fuelDisplay = computed(() => {
     left: 10px;
     font-size: 8px;
     font-weight: 600;
-    color: oklch(0.3 0.04 220 / 0.6);
+    color: var(--color-text-dim);
     z-index: 2;
 }
 
@@ -1078,11 +1078,11 @@ const fuelDisplay = computed(() => {
 }
 
 .sk-ap--active {
-    background: oklch(0.93 0.05 150);
+    background: var(--color-green-bg);
 }
 
 .sk-ap--standby {
-    background: oklch(0.93 0.04 80);
+    background: var(--color-amber-bg);
 }
 
 .sk-ap--off {
@@ -1095,7 +1095,7 @@ const fuelDisplay = computed(() => {
     height: 9px;
     border-radius: 50%;
     background: var(--color-green);
-    box-shadow: 0 0 0 4px oklch(0.6 0.14 150 / 0.18);
+    box-shadow: 0 0 0 4px var(--color-green-bg);
     flex-shrink: 0;
 }
 
@@ -1109,7 +1109,7 @@ const fuelDisplay = computed(() => {
     font-weight: 800;
     letter-spacing: 0.5px;
     text-transform: uppercase;
-    color: oklch(0.28 0.1 150);
+    color: var(--color-green);
 }
 
 .sk-ap--off .sk-ap__txt {
@@ -1117,14 +1117,14 @@ const fuelDisplay = computed(() => {
 }
 
 .sk-ap--standby .sk-ap__txt {
-    color: oklch(0.35 0.08 70);
+    color: var(--color-amber);
 }
 
 .sk-ap__rud {
     margin-left: auto;
     font-size: 11px;
     font-weight: 700;
-    color: oklch(0.32 0.09 150);
+    color: var(--color-green);
 }
 
 .sk-ap__rud b {
@@ -1135,10 +1135,10 @@ const fuelDisplay = computed(() => {
     font-family: 'Nunito Sans', sans-serif;
     font-weight: 700;
     font-size: 18px;
-    color: oklch(0.28 0.1 150);
+    color: var(--color-green);
     padding-left: 12px;
     margin-left: 12px;
-    border-left: 1px solid oklch(0.6 0.1 150 / 0.4);
+    border-left: 1px solid var(--color-green);
 }
 
 /* Nav grid */

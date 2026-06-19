@@ -5,7 +5,16 @@
         <!-- Page header -->
         <div class="flex items-baseline justify-between mb-1">
             <div class="flex items-baseline gap-3">
-                <h1 v-if="!editingTitle" class="font-sans text-2xl font-extrabold tracking-tight cursor-pointer" @click="startEditTitle">{{ plan.title }}</h1>
+                <h1
+                    v-if="!editingTitle"
+                    class="font-sans text-2xl font-extrabold tracking-tight cursor-pointer"
+                    role="button"
+                    tabindex="0"
+                    aria-label="Edit plan title"
+                    @click="startEditTitle"
+                    @keydown.enter="startEditTitle"
+                    @keydown.space.prevent="startEditTitle"
+                >{{ plan.title }}</h1>
                 <input
                     v-else
                     ref="titleInput"
@@ -15,7 +24,10 @@
                     @keydown.enter="saveTitle"
                     @blur="saveTitle"
                 />
-                <span v-if="plan.share_token" class="text-[10px] font-body font-bold uppercase tracking-wide text-teal bg-teal-bg px-2 py-0.5 rounded-full">Shared</span>
+                <span v-if="plan.share_token" class="inline-flex items-center gap-1 text-[10px] font-body font-bold uppercase tracking-wide text-teal">
+                    <span class="inline-block w-1.5 h-1.5 rounded-full bg-teal" aria-hidden="true"></span>
+                    Shared
+                </span>
             </div>
             <div class="flex items-center gap-2">
                 <button v-if="plan.share_token" class="btn btn--ghost text-[12px]" @click="copyShareUrl">Copy Link</button>
@@ -65,9 +77,22 @@
 
         <!-- Delete confirmation modal -->
         <Transition name="modal">
-            <div v-if="deleteModal" class="fixed inset-0 z-[10000] flex items-center justify-center bg-black/30" @click.self="deleteModal = null">
-                <div class="modal-card bg-surface border border-border rounded-2xl shadow-lg p-6 w-full max-w-sm">
-                    <div class="text-[16px] font-sans font-bold text-text-primary mb-2">{{ deleteModal.title }}</div>
+            <div
+                v-if="deleteModal"
+                class="fixed inset-0 z-[10000] flex items-center justify-center bg-black/30"
+                role="dialog"
+                aria-modal="true"
+                aria-labelledby="delete-modal-title"
+                @click.self="deleteModal = null"
+                @keydown.escape="deleteModal = null"
+            >
+                <div
+                    ref="deleteModalRef"
+                    tabindex="-1"
+                    class="modal-card bg-surface border border-border rounded-2xl shadow-lg p-6 w-full max-w-sm"
+                    @keydown.tab="trapFocus($event, deleteModalRef)"
+                >
+                    <div id="delete-modal-title" class="text-[16px] font-sans font-bold text-text-primary mb-2">{{ deleteModal.title }}</div>
                     <div class="text-[13px] font-body text-text-secondary mb-5">{{ deleteModal.message }}</div>
                     <div class="flex justify-end gap-2">
                         <button class="btn btn--ghost" @click="deleteModal = null">Cancel</button>
@@ -102,6 +127,7 @@ const editingTitle = ref(false);
 const titleDraft = ref(props.plan.title);
 const titleInput = ref(null);
 const deleteModal = ref(null);
+const deleteModalRef = ref(null);
 const { base, seamark, contours, attach } = useMapLayers();
 
 let map = null;
@@ -199,10 +225,14 @@ function toggleShare() {
     }
 }
 
-function copyShareUrl() {
+async function copyShareUrl() {
     const url = `${window.location.origin}/planner/${props.plan.slug}?token=${props.plan.share_token}`;
-    navigator.clipboard.writeText(url);
-    toast.success('Share link copied to clipboard');
+    try {
+        await navigator.clipboard.writeText(url);
+        toast.success('Share link copied to clipboard');
+    } catch {
+        toast.error(`Couldn't copy automatically. Copy this link: ${url}`);
+    }
 }
 
 function createGroup() {
@@ -272,6 +302,29 @@ onUnmounted(() => {
 watch(() => props.plan, () => {
     nextTick(buildRouteLayers);
 }, { deep: true });
+
+watch(deleteModal, (val) => {
+    if (val) {
+        nextTick(() => deleteModalRef.value?.focus());
+    }
+});
+
+function trapFocus(event, containerRef) {
+    const modal = containerRef;
+    if (!modal) {
+        return;
+    }
+    const focusable = modal.querySelectorAll('input, button, textarea, select, [tabindex]:not([tabindex="-1"])');
+    const first = focusable[0];
+    const last = focusable[focusable.length - 1];
+    if (event.shiftKey && document.activeElement === first) {
+        event.preventDefault();
+        last?.focus();
+    } else if (!event.shiftKey && document.activeElement === last) {
+        event.preventDefault();
+        first?.focus();
+    }
+}
 </script>
 
 <style scoped>

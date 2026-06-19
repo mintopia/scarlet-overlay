@@ -151,15 +151,25 @@ function drawGapLines(color) {
     };
 }
 
+// uPlot draws to <canvas>, whose stroke/fillStyle cannot resolve CSS var()
+// (it can parse oklch()). Resolve tokens to their concrete computed value.
+function cssVar(name) {
+    return getComputedStyle(document.documentElement).getPropertyValue(name).trim() || name;
+}
+
 function buildChart(key, el) {
     const data = props.charts[key];
     if (!data?.length || !el) return;
 
     const meta = props.chartMeta?.[key] ?? {};
-    const color = meta.color ?? 'oklch(0.54 0.22 27)';
+    const color = meta.color ?? cssVar('--color-scarlet');
     const fillColor = color.includes('oklch(')
         ? color.replace(')', ' / 0.08)')
         : color + '14';
+
+    const axisStroke = cssVar('--color-text-dim');
+    const gridStroke = cssVar('--color-border');
+    const tickStroke = cssVar('--color-border-light');
 
     const timestamps = data.map(d => d.timestamp);
     const values = data.map(d => d.value ?? null);
@@ -175,15 +185,15 @@ function buildChart(key, el) {
         },
         axes: [
             {
-                stroke: 'oklch(0.55 0.01 70)',
-                grid: { stroke: 'oklch(0.93 0.005 70)', width: 1 },
-                ticks: { stroke: 'oklch(0.90 0.005 70)', width: 1 },
+                stroke: axisStroke,
+                grid: { stroke: gridStroke, width: 1 },
+                ticks: { stroke: tickStroke, width: 1 },
                 font: '10px system-ui',
             },
             {
-                stroke: 'oklch(0.55 0.01 70)',
-                grid: { stroke: 'oklch(0.93 0.005 70)', width: 1 },
-                ticks: { stroke: 'oklch(0.90 0.005 70)', width: 1 },
+                stroke: axisStroke,
+                grid: { stroke: gridStroke, width: 1 },
+                ticks: { stroke: tickStroke, width: 1 },
                 font: '10px system-ui',
                 size: 50,
             },
@@ -329,23 +339,23 @@ onUnmounted(() => {
 }
 
 .status-badge--active {
-    color: oklch(0.55 0.15 155);
-    background: oklch(0.55 0.15 155 / 0.1);
+    color: var(--color-green);
+    background: var(--color-green-bg);
 }
 
 .status-badge--completed {
-    color: oklch(0.52 0.15 255);
-    background: oklch(0.52 0.15 255 / 0.1);
+    color: var(--color-blue);
+    background: var(--color-blue-bg);
 }
 
 .status-badge--planned {
-    color: oklch(0.55 0.01 70);
-    background: oklch(0.55 0.01 70 / 0.1);
+    color: var(--color-amber);
+    background: var(--color-amber-bg);
 }
 
 .status-badge--abandoned {
-    color: oklch(0.55 0.01 70);
-    background: oklch(0.90 0.005 70);
+    color: var(--color-text-dim);
+    background: var(--color-bg);
 }
 
 .journey-meta {
@@ -381,7 +391,7 @@ onUnmounted(() => {
     height: 300px;
     border-radius: 8px;
     overflow: hidden;
-    border: 1px solid oklch(0.90 0.005 70);
+    border: 1px solid var(--color-border);
     position: relative;
 }
 
@@ -408,14 +418,14 @@ onUnmounted(() => {
     padding: 6px 12px;
     font-size: 11px;
     color: var(--color-text-secondary);
-    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
+    box-shadow: var(--shadow-sm);
 }
 
 .legend-gradient {
     width: 60px;
     height: 8px;
     border-radius: 4px;
-    background: linear-gradient(to right, oklch(0.50 0.14 265), oklch(0.64 0.20 155), oklch(0.54 0.24 27));
+    background: linear-gradient(to right, var(--color-blue), var(--color-green), var(--color-scarlet));
 }
 
 .chart-grid {
@@ -455,7 +465,7 @@ onUnmounted(() => {
     justify-content: center;
     height: 200px;
     font-size: 13px;
-    color: oklch(0.55 0.01 70);
+    color: var(--color-text-dim);
 }
 
 .log-panel {

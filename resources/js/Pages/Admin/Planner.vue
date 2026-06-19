@@ -30,19 +30,36 @@
                 </div>
                 <div class="flex items-center justify-between">
                     <span class="text-[11px] font-body text-text-dim">{{ formatDate(plan.created_at) }}</span>
-                    <span v-if="plan.is_shared" class="text-[10px] font-body font-bold uppercase tracking-wide text-teal bg-teal-bg px-2 py-0.5 rounded-full">Shared</span>
+                    <span v-if="plan.is_shared" class="inline-flex items-center gap-1 text-[10px] font-body font-bold uppercase tracking-wide text-teal">
+                        <span class="inline-block w-1.5 h-1.5 rounded-full bg-teal" aria-hidden="true"></span>
+                        Shared
+                    </span>
                 </div>
             </Link>
         </div>
 
         <!-- Create modal -->
         <Transition name="modal">
-            <div v-if="showCreate" class="fixed inset-0 z-50 flex items-center justify-center bg-black/30" @click.self="showCreate = false">
-                <div class="modal-card bg-surface border border-border rounded-2xl shadow-lg p-6 w-full max-w-sm">
-                    <div class="text-[16px] font-sans font-bold text-text-primary mb-4">New Plan</div>
+            <div
+                v-if="showCreate"
+                class="fixed inset-0 z-50 flex items-center justify-center bg-black/30"
+                role="dialog"
+                aria-modal="true"
+                aria-labelledby="create-plan-title"
+                @click.self="showCreate = false"
+                @keydown.escape="showCreate = false"
+            >
+                <div
+                    ref="modalRef"
+                    tabindex="-1"
+                    class="modal-card bg-surface border border-border rounded-2xl shadow-lg p-6 w-full max-w-sm"
+                    @keydown.tab="trapFocus($event, modalRef)"
+                >
+                    <div id="create-plan-title" class="text-[16px] font-sans font-bold text-text-primary mb-4">New Plan</div>
                     <form @submit.prevent="createPlan">
-                        <label class="field-label">Plan Name</label>
+                        <label for="plan-name" class="field-label">Plan Name</label>
                         <input
+                            id="plan-name"
                             ref="titleInput"
                             v-model="form.title"
                             type="text"
@@ -73,11 +90,29 @@ defineProps({
 
 const showCreate = ref(false);
 const titleInput = ref(null);
+const modalRef = ref(null);
 const form = useForm({ title: '' });
 
 watch(showCreate, (val) => {
-    if (val) nextTick(() => titleInput.value?.focus());
+    if (val) nextTick(() => (titleInput.value || modalRef.value)?.focus());
 });
+
+function trapFocus(event, containerRef) {
+    const modal = containerRef;
+    if (!modal) {
+        return;
+    }
+    const focusable = modal.querySelectorAll('input, button, textarea, select, [tabindex]:not([tabindex="-1"])');
+    const first = focusable[0];
+    const last = focusable[focusable.length - 1];
+    if (event.shiftKey && document.activeElement === first) {
+        event.preventDefault();
+        last?.focus();
+    } else if (!event.shiftKey && document.activeElement === last) {
+        event.preventDefault();
+        first?.focus();
+    }
+}
 
 function createPlan() {
     form.post('/admin/planner', {

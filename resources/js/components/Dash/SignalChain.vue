@@ -83,7 +83,7 @@
                 <div class="sc-node" :class="overlayNodeClass">
                     <div class="sc-nh">
                         <span class="sc-ico">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="oklch(0.50 0.10 280)" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg>
+                            <svg viewBox="0 0 24 24" fill="none" stroke="var(--color-blue)" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg>
                         </span>
                         <div>
                             <div class="sc-nm">Overlay</div>
@@ -165,7 +165,7 @@
                         }}
                     </p>
                     <div class="sc-modal-actions">
-                        <button type="button" class="btn btn--secondary" @click="showStreamModal = false">Cancel</button>
+                        <button type="button" class="btn btn--ghost" @click="showStreamModal = false">Cancel</button>
                         <button
                             type="button"
                             class="btn btn--danger"
@@ -196,7 +196,7 @@
                         This will send a reload signal to all connected overlay and dashboard browser windows.
                     </p>
                     <div class="sc-modal-actions">
-                        <button type="button" class="btn btn--secondary" @click="showReloadModal = false">Cancel</button>
+                        <button type="button" class="btn btn--ghost" @click="showReloadModal = false">Cancel</button>
                         <button
                             type="button"
                             class="btn btn--ghost"
@@ -396,7 +396,7 @@ const droppedMarkers = computed(() => {
 
 .sc-chain {
     display: flex;
-    align-items: center;
+    align-items: stretch;
     justify-content: center;
     gap: 0;
     flex-wrap: nowrap;
@@ -407,6 +407,10 @@ const droppedMarkers = computed(() => {
 /* Node */
 .sc-node {
     flex-shrink: 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 6px;
     background: var(--color-bg);
     border: 1.5px solid var(--color-border);
     border-radius: 10px;
@@ -591,7 +595,7 @@ const droppedMarkers = computed(() => {
     padding: 28px;
     max-width: 420px;
     width: calc(100% - 32px);
-    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.25);
+    box-shadow: var(--shadow-sm);
     color: var(--color-text-primary);
 }
 

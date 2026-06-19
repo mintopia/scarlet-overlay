@@ -30,10 +30,6 @@
                             <Link :href="route('admin.data.show', { metric: 'house_battery_soc' })" class="metric-link power-soc" :class="{ 'power-stale': stale('house_battery_soc') }">
                                 {{ houseSocDisplay }}
                             </Link>
-                            <span class="power-rem">
-                                <span class="power-rem__lab">runtime</span>
-                                <span class="power-rem__val">{{ houseRuntimeDisplay }}</span>
-                            </span>
                         </div>
                         <div class="power-det" :class="{ 'power-stale': stale('house_battery_voltage') }">
                             <b>{{ houseVoltDisplay }}</b> V ·
@@ -155,10 +151,6 @@ const houseVoltDisplay = computed(() => {
     const v = val('house_battery_voltage');
     if (v == null) return '—';
     return Number(v).toFixed(1);
-});
-
-const houseRuntimeDisplay = computed(() => {
-    return '—';
 });
 
 const housePowerDisplay = computed(() => {

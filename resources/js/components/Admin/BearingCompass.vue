@@ -44,10 +44,10 @@ const speedText = computed(() => {
               :stroke-width="a % 90 === 0 ? '1' : '0.5'"/>
 
         <!-- Cardinals -->
-        <text x="50" y="14" text-anchor="middle" fill="var(--color-scarlet)" font-size="7" font-weight="800" font-family="Nunito Sans" dominant-baseline="central">N</text>
-        <text x="88" y="52" text-anchor="middle" fill="var(--color-text-dim)" font-size="5.5" font-family="Nunito Sans" font-weight="600" dominant-baseline="central">E</text>
-        <text x="50" y="90" text-anchor="middle" fill="var(--color-text-dim)" font-size="5.5" font-family="Nunito Sans" font-weight="600" dominant-baseline="central">S</text>
-        <text x="12" y="52" text-anchor="middle" fill="var(--color-text-dim)" font-size="5.5" font-family="Nunito Sans" font-weight="600" dominant-baseline="central">W</text>
+        <text x="50" y="14" text-anchor="middle" fill="var(--color-scarlet)" font-size="7" font-weight="800" font-family="var(--font-sans)" dominant-baseline="central">N</text>
+        <text x="88" y="52" text-anchor="middle" fill="var(--color-text-dim)" font-size="5.5" font-family="var(--font-sans)" font-weight="600" dominant-baseline="central">E</text>
+        <text x="50" y="90" text-anchor="middle" fill="var(--color-text-dim)" font-size="5.5" font-family="var(--font-sans)" font-weight="600" dominant-baseline="central">S</text>
+        <text x="12" y="52" text-anchor="middle" fill="var(--color-text-dim)" font-size="5.5" font-family="var(--font-sans)" font-weight="600" dominant-baseline="central">W</text>
 
         <!-- Wind arrow -->
         <template v-if="arrow">
@@ -56,7 +56,7 @@ const speedText = computed(() => {
         </template>
 
         <!-- Speed in center -->
-        <text x="50" y="48" text-anchor="middle" :fill="color" font-size="16" font-weight="700" font-family="Nunito Sans" dominant-baseline="central">{{ speedText }}</text>
-        <text x="50" y="60" text-anchor="middle" fill="var(--color-text-dim)" font-size="6" font-weight="600" font-family="Nunito Sans">kts</text>
+        <text x="50" y="48" text-anchor="middle" :fill="color" font-size="16" font-weight="700" font-family="var(--font-sans)" dominant-baseline="central">{{ speedText }}</text>
+        <text x="50" y="60" text-anchor="middle" fill="var(--color-text-dim)" font-size="6" font-weight="600" font-family="var(--font-sans)">kts</text>
     </svg>
 </template>

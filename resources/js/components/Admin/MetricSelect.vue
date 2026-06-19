@@ -1,11 +1,18 @@
 <template>
     <div class="ms-wrap" @keydown.escape="close">
         <input
+            :id="inputId"
             v-model="query"
             type="text"
             class="field-input"
             :placeholder="placeholder"
+            :aria-label="placeholder"
             autocomplete="off"
+            role="combobox"
+            aria-autocomplete="list"
+            :aria-expanded="open && filtered.length > 0"
+            :aria-controls="listId"
+            :aria-activedescendant="open && filtered.length ? `${listId}-opt-${highlight}` : undefined"
             @focus="open = true"
             @blur="close"
             @input="open = true; highlight = 0"
@@ -13,12 +20,15 @@
             @keydown.up.prevent="move(-1)"
             @keydown.enter.prevent="choose(filtered[highlight])"
         />
-        <ul v-if="open && filtered.length" class="ms-list">
+        <ul v-if="open && filtered.length" :id="listId" class="ms-list" role="listbox" :aria-label="placeholder">
             <li
                 v-for="(m, i) in filtered"
+                :id="`${listId}-opt-${i}`"
                 :key="m.key"
                 class="ms-item"
                 :class="{ 'ms-item--active': i === highlight }"
+                role="option"
+                :aria-selected="i === highlight"
                 @mousedown.prevent="choose(m)"
                 @mouseenter="highlight = i"
             >
@@ -30,13 +40,17 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue';
+import { ref, computed, useId } from 'vue';
 
 const props = defineProps({
     options: { type: Array, default: () => [] }, // [{key, label, group, display_unit}]
     placeholder: { type: String, default: 'Search metrics…' },
 });
 const emit = defineEmits(['select']);
+
+const uid = useId();
+const inputId = `ms-input-${uid}`;
+const listId = `ms-list-${uid}`;
 
 const query = ref('');
 const open = ref(false);

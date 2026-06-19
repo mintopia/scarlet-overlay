@@ -16,6 +16,7 @@ const props = defineProps({
 const hostRef = ref(null);
 const chart = shallowRef(null);
 let resizeObserver = null;
+let themeObserver = null;
 
 function cssVar(name, fallback) {
     const v = getComputedStyle(document.documentElement).getPropertyValue(name).trim();
@@ -108,12 +109,21 @@ onMounted(async () => {
         }
     });
     resizeObserver.observe(hostRef.value);
+
+    // Re-read CSS-variable colors (axes, grid, palette) when the active theme
+    // changes so the chart adapts to dark / Night Watch without a remount.
+    themeObserver = new MutationObserver(() => { render(); });
+    themeObserver.observe(document.documentElement, {
+        attributes: true,
+        attributeFilter: ['data-theme'],
+    });
 });
 
 watch(() => props.series, render, { deep: true });
 
 onBeforeUnmount(() => {
     resizeObserver?.disconnect();
+    themeObserver?.disconnect();
     chart.value?.destroy();
     chart.value = null;
 });

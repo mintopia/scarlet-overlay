@@ -42,6 +42,7 @@ const sparkPath = computed(() => {
 
 <template>
     <button
+        type="button"
         class="gauge"
         :class="{ 'gauge--selected': selected }"
         @click="$emit('select')"

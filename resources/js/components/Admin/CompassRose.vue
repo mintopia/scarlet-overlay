@@ -143,7 +143,7 @@ const zoneLabels = computed(() => {
               :x="l.x" :y="l.y"
               :transform="`rotate(${l.rotation}, ${l.x}, ${l.y})`"
               text-anchor="middle" dominant-baseline="central"
-              :fill="l.color" font-size="4.5" font-weight="700" font-family="DM Sans"
+              :fill="l.color" font-size="4.5" font-weight="700" font-family="var(--font-body)"
               letter-spacing="0.8" opacity="0.6">
             {{ l.label }}
         </text>
@@ -161,16 +161,16 @@ const zoneLabels = computed(() => {
             <line v-for="(t, i) in fineTicks" :key="'fine'+i" :x1="t.x1" :y1="t.y1" :x2="t.x2" :y2="t.y2" stroke="var(--color-border-light)" stroke-width="0.3"/>
 
             <!-- Cardinals -->
-            <text x="90" y="30" text-anchor="middle" fill="var(--color-scarlet)" font-size="12" font-weight="800" font-family="Nunito Sans" dominant-baseline="central">N</text>
-            <text x="153" y="93" text-anchor="middle" fill="var(--color-text-dim)" font-size="9" font-family="Nunito Sans" font-weight="600" dominant-baseline="central">E</text>
-            <text x="90" y="158" text-anchor="middle" fill="var(--color-text-dim)" font-size="9" font-family="Nunito Sans" font-weight="600" dominant-baseline="central">S</text>
-            <text x="27" y="93" text-anchor="middle" fill="var(--color-text-dim)" font-size="9" font-family="Nunito Sans" font-weight="600" dominant-baseline="central">W</text>
+            <text x="90" y="30" text-anchor="middle" fill="var(--color-scarlet)" font-size="12" font-weight="800" font-family="var(--font-sans)" dominant-baseline="central">N</text>
+            <text x="153" y="93" text-anchor="middle" fill="var(--color-text-dim)" font-size="9" font-family="var(--font-sans)" font-weight="600" dominant-baseline="central">E</text>
+            <text x="90" y="158" text-anchor="middle" fill="var(--color-text-dim)" font-size="9" font-family="var(--font-sans)" font-weight="600" dominant-baseline="central">S</text>
+            <text x="27" y="93" text-anchor="middle" fill="var(--color-text-dim)" font-size="9" font-family="var(--font-sans)" font-weight="600" dominant-baseline="central">W</text>
 
             <!-- Intercardinals -->
-            <text x="140.9" y="39.1" text-anchor="middle" fill="var(--color-text-dim)" font-size="7" font-family="Nunito Sans" font-weight="600" dominant-baseline="central">NE</text>
-            <text x="140.9" y="140.9" text-anchor="middle" fill="var(--color-text-dim)" font-size="7" font-family="Nunito Sans" font-weight="600" dominant-baseline="central">SE</text>
-            <text x="39.1" y="140.9" text-anchor="middle" fill="var(--color-text-dim)" font-size="7" font-family="Nunito Sans" font-weight="600" dominant-baseline="central">SW</text>
-            <text x="39.1" y="39.1" text-anchor="middle" fill="var(--color-text-dim)" font-size="7" font-family="Nunito Sans" font-weight="600" dominant-baseline="central">NW</text>
+            <text x="140.9" y="39.1" text-anchor="middle" fill="var(--color-text-dim)" font-size="7" font-family="var(--font-sans)" font-weight="600" dominant-baseline="central">NE</text>
+            <text x="140.9" y="140.9" text-anchor="middle" fill="var(--color-text-dim)" font-size="7" font-family="var(--font-sans)" font-weight="600" dominant-baseline="central">SE</text>
+            <text x="39.1" y="140.9" text-anchor="middle" fill="var(--color-text-dim)" font-size="7" font-family="var(--font-sans)" font-weight="600" dominant-baseline="central">SW</text>
+            <text x="39.1" y="39.1" text-anchor="middle" fill="var(--color-text-dim)" font-size="7" font-family="var(--font-sans)" font-weight="600" dominant-baseline="central">NW</text>
         </g>
 
         <!-- Fixed elements: boat and COG -->

@@ -8,7 +8,7 @@
                 <h2 class="text-[15px] font-semibold">Members</h2>
                 <button
                     @click="showInviteModal = true"
-                    class="px-3.5 h-11 bg-scarlet text-white text-[13px] font-semibold rounded-[7px] hover:bg-scarlet-hover"
+                    class="btn btn--primary"
                 >
                     Invite member
                 </button>
@@ -101,13 +101,14 @@
 
         <!-- Invite Modal -->
         <Transition name="modal">
-        <div v-if="showInviteModal" class="modal-overlay" @click.self="showInviteModal = false" @keydown.esc="showInviteModal = false">
-            <div class="modal-card" role="dialog" aria-modal="true" aria-label="Invite a crew member" @keydown.tab="trapFocus">
-                <h3 class="text-[16px] font-semibold mb-4">Invite a crew member</h3>
+        <div v-if="showInviteModal" class="modal-overlay" @click.self="showInviteModal = false" @keydown.escape="showInviteModal = false">
+            <div ref="inviteCard" tabindex="-1" class="modal-card" role="dialog" aria-modal="true" aria-labelledby="invite-modal-title" @keydown.tab="trapFocus">
+                <h3 id="invite-modal-title" class="text-[16px] font-semibold mb-4">Invite a crew member</h3>
                 <form @submit.prevent="sendInvite">
                     <div class="mb-4">
-                        <label class="block text-[13px] font-medium text-text-secondary mb-1.5">Email address</label>
+                        <label for="invite-email" class="block text-[13px] font-medium text-text-secondary mb-1.5">Email address</label>
                         <input
+                            id="invite-email"
                             v-model="inviteForm.email"
                             type="email"
                             required
@@ -118,13 +119,13 @@
                         <p v-if="inviteForm.errors.email" class="mt-1 text-xs text-error">{{ inviteForm.errors.email }}</p>
                     </div>
                     <div class="flex items-center justify-end gap-3">
-                        <button type="button" @click="showInviteModal = false" class="px-4 h-9 text-[13px] font-medium text-text-secondary hover:text-primary">
+                        <button type="button" @click="showInviteModal = false" class="btn btn--ghost">
                             Cancel
                         </button>
                         <button
                             type="submit"
                             :disabled="inviteForm.processing"
-                            class="px-4 h-9 bg-scarlet text-white text-[13px] font-semibold rounded-[7px] hover:bg-scarlet-hover disabled:opacity-50"
+                            class="btn btn--primary"
                         >
                             Send invite
                         </button>
@@ -136,17 +137,17 @@
 
         <!-- Remove Confirm Modal -->
         <Transition name="modal">
-        <div v-if="removingMember" class="modal-overlay" @click.self="removingMember = null" @keydown.esc="removingMember = null">
-            <div class="modal-card" role="dialog" aria-modal="true" aria-label="Confirm member removal" @keydown.tab="trapFocus">
-                <h3 class="text-[16px] font-semibold mb-2">Remove {{ removingMember.name }}?</h3>
+        <div v-if="removingMember" class="modal-overlay" @click.self="removingMember = null" @keydown.escape="removingMember = null">
+            <div ref="removeCard" tabindex="-1" class="modal-card" role="dialog" aria-modal="true" aria-labelledby="remove-modal-title" @keydown.tab="trapFocus">
+                <h3 id="remove-modal-title" class="text-[16px] font-semibold mb-2">Remove {{ removingMember.name }}?</h3>
                 <p class="text-[13px] text-text-secondary mb-5">This will permanently remove their access to the dashboard.</p>
                 <div class="flex items-center justify-end gap-3">
-                    <button @click="removingMember = null" class="px-4 h-9 text-[13px] font-medium text-text-secondary hover:text-primary">
+                    <button @click="removingMember = null" class="btn btn--ghost">
                         Cancel
                     </button>
                     <button
                         @click="removeMember"
-                        class="px-4 h-9 bg-error text-white text-[13px] font-semibold rounded-[7px] hover:bg-scarlet-hover"
+                        class="btn btn--danger"
                     >
                         Remove
                     </button>
@@ -158,7 +159,7 @@
 </template>
 
 <script setup>
-import { ref } from 'vue';
+import { ref, nextTick, watch } from 'vue';
 import { Head, useForm, usePage, router } from '@inertiajs/vue3';
 import AdminLayout from '@/Layouts/AdminLayout.vue';
 
@@ -172,6 +173,14 @@ const currentUserId = page.props.auth?.user?.id;
 
 const showInviteModal = ref(false);
 const removingMember = ref(null);
+const inviteCard = ref(null);
+const removeCard = ref(null);
+
+watch(removingMember, (member) => {
+    if (member) {
+        nextTick(() => removeCard.value?.focus());
+    }
+});
 
 const inviteForm = useForm({ email: '' });
 

@@ -476,8 +476,8 @@ const wxGradient = computed(() => {
 @media (prefers-reduced-motion: reduce) {
     .health-dot { transition: none; }
 }
-.health-dot--green { background: var(--color-green); box-shadow: 0 0 5px oklch(0.48 0.16 150 / 0.4); }
-.health-dot--amber { background: oklch(0.7 0.18 70); box-shadow: 0 0 5px oklch(0.7 0.18 70 / 0.4); }
+.health-dot--green { background: var(--color-green); box-shadow: 0 0 5px var(--color-green); }
+.health-dot--amber { background: var(--color-amber); box-shadow: 0 0 5px var(--color-amber); }
 .health-dot--red   { background: var(--color-scarlet); }
 
 .sailing-badge {
@@ -687,6 +687,20 @@ const wxGradient = computed(() => {
     align-items: center;
     justify-content: space-between;
     padding: 20px 20px 18px;
+}
+
+/*
+ * The wxGradient inline style is a deliberate daytime-sky gradient (blue/amber
+ * hues) that must not bleed into the dark or Night Watch themes. Override the
+ * inline background per-theme so dark gets a muted blue-grey and Night Watch
+ * stays on the red spectrum for scotopic vision.
+ */
+html[data-theme="dark"] .wx-hero {
+    background: oklch(0.25 0.03 240) !important;
+}
+
+html[data-theme="night"] .wx-hero {
+    background: linear-gradient(135deg, oklch(0.12 0.04 27), oklch(0.08 0.02 27)) !important;
 }
 
 /* ── Shared utilities ──────────────────────────────────────────────────────── */
