@@ -29,6 +29,7 @@ class MainDashboardController extends Controller
         $speedHistory = $reader->readRange('speed_sog', '1h');
 
         $gpsTrack = $this->buildGpsTrack($metrics);
+        $gps = $metrics->getGpsMetrics();
 
         return Inertia::render('Admin/Dash/Main', [
             'contracts' => $contracts,
@@ -38,6 +39,7 @@ class MainDashboardController extends Controller
             'depthHistory' => $depthHistory,
             'speedHistory' => $speedHistory,
             'gpsTrack' => $gpsTrack,
+            'gps' => $gps,
             'reverb' => config('scarlet.reverb'),
             'reverbKey' => config('broadcasting.connections.reverb.key'),
         ]);

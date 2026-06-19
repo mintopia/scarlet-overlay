@@ -27,6 +27,7 @@ class OpsDashboardController extends Controller
         $waterHistory = $reader->readRange('water_fresh_level', '24h');
 
         $gpsTrack = $this->buildGpsTrack($metrics);
+        $gps = $metrics->getGpsMetrics();
 
         return Inertia::render('Admin/Dash/Ops', [
             'contracts' => $contracts,
@@ -35,6 +36,7 @@ class OpsDashboardController extends Controller
             'fuelHistory' => $fuelHistory,
             'waterHistory' => $waterHistory,
             'gpsTrack' => $gpsTrack,
+            'gps' => $gps,
             'reverb' => config('scarlet.reverb'),
             'reverbKey' => config('broadcasting.connections.reverb.key'),
         ]);

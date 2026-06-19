@@ -51,7 +51,7 @@
                                     :height="104"
                                     :width="300"
                                 />
-                                <div v-else class="ops-chart__empty">No history</div>
+                                <div v-else class="ops-chart__empty">No Data</div>
                             </div>
                             <div class="ops-axis">
                                 <span>net power · 6 h</span>
@@ -87,7 +87,7 @@
                                     :height="104"
                                     :width="300"
                                 />
-                                <div v-else class="ops-chart__empty">No history</div>
+                                <div v-else class="ops-chart__empty">No Data</div>
                             </div>
                             <div class="ops-axis">
                                 <span>net flow · 6 h</span>
@@ -116,9 +116,12 @@
                                     color="var(--color-amber)"
                                     :height="54"
                                 />
-                                <svg v-else viewBox="0 0 360 54" preserveAspectRatio="none" class="ops-tank__empty-svg">
-                                    <line x1="0" y1="27" x2="360" y2="27" stroke="var(--color-border-light)" stroke-width="1" stroke-dasharray="3 3"/>
-                                </svg>
+                                <div v-else class="ops-tank__empty-wrap">
+                                    <svg viewBox="0 0 360 54" preserveAspectRatio="none" class="ops-tank__empty-svg">
+                                        <line x1="0" y1="27" x2="360" y2="27" stroke="var(--color-border-light)" stroke-width="1" stroke-dasharray="3 3"/>
+                                    </svg>
+                                    <div class="ops-tank__empty-label">No Data</div>
+                                </div>
                             </div>
                             <div class="ops-axis">
                                 <span>6 h ago</span>
@@ -144,9 +147,12 @@
                                     color="var(--color-blue)"
                                     :height="54"
                                 />
-                                <svg v-else viewBox="0 0 360 54" preserveAspectRatio="none" class="ops-tank__empty-svg">
-                                    <line x1="0" y1="27" x2="360" y2="27" stroke="var(--color-border-light)" stroke-width="1" stroke-dasharray="3 3"/>
-                                </svg>
+                                <div v-else class="ops-tank__empty-wrap">
+                                    <svg viewBox="0 0 360 54" preserveAspectRatio="none" class="ops-tank__empty-svg">
+                                        <line x1="0" y1="27" x2="360" y2="27" stroke="var(--color-border-light)" stroke-width="1" stroke-dasharray="3 3"/>
+                                    </svg>
+                                    <div class="ops-tank__empty-label">No Data</div>
+                                </div>
                             </div>
                             <div class="ops-axis">
                                 <span>6 h ago</span>
@@ -343,6 +349,7 @@ const props = defineProps({
     ecoflowPowerHistory: { type: Array, default: () => [] },
     fuelHistory: { type: Array, default: () => [] },
     waterHistory: { type: Array, default: () => [] },
+    gps: { type: Object, default: () => ({}) },
     gpsTrack: { type: Array, default: () => [] },
     reverb: { type: Object, default: null },
     reverbKey: { type: String, default: null },
@@ -363,7 +370,7 @@ const {
     initMap,
     addMapTarget,
 } = useScarletMetrics({
-    initialMetrics: { canonical: props.contracts },
+    initialMetrics: { canonical: props.contracts, gps: props.gps },
     gpsTrack: props.gpsTrack,
 });
 
@@ -859,10 +866,26 @@ const etaDisplay = computed(() => {
     overflow: hidden;
 }
 
+.ops-tank__empty-wrap {
+    position: relative;
+}
+
 .ops-tank__empty-svg {
     width: 100%;
     height: 54px;
     display: block;
+}
+
+.ops-tank__empty-label {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 11px;
+    color: var(--color-text-tertiary, var(--color-text-secondary));
+    letter-spacing: 0.04em;
+    pointer-events: none;
 }
 
 /* ── Region 2: Climate ─────────────────────────────────────────────────────── */

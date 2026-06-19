@@ -127,7 +127,7 @@
                             color="var(--color-teal)"
                             :height="66"
                         />
-                        <div v-else class="mn-rail__empty">No speed history</div>
+                        <div v-else class="mn-rail__empty">No Data</div>
                         <div class="mn-axis">
                             <span>1 h ago</span>
                             <span>now</span>
@@ -151,7 +151,7 @@
                             color="var(--color-blue)"
                             :height="66"
                         />
-                        <div v-else class="mn-rail__empty">No depth history</div>
+                        <div v-else class="mn-rail__empty">No Data</div>
                         <div class="mn-axis">
                             <span>3 h ago</span>
                             <span>now</span>
@@ -181,7 +181,7 @@
                         color-negative="var(--color-scarlet)"
                         :height="52"
                     />
-                    <div v-else class="mn-res__empty">No history</div>
+                    <div v-else class="mn-res__empty">No Data</div>
                     <div class="mn-axis">
                         <span>6 h ago</span>
                         <span>now</span>
@@ -203,7 +203,7 @@
                         color="var(--color-amber)"
                         :height="52"
                     />
-                    <div v-else class="mn-res__empty">No history</div>
+                    <div v-else class="mn-res__empty">No Data</div>
                     <div class="mn-axis">
                         <span>24 h ago</span>
                         <span>now</span>
@@ -225,7 +225,7 @@
                         color="var(--color-blue)"
                         :height="52"
                     />
-                    <div v-else class="mn-res__empty">No history</div>
+                    <div v-else class="mn-res__empty">No Data</div>
                     <div class="mn-axis">
                         <span>24 h ago</span>
                         <span>now</span>
@@ -251,6 +251,7 @@ const props = defineProps({
     waterHistory: { type: Array, default: () => [] },
     depthHistory: { type: Array, default: () => [] },
     speedHistory: { type: Array, default: () => [] },
+    gps: { type: Object, default: () => ({}) },
     gpsTrack: { type: Array, default: () => [] },
     reverb: { type: Object, default: null },
     reverbKey: { type: String, default: null },
@@ -269,7 +270,7 @@ const {
     initMap,
     addMapTarget,
 } = useScarletMetrics({
-    initialMetrics: { canonical: props.contracts },
+    initialMetrics: { canonical: props.contracts, gps: props.gps },
     gpsTrack: props.gpsTrack,
 });
 

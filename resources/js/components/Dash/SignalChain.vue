@@ -107,7 +107,7 @@
                         :height="46"
                         :width="600"
                     />
-                    <div v-else class="sc-bgraph-empty">No bitrate history</div>
+                    <div v-else class="sc-bgraph-empty">No Data</div>
                 </div>
                 <div class="sc-axis">
                     <span>bitrate Mb/s · dropped-frame events ▐</span>

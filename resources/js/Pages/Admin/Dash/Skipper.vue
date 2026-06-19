@@ -77,7 +77,7 @@
                                 color="var(--color-teal)"
                                 :height="80"
                             />
-                            <div v-else class="sk-graph-empty">No speed history</div>
+                            <div v-else class="sk-graph-empty">No Data</div>
                             <div class="sk-axis">
                                 <span>SOG · 6 h</span>
                                 <span>now</span>
@@ -235,7 +235,7 @@
                         color="var(--color-blue)"
                         :height="78"
                     />
-                    <div v-else class="sk-chart-empty">No depth history</div>
+                    <div v-else class="sk-chart-empty">No Data</div>
                     <div class="sk-axis">
                         <span>Depth · 6 h</span>
                         <span>now</span>
@@ -255,7 +255,7 @@
                         color="var(--color-blue)"
                         :height="78"
                     />
-                    <div v-else class="sk-chart-empty">No pressure history</div>
+                    <div v-else class="sk-chart-empty">No Data</div>
                     <div class="sk-axis">
                         <span>Pressure · 6 h</span>
                         <span>now</span>
@@ -282,7 +282,7 @@
                         color-negative="var(--color-scarlet)"
                         :height="70"
                     />
-                    <div v-else class="sk-res__empty">No history</div>
+                    <div v-else class="sk-res__empty">No Data</div>
                     <div class="sk-axis">
                         <span>net power · 6 h</span>
                         <span>now</span>
@@ -298,7 +298,7 @@
                             </span>
                         </span>
                     </div>
-                    <div class="sk-res__empty sk-res__empty--sm">No history</div>
+                    <div class="sk-res__empty sk-res__empty--sm">No Data</div>
                     <div class="sk-axis">
                         <span>voltage · live</span>
                         <span>now</span>
@@ -312,9 +312,16 @@
                             <span class="sk-res__pct sk-res__pct--a" :class="{ 'sk-stale': stale('fuel_level') }">{{ fuelDisplay }}</span>
                         </span>
                     </div>
-                    <div class="sk-res__empty sk-res__empty--sm">No history</div>
+                    <TrendChart
+                        v-if="fuelHistory.length > 0"
+                        :data="fuelHistory"
+                        variant="area"
+                        color="var(--color-amber)"
+                        :height="70"
+                    />
+                    <div v-else class="sk-res__empty">No Data</div>
                     <div class="sk-axis">
-                        <span>fuel level · live</span>
+                        <span>fuel level · 24 h</span>
                         <span>now</span>
                     </div>
                 </div>
@@ -337,6 +344,8 @@ const props = defineProps({
     pressureHistory: { type: Array, default: () => [] },
     speedHistory: { type: Array, default: () => [] },
     housePowerHistory: { type: Array, default: () => [] },
+    fuelHistory: { type: Array, default: () => [] },
+    gps: { type: Object, default: () => ({}) },
     routeLegs: { type: Array, default: () => [] },
     gpsTrack: { type: Array, default: () => [] },
     reverb: { type: Object, default: null },
@@ -356,7 +365,7 @@ const {
     initMap,
     addMapTarget,
 } = useScarletMetrics({
-    initialMetrics: { canonical: props.contracts },
+    initialMetrics: { canonical: props.contracts, gps: props.gps },
     gpsTrack: props.gpsTrack,
 });
 

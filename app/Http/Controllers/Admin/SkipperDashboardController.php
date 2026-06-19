@@ -26,6 +26,8 @@ class SkipperDashboardController extends Controller
         $housePowerHistory = $this->housePowerHistory($reader);
 
         $gpsTrack = $this->buildGpsTrack($metrics);
+        $gps = $metrics->getGpsMetrics();
+        $fuelHistory = $reader->readRange('fuel_level', '24h');
 
         // Route-leg position keys (wp_next_lat, wp_prev_lat, etc.) do not exist
         // in CanonicalBaseline — pass empty array; Vue will skip route-leg rendering.
@@ -37,8 +39,10 @@ class SkipperDashboardController extends Controller
             'pressureHistory' => $pressureHistory,
             'speedHistory' => $speedHistory,
             'housePowerHistory' => $housePowerHistory,
+            'fuelHistory' => $fuelHistory,
             'routeLegs' => $routeLegs,
             'gpsTrack' => $gpsTrack,
+            'gps' => $gps,
             'reverb' => config('scarlet.reverb'),
             'reverbKey' => config('broadcasting.connections.reverb.key'),
         ]);

@@ -61,7 +61,7 @@
                                 :height="88"
                                 :width="300"
                             />
-                            <div v-else class="power-chart-empty">No history</div>
+                            <div v-else class="power-chart-empty">No Data</div>
                         </div>
                         <div class="power-axis">
                             <span>net power · 6 h · <span style="color: oklch(0.34 0.11 150)">charge</span>/<span style="color: var(--color-scarlet)">discharge</span></span>
@@ -96,7 +96,7 @@
                                 :height="88"
                                 :width="300"
                             />
-                            <div v-else class="power-chart-empty">No history</div>
+                            <div v-else class="power-chart-empty">No Data</div>
                         </div>
                         <div class="power-axis">
                             <span>net flow · 6 h · <span style="color: oklch(0.34 0.11 150)">charge</span>/<span style="color: var(--color-scarlet)">discharge</span></span>
