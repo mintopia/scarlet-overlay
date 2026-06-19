@@ -37,12 +37,43 @@ processors:
       datapoint:
         - 'resource.attributes["device.id"] == nil'
 
+  # --- Normalization (Phase 4, Stage 1: declarative, panic-proof) ---
+  # Strip noise RESOURCE attributes. Keys are DOTTED in-pipeline (confirmed via
+  # debug dump): only `service.name` is actually present (`service.instance.id`
+  # is absent here, so that delete is a harmless no-op). Deleting `service.name`
+  # removes the redundant `service_name` label. CAVEAT: the exporter also derives
+  # the `job` label from `service.name` — verify post-deploy that `job` survives;
+  # if it does not, back this line out.
+  resource/strip:
+    attributes:
+      - key: service.name
+        action: delete
+      - key: service.instance.id
+        action: delete
+
+  # Strip noise DATAPOINT attributes. `value` is the important one: on
+  # mqtt.last_seen and the signalk string metrics it carries a CHANGING string
+  # (timestamps, gnss.type, ...) that would spawn a new series on every change.
+  # `key` / `instance` are deleted defensively (no-op when absent). `topic` and
+  # `gps.source` are intentionally kept (they become useful labels).
+  attributes/strip:
+    actions:
+      - key: value
+        action: delete
+      - key: key
+        action: delete
+      - key: instance
+        action: delete
+
 exporters:
   prometheusremotewrite:
     endpoint: http://victoriametrics:8428/api/v1/write
     namespace: scarlet
     resource_to_telemetry_conversion:
       enabled: true
+    # Drop otel_scope_name / otel_scope_version labels declaratively (panic-proof,
+    # no OTTL). Phase-4 Stage 1.
+    disable_scope_info: true
 
 service:
   extensions: [bearertokenauth]
@@ -54,5 +85,6 @@ service:
   pipelines:
     metrics:
       receivers: [otlp]
-      processors: [memory_limiter, filter/dedup, batch]
+      # Stage 1: declarative strips only. filter/ecoflow (OTTL) is added in Stage 2.
+      processors: [memory_limiter, filter/dedup, resource/strip, attributes/strip, batch]
       exporters: [prometheusremotewrite]
