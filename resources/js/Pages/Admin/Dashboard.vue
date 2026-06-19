@@ -145,7 +145,7 @@
             <div class="panel p-4 flex flex-col">
                 <div class="flex items-baseline justify-between mb-3">
                     <span class="text-[11px] font-body font-extrabold tracking-[2.5px] uppercase text-teal">Systems</span>
-                    <Link href="/admin/tracker" class="text-[11px] font-body font-bold text-teal hover:underline">Explore →</Link>
+                    <Link href="/admin/dash/ops" class="text-[11px] font-body font-bold text-teal hover:underline">Explore →</Link>
                 </div>
                 <div class="space-y-2.5 mb-3">
                     <LevelBar :value="batteryPct" label="Battery" color="green" />
