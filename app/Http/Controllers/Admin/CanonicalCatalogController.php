@@ -49,7 +49,7 @@ class CanonicalCatalogController extends Controller
     public function destroy(Request $request, CanonicalMetric $metric, CanonicalCatalog $catalog)
     {
         $metric->delete();
-        $catalog->recordVersion('edit', $request->user()->email);
+        $catalog->recordVersion('delete', $request->user()->email);
 
         return back()->with('success', 'Metric deleted.');
     }
@@ -82,8 +82,8 @@ class CanonicalCatalogController extends Controller
             'storage_unit' => ['required', 'string'],
             'display_unit' => ['required', 'string'],
             'volatile' => ['boolean'],
-            'trend_fn' => ['in:median,avg,min,max'],
-            'trend_window' => ['string'],
+            'trend_fn' => ['nullable', 'in:median,avg,min,max'],
+            'trend_window' => ['nullable', 'string'],
             'staleness_threshold_s' => ['required', 'integer', 'min:1'],
             'coverage_window_s' => ['integer', 'min:1'],
             'coverage_min' => ['numeric', 'between:0,1'],
