@@ -1,11 +1,9 @@
 <?php
 
 use App\Http\Controllers\Admin\AdminDashboardController;
-use App\Http\Controllers\Admin\AdminEnvironmentController;
 use App\Http\Controllers\Admin\AdminLogController;
 use App\Http\Controllers\Admin\BoatMetricsController;
 use App\Http\Controllers\Admin\CanonicalCatalogController;
-use App\Http\Controllers\Admin\ExploreController;
 use App\Http\Controllers\Admin\JourneyController;
 use App\Http\Controllers\Admin\JourneyViewController as AdminJourneyViewController;
 use App\Http\Controllers\Admin\MainDashboardController;
@@ -90,12 +88,6 @@ Route::middleware('auth')->prefix('admin')->group(function () {
     Route::post('/settings/force-reload', [SettingsController::class, 'forceReload'])->name('admin.settings.force-reload');
     Route::post('broadcast/pull', [StreamMonitorController::class, 'updatePull'])->name('admin.broadcast.pull');
     Route::get('/metrics', [BoatMetricsController::class, 'index'])->name('admin.metrics');
-    Route::get('/explore', [ExploreController::class, 'index'])->name('admin.explore');
-    Route::get('/explore/series', [ExploreController::class, 'series'])->name('admin.explore.series');
-    Route::get('/explore/current', [ExploreController::class, 'current'])->name('admin.explore.current');
-    Route::get('/environment', [AdminEnvironmentController::class, 'index'])->name('admin.environment');
-    Route::get('/environment/series', [AdminEnvironmentController::class, 'series'])->name('admin.environment.series');
-    Route::redirect('/weather', '/admin/environment');
     Route::get('/log', [AdminLogController::class, 'index'])->name('admin.log');
     Route::get('/tracks', [TracksController::class, 'index'])->name('admin.tracks');
     Route::patch('/ship-log/{shipLog}', [AdminLogController::class, 'update'])->name('admin.ship-log.update');

@@ -41,8 +41,8 @@
 
         <!-- Battery + Speed history -->
         <div class="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4 mb-3">
-            <Link href="/admin/explore?metric=battery_voltage&range=24h" class="panel explore-link p-4">
-                <svg class="explore-icon" viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M6 2H2v4M14 10v4h-4M2 6l4-4M10 14l4-4"/></svg>
+            <div class="panel p-4">
+
                 <div class="panel-head">
                     <span class="panel-title">Battery Voltage</span>
                     <span class="tabular-nums text-[12px] font-medium text-green">{{ batteryVal }}</span>
@@ -59,10 +59,10 @@
                     <text v-if="!batteryHistory?.length" x="200" y="55" text-anchor="middle" font-size="12" fill="var(--color-text-dim)">No data</text>
                 </svg>
                 <div class="chart-axis"><span>24h ago</span><span>now</span></div>
-            </Link>
+            </div>
 
-            <Link href="/admin/explore?metric=speed&range=24h" class="panel explore-link p-4">
-                <svg class="explore-icon" viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M6 2H2v4M14 10v4h-4M2 6l4-4M10 14l4-4"/></svg>
+            <div class="panel p-4">
+
                 <div class="panel-head">
                     <span class="panel-title">Speed</span>
                     <span class="tabular-nums text-[12px] font-medium text-scarlet">{{ live?.speed_sog != null ? fmt(live.speed_sog) + ' kn' : '—' }}</span>
@@ -79,12 +79,11 @@
                     <text v-if="!speedHistory?.length" x="200" y="55" text-anchor="middle" font-size="12" fill="var(--color-text-dim)">No data</text>
                 </svg>
                 <div class="chart-axis"><span>24h ago</span><span>now</span></div>
-            </Link>
+            </div>
         </div>
 
         <!-- Battery Power (charge/discharge in watts) -->
-        <Link href="/admin/explore?metric=battery_power&range=24h" class="panel explore-link p-4 mb-6">
-            <svg class="explore-icon" viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M6 2H2v4M14 10v4h-4M2 6l4-4M10 14l4-4"/></svg>
+        <div class="panel p-4 mb-6">
             <div class="panel-head">
                 <span class="panel-title">Battery Power</span>
                 <span class="tabular-nums text-[12px] font-medium" :class="livePower != null && livePower >= 0 ? 'text-green' : 'text-amber'">{{ livePowerLabel }}</span>
@@ -118,12 +117,12 @@
                 <span class="text-center text-text-dim">0 W</span>
                 <span>now</span>
             </div>
-        </Link>
+        </div>
 
         <!-- Temperature + Humidity history -->
         <div class="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4 mb-6">
-            <Link href="/admin/explore?metric=temp_forepeak&range=24h" class="panel explore-link p-4">
-                <svg class="explore-icon" viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M6 2H2v4M14 10v4h-4M2 6l4-4M10 14l4-4"/></svg>
+            <div class="panel p-4">
+
                 <div class="panel-title mb-0.5">Cabin Temperature</div>
                 <div class="chart-legend">
                     <span><span class="legend-dot text-amber">&#9679;</span> Forepeak {{ live?.cabin_temp_forepeak != null ? fmt(live.cabin_temp_forepeak) + '°C' : '—' }}</span>
@@ -144,10 +143,10 @@
                     <text v-if="!hasTempData" x="200" y="55" text-anchor="middle" font-size="12" fill="var(--color-text-dim)">No data</text>
                 </svg>
                 <div class="chart-axis"><span>24h ago</span><span>now</span></div>
-            </Link>
+            </div>
 
-            <Link href="/admin/explore?metric=humidity_forepeak&range=24h" class="panel explore-link p-4">
-                <svg class="explore-icon" viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M6 2H2v4M14 10v4h-4M2 6l4-4M10 14l4-4"/></svg>
+            <div class="panel p-4">
+
                 <div class="panel-title mb-0.5">Cabin Humidity</div>
                 <div class="chart-legend">
                     <span><span class="legend-dot text-amber">&#9679;</span> Forepeak {{ live?.cabin_humidity_forepeak != null ? fmt(live.cabin_humidity_forepeak, 0) + '%' : '—' }}</span>
@@ -168,7 +167,7 @@
                     <text v-if="!hasHumidityData" x="200" y="55" text-anchor="middle" font-size="12" fill="var(--color-text-dim)">No data</text>
                 </svg>
                 <div class="chart-axis"><span>24h ago</span><span>now</span></div>
-            </Link>
+            </div>
         </div>
 
         <!-- Compass + Power & Tanks -->
@@ -314,8 +313,8 @@
 
         <!-- Tank Level History -->
         <div class="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4 mt-3">
-            <Link href="/admin/explore?metric=fuel_level&range=24h" class="panel explore-link p-4">
-                <svg class="explore-icon" viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M6 2H2v4M14 10v4h-4M2 6l4-4M10 14l4-4"/></svg>
+            <div class="panel p-4">
+
                 <div class="panel-head">
                     <span class="panel-title">Diesel Level</span>
                     <span class="tabular-nums text-[12px] font-medium text-amber">{{ live?.fuel_level != null ? fmt(live.fuel_level, 0) + '%' : '—' }}</span>
@@ -332,10 +331,10 @@
                     <text v-if="!fuelHistory?.length" x="200" y="55" text-anchor="middle" font-size="12" fill="var(--color-text-dim)">No data</text>
                 </svg>
                 <div class="chart-axis"><span>24h ago</span><span>now</span></div>
-            </Link>
+            </div>
 
-            <Link href="/admin/explore?metric=water_level&range=24h" class="panel explore-link p-4">
-                <svg class="explore-icon" viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M6 2H2v4M14 10v4h-4M2 6l4-4M10 14l4-4"/></svg>
+            <div class="panel p-4">
+
                 <div class="panel-head">
                     <span class="panel-title">Fresh Water Level</span>
                     <span class="tabular-nums text-[12px] font-medium text-blue">{{ live?.water_level != null ? fmt(live.water_level, 0) + '%' : '—' }}</span>
@@ -352,13 +351,13 @@
                     <text v-if="!waterHistory?.length" x="200" y="55" text-anchor="middle" font-size="12" fill="var(--color-text-dim)">No data</text>
                 </svg>
                 <div class="chart-axis"><span>24h ago</span><span>now</span></div>
-            </Link>
+            </div>
         </div>
     </AdminLayout>
 </template>
 
 <script setup>
-import { Head, Link } from '@inertiajs/vue3';
+import { Head } from '@inertiajs/vue3';
 import AdminLayout from '@/Layouts/AdminLayout.vue';
 import { computed, ref, onMounted, onUnmounted } from 'vue';
 import { fmt } from '@/composables/useFormatters.js';

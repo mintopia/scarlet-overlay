@@ -171,9 +171,9 @@
                             {{ liveBoat?.house_battery_voltage != null && liveBoat?.house_battery_current != null ? (liveBoat.house_battery_current >= 0 ? '+' : '') + Math.round(liveBoat.house_battery_voltage * liveBoat.house_battery_current) + 'W' : '—' }}
                         </span>
                     </div>
-                    <a href="/admin/explore?metric=battery_power" class="block">
+                    <div class="block">
                         <Sparkline :data="powerData" color="var(--color-green)" :height="36" :fill="true" :showDot="true" :zeroLine="true" />
-                    </a>
+                    </div>
                 </div>
             </div>
 

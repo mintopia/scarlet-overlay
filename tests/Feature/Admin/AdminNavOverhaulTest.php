@@ -31,4 +31,13 @@ class AdminNavOverhaulTest extends TestCase
             ->get('/admin/broadcast/pull')
             ->assertStatus(405);
     }
+
+    public function test_environment_and_explore_routes_are_removed(): void
+    {
+        $user = User::factory()->create();
+
+        $this->actingAs($user)->get('/admin/environment')->assertNotFound();
+        $this->actingAs($user)->get('/admin/weather')->assertNotFound();
+        $this->actingAs($user)->get('/admin/explore')->assertNotFound();
+    }
 }
