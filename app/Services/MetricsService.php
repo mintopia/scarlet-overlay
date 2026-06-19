@@ -16,6 +16,7 @@ class MetricsService
         protected WeatherService $weather,
         protected MetricRegistry $registry,
         protected CanonicalReader $canonical,
+        protected CanonicalCatalog $catalog,
     ) {}
 
     public function getSettings(): array
@@ -152,13 +153,13 @@ class MetricsService
     /**
      * @return array{contracts: array<string, array<string, mixed>>, version: int}
      */
-    private function getCanonicalContracts(): array
+    public function getCanonicalContracts(): array
     {
         if (! config('scarlet.canonical.enabled')) {
             return ['contracts' => [], 'version' => 0];
         }
 
-        $keys = array_keys(config('scarlet.canonical.overrides', []));
+        $keys = array_keys($this->catalog->all());
         $contracts = array_filter($this->canonical->readMany($keys), fn ($c) => $c !== null);
 
         return ['contracts' => $contracts, 'version' => $this->canonical->catalogVersion()];

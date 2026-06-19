@@ -517,7 +517,7 @@ return [
     ],
 
     'canonical' => [
-        'enabled' => (bool) env('CANONICAL_READER_ENABLED', false),
+        'enabled' => (bool) env('CANONICAL_READER_ENABLED', true),
 
         // EcoFlow Delta device serial — typed param substituted into canonical EcoFlow source topics.
         'ecoflow_serial' => env('CANONICAL_ECOFLOW_SERIAL', 'P231ZE1APJ3P0446'),
