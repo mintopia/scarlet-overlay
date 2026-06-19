@@ -28,6 +28,7 @@ class OpsDashboardController extends Controller
 
         $gpsTrack = $this->buildGpsTrack($metrics);
         $gps = $metrics->getGpsMetrics();
+        $forecast = $metrics->getWeatherForecast();
 
         return Inertia::render('Admin/Dash/Ops', [
             'contracts' => $contracts,
@@ -37,6 +38,7 @@ class OpsDashboardController extends Controller
             'waterHistory' => $waterHistory,
             'gpsTrack' => $gpsTrack,
             'gps' => $gps,
+            'forecast' => $forecast,
             'reverb' => config('scarlet.reverb'),
             'reverbKey' => config('broadcasting.connections.reverb.key'),
         ]);

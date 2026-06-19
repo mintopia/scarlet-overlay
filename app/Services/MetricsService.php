@@ -162,6 +162,20 @@ class MetricsService
         }
     }
 
+    /**
+     * Multi-day daily forecast for the boat's position. Empty array on failure.
+     *
+     * @return list<array{date: string, code: int, tempMax: ?float, tempMin: ?float, windMax: ?float}>
+     */
+    public function getWeatherForecast(): array
+    {
+        try {
+            return $this->weather->getDailyForecast();
+        } catch (\Throwable) {
+            return [];
+        }
+    }
+
     public function getSunTimes(?float $latitude, ?float $longitude, string $timezone = 'UTC'): ?array
     {
         if ($latitude === null || $longitude === null) {

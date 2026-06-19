@@ -34,6 +34,84 @@ class WeatherService
         });
     }
 
+    /**
+     * Multi-day daily forecast for the boat's current position.
+     *
+     * Returns an array of per-day entries. Empty on any failure so callers
+     * can render gracefully without a feed.
+     *
+     * @return list<array{date: string, code: int, tempMax: ?float, tempMin: ?float, windMax: ?float}>
+     */
+    public function getDailyForecast(bool $force = false): array
+    {
+        if ($force) {
+            return $this->fetchDailyForecast(true);
+        }
+
+        return Cache::get('weather.daily.latest', function () {
+            return $this->fetchDailyForecast();
+        });
+    }
+
+    /**
+     * @return list<array{date: string, code: int, tempMax: ?float, tempMin: ?float, windMax: ?float}>
+     */
+    protected function fetchDailyForecast(bool $forceGps = false): array
+    {
+        try {
+            $gps = $this->gpsService->getLocation($forceGps);
+            $latitude = $gps->latitude ?? (float) config('scarlet.home.latitude');
+            $longitude = $gps->longitude ?? (float) config('scarlet.home.longitude');
+            $daily = $this->fetchDailyForecastForLatLong($latitude, $longitude);
+            Cache::put('weather.daily.latest', $daily, 300);
+
+            return $daily;
+        } catch (\Throwable $e) {
+            Log::warning('Failed to fetch daily forecast: '.$e->getMessage());
+
+            return [];
+        }
+    }
+
+    /**
+     * @return list<array{date: string, code: int, tempMax: ?float, tempMin: ?float, windMax: ?float}>
+     */
+    protected function fetchDailyForecastForLatLong(float $latitude, float $longitude): array
+    {
+        $forecastUri = config('scarlet.weather.endpoints.forecast');
+
+        $query = [
+            'longitude' => $longitude,
+            'latitude' => $latitude,
+            'daily' => 'weather_code,temperature_2m_max,temperature_2m_min,wind_speed_10m_max',
+            'forecast_days' => 7,
+            'wind_speed_unit' => 'kn',
+            'timezone' => 'auto',
+        ];
+
+        Log::debug("Fetching daily forecast for {$latitude}, {$longitude}");
+        $response = Http::timeout(10)->get("{$forecastUri}forecast", $query)->json();
+
+        $dates = $response['daily']['time'] ?? [];
+        $codes = $response['daily']['weather_code'] ?? [];
+        $maxTemps = $response['daily']['temperature_2m_max'] ?? [];
+        $minTemps = $response['daily']['temperature_2m_min'] ?? [];
+        $maxWind = $response['daily']['wind_speed_10m_max'] ?? [];
+
+        $forecast = [];
+        foreach ($dates as $i => $date) {
+            $forecast[] = [
+                'date' => $date,
+                'code' => (int) ($codes[$i] ?? 0),
+                'tempMax' => isset($maxTemps[$i]) ? (float) $maxTemps[$i] : null,
+                'tempMin' => isset($minTemps[$i]) ? (float) $minTemps[$i] : null,
+                'windMax' => isset($maxWind[$i]) ? (float) $maxWind[$i] : null,
+            ];
+        }
+
+        return $forecast;
+    }
+
     protected function fetchWeather(bool $forceGps = false): Weather
     {
         $gps = $this->gpsService->getLocation($forceGps);

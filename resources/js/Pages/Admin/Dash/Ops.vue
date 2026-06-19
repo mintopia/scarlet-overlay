@@ -271,10 +271,13 @@
                         </div>
                     </div>
 
-                    <!-- Forecast — current wx in first cell; future slots placeholder -->
+                    <!-- Forecast — current wx in first cell; multi-day forecast follows -->
                     <div class="ops-wfc">
-                        <div class="ops-wcl">Forecast · current</div>
-                        <div class="ops-wfc__cells">
+                        <div class="ops-wcl">Forecast</div>
+                        <div
+                            class="ops-wfc__cells"
+                            :style="{ gridTemplateColumns: `repeat(${forecastDays.length + 1}, minmax(0, 1fr))` }"
+                        >
                             <div class="ops-wfc__p">
                                 <span class="ops-wfc__ph">Now</span>
                                 <svg width="30" height="30" viewBox="0 0 28 28" aria-hidden="true">
@@ -288,10 +291,11 @@
                                 <span class="ops-wfc__pt" :class="{ 'ops-stale': stale('wx_air_temp') }">{{ wxAirTempDisplay }}</span>
                                 <span class="ops-wfc__pw" :class="{ 'ops-stale': stale('wx_wind_speed') }">{{ windKtsShort }}</span>
                             </div>
-                            <div v-for="slot in 4" :key="slot" class="ops-wfc__p ops-wfc__p--dim">
-                                <span class="ops-wfc__ph">+{{ slot * 3 }}h</span>
-                                <span class="ops-wfc__pt ops-wfc__pt--dim">—</span>
-                                <span class="ops-wfc__pw ops-wfc__pw--dim">—</span>
+                            <div v-for="day in forecastDays" :key="day.key" class="ops-wfc__p">
+                                <span class="ops-wfc__ph">{{ day.label }}</span>
+                                <span class="ops-wfc__pi" :title="day.title">{{ day.icon }}</span>
+                                <span class="ops-wfc__pt">{{ day.temp }}</span>
+                                <span class="ops-wfc__pw">{{ day.wind }}</span>
                             </div>
                         </div>
                     </div>
@@ -351,6 +355,7 @@ const props = defineProps({
     waterHistory: { type: Array, default: () => [] },
     gps: { type: Object, default: () => ({}) },
     gpsTrack: { type: Array, default: () => [] },
+    forecast: { type: Array, default: () => [] },
     reverb: { type: Object, default: null },
     reverbKey: { type: String, default: null },
 });
@@ -514,6 +519,55 @@ const waterPctDisplay = computed(() => {
 });
 
 const waterDaysDisplay = computed(() => '—');
+
+// ── Weather: multi-day forecast ───────────────────────────────────────────────
+// WMO weather-code → emoji icon + short label. Ops has no shared wmo helpers,
+// so map the codes locally (mirrors Weather::getConditionText/getWeatherSummary).
+function wmoIcon(code) {
+    const c = Number(code) || 0;
+    if (c === 0 || c === 1) return '☀️';
+    if (c === 2) return '⛅';
+    if (c === 3) return '☁️';
+    if (c === 45 || c === 48) return '🌫️';
+    if (c >= 51 && c <= 57) return '🌦️';
+    if ((c >= 61 && c <= 67) || (c >= 80 && c <= 82)) return '🌧️';
+    if ((c >= 71 && c <= 77) || c === 85 || c === 86) return '🌨️';
+    if (c >= 95) return '⛈️';
+    return '❓';
+}
+
+function wmoLabel(code) {
+    const c = Number(code) || 0;
+    if (c === 0) return 'Clear';
+    if (c === 1) return 'Mainly clear';
+    if (c === 2) return 'Partly cloudy';
+    if (c === 3) return 'Overcast';
+    if (c === 45 || c === 48) return 'Fog';
+    if (c >= 51 && c <= 57) return 'Drizzle';
+    if ((c >= 61 && c <= 67)) return 'Rain';
+    if (c >= 71 && c <= 77) return 'Snow';
+    if (c >= 80 && c <= 82) return 'Showers';
+    if (c === 85 || c === 86) return 'Snow showers';
+    if (c >= 95) return 'Thunderstorm';
+    return 'Unknown';
+}
+
+const forecastDays = computed(() => {
+    return (props.forecast ?? []).map((day) => {
+        const date = day.date ? new Date(`${day.date}T00:00:00`) : null;
+        const hi = day.tempMax != null ? `${Math.round(day.tempMax)}°` : '—°';
+        const lo = day.tempMin != null ? `${Math.round(day.tempMin)}°` : '—°';
+        const wind = day.windMax != null ? `${Math.round(day.windMax)} kt` : '—';
+        return {
+            key: day.date,
+            label: date ? date.toLocaleDateString(undefined, { weekday: 'short' }) : '—',
+            icon: wmoIcon(day.code),
+            title: wmoLabel(day.code),
+            temp: `${hi}/${lo}`,
+            wind,
+        };
+    });
+});
 
 // ── Weather: air ──────────────────────────────────────────────────────────────
 const wxAirTempDisplay = computed(() => {
@@ -1002,6 +1056,11 @@ const etaDisplay = computed(() => {
     font-size: 9px;
     font-weight: 800;
     color: var(--color-text-dim);
+}
+
+.ops-wfc__pi {
+    font-size: 20px;
+    line-height: 1;
 }
 
 .ops-wfc__pt {
