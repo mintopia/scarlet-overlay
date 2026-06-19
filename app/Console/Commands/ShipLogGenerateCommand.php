@@ -4,7 +4,7 @@ namespace App\Console\Commands;
 
 use App\Models\Journey;
 use App\Models\ShipLog;
-use App\Services\MetricRegistry;
+use App\Services\CanonicalReader;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Log;
 
@@ -16,7 +16,7 @@ class ShipLogGenerateCommand extends Command
 
     protected $description = 'Generate an hourly ship log entry from current Prometheus metrics';
 
-    public function handle(MetricRegistry $registry): int
+    public function handle(CanonicalReader $canonical): int
     {
         $stepSeconds = 3600;
         $timestamp = (int) floor(now()->timestamp / $stepSeconds) * $stepSeconds;
@@ -27,14 +27,15 @@ class ShipLogGenerateCommand extends Command
             return self::SUCCESS;
         }
 
-        $keys = $registry->groupKeys('log');
-
+        $values = [];
         try {
-            $values = $registry->fetchInstant($keys, $timestamp);
+            foreach ($this->shipLogCanonicalKeys as $key) {
+                $values[$key] = $canonical->readAt($key, $timestamp)['value'] ?? null;
+            }
         } catch (\Throwable $e) {
             Log::error('Ship log: Prometheus query failed', ['error' => $e->getMessage()]);
             $this->error('Prometheus query failed: '.$e->getMessage());
-            $values = array_fill_keys($keys, null);
+            $values = array_fill_keys($this->shipLogCanonicalKeys, null);
         }
 
         $logData = $this->buildLogData($values);

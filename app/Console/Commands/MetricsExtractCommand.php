@@ -2,6 +2,7 @@
 
 namespace App\Console\Commands;
 
+use App\Services\CanonicalCatalog;
 use App\Support\NavigationMath;
 use Carbon\Carbon;
 use Illuminate\Console\Command;
@@ -9,6 +10,72 @@ use Illuminate\Support\Facades\Http;
 
 class MetricsExtractCommand extends Command
 {
+    /**
+     * Replay-file metric key (legacy boat-metric name) → canonical catalog key.
+     * The replay file format is keyed by these legacy names for MetricsFakeCommand.
+     *
+     * @var array<string, array<string, string>>
+     */
+    private const GROUP_KEYS = [
+        'boat' => [
+            'speed_sog' => 'speed_sog',
+            'speed_stw' => 'speed_stw',
+            'heading' => 'heading_true',
+            'cog' => 'cog',
+            'depth' => 'depth_below_surface',
+            'heel' => 'heel',
+            'pitch' => 'pitch',
+            'trip_log' => 'trip_log',
+            'nav_wp_distance' => 'wp_distance',
+            'nav_wp_ttg' => 'wp_ttg',
+            'vmg' => 'vmg',
+            'wind_speed_apparent' => 'wind_speed_apparent',
+            'wind_angle_apparent' => 'wind_angle_apparent',
+            'magnetic_variation' => 'magnetic_variation',
+            'heading_magnetic' => 'heading_magnetic',
+            'water_temp' => 'water_temp',
+            'house_battery_voltage' => 'house_battery_voltage',
+            'house_battery_soc' => 'house_battery_soc',
+            'house_battery_current' => 'house_battery_current',
+            'house_battery_time_remaining' => 'house_battery_time_remaining',
+            'engine_battery_voltage' => 'engine_battery_voltage',
+            'fuel_level' => 'fuel_level',
+            'water_level' => 'water_fresh_level',
+            'cabin_temp_quarterberth' => 'cabin_temp_quarterberth',
+            'cabin_humidity_quarterberth' => 'cabin_humidity_quarterberth',
+            'cabin_temp_main' => 'cabin_temp_main',
+            'cabin_humidity_main' => 'cabin_humidity_main',
+            'cabin_temp_forepeak' => 'cabin_temp_forepeak',
+            'cabin_humidity_forepeak' => 'cabin_humidity_forepeak',
+            'cabin_pressure_forepeak' => 'cabin_pressure_forepeak',
+        ],
+        'tracker' => [
+            'tracker_battery' => 'tracker_battery_voltage',
+            'tracker_usb' => 'tracker_usb_powered',
+            'tracker_lte_connected' => 'tracker_lte_connected',
+            'tracker_lte_rssi' => 'tracker_lte_rssi',
+            'tracker_lte_quality' => 'tracker_lte_quality',
+            'tracker_lte_rat' => 'tracker_lte_rat',
+            'tracker_wifi_connected' => 'tracker_wifi_connected',
+            'tracker_wifi_rssi' => 'tracker_wifi_rssi',
+            'tracker_uptime' => 'tracker_uptime',
+            'tracker_heap' => 'tracker_free_heap',
+            'tracker_mode' => 'tracker_mode',
+            'cabin_temp_forepeak' => 'cabin_temp_forepeak',
+            'cabin_humidity_forepeak' => 'cabin_humidity_forepeak',
+            'tracker_cpu' => 'tracker_cpu',
+        ],
+        'gps' => [
+            'gps_latitude' => 'position_latitude',
+            'gps_longitude' => 'position_longitude',
+            'gps_altitude' => 'gps_altitude',
+            'gps_satellites' => 'gps_satellites',
+            'gps_hdop' => 'gps_hdop',
+            'gps_speed' => 'gps_speed',
+            'gps_heading' => 'gps_heading',
+        ],
+    ];
+
     protected $signature = 'metrics:extract
         {--from= : Start time (e.g. "2026-05-23 21:00:00+02:00")}
         {--duration=1h : Duration to extract (e.g. "1h", "30m")}
@@ -168,15 +235,14 @@ class MetricsExtractCommand extends Command
     private function buildQueryList(): array
     {
         $queries = [];
-        $registry = config('scarlet.metrics.registry');
-        $groups = config('scarlet.metrics.groups');
+        $catalog = app(CanonicalCatalog::class)->all();
 
-        foreach (['boat', 'tracker', 'gps'] as $group) {
-            $keys = $groups[$group] ?? [];
-            foreach ($keys as $key) {
-                $entry = $registry[$key] ?? null;
-                if ($entry && isset($entry['query'])) {
-                    $queries["{$group}.{$key}"] = $entry['query'];
+        foreach (self::GROUP_KEYS as $group => $keyMap) {
+            foreach ($keyMap as $legacyKey => $canonicalKey) {
+                $def = $catalog[$canonicalKey] ?? null;
+                $selector = $def['sources'][0]['selector'] ?? null;
+                if ($selector !== null) {
+                    $queries["{$group}.{$legacyKey}"] = $selector;
                 }
             }
         }

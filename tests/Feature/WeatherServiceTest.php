@@ -2,15 +2,27 @@
 
 namespace Tests\Feature;
 
+use App\Services\CanonicalCatalog;
 use App\Services\WeatherService;
+use App\Support\CanonicalBaseline;
+use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Http;
 use Tests\TestCase;
 
 class WeatherServiceTest extends TestCase
 {
+    use RefreshDatabase;
+
     public function test_null_api_values_become_null_not_zero(): void
     {
+        // GPS is resolved through the canonical reader; fake VM so a position is available.
+        app(CanonicalCatalog::class)->applyBaseline(CanonicalBaseline::definitions(), 'reset', 'test');
+
         Http::fake([
+            '*/api/v1/query*' => Http::response([
+                'status' => 'success',
+                'data' => ['result' => [['value' => [now()->timestamp, '50.0']]]],
+            ]),
             '*/forecast*' => Http::response([
                 'latitude' => 50.0, 'longitude' => -1.0, 'timezone' => 'UTC',
                 'current' => [

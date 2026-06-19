@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Console\Commands;
 
+use App\Services\CanonicalCatalog;
 use App\Services\PrometheusService;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Storage;
@@ -13,6 +14,11 @@ class MetricsInventoryCommand extends Command
     protected $signature = 'metrics:inventory {--prefix=scarlet}';
 
     protected $description = 'Inventory all live VictoriaMetrics series and report config drift';
+
+    public function __construct(private CanonicalCatalog $catalog)
+    {
+        parent::__construct();
+    }
 
     public function handle(PrometheusService $prometheus): int
     {
@@ -52,19 +58,18 @@ class MetricsInventoryCommand extends Command
      */
     private function buildDriftReport(array $liveNames): string
     {
-        $registry = config('scarlet.metrics.registry', []);
-        $lines = ['# Drift report '.now()->format('Y-m-d'), '', 'Registry queries whose base metric is absent from live VM:', ''];
+        $catalog = $this->catalog->all();
+        $lines = ['# Drift report '.now()->format('Y-m-d'), '', 'Canonical source selectors whose base metric is absent from live VM:', ''];
 
-        foreach ($registry as $key => $def) {
-            foreach (['query', 'fallback'] as $field) {
-                if (! isset($def[$field])) {
-                    continue;
-                }
-                if (preg_match('/\b(scarlet_[a-zA-Z0-9_:]*)/', (string) $def[$field], $m) !== 1) {
+        foreach ($catalog as $key => $def) {
+            foreach (($def['sources'] ?? []) as $i => $source) {
+                $selector = $source['selector'] ?? '';
+                if (preg_match('/\b(scarlet_[a-zA-Z0-9_:]*)/', $selector, $m) !== 1) {
                     continue;
                 }
                 if (! in_array($m[1], $liveNames, true)) {
-                    $lines[] = "- `{$key}` ({$field}) → `{$m[1]}` NOT FOUND live";
+                    $priority = $i + 1;
+                    $lines[] = "- `{$key}` (source #{$priority}) → `{$m[1]}` NOT FOUND live";
                 }
             }
         }

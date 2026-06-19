@@ -2,8 +2,10 @@
 
 namespace Tests\Feature;
 
+use App\Services\CanonicalCatalog;
 use App\Services\CanonicalReader;
 use App\Services\MetricsService;
+use App\Support\CanonicalBaseline;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Http;
@@ -14,24 +16,27 @@ class CanonicalFuelWaterTest extends TestCase
 {
     use RefreshDatabase;
 
-    public function test_enabled_flag_overrides_fuel_from_canonical_reader(): void
+    public function test_boat_metrics_resolve_fuel_and_water_from_canonical_reader(): void
     {
         Http::fake([
             '*' => Http::response(['status' => 'success', 'data' => ['result' => []]]),
         ]);
 
-        Config::set('scarlet.canonical.enabled', true);
-        Config::set('scarlet.canonical.overrides', [
-            'fuel_level' => 'fuel_level',
-            'water_fresh_level' => 'water_level',
-        ]);
-
         /** @var CanonicalReader&MockObject $reader */
         $reader = $this->createMock(CanonicalReader::class);
-        $reader->method('read')->willReturnMap([
-            ['fuel_level', ['value' => 63.0, 'raw' => 63.0, 'unit' => '%', 'timestamp' => 1, 'age' => 20, 'stale' => false, 'resolved_source' => 'mqtt']],
-            ['water_fresh_level', ['value' => 41.0, 'raw' => 41.0, 'unit' => '%', 'timestamp' => 1, 'age' => 20, 'stale' => false, 'resolved_source' => 'mqtt']],
-        ]);
+        $reader->method('readMany')->willReturnCallback(function (array $keys): array {
+            $envelopes = [
+                'fuel_level' => ['value' => 63.0, 'raw' => 63.0, 'unit' => '%', 'timestamp' => 1, 'age' => 20, 'stale' => false, 'resolved_source' => 'mqtt'],
+                'water_fresh_level' => ['value' => 41.0, 'raw' => 41.0, 'unit' => '%', 'timestamp' => 1, 'age' => 20, 'stale' => false, 'resolved_source' => 'mqtt'],
+            ];
+
+            $out = [];
+            foreach ($keys as $key) {
+                $out[$key] = $envelopes[$key] ?? null;
+            }
+
+            return $out;
+        });
         $this->app->instance(CanonicalReader::class, $reader);
 
         $service = $this->app->make(MetricsService::class);
@@ -41,13 +46,11 @@ class CanonicalFuelWaterTest extends TestCase
         $this->assertEqualsWithDelta(41.0, $boat['water_level'], 0.001);
     }
 
-    public function test_disabled_flag_does_not_call_reader(): void
+    public function test_boat_metrics_includes_computed_true_wind(): void
     {
-        Config::set('scarlet.canonical.enabled', false);
-
         /** @var CanonicalReader&MockObject $reader */
         $reader = $this->createMock(CanonicalReader::class);
-        $reader->expects($this->never())->method('read');
+        $reader->method('readMany')->willReturnCallback(fn (array $keys) => array_fill_keys($keys, null));
         $this->app->instance(CanonicalReader::class, $reader);
 
         Http::fake([
@@ -58,6 +61,7 @@ class CanonicalFuelWaterTest extends TestCase
         $boat = $service->getBoatMetrics();
 
         $this->assertArrayHasKey('wind_speed_true', $boat);
+        $this->assertArrayHasKey('wind_direction_true', $boat);
     }
 
     public function test_get_all_metrics_includes_canonical_block_when_enabled(): void
@@ -67,16 +71,21 @@ class CanonicalFuelWaterTest extends TestCase
         ]);
 
         Config::set('scarlet.canonical.enabled', true);
-        Config::set('scarlet.canonical.overrides', ['fuel_level' => 'fuel_level', 'water_fresh_level' => 'water_level']);
+        app(CanonicalCatalog::class)->applyBaseline(CanonicalBaseline::definitions(), 'reset', 'test');
 
         /** @var CanonicalReader&MockObject $reader */
         $reader = $this->createMock(CanonicalReader::class);
         $reader->method('catalogVersion')->willReturn(4);
-        $reader->method('readMany')->willReturn([
-            'fuel_level' => ['value' => 63.0, 'raw' => 63.0, 'unit' => '%', 'timestamp' => 1, 'age' => 20, 'stale' => false, 'resolved_source' => 'mqtt'],
-            'water_fresh_level' => null,
-        ]);
-        $reader->method('read')->willReturn(['value' => 63.0, 'raw' => 63.0, 'unit' => '%', 'timestamp' => 1, 'age' => 20, 'stale' => false, 'resolved_source' => 'mqtt']);
+        $reader->method('readMany')->willReturnCallback(function (array $keys): array {
+            $out = [];
+            foreach ($keys as $key) {
+                $out[$key] = $key === 'fuel_level'
+                    ? ['value' => 63.0, 'raw' => 63.0, 'unit' => '%', 'timestamp' => 1, 'age' => 20, 'stale' => false, 'resolved_source' => 'mqtt']
+                    : null;
+            }
+
+            return $out;
+        });
         $this->app->instance(CanonicalReader::class, $reader);
 
         $all = $this->app->make(MetricsService::class)->getAllMetrics();
@@ -97,7 +106,7 @@ class CanonicalFuelWaterTest extends TestCase
 
         /** @var CanonicalReader&MockObject $reader */
         $reader = $this->createMock(CanonicalReader::class);
-        $reader->expects($this->never())->method('readMany');
+        $reader->method('readMany')->willReturnCallback(fn (array $keys) => array_fill_keys($keys, null));
         $this->app->instance(CanonicalReader::class, $reader);
 
         $all = $this->app->make(MetricsService::class)->getAllMetrics();

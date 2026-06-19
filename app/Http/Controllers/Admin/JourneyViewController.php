@@ -2,18 +2,19 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Http\Controllers\Admin\Concerns\MapsLegacyMetricKeys;
 use App\Http\Controllers\Controller;
 use App\Models\Journey;
 use App\Models\ShipLog;
-use App\Services\MetricRegistry;
+use App\Services\CanonicalReader;
 use App\Services\MetricsService;
 use Inertia\Inertia;
 
 class JourneyViewController extends Controller
 {
-    use BuildsLogRows;
+    use BuildsLogRows, MapsLegacyMetricKeys;
 
-    public function show(Journey $journey, MetricsService $metrics, MetricRegistry $registry)
+    public function show(Journey $journey, MetricsService $metrics, CanonicalReader $canonical)
     {
         $start = $journey->started_at?->timestamp;
         $end = ($journey->ended_at ?? now())->timestamp;
@@ -28,11 +29,11 @@ class JourneyViewController extends Controller
         $chartMetrics = ['speed_sog', 'vmg', 'fuel_level', 'water_level', 'house_battery_soc'];
         $charts = [];
         foreach ($chartMetrics as $key) {
-            $charts[$key] = $registry->fetchRange($key, $step, $start, $end, fillGaps: false);
+            $charts[$key] = $this->legacyRange($canonical, $key, $step, $start, $end);
         }
 
-        $current = $registry->fetchRange('house_battery_current', $step, $start, $end, fillGaps: false);
-        $voltage = $registry->fetchRange('house_battery_voltage', $step, $start, $end, fillGaps: false);
+        $current = $this->legacyRange($canonical, 'house_battery_current', $step, $start, $end);
+        $voltage = $this->legacyRange($canonical, 'house_battery_voltage', $step, $start, $end);
         $voltageByTs = collect($voltage)->keyBy('timestamp');
         $batteryPower = [];
         foreach ($current as $pt) {

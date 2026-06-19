@@ -11,7 +11,7 @@ class GpsService
 {
     public function __construct(
         protected PrometheusService $prometheus,
-        protected MetricRegistry $registry,
+        protected CanonicalReader $canonical,
     ) {}
 
     public function getLocation(bool $force = false): Gps
@@ -20,20 +20,20 @@ class GpsService
             return $cached;
         }
 
-        $data = $this->registry->fetchInstant([
-            'gps_latitude', 'gps_longitude', 'gps_speed', 'gps_heading', 'gps_satellites', 'gps_hdop',
+        $data = $this->canonical->readMany([
+            'position_latitude', 'position_longitude', 'gps_speed', 'gps_heading', 'gps_satellites', 'gps_hdop',
         ]);
 
         $gps = new Gps;
-        $lat = $data['gps_latitude'] ?? null;
-        $lng = $data['gps_longitude'] ?? null;
+        $lat = $data['position_latitude']['value'] ?? null;
+        $lng = $data['position_longitude']['value'] ?? null;
         $nullIsland = GeoUtils::isNullIsland($lat, $lng);
         $gps->latitude = $nullIsland ? null : $lat;
         $gps->longitude = $nullIsland ? null : $lng;
-        $gps->speed = $data['gps_speed'] ?? 0;
-        $gps->course = $data['gps_heading'] ?? 0;
-        $gps->satellites = (int) ($data['gps_satellites'] ?? 0);
-        $gps->hdop = (float) ($data['gps_hdop'] ?? 9999);
+        $gps->speed = $data['gps_speed']['value'] ?? 0;
+        $gps->course = $data['gps_heading']['value'] ?? 0;
+        $gps->satellites = (int) ($data['gps_satellites']['value'] ?? 0);
+        $gps->hdop = (float) ($data['gps_hdop']['value'] ?? 9999);
         $gps->valid = ! $nullIsland;
         $gps->timestamp = CarbonImmutable::now();
 

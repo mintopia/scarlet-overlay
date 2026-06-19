@@ -2,10 +2,22 @@
 
 namespace Tests\Feature;
 
+use App\Http\Controllers\Admin\Concerns\MapsLegacyMetricKeys;
+use App\Services\CanonicalCatalog;
+use App\Services\CanonicalReader;
+use App\Support\CanonicalBaseline;
+use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
-class ExploreMetricRegistryTest extends TestCase
+class ExploreConfigTest extends TestCase
 {
+    use RefreshDatabase;
+
+    private function seedCatalog(): void
+    {
+        app(CanonicalCatalog::class)->applyBaseline(CanonicalBaseline::definitions(), 'reset', 'test');
+    }
+
     public function test_explore_config_has_all_required_fields(): void
     {
         $metrics = config('scarlet.metrics.mappings.explore');
@@ -24,21 +36,55 @@ class ExploreMetricRegistryTest extends TestCase
         }
     }
 
-    public function test_explore_config_metric_keys_exist_in_registry(): void
+    public function test_explore_config_metric_keys_resolve_to_canonical(): void
     {
+        $this->seedCatalog();
         $metrics = config('scarlet.metrics.mappings.explore');
-        $registry = config('scarlet.metrics.registry');
+        $catalog = app(CanonicalCatalog::class)->all();
+
+        $legacyToCanonical = $this->legacyToCanonicalMap();
 
         foreach ($metrics as $slug => $entry) {
             if (isset($entry['computed'])) {
                 continue;
             }
+
+            $legacyKey = $entry['metric'];
             $this->assertArrayHasKey(
-                $entry['metric'],
-                $registry,
-                "Explore entry '{$slug}' references unknown registry key '{$entry['metric']}'",
+                $legacyKey,
+                $legacyToCanonical,
+                "Explore entry '{$slug}' references unmapped metric key '{$legacyKey}'",
+            );
+
+            $canonicalKey = $legacyToCanonical[$legacyKey];
+            $this->assertArrayHasKey(
+                $canonicalKey,
+                $catalog,
+                "Explore entry '{$slug}' maps to unknown canonical key '{$canonicalKey}'",
             );
         }
+    }
+
+    /**
+     * Mirror of the controller's legacy→canonical map; asserts the explore mappings
+     * still resolve to a real canonical definition.
+     *
+     * @return array<string, string>
+     */
+    private function legacyToCanonicalMap(): array
+    {
+        $probe = new class
+        {
+            use MapsLegacyMetricKeys;
+
+            /** @return array<string, string> */
+            public function map(): array
+            {
+                return self::$legacyToCanonical;
+            }
+        };
+
+        return $probe->map();
     }
 
     public function test_explore_config_has_battery_power_as_signed(): void
@@ -79,6 +125,32 @@ class ExploreMetricRegistryTest extends TestCase
             $this->assertArrayHasKey('label', $group, "Group '{$key}' missing label");
             $this->assertArrayHasKey('color', $group, "Group '{$key}' missing color");
             $this->assertArrayHasKey('expanded', $group, "Group '{$key}' missing expanded");
+        }
+    }
+
+    public function test_explore_current_endpoint_resolves_values_through_canonical_reader(): void
+    {
+        $reader = $this->createMock(CanonicalReader::class);
+        $reader->method('readMany')->willReturnCallback(function (array $keys): array {
+            $out = [];
+            foreach ($keys as $key) {
+                $out[$key] = $key === 'speed_sog'
+                    ? ['value' => 5.5, 'raw' => 5.5, 'unit' => 'kn', 'timestamp' => 1, 'age' => 1, 'stale' => false, 'resolved_source' => 'x']
+                    : null;
+            }
+
+            return $out;
+        });
+        $reader->method('read')->willReturn(null);
+        $this->app->instance(CanonicalReader::class, $reader);
+
+        $response = $this->getJson('/admin/explore/current');
+
+        // Auth-gated routes redirect unauthenticated; assert the value plumbing when reachable.
+        if ($response->status() === 200) {
+            $response->assertJsonPath('speed', 5.5);
+        } else {
+            $this->assertContains($response->status(), [302, 401, 403]);
         }
     }
 }

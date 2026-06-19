@@ -2,8 +2,9 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Http\Controllers\Admin\Concerns\MapsLegacyMetricKeys;
 use App\Http\Controllers\Controller;
-use App\Services\MetricRegistry;
+use App\Services\CanonicalReader;
 use App\Services\MetricsService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -11,6 +12,8 @@ use Inertia\Inertia;
 
 class AdminEnvironmentController extends Controller
 {
+    use MapsLegacyMetricKeys;
+
     private const RANGE_MAP = [
         '6h' => ['duration' => 21600, 'step' => '60s'],
         '24h' => ['duration' => 86400, 'step' => '300s'],
@@ -27,7 +30,7 @@ class AdminEnvironmentController extends Controller
         ]);
     }
 
-    public function series(Request $request, MetricRegistry $registry): JsonResponse
+    public function series(Request $request, CanonicalReader $canonical): JsonResponse
     {
         $range = $request->query('range', '24h');
         $config = self::RANGE_MAP[$range] ?? self::RANGE_MAP['24h'];
@@ -50,7 +53,7 @@ class AdminEnvironmentController extends Controller
                 continue;
             }
 
-            $data = $registry->fetchRange($registryKey, $step, $start, $end);
+            $data = $this->legacyRange($canonical, $registryKey, $step, $start, $end);
             $values = array_column($data, 'value');
 
             $results[$slug] = [

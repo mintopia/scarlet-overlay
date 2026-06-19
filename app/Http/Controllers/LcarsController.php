@@ -2,8 +2,9 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Controllers\Admin\Concerns\MapsLegacyMetricKeys;
 use App\Models\BoatSetting;
-use App\Services\MetricRegistry;
+use App\Services\CanonicalReader;
 use App\Services\MetricsService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -19,11 +20,13 @@ use Inertia\Response;
  */
 class LcarsController extends Controller
 {
+    use MapsLegacyMetricKeys;
+
     /**
      * Per-Bridge-Station allow-list of `historical` registry keys (the only metrics
      * served by the lazy series endpoint). This is the backend half of the single
      * presentation contract; a parity test asserts it matches the front-end contract
-     * and that every key is a valid registry definition.
+     * and that every key is a valid canonical definition.
      *
      * @var array<string, list<string>>
      */
@@ -55,7 +58,7 @@ class LcarsController extends Controller
         ]);
     }
 
-    public function series(Request $request, MetricRegistry $registry): JsonResponse
+    public function series(Request $request, CanonicalReader $canonical): JsonResponse
     {
         $station = (string) $request->query('station', '');
 
@@ -63,7 +66,7 @@ class LcarsController extends Controller
             return response()->json(['error' => 'unknown_station'], 422);
         }
 
-        return response()->json($this->stationSeries($station, $registry));
+        return response()->json($this->stationSeries($station, $canonical));
     }
 
     /**
@@ -72,9 +75,9 @@ class LcarsController extends Controller
      *
      * @return list<array{key: string, points: list<array{t: int|float, value: float|null}>|null, status: string}>
      */
-    private function stationSeries(string $station, ?MetricRegistry $registry = null): array
+    private function stationSeries(string $station, ?CanonicalReader $canonical = null): array
     {
-        $registry ??= app(MetricRegistry::class);
+        $canonical ??= app(CanonicalReader::class);
 
         $end = now()->timestamp;
         $start = $end - self::WINDOW_SECONDS;
@@ -82,9 +85,10 @@ class LcarsController extends Controller
         $out = [];
         foreach (self::STATION_HISTORY[$station] as $key) {
             try {
-                $data = $registry->fetchRangeWithFallback($key, self::STEP, $start, $end);
+                $canonicalKey = $this->canonicalKey($key) ?? $key;
+                $data = $canonical->readRange($canonicalKey, null, self::STEP, $start, $end);
                 $points = array_map(
-                    static fn (array $p): array => ['t' => $p['timestamp'] ?? $p['t'] ?? null, 'value' => $p['value'] ?? null],
+                    static fn (array $p): array => ['t' => $p['t'], 'value' => $p['v']],
                     $data,
                 );
 

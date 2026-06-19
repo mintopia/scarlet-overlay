@@ -11,10 +11,85 @@ use Carbon\CarbonInterval;
 
 class MetricsService
 {
+    /**
+     * Legacy boat-metric output key → canonical catalog key. The output array still
+     * exposes the legacy keys; only the source of each value is the canonical reader.
+     *
+     * @var array<string, string>
+     */
+    private const BOAT_KEYS = [
+        'speed_sog' => 'speed_sog',
+        'speed_stw' => 'speed_stw',
+        'heading' => 'heading_true',
+        'cog' => 'cog',
+        'depth' => 'depth_below_surface',
+        'heel' => 'heel',
+        'pitch' => 'pitch',
+        'heading_magnetic' => 'heading_magnetic',
+        'trip_log' => 'trip_log',
+        'nav_wp_distance' => 'wp_distance',
+        'nav_wp_ttg' => 'wp_ttg',
+        'vmg' => 'vmg',
+        'wind_speed_apparent' => 'wind_speed_apparent',
+        'wind_angle_apparent' => 'wind_angle_apparent',
+        'magnetic_variation' => 'magnetic_variation',
+        'water_temp' => 'water_temp',
+        'house_battery_voltage' => 'house_battery_voltage',
+        'house_battery_soc' => 'house_battery_soc',
+        'house_battery_current' => 'house_battery_current',
+        'house_battery_time_remaining' => 'house_battery_time_remaining',
+        'engine_battery_voltage' => 'engine_battery_voltage',
+        'fuel_level' => 'fuel_level',
+        'water_level' => 'water_fresh_level',
+        'cabin_temp_quarterberth' => 'cabin_temp_quarterberth',
+        'cabin_humidity_quarterberth' => 'cabin_humidity_quarterberth',
+        'cabin_temp_main' => 'cabin_temp_main',
+        'cabin_humidity_main' => 'cabin_humidity_main',
+        'cabin_temp_forepeak' => 'cabin_temp_forepeak',
+        'cabin_humidity_forepeak' => 'cabin_humidity_forepeak',
+        'cabin_pressure_forepeak' => 'cabin_pressure_forepeak',
+    ];
+
+    /**
+     * Legacy tracker output key → canonical catalog key.
+     *
+     * @var array<string, string>
+     */
+    private const TRACKER_KEYS = [
+        'tracker_battery' => 'tracker_battery_voltage',
+        'tracker_usb' => 'tracker_usb_powered',
+        'tracker_lte_connected' => 'tracker_lte_connected',
+        'tracker_lte_rssi' => 'tracker_lte_rssi',
+        'tracker_lte_quality' => 'tracker_lte_quality',
+        'tracker_lte_rat' => 'tracker_lte_rat',
+        'tracker_wifi_connected' => 'tracker_wifi_connected',
+        'tracker_wifi_rssi' => 'tracker_wifi_rssi',
+        'tracker_uptime' => 'tracker_uptime',
+        'tracker_heap' => 'tracker_free_heap',
+        'tracker_mode' => 'tracker_mode',
+        'cabin_temp_forepeak' => 'cabin_temp_forepeak',
+        'cabin_humidity_forepeak' => 'cabin_humidity_forepeak',
+        'tracker_cpu' => 'tracker_cpu',
+    ];
+
+    /**
+     * Legacy GPS output key → canonical catalog key.
+     *
+     * @var array<string, string>
+     */
+    private const GPS_KEYS = [
+        'gps_latitude' => 'position_latitude',
+        'gps_longitude' => 'position_longitude',
+        'gps_altitude' => 'gps_altitude',
+        'gps_satellites' => 'gps_satellites',
+        'gps_hdop' => 'gps_hdop',
+        'gps_speed' => 'gps_speed',
+        'gps_heading' => 'gps_heading',
+    ];
+
     public function __construct(
         protected PrometheusService $prometheus,
         protected WeatherService $weather,
-        protected MetricRegistry $registry,
         protected CanonicalReader $canonical,
         protected CanonicalCatalog $catalog,
     ) {}
@@ -33,38 +108,29 @@ class MetricsService
 
     public function getBoatMetrics(): array
     {
-        $metrics = $this->registry->fetchInstant($this->registry->groupKeys('boat'));
+        $metrics = $this->readLegacyKeys(self::BOAT_KEYS);
 
-        $tw = $this->calculateTrueWind(
-            $metrics['wind_speed_apparent_raw'],
-            $metrics['wind_angle_apparent_raw'],
-            $metrics['speed_stw_raw'],
-            $metrics['heading_raw'],
-        );
+        $tw = $this->trueWindFromCanonical($metrics);
         $metrics['wind_speed_true'] = $tw['speed'];
         $metrics['wind_direction_true'] = $tw['direction'];
-        unset($metrics['wind_speed_apparent_raw'], $metrics['wind_angle_apparent_raw'], $metrics['speed_stw_raw'], $metrics['heading_raw']);
-
-        // Canonical overlay is applied centrally in MetricRegistry::fetchInstant().
 
         return $metrics;
     }
 
     public function getTrackerMetrics(): array
     {
-        $metrics = $this->registry->fetchInstant($this->registry->groupKeys('tracker'));
+        $metrics = $this->readLegacyKeys(self::TRACKER_KEYS);
 
         $metrics['battery_percent'] = $this->voltageToPct($metrics['tracker_battery'] ?? null);
-        $metrics['last_seen'] = $this->prometheus->queryTimestamp(
-            $this->registry->instantQuery('tracker_uptime')
-        );
+        $uptime = $this->canonical->read('tracker_uptime');
+        $metrics['last_seen'] = $uptime['timestamp'] ?? null;
 
         return $metrics;
     }
 
     public function getGpsMetrics(): array
     {
-        $gps = $this->registry->fetchInstant($this->registry->groupKeys('gps'));
+        $gps = $this->readLegacyKeys(self::GPS_KEYS);
 
         $result = [
             'latitude' => $gps['gps_latitude'],
@@ -160,17 +226,16 @@ class MetricsService
 
     public function getAllMetricsAt(int $timestamp): array
     {
-        $boat = $this->registry->fetchInstant($this->registry->groupKeys('boat'), $timestamp);
+        $boat = $this->readLegacyKeysAt(self::BOAT_KEYS, $timestamp);
 
-        $tw = $this->calculateTrueWind($boat['wind_speed_apparent_raw'], $boat['wind_angle_apparent_raw'], $boat['speed_stw_raw'], $boat['heading_raw']);
+        $tw = $this->trueWindFromCanonical($boat);
         $boat['wind_speed_true'] = $tw['speed'];
         $boat['wind_direction_true'] = $tw['direction'];
-        unset($boat['wind_speed_apparent_raw'], $boat['wind_angle_apparent_raw'], $boat['speed_stw_raw'], $boat['heading_raw']);
 
-        $tracker = $this->registry->fetchInstant($this->registry->groupKeys('tracker'), $timestamp);
+        $tracker = $this->readLegacyKeysAt(self::TRACKER_KEYS, $timestamp);
         $tracker['battery_percent'] = $this->voltageToPct($tracker['tracker_battery'] ?? null);
 
-        $gpsRaw = $this->registry->fetchInstant($this->registry->groupKeys('gps'), $timestamp);
+        $gpsRaw = $this->readLegacyKeysAt(self::GPS_KEYS, $timestamp);
 
         $gps = [
             'latitude' => $gpsRaw['gps_latitude'],
@@ -223,27 +288,27 @@ class MetricsService
         }
         $end = $end ?? now()->timestamp;
 
-        $latData = $this->registry->fetchRange('track_latitude', $step, $start, $end, fillGaps: false);
-        $lngData = $this->registry->fetchRange('track_longitude', $step, $start, $end, fillGaps: false);
-        $sogData = $this->registry->fetchRange('track_sog', $step, $start, $end, fillGaps: false);
+        $latData = $this->canonical->readRange('position_latitude', null, $step, $start, $end);
+        $lngData = $this->canonical->readRange('position_longitude', null, $step, $start, $end);
+        $sogData = $this->canonical->readRange('speed_sog', null, $step, $start, $end);
 
-        $lngByTs = collect($lngData)->keyBy('timestamp');
-        $sogByTs = collect($sogData)->keyBy('timestamp');
+        $lngByTs = collect($lngData)->keyBy('t');
+        $sogByTs = collect($sogData)->keyBy('t');
 
         $raw = [];
         foreach ($latData as $point) {
-            $ts = $point['timestamp'];
+            $ts = $point['t'];
             $lng = $lngByTs->get($ts);
             if (! $lng) {
                 continue;
             }
 
-            if (GeoUtils::isNullIsland($point['value'], $lng['value'])) {
+            if (GeoUtils::isNullIsland($point['v'], $lng['v'])) {
                 continue;
             }
 
             $sog = $sogByTs->get($ts);
-            $raw[] = [$point['value'], $lng['value'], $sog['value'] ?? 0];
+            $raw[] = [$point['v'], $lng['v'], $sog['v'] ?? 0];
         }
 
         return $this->filterTrackOutliers($raw);
@@ -283,39 +348,61 @@ class MetricsService
             $alignedStart = (int) ceil($alignedStart / $stepSeconds) * $stepSeconds;
         }
 
-        $keys = $this->registry->groupKeys('log');
-        $seriesByKey = [];
+        // Canonical series feeding the ship-log table. Wind needs raw SI values so the
+        // true-wind calculation matches the legacy `*_raw` registry intermediates.
+        $latData = $this->canonical->readRange('position_latitude', null, $step.'s', $alignedStart, $alignedEnd);
+        $lngData = $this->canonical->readRange('position_longitude', null, $step.'s', $alignedStart, $alignedEnd);
+        $tripData = $this->canonical->readRange('trip_log', null, $step.'s', $alignedStart, $alignedEnd);
+        $pressureData = $this->canonical->readRange('cabin_pressure_forepeak', null, $step.'s', $alignedStart, $alignedEnd);
+        $wpDistData = $this->canonical->readRange('wp_distance', null, $step.'s', $alignedStart, $alignedEnd);
+        $wpTtgData = $this->canonical->readRange('wp_ttg', null, $step.'s', $alignedStart, $alignedEnd);
+        $socData = $this->canonical->readRange('house_battery_soc', null, $step.'s', $alignedStart, $alignedEnd);
+        $waterData = $this->canonical->readRange('water_fresh_level', null, $step.'s', $alignedStart, $alignedEnd);
+        $fuelData = $this->canonical->readRange('fuel_level', null, $step.'s', $alignedStart, $alignedEnd);
 
-        foreach ($keys as $registryKey) {
-            $data = $this->registry->fetchRange($registryKey, $step.'s', $alignedStart, $alignedEnd);
-            $seriesByKey[$registryKey] = collect($data)->keyBy('timestamp');
-        }
+        $awsData = $this->canonical->readRange('wind_speed_apparent', null, $step.'s', $alignedStart, $alignedEnd);
+        $awaData = $this->canonical->readRange('wind_angle_apparent', null, $step.'s', $alignedStart, $alignedEnd);
+        $stwData = $this->canonical->readRange('speed_stw', null, $step.'s', $alignedStart, $alignedEnd);
+        $hdgData = $this->canonical->readRange('heading_true', null, $step.'s', $alignedStart, $alignedEnd);
+        $cogData = $this->canonical->readRange('cog', null, $step.'s', $alignedStart, $alignedEnd);
+
+        $lat = $this->seriesByTs($latData);
+        $lng = $this->seriesByTs($lngData);
+        $trip = $this->seriesByTs($tripData);
+        $pressure = $this->seriesByTs($pressureData);
+        $wpDist = $this->seriesByTs($wpDistData);
+        $wpTtg = $this->seriesByTs($wpTtgData);
+        $soc = $this->seriesByTs($socData);
+        $water = $this->seriesByTs($waterData);
+        $fuel = $this->seriesByTs($fuelData);
+        $aws = $this->seriesByTs($awsData);
+        $awa = $this->seriesByTs($awaData);
+        $stw = $this->seriesByTs($stwData);
+        $hdg = $this->seriesByTs($hdgData);
+        $cog = $this->seriesByTs($cogData);
 
         $rows = [];
         for ($ts = $alignedStart; $ts <= $alignedEnd; $ts += $stepSeconds) {
-            $row = ['timestamp' => $ts];
-            foreach ($keys as $registryKey) {
-                $point = $seriesByKey[$registryKey]->get($ts);
-                $row[$registryKey] = $point ? $point['value'] : null;
-            }
+            $headingDeg = $hdg[$ts] ?? null;
+            $cogDeg = $cog[$ts] ?? null;
 
-            $tw = $this->calculateTrueWind($row['wind_speed_apparent_raw'], $row['wind_angle_apparent_raw'], $row['speed_stw_raw'], $row['heading_raw']);
-            $row['wind_speed'] = $tw['speed'];
-            $row['wind_direction'] = $tw['direction'];
-            $row['course'] = $row['cog_raw'] !== null ? rad2deg($row['cog_raw']) : ($row['heading_raw'] !== null ? rad2deg($row['heading_raw']) : null);
-            $row['latitude'] = $row['track_latitude'];
-            $row['longitude'] = $row['track_longitude'];
-            $row['pressure'] = $row['cabin_pressure_forepeak'];
-            $row['wp_distance'] = $row['nav_wp_distance'];
-            $row['wp_ttg'] = $row['nav_wp_ttg'];
-            $row['battery_soc'] = $row['house_battery_soc'];
-            unset(
-                $row['wind_speed_apparent_raw'], $row['wind_angle_apparent_raw'],
-                $row['speed_stw_raw'], $row['heading_raw'], $row['cog_raw'],
-                $row['track_latitude'], $row['track_longitude'],
-                $row['cabin_pressure_forepeak'], $row['nav_wp_distance'],
-                $row['nav_wp_ttg'], $row['house_battery_soc'],
-            );
+            $tw = $this->trueWindFromCanonicalValues($aws[$ts] ?? null, $awa[$ts] ?? null, $stw[$ts] ?? null, $headingDeg);
+
+            $row = [
+                'timestamp' => $ts,
+                'trip_log' => $trip[$ts] ?? null,
+                'water_level' => $water[$ts] ?? null,
+                'fuel_level' => $fuel[$ts] ?? null,
+                'wind_speed' => $tw['speed'],
+                'wind_direction' => $tw['direction'],
+                'course' => $cogDeg ?? $headingDeg,
+                'latitude' => $lat[$ts] ?? null,
+                'longitude' => $lng[$ts] ?? null,
+                'pressure' => $pressure[$ts] ?? null,
+                'wp_distance' => $wpDist[$ts] ?? null,
+                'wp_ttg' => $wpTtg[$ts] ?? null,
+                'battery_soc' => $soc[$ts] ?? null,
+            ];
 
             if (GeoUtils::isNullIsland($row['latitude'] ?? null, $row['longitude'] ?? null)) {
                 $row['latitude'] = null;
@@ -359,6 +446,37 @@ class MetricsService
         return $rows;
     }
 
+    /**
+     * Compute true wind from a legacy boat-metric array carrying canonical display-unit
+     * values: apparent wind speed (kn), apparent wind angle (deg), STW (kn), true
+     * heading (deg). Converts back to raw SI units for the cosine-rule calculation.
+     *
+     * @param  array<string, ?float>  $metrics
+     * @return array{speed: ?float, direction: ?float}
+     */
+    private function trueWindFromCanonical(array $metrics): array
+    {
+        return $this->trueWindFromCanonicalValues(
+            $metrics['wind_speed_apparent'] ?? null,
+            $metrics['wind_angle_apparent'] ?? null,
+            $metrics['speed_stw'] ?? null,
+            $metrics['heading'] ?? null,
+        );
+    }
+
+    /**
+     * @return array{speed: ?float, direction: ?float}
+     */
+    private function trueWindFromCanonicalValues(?float $awsKn, ?float $awaDeg, ?float $stwKn, ?float $headingDeg): array
+    {
+        $aws = $awsKn !== null ? $awsKn / 1.94384 : null;
+        $awa = $awaDeg !== null ? deg2rad($awaDeg) : null;
+        $stw = $stwKn !== null ? $stwKn / 1.94384 : null;
+        $heading = $headingDeg !== null ? deg2rad($headingDeg) : null;
+
+        return $this->calculateTrueWind($aws, $awa, $stw, $heading);
+    }
+
     private function calculateTrueWind(?float $aws, ?float $awa, ?float $stw, ?float $heading): array
     {
         $tw = NavigationMath::calculateTrueWind($aws, $awa, $stw, $heading);
@@ -371,44 +489,32 @@ class MetricsService
 
     public function getLatestTrueWind(): ?array
     {
-        $metrics = $this->registry->fetchInstant([
-            'wind_speed_apparent_raw', 'wind_angle_apparent_raw',
-            'speed_stw_raw', 'heading_raw',
+        $values = $this->readLegacyKeys([
+            'wind_speed_apparent' => 'wind_speed_apparent',
+            'wind_angle_apparent' => 'wind_angle_apparent',
+            'speed_stw' => 'speed_stw',
+            'heading' => 'heading_true',
         ]);
 
-        $tw = $this->calculateTrueWind(
-            $metrics['wind_speed_apparent_raw'],
-            $metrics['wind_angle_apparent_raw'],
-            $metrics['speed_stw_raw'],
-            $metrics['heading_raw'],
-        );
+        $tw = $this->trueWindFromCanonical($values);
 
         return ($tw['speed'] !== null) ? $tw : null;
     }
 
     public function getTrueWindSeries(string $field, ?string $duration, string $step, ?int $start = null, ?int $end = null): array
     {
-        $aws = $this->registry->fetchRange('wind_speed_apparent_raw', $step, $start, $end, fillGaps: false);
-        $awa = $this->registry->fetchRange('wind_angle_apparent_raw', $step, $start, $end, fillGaps: false);
-        $stw = $this->registry->fetchRange('speed_stw_raw', $step, $start, $end, fillGaps: false);
-        $hdg = $this->registry->fetchRange('heading_raw', $step, $start, $end, fillGaps: false);
-
-        $awaByTs = collect($awa)->keyBy('timestamp');
-        $stwByTs = collect($stw)->keyBy('timestamp');
-        $hdgByTs = collect($hdg)->keyBy('timestamp');
+        $aws = $this->seriesByTs($this->canonical->readRange('wind_speed_apparent', $duration, $step, $start, $end));
+        $awa = $this->seriesByTs($this->canonical->readRange('wind_angle_apparent', $duration, $step, $start, $end));
+        $stw = $this->seriesByTs($this->canonical->readRange('speed_stw', $duration, $step, $start, $end));
+        $hdg = $this->seriesByTs($this->canonical->readRange('heading_true', $duration, $step, $start, $end));
 
         $result = [];
-        foreach ($aws as $point) {
-            $ts = $point['timestamp'];
-            $awaPoint = $awaByTs->get($ts);
-            $stwPoint = $stwByTs->get($ts);
-            $hdgPoint = $hdgByTs->get($ts);
-
-            if (! $awaPoint || ! $stwPoint || ! $hdgPoint) {
+        foreach ($aws as $ts => $awsValue) {
+            if (! isset($awa[$ts], $stw[$ts], $hdg[$ts])) {
                 continue;
             }
 
-            $tw = $this->calculateTrueWind($point['value'], $awaPoint['value'], $stwPoint['value'], $hdgPoint['value']);
+            $tw = $this->trueWindFromCanonicalValues($awsValue, $awa[$ts], $stw[$ts], $hdg[$ts]);
 
             if ($tw[$field] !== null) {
                 $result[] = ['timestamp' => $ts, 'value' => $tw[$field]];
@@ -416,6 +522,58 @@ class MetricsService
         }
 
         return $result;
+    }
+
+    /**
+     * Read a set of legacy output keys from the canonical reader (live).
+     *
+     * @param  array<string, string>  $keyMap  legacy key => canonical key
+     * @return array<string, ?float>
+     */
+    private function readLegacyKeys(array $keyMap): array
+    {
+        $envelopes = $this->canonical->readMany(array_values(array_unique($keyMap)));
+
+        $out = [];
+        foreach ($keyMap as $legacyKey => $canonicalKey) {
+            $out[$legacyKey] = $envelopes[$canonicalKey]['value'] ?? null;
+        }
+
+        return $out;
+    }
+
+    /**
+     * Read a set of legacy output keys at a past instant.
+     *
+     * @param  array<string, string>  $keyMap  legacy key => canonical key
+     * @return array<string, ?float>
+     */
+    private function readLegacyKeysAt(array $keyMap, int $timestamp): array
+    {
+        $out = [];
+        $cache = [];
+        foreach ($keyMap as $legacyKey => $canonicalKey) {
+            if (! array_key_exists($canonicalKey, $cache)) {
+                $cache[$canonicalKey] = $this->canonical->readAt($canonicalKey, $timestamp);
+            }
+            $out[$legacyKey] = $cache[$canonicalKey]['value'] ?? null;
+        }
+
+        return $out;
+    }
+
+    /**
+     * @param  array<int, array{t: int, v: float}>  $series
+     * @return array<int, float>
+     */
+    private function seriesByTs(array $series): array
+    {
+        $out = [];
+        foreach ($series as $point) {
+            $out[$point['t']] = $point['v'];
+        }
+
+        return $out;
     }
 
     private function voltageToPct(?float $voltage): ?float

@@ -4,7 +4,7 @@ namespace App\Console\Commands;
 
 use App\Models\Journey;
 use App\Models\ShipLog;
-use App\Services\MetricRegistry;
+use App\Services\CanonicalReader;
 use Carbon\Carbon;
 use Illuminate\Console\Command;
 
@@ -19,7 +19,7 @@ class ShipLogBackfillCommand extends Command
 
     protected $description = 'Backfill ship log entries from Prometheus history';
 
-    public function handle(MetricRegistry $registry): int
+    public function handle(CanonicalReader $canonical): int
     {
         if ($this->option('truncate')) {
             $count = ShipLog::count();
@@ -42,14 +42,14 @@ class ShipLogBackfillCommand extends Command
         $totalHours = ($alignedEnd - $alignedStart) / $stepSeconds;
         $this->info('Backfilling from '.date('Y-m-d H:i', $alignedStart).' to '.date('Y-m-d H:i', $alignedEnd)." ({$totalHours} hours)");
 
-        $keys = $registry->groupKeys('log');
+        $keys = $this->shipLogCanonicalKeys;
         $seriesByKey = [];
 
-        foreach ($keys as $registryKey) {
-            $this->line("Fetching {$registryKey}");
-            $data = $registry->fetchRange($registryKey, $stepSeconds.'s', $alignedStart, $alignedEnd);
-            $this->line("  → {$registryKey}: ".count($data).' data points');
-            $seriesByKey[$registryKey] = collect($data)->keyBy('timestamp');
+        foreach ($keys as $canonicalKey) {
+            $this->line("Fetching {$canonicalKey}");
+            $data = $canonical->readRange($canonicalKey, null, $stepSeconds.'s', $alignedStart, $alignedEnd);
+            $this->line("  → {$canonicalKey}: ".count($data).' data points');
+            $seriesByKey[$canonicalKey] = collect($data)->keyBy('t');
         }
 
         $journeys = Journey::whereNotNull('started_at')
@@ -67,9 +67,9 @@ class ShipLogBackfillCommand extends Command
             $recordedAt = date('Y-m-d H:i:s', $ts);
 
             $values = [];
-            foreach ($keys as $registryKey) {
-                $point = $seriesByKey[$registryKey]->get($ts);
-                $values[$registryKey] = $point ? $point['value'] : null;
+            foreach ($keys as $canonicalKey) {
+                $point = $seriesByKey[$canonicalKey]->get($ts);
+                $values[$canonicalKey] = $point ? $point['v'] : null;
             }
 
             $logData = $this->buildLogData($values);

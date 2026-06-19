@@ -2,9 +2,10 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Http\Controllers\Admin\Concerns\MapsLegacyMetricKeys;
 use App\Http\Controllers\Controller;
 use App\Models\Journey;
-use App\Services\MetricRegistry;
+use App\Services\CanonicalReader;
 use App\Services\MetricsService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -12,6 +13,8 @@ use Inertia\Inertia;
 
 class ExploreController extends Controller
 {
+    use MapsLegacyMetricKeys;
+
     private const STEP_MAP = [
         '1h' => '15s',
         '6h' => '60s',
@@ -27,13 +30,13 @@ class ExploreController extends Controller
         '3d' => 0, '7d' => 0, '30d' => 0,
     ];
 
-    public function index(Request $request, MetricRegistry $registry, MetricsService $metrics)
+    public function index(Request $request, CanonicalReader $canonical, MetricsService $metrics)
     {
         $slug = $request->query('metric');
         $allMetrics = config('scarlet.metrics.mappings.explore');
 
         if (! $slug || ! isset($allMetrics[$slug])) {
-            return $this->dashboard($request, $registry, $metrics);
+            return $this->dashboard($request, $canonical, $metrics);
         }
 
         $metric = $allMetrics[$slug];
@@ -43,7 +46,7 @@ class ExploreController extends Controller
         $range = $request->query('range', $passage['available'] ? 'passage' : '24h');
         [$start, $end, $step] = $this->resolveTimeRange($request, $range);
 
-        $data = $this->queryMetricRange($registry, $metric, null, $step, $start, $end, $metrics);
+        $data = $this->queryMetricRange($canonical, $metric, null, $step, $start, $end, $metrics);
 
         $overlays = [];
         $overlayParam = $request->query('overlay', '');
@@ -53,7 +56,7 @@ class ExploreController extends Controller
                 if (isset($allMetrics[$os]) && $os !== $slug) {
                     $overlays[] = [
                         'metric' => array_merge($allMetrics[$os], ['slug' => $os]),
-                        'data' => $this->queryMetricRange($registry, $allMetrics[$os], null, $step, $start, $end, $metrics),
+                        'data' => $this->queryMetricRange($canonical, $allMetrics[$os], null, $step, $start, $end, $metrics),
                     ];
                 }
             }
@@ -73,7 +76,7 @@ class ExploreController extends Controller
 
         $propulsionData = [];
         if (in_array($slug, ['speed', 'stw']) && isset($allMetrics['battery_current'])) {
-            $propulsionData = $this->queryMetricRange($registry, $allMetrics['battery_current'], null, $step, $start, $end, $metrics);
+            $propulsionData = $this->queryMetricRange($canonical, $allMetrics['battery_current'], null, $step, $start, $end, $metrics);
         }
 
         return Inertia::render('Admin/Explore', [
@@ -92,7 +95,7 @@ class ExploreController extends Controller
         ]);
     }
 
-    public function series(Request $request, MetricRegistry $registry, MetricsService $metrics): JsonResponse
+    public function series(Request $request, CanonicalReader $canonical, MetricsService $metrics): JsonResponse
     {
         $allMetrics = config('scarlet.metrics.mappings.explore');
         $start = (int) $request->query('start');
@@ -111,7 +114,7 @@ class ExploreController extends Controller
             if (! isset($allMetrics[$slug])) {
                 return response()->json(['error' => "Unknown metric: {$slug}"], 422);
             }
-            $data = $this->queryMetricRange($registry, $allMetrics[$slug], null, $step, $start, $end, $metrics);
+            $data = $this->queryMetricRange($canonical, $allMetrics[$slug], null, $step, $start, $end, $metrics);
             $values = array_column($data, 'value');
 
             $results[] = [
@@ -178,42 +181,14 @@ class ExploreController extends Controller
         return $step.'s';
     }
 
-    public function current(MetricRegistry $registry, MetricsService $metrics): JsonResponse
+    public function current(CanonicalReader $canonical, MetricsService $metrics): JsonResponse
     {
-        $allMetrics = config('scarlet.metrics.mappings.explore');
-        $keys = [];
-        foreach ($allMetrics as $slug => $metric) {
-            if (! empty($metric['computed'])) {
-                continue;
-            }
-            $keys[] = $metric['metric'];
-        }
-
-        $registryValues = $registry->fetchInstant(array_unique($keys), fallback: false);
-
-        $values = [];
-        foreach ($allMetrics as $slug => $metric) {
-            if (! empty($metric['computed'])) {
-                continue;
-            }
-            $values[$slug] = $registryValues[$metric['metric']] ?? null;
-        }
-
-        $computedWind = $metrics->getLatestTrueWind();
-        if ($computedWind) {
-            $values['wind_speed_true'] = $computedWind['speed'] ?? null;
-            $values['wind_direction_true'] = $computedWind['direction'] ?? null;
-        }
-
-        $batteryPower = $this->computeBatteryPower($registry);
-        if ($batteryPower !== null) {
-            $values['battery_power'] = $batteryPower;
-        }
+        $values = $this->currentValues($canonical, $metrics);
 
         return response()->json($values);
     }
 
-    private function dashboard(Request $request, MetricRegistry $registry, MetricsService $metrics)
+    private function dashboard(Request $request, CanonicalReader $canonical, MetricsService $metrics)
     {
         $allMetrics = config('scarlet.metrics.mappings.explore');
         $groups = config('scarlet.metrics.mappings.explore_groups');
@@ -224,43 +199,59 @@ class ExploreController extends Controller
             $grouped[$metric['group']][$slug] = $metric;
         }
 
-        $keys = [];
-        foreach ($allMetrics as $slug => $metric) {
+        return Inertia::render('Admin/ExploreDashboard', [
+            'groups' => $groups,
+            'metrics' => $grouped,
+            'currentValues' => $this->currentValues($canonical, $metrics),
+        ]);
+    }
+
+    /**
+     * Live current value per explore slug, resolved through the canonical reader.
+     *
+     * @return array<string, ?float>
+     */
+    private function currentValues(CanonicalReader $canonical, MetricsService $metrics): array
+    {
+        $allMetrics = config('scarlet.metrics.mappings.explore');
+
+        $canonicalKeys = [];
+        foreach ($allMetrics as $metric) {
             if (! empty($metric['computed'])) {
                 continue;
             }
-            $keys[] = $metric['metric'];
+            $canonicalKey = $this->canonicalKey($metric['metric']);
+            if ($canonicalKey !== null) {
+                $canonicalKeys[] = $canonicalKey;
+            }
         }
 
-        $registryValues = $registry->fetchInstant(array_unique($keys), fallback: false);
+        $envelopes = $canonical->readMany(array_values(array_unique($canonicalKeys)));
 
-        $currentValues = [];
+        $values = [];
         foreach ($allMetrics as $slug => $metric) {
             if (! empty($metric['computed'])) {
                 continue;
             }
-            $currentValues[$slug] = $registryValues[$metric['metric']] ?? null;
+            $canonicalKey = $this->canonicalKey($metric['metric']);
+            $values[$slug] = $canonicalKey !== null ? ($envelopes[$canonicalKey]['value'] ?? null) : null;
         }
 
         $computedWind = $metrics->getLatestTrueWind();
         if ($computedWind) {
-            $currentValues['wind_speed_true'] = $computedWind['speed'] ?? null;
-            $currentValues['wind_direction_true'] = $computedWind['direction'] ?? null;
+            $values['wind_speed_true'] = $computedWind['speed'] ?? null;
+            $values['wind_direction_true'] = $computedWind['direction'] ?? null;
         }
 
-        $batteryPower = $this->computeBatteryPower($registry);
+        $batteryPower = $this->computeBatteryPower($canonical);
         if ($batteryPower !== null) {
-            $currentValues['battery_power'] = $batteryPower;
+            $values['battery_power'] = $batteryPower;
         }
 
-        return Inertia::render('Admin/ExploreDashboard', [
-            'groups' => $groups,
-            'metrics' => $grouped,
-            'currentValues' => $currentValues,
-        ]);
+        return $values;
     }
 
-    private function queryMetricRange(MetricRegistry $registry, array $metric, ?string $duration, string $step, int $start, int $end, ?MetricsService $metrics = null): array
+    private function queryMetricRange(CanonicalReader $canonical, array $metric, ?string $duration, string $step, int $start, int $end, ?MetricsService $metrics = null): array
     {
         if (! empty($metric['computed'])) {
             if ($metrics) {
@@ -274,17 +265,15 @@ class ExploreController extends Controller
                 }
 
                 if ($metric['computed'] === 'battery_power') {
-                    $current = $registry->fetchRange('house_battery_current', $step, $start, $end, fillGaps: true);
-                    $voltage = $registry->fetchRange('house_battery_voltage', $step, $start, $end, fillGaps: true);
-                    $voltByTs = collect($voltage)->keyBy('timestamp');
+                    $current = $canonical->readRange('house_battery_current', $duration, $step, $start, $end, fillGaps: true);
+                    $voltage = $canonical->readRange('house_battery_voltage', $duration, $step, $start, $end, fillGaps: true);
+                    $voltByTs = collect($voltage)->keyBy('t');
 
                     return collect($current)->map(function (array $point) use ($voltByTs): array {
-                        $v = $voltByTs->get($point['timestamp']);
-                        $value = ($point['value'] !== null && $v && $v['value'] !== null)
-                            ? $point['value'] * $v['value']
-                            : null;
+                        $v = $voltByTs->get($point['t']);
+                        $value = $v ? $point['v'] * $v['v'] : null;
 
-                        return ['timestamp' => $point['timestamp'], 'value' => $value];
+                        return ['timestamp' => $point['t'], 'value' => $value];
                     })->all();
                 }
             }
@@ -292,16 +281,22 @@ class ExploreController extends Controller
             return [];
         }
 
-        $registryKey = $metric['metric'];
+        $canonicalKey = $this->canonicalKey($metric['metric']);
+        if ($canonicalKey === null) {
+            return [];
+        }
 
-        return $registry->fetchRangeWithFallback($registryKey, $step, $start, $end);
+        return array_map(
+            fn (array $p): array => ['timestamp' => $p['t'], 'value' => $p['v']],
+            $canonical->readRange($canonicalKey, $duration, $step, $start, $end),
+        );
     }
 
-    private function computeBatteryPower(MetricRegistry $registry): ?float
+    private function computeBatteryPower(CanonicalReader $canonical): ?float
     {
-        $values = $registry->fetchInstant(['house_battery_current', 'house_battery_voltage']);
-        $current = $values['house_battery_current'] ?? null;
-        $voltage = $values['house_battery_voltage'] ?? null;
+        $envelopes = $canonical->readMany(['house_battery_current', 'house_battery_voltage']);
+        $current = $envelopes['house_battery_current']['value'] ?? null;
+        $voltage = $envelopes['house_battery_voltage']['value'] ?? null;
 
         if ($current === null || $voltage === null) {
             return null;

@@ -4,7 +4,7 @@ namespace App\Jobs;
 
 use App\Models\Journey;
 use App\Models\JourneyTrackPoint;
-use App\Services\MetricRegistry;
+use App\Services\CanonicalReader;
 use App\Support\GeoUtils;
 use Carbon\Carbon;
 use Illuminate\Bus\Queueable;
@@ -34,7 +34,7 @@ class ImportJourneyFromPrometheus implements ShouldBeUnique, ShouldQueue
         return (string) $this->journeyId;
     }
 
-    public function handle(MetricRegistry $registry): void
+    public function handle(CanonicalReader $canonical): void
     {
         $journey = Journey::findOrFail($this->journeyId);
         $journey->trackPoints()->delete();
@@ -42,57 +42,61 @@ class ImportJourneyFromPrometheus implements ShouldBeUnique, ShouldQueue
         $end = Carbon::parse($this->endTime)->timestamp;
         $step = '30s';
 
-        $latData = $registry->fetchRange('track_latitude', $step, $start, $end, fillGaps: false);
-        $lngData = $registry->fetchRange('track_longitude', $step, $start, $end, fillGaps: false);
-        $lngByTs = collect($lngData)->keyBy('timestamp');
+        $latData = $canonical->readRange('position_latitude', null, $step, $start, $end);
+        $lngData = $canonical->readRange('position_longitude', null, $step, $start, $end);
+        $lngByTs = collect($lngData)->keyBy('t');
 
+        // Track-point DB column => canonical catalog key.
         $metricKeys = [
-            'depth',
-            'wind_speed_apparent', 'wind_angle_apparent',
-            'speed_stw', 'cog',
-            'house_battery_voltage', 'house_battery_current',
-            'heel',
+            'depth' => 'depth_below_surface',
+            'wind_speed_apparent' => 'wind_speed_apparent',
+            'wind_angle_apparent' => 'wind_angle_apparent',
+            'speed_stw' => 'speed_stw',
+            'cog' => 'cog',
+            'house_battery_voltage' => 'house_battery_voltage',
+            'house_battery_current' => 'house_battery_current',
+            'heel' => 'heel',
         ];
 
         $data = [];
         foreach ($latData as $point) {
-            $ts = $point['timestamp'];
+            $ts = $point['t'];
             $lng = $lngByTs->get($ts);
             if (! $lng) {
                 continue;
             }
-            if (GeoUtils::isNullIsland($point['value'], $lng['value'])) {
+            if (GeoUtils::isNullIsland($point['v'], $lng['v'])) {
                 continue;
             }
             $data[$ts] = [
                 'recorded_at' => date('Y-m-d H:i:s', $ts),
-                'latitude' => $point['value'],
-                'longitude' => $lng['value'],
+                'latitude' => $point['v'],
+                'longitude' => $lng['v'],
             ];
         }
 
-        $headingData = $registry->fetchRange('gps_heading', $step, $start, $end, fillGaps: false);
+        $headingData = $canonical->readRange('gps_heading', null, $step, $start, $end);
         foreach ($headingData as $point) {
-            $ts = $point['timestamp'];
+            $ts = $point['t'];
             if (isset($data[$ts])) {
-                $data[$ts]['heading'] = $point['value'];
+                $data[$ts]['heading'] = $point['v'];
             }
         }
 
-        $speedData = $registry->fetchRange('gps_speed', $step, $start, $end, fillGaps: false);
+        $speedData = $canonical->readRange('gps_speed', null, $step, $start, $end);
         foreach ($speedData as $point) {
-            $ts = $point['timestamp'];
+            $ts = $point['t'];
             if (isset($data[$ts])) {
-                $data[$ts]['speed_sog'] = $point['value'];
+                $data[$ts]['speed_sog'] = $point['v'];
             }
         }
 
-        foreach ($metricKeys as $registryKey) {
-            $results = $registry->fetchRange($registryKey, $step, $start, $end, fillGaps: false);
+        foreach ($metricKeys as $column => $canonicalKey) {
+            $results = $canonical->readRange($canonicalKey, null, $step, $start, $end);
             foreach ($results as $point) {
-                $ts = $point['timestamp'];
+                $ts = $point['t'];
                 if (isset($data[$ts])) {
-                    $data[$ts][$registryKey] = $point['value'];
+                    $data[$ts][$column] = $point['v'];
                 }
             }
         }

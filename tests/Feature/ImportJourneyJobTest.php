@@ -4,7 +4,7 @@ namespace Tests\Feature;
 
 use App\Jobs\ImportJourneyFromPrometheus;
 use App\Models\Journey;
-use App\Services\MetricRegistry;
+use App\Services\CanonicalReader;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Mockery;
 use Tests\TestCase;
@@ -23,21 +23,21 @@ class ImportJourneyJobTest extends TestCase
             'status' => 'completed',
         ]);
 
-        $timestamps = [
-            ['timestamp' => now()->subHours(3)->timestamp, 'value' => 50.75],
-            ['timestamp' => now()->subHours(2)->timestamp, 'value' => 50.71],
+        $points = [
+            ['t' => now()->subHours(3)->timestamp, 'v' => 50.75],
+            ['t' => now()->subHours(2)->timestamp, 'v' => 50.71],
         ];
 
-        $mock = Mockery::mock(MetricRegistry::class);
-        $mock->shouldReceive('fetchRange')->andReturn($timestamps);
-        $this->app->instance(MetricRegistry::class, $mock);
+        $mock = Mockery::mock(CanonicalReader::class);
+        $mock->shouldReceive('readRange')->andReturn($points);
+        $this->app->instance(CanonicalReader::class, $mock);
 
         $job = new ImportJourneyFromPrometheus(
             $journey->id,
             now()->subHours(3)->toIso8601String(),
             now()->toIso8601String(),
         );
-        $job->handle(app(MetricRegistry::class));
+        $job->handle(app(CanonicalReader::class));
 
         $this->assertGreaterThan(0, $journey->trackPoints()->count());
     }

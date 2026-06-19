@@ -2,9 +2,12 @@
 
 namespace Tests\Feature;
 
+use App\Http\Controllers\Admin\Concerns\MapsLegacyMetricKeys;
 use App\Http\Controllers\LcarsController;
 use App\Models\BoatSetting;
-use App\Services\MetricRegistry;
+use App\Services\CanonicalCatalog;
+use App\Services\CanonicalReader;
+use App\Support\CanonicalBaseline;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -71,8 +74,10 @@ class LcarsControllerTest extends TestCase
 
     public function test_series_isolates_a_failing_key(): void
     {
-        $this->mock(MetricRegistry::class, function ($mock) {
-            $mock->shouldReceive('fetchRangeWithFallback')
+        // The science station reads water_temp (canonical key water_temp) and
+        // cabin_pressure_forepeak; throw on the former, return empty for the latter.
+        $this->mock(CanonicalReader::class, function ($mock) {
+            $mock->shouldReceive('readRange')
                 ->andReturnUsing(function (string $key) {
                     if ($key === 'water_temp') {
                         throw new \RuntimeException('boom');
@@ -91,15 +96,28 @@ class LcarsControllerTest extends TestCase
         $this->assertSame('empty', $byKey['cabin_pressure_forepeak']['status']);
     }
 
-    public function test_station_history_keys_are_all_valid_registry_definitions(): void
+    public function test_station_history_keys_all_resolve_to_canonical_definitions(): void
     {
-        $registry = app(MetricRegistry::class);
+        app(CanonicalCatalog::class)->applyBaseline(CanonicalBaseline::definitions(), 'reset', 'test');
+        $catalog = app(CanonicalCatalog::class)->all();
+
+        $probe = new class
+        {
+            use MapsLegacyMetricKeys;
+
+            public function resolve(string $key): ?string
+            {
+                return $this->canonicalKey($key);
+            }
+        };
 
         foreach (LcarsController::STATION_HISTORY as $station => $keys) {
             foreach ($keys as $key) {
-                $this->assertNotNull(
-                    $registry->definition($key),
-                    "Station '{$station}' references unknown registry key '{$key}'",
+                $canonicalKey = $probe->resolve($key) ?? $key;
+                $this->assertArrayHasKey(
+                    $canonicalKey,
+                    $catalog,
+                    "Station '{$station}' references key '{$key}' with no canonical definition '{$canonicalKey}'",
                 );
             }
         }
