@@ -14,6 +14,7 @@ use App\Http\Controllers\Admin\PlannerController;
 use App\Http\Controllers\Admin\PlanRouteController;
 use App\Http\Controllers\Admin\ProfileController;
 use App\Http\Controllers\Admin\SettingsController;
+use App\Http\Controllers\Admin\SkipperDashboardController;
 use App\Http\Controllers\Admin\StreamMonitorController;
 use App\Http\Controllers\Admin\TeamController;
 use App\Http\Controllers\Admin\TechDashboardController;
@@ -144,6 +145,7 @@ Route::middleware('auth')->prefix('admin')->group(function () {
     // Audience dashboards
     Route::get('dash/tech', [TechDashboardController::class, 'index'])->name('admin.dash.tech');
     Route::get('dash/ops', [OpsDashboardController::class, 'index'])->name('admin.dash.ops');
+    Route::get('dash/skipper', [SkipperDashboardController::class, 'index'])->name('admin.dash.skipper');
 
     // Canonical metric catalog
     Route::get('metrics/catalog', [CanonicalCatalogController::class, 'index'])->name('admin.catalog');
