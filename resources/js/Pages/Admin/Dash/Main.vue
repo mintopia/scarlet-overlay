@@ -9,9 +9,9 @@
                     <span class="mn-badge__dot"></span>
                     {{ statusText }}
                 </span>
-                <span class="mn-hdot">Tracker</span>
-                <span class="mn-hdot">Stream</span>
-                <span class="mn-hdot">Publisher</span>
+                <span class="mn-hdot" :class="{ 'mn-hdot--off': !trackerOnline }">Tracker</span>
+                <span class="mn-hdot" :class="{ 'mn-hdot--off': !streamOnline }">Stream</span>
+                <span class="mn-hdot" :class="{ 'mn-hdot--off': !publisherOnline }">Publisher</span>
                 <span v-if="passageLabel" class="mn-passage">{{ passageLabel }}</span>
             </div>
 
@@ -91,7 +91,8 @@
                         <CompassRose
                             :heading="val('heading_true') ?? 0"
                             :cog="val('cog')"
-                            :awa="val('wx_wind_dir')"
+                            :awa="null"
+                            :twa="twaFromWx"
                             :size="196"
                         />
                         <div class="mn-rail__pos">
@@ -486,6 +487,19 @@ const waterPctDisplay = computed(() => {
     const v = val('water_fresh_level');
     return v == null ? '—' : `${fmtInt(v)}%`;
 });
+
+// ── Service pill online state ─────────────────────────────────────────────────
+const trackerOnline = computed(() =>
+    val('tracker_battery_voltage') != null && !stale('tracker_battery_voltage'),
+);
+
+const streamOnline = computed(() =>
+    !!val('srt_up') && !stale('srt_up'),
+);
+
+const publisherOnline = computed(() =>
+    !!val('srt_pub_connected') && !stale('srt_pub_connected'),
+);
 </script>
 
 <style scoped>
@@ -508,8 +522,8 @@ const waterPctDisplay = computed(() => {
     display: inline-flex;
     align-items: center;
     gap: 7px;
-    background: oklch(0.92 0.05 150);
-    color: oklch(0.28 0.1 150);
+    background: color-mix(in oklch, var(--color-green) 18%, white);
+    color: color-mix(in oklch, var(--color-green) 60%, black);
     font-size: 11px;
     font-weight: 800;
     letter-spacing: 1px;
@@ -522,7 +536,7 @@ const waterPctDisplay = computed(() => {
     width: 7px;
     height: 7px;
     border-radius: 50%;
-    background: oklch(0.45 0.16 150);
+    background: var(--color-green);
 }
 
 .mn-hdot {
@@ -540,6 +554,11 @@ const waterPctDisplay = computed(() => {
     height: 7px;
     border-radius: 50%;
     background: var(--color-green);
+}
+
+.mn-hdot--off::before {
+    background: var(--color-text-dim);
+    opacity: 0.45;
 }
 
 .mn-passage {
@@ -835,7 +854,7 @@ const waterPctDisplay = computed(() => {
     font-family: 'Nunito Sans', sans-serif;
     font-weight: 800;
     font-size: 18px;
-    color: oklch(0.4 0.13 150);
+    color: var(--color-green);
     letter-spacing: -0.5px;
 }
 
