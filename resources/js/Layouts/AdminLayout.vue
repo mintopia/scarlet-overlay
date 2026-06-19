@@ -161,6 +161,7 @@ const breadcrumbMap = {
     'Admin/Profile': [home, { label: 'Profile' }],
     'Admin/Team': [home, { label: 'Team' }],
     'Admin/Data': [home, { label: 'Data' }],
+    'Admin/MetricExplorer': [home, { label: 'Data', href: '/admin/data' }, { label: 'Metric' }],
     'Admin/Dash/Main': [home, { label: 'Dashboards', href: '/admin/dash/main' }, { label: 'Main' }],
     'Admin/Dash/Tech': [home, { label: 'Dashboards', href: '/admin/dash/tech' }, { label: 'Tech' }],
     'Admin/Dash/Ops': [home, { label: 'Dashboards', href: '/admin/dash/ops' }, { label: 'Ops' }],

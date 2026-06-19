@@ -144,10 +144,12 @@ Route::middleware('auth')->prefix('admin')->group(function () {
     // Canonical metric catalog (Data)
     Route::get('data', [CanonicalCatalogController::class, 'index'])->name('admin.data.index');
     Route::post('data', [CanonicalCatalogController::class, 'store'])->name('admin.data.store');
-    Route::get('data/current', [DataController::class, 'current'])->name('admin.data.current');
     Route::get('data/inventory', [CanonicalCatalogController::class, 'inventory'])->name('admin.data.inventory');
+    Route::get('data/current', [DataController::class, 'current'])->name('admin.data.current');
+    Route::get('data/series', [DataController::class, 'series'])->name('admin.data.series');
     Route::post('data/test', [CanonicalCatalogController::class, 'test'])->name('admin.data.test');
     Route::post('data/rollback', [CanonicalCatalogController::class, 'rollback'])->name('admin.data.rollback');
+    Route::get('data/{metric}', [DataController::class, 'show'])->name('admin.data.show')->where('metric', '[A-Za-z0-9_]+');
     Route::put('data/{metric}', [CanonicalCatalogController::class, 'update'])->name('admin.data.update');
     Route::delete('data/{metric}', [CanonicalCatalogController::class, 'destroy'])->name('admin.data.destroy');
 });
