@@ -31,7 +31,6 @@
 
                 <div class="nav-divider"></div>
 
-                <NavLink href="/admin/broadcast" icon="radio" :active="currentPage === 'Admin/Broadcast'" @click="sidebarOpen = false">Broadcast</NavLink>
                 <NavLink href="/admin/dash/main" icon="globe" :active="currentPage === 'Admin/Dash/Main'" @click="sidebarOpen = false">Main</NavLink>
                 <NavLink href="/admin/dash/tech" icon="cpu" :active="currentPage === 'Admin/Dash/Tech'" @click="sidebarOpen = false">Tech</NavLink>
                 <NavLink href="/admin/dash/ops" icon="anchor" :active="currentPage === 'Admin/Dash/Ops'" @click="sidebarOpen = false">Ops</NavLink>
@@ -161,7 +160,6 @@ const breadcrumbMap = {
     'Admin/PlannerShow': [home, { label: 'Planner', href: '/admin/planner' }],
     'Admin/BoatMetrics': [home, { label: 'Boat Metrics' }],
     'Admin/Environment': [home, { label: 'Environment' }],
-    'Admin/Broadcast': [home, { label: 'Broadcast' }],
     'Admin/ExploreDashboard': [home, { label: 'Explore' }],
     'Admin/Explore': [home, { label: 'Explore', href: '/admin/explore' }],
     'Admin/Profile': [home, { label: 'Profile' }],

@@ -16,4 +16,19 @@ class AdminNavOverhaulTest extends TestCase
             ->get('/admin/tracker')
             ->assertNotFound();
     }
+
+    public function test_broadcast_page_route_is_removed(): void
+    {
+        $this->actingAs(User::factory()->create())
+            ->get('/admin/broadcast')
+            ->assertNotFound();
+    }
+
+    public function test_broadcast_pull_endpoint_still_exists(): void
+    {
+        // Pull is POST-only; a GET should be 405 (route exists), not 404.
+        $this->actingAs(User::factory()->create())
+            ->get('/admin/broadcast/pull')
+            ->assertStatus(405);
+    }
 }
