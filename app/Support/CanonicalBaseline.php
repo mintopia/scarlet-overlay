@@ -87,7 +87,7 @@ class CanonicalBaseline
                 'staleness_threshold_s' => 120, 'coverage_window_s' => 300, 'coverage_min' => 0.5,
                 'enabled' => true, 'description' => 'Velocity made good toward waypoint (SignalK m/s → kn).',
                 'sources' => [
-                    ['priority' => 1, 'source_metric_name' => 'scarlet_signalk_navigation_courseGreatCircle_nextPoint_velocityMadeGood', 'label_matchers' => [], 'source_class' => 'both', 'source_kind' => 'speed_ms', 'select_fn' => 'last', 'unit_transform' => $msToKn, 'staleness_threshold_s' => null],
+                    ['priority' => 1, 'source_metric_name' => 'scarlet_signalk_navigation_course_calcValues_velocityMadeGood', 'label_matchers' => [], 'source_class' => 'both', 'source_kind' => 'speed_ms', 'select_fn' => 'last', 'unit_transform' => $msToKn, 'staleness_threshold_s' => null],
                 ],
             ],
             [
@@ -199,9 +199,10 @@ class CanonicalBaseline
                 'storage_unit' => 'm', 'display_unit' => 'm', 'volatile' => true,
                 'trend_fn' => 'last', 'trend_window' => '2m',
                 'staleness_threshold_s' => 120, 'coverage_window_s' => 300, 'coverage_min' => 0.5,
-                'enabled' => true, 'description' => 'Cross-track error in metres (SignalK courseGreatCircle XTE).',
+                'valid_min' => -185200.0, 'valid_max' => 185200.0,
+                'enabled' => true, 'description' => 'Cross-track error in metres (SignalK course calcValues XTE).',
                 'sources' => [
-                    ['priority' => 1, 'source_metric_name' => 'scarlet_signalk_navigation_courseGreatCircle_crossTrackError', 'label_matchers' => [], 'source_class' => 'both', 'source_kind' => 'distance_m', 'select_fn' => 'last', 'unit_transform' => [], 'staleness_threshold_s' => null],
+                    ['priority' => 1, 'source_metric_name' => 'scarlet_signalk_navigation_course_calcValues_crossTrackError', 'label_matchers' => [], 'source_class' => 'both', 'source_kind' => 'distance_m', 'select_fn' => 'last', 'unit_transform' => [], 'staleness_threshold_s' => null],
                 ],
             ],
             [
@@ -211,7 +212,7 @@ class CanonicalBaseline
                 'staleness_threshold_s' => 120, 'coverage_window_s' => 300, 'coverage_min' => 0.5,
                 'enabled' => true, 'description' => 'True bearing to next waypoint in degrees.',
                 'sources' => [
-                    ['priority' => 1, 'source_metric_name' => 'scarlet_signalk_navigation_courseGreatCircle_nextPoint_bearingTrue', 'label_matchers' => [], 'source_class' => 'both', 'source_kind' => 'angle_rad', 'select_fn' => 'last', 'unit_transform' => $radToDeg, 'staleness_threshold_s' => null],
+                    ['priority' => 1, 'source_metric_name' => 'scarlet_signalk_navigation_course_calcValues_bearingTrue', 'label_matchers' => [], 'source_class' => 'both', 'source_kind' => 'angle_rad', 'select_fn' => 'last', 'unit_transform' => $radToDeg, 'staleness_threshold_s' => null],
                 ],
             ],
             [
@@ -221,7 +222,7 @@ class CanonicalBaseline
                 'staleness_threshold_s' => 120, 'coverage_window_s' => 300, 'coverage_min' => 0.5,
                 'enabled' => true, 'description' => 'True bearing of active track in degrees.',
                 'sources' => [
-                    ['priority' => 1, 'source_metric_name' => 'scarlet_signalk_navigation_courseGreatCircle_bearingTrackTrue', 'label_matchers' => [], 'source_class' => 'both', 'source_kind' => 'angle_rad', 'select_fn' => 'last', 'unit_transform' => $radToDeg, 'staleness_threshold_s' => null],
+                    ['priority' => 1, 'source_metric_name' => 'scarlet_signalk_navigation_course_calcValues_bearingTrackTrue', 'label_matchers' => [], 'source_class' => 'both', 'source_kind' => 'angle_rad', 'select_fn' => 'last', 'unit_transform' => $radToDeg, 'staleness_threshold_s' => null],
                 ],
             ],
             [
@@ -229,9 +230,10 @@ class CanonicalBaseline
                 'storage_unit' => 'nm', 'display_unit' => 'nm', 'volatile' => true,
                 'trend_fn' => 'last', 'trend_window' => '2m',
                 'staleness_threshold_s' => 120, 'coverage_window_s' => 300, 'coverage_min' => 0.5,
+                'valid_min' => 0.0, 'valid_max' => 1000.0,
                 'enabled' => true, 'description' => 'Distance to next waypoint in nautical miles (m → nm).',
                 'sources' => [
-                    ['priority' => 1, 'source_metric_name' => 'scarlet_signalk_navigation_courseGreatCircle_nextPoint_distance', 'label_matchers' => [], 'source_class' => 'both', 'source_kind' => 'distance_m', 'select_fn' => 'last', 'unit_transform' => $mToNm, 'staleness_threshold_s' => null],
+                    ['priority' => 1, 'source_metric_name' => 'scarlet_signalk_navigation_course_calcValues_distance', 'label_matchers' => [], 'source_class' => 'both', 'source_kind' => 'distance_m', 'select_fn' => 'last', 'unit_transform' => $mToNm, 'staleness_threshold_s' => null],
                 ],
             ],
             [
@@ -239,9 +241,10 @@ class CanonicalBaseline
                 'storage_unit' => 's', 'display_unit' => 's', 'volatile' => true,
                 'trend_fn' => 'last', 'trend_window' => '2m',
                 'staleness_threshold_s' => 120, 'coverage_window_s' => 300, 'coverage_min' => 0.5,
+                'valid_min' => 0.0, 'valid_max' => 1209600.0,
                 'enabled' => true, 'description' => 'Time to go to next waypoint in seconds.',
                 'sources' => [
-                    ['priority' => 1, 'source_metric_name' => 'scarlet_signalk_navigation_courseGreatCircle_nextPoint_timeToGo', 'label_matchers' => [], 'source_class' => 'both', 'source_kind' => 'duration_s', 'select_fn' => 'last', 'unit_transform' => [], 'staleness_threshold_s' => null],
+                    ['priority' => 1, 'source_metric_name' => 'scarlet_signalk_navigation_course_calcValues_timeToGo', 'label_matchers' => [], 'source_class' => 'both', 'source_kind' => 'duration_s', 'select_fn' => 'last', 'unit_transform' => [], 'staleness_threshold_s' => null],
                 ],
             ],
             [

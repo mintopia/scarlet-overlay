@@ -108,6 +108,15 @@ Dashboards. They consume the catalog later; they do not shape it now beyond thei
     is gated by verified-ledger coverage for the requested range** — unverified canonical chunks are never
     served (no partially-repaired range leaks into dashboards or ship-log generation); pre-verification it
     falls back to the reconstruction chains.
+10a. **Validity bounds (sentinel rejection):** each canonical metric may declare optional `valid_min` /
+    `valid_max` (in display units). The reader checks the **transformed** reading against the bounds; an
+    out-of-range sample is treated as *not a real reading* and the source is skipped (falling to the next
+    priority, else the key reads null → empty state). This rejects sources that emit **fixed sentinels when
+    inactive** — e.g. SignalK's course/waypoint cluster (`course_calcValues_crossTrackError`, `_distance`,
+    `_timeToGo`) reports absurd magnitudes (XTE ≈ −3.79 M m, distance ≈ 2642 nm) when no route is active.
+    Bounds apply in both the fresh and stale-fallback passes, and the median trend value is only computed
+    from a source that already passed the bound. Bounds are part of the catalog (admin-editable, versioned),
+    never free-form.
 11. **Broadcast + UI:** push carries value+age+stale+resolved_source+catalog_version.
 
 ### Phase 4 — Fix-forward ingestion
@@ -170,6 +179,8 @@ Dashboards. They consume the catalog later; they do not shape it now beyond thei
 - **Selection vs presentation functions strictly separated** — no double-smoothing of pre-averaged sources.
 - **Ledgered, high-water-marked additive backfill; restore-verified backups; destructive prune last.**
 - **Median (10-min, per-metric) volatile value; age/timestamp from the latest real raw sample.**
+- **Per-metric validity bounds reject inactive-source sentinels** (course/waypoint cluster) at the read
+  layer — out-of-range → skip source → null/empty state, never garbage. (Phase 3, item 10a.)
 - **Adapter + incremental feature-flagged cutover**; quick-win mappings ship first.
 - **Data catalog → DB now; presentation config stays in code.**
 - **EcoFlow already arriving** — curation of input/output + status, not acquisition.

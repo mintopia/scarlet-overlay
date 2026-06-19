@@ -34,6 +34,42 @@ class BaselineCoverageTest extends TestCase
         }
     }
 
+    public function test_nav_waypoint_keys_map_to_live_calcvalues_cluster(): void
+    {
+        $defs = collect(CanonicalBaseline::definitions())->keyBy('key');
+
+        // The live SignalK series is the resolved-course cluster
+        // scarlet_signalk_navigation_course_calcValues_*, NOT courseGreatCircle_*.
+        $expected = [
+            'vmg' => 'scarlet_signalk_navigation_course_calcValues_velocityMadeGood',
+            'xte' => 'scarlet_signalk_navigation_course_calcValues_crossTrackError',
+            'bearing_to_wp_true' => 'scarlet_signalk_navigation_course_calcValues_bearingTrue',
+            'track_bearing_true' => 'scarlet_signalk_navigation_course_calcValues_bearingTrackTrue',
+            'wp_distance' => 'scarlet_signalk_navigation_course_calcValues_distance',
+            'wp_ttg' => 'scarlet_signalk_navigation_course_calcValues_timeToGo',
+        ];
+
+        foreach ($expected as $key => $metric) {
+            $this->assertSame(
+                $metric,
+                $defs[$key]['sources'][0]['source_metric_name'],
+                "Canonical key {$key} must map to the live calcValues series",
+            );
+        }
+    }
+
+    public function test_waypoint_keys_declare_validity_bounds(): void
+    {
+        $defs = collect(CanonicalBaseline::definitions())->keyBy('key');
+
+        // These SignalK course/waypoint metrics emit fixed sentinels when no route
+        // is active; bounds let the reader reject them rather than serve garbage.
+        foreach (['xte', 'wp_distance', 'wp_ttg'] as $key) {
+            $this->assertArrayHasKey('valid_max', $defs[$key], "Key {$key} missing valid_max");
+            $this->assertNotNull($defs[$key]['valid_max'], "Key {$key} must declare a valid_max bound");
+        }
+    }
+
     public function test_baseline_applies_cleanly(): void
     {
         $version = app(CanonicalCatalog::class)->applyBaseline(

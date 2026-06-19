@@ -76,7 +76,8 @@ class CanonicalCatalog
                 'storage_unit' => $m->storage_unit, 'display_unit' => $m->display_unit,
                 'volatile' => $m->volatile, 'trend_fn' => $m->trend_fn, 'trend_window' => $m->trend_window,
                 'staleness_threshold_s' => $m->staleness_threshold_s, 'coverage_window_s' => $m->coverage_window_s,
-                'coverage_min' => $m->coverage_min, 'enabled' => $m->enabled, 'description' => $m->description,
+                'coverage_min' => $m->coverage_min, 'valid_min' => $m->valid_min, 'valid_max' => $m->valid_max,
+                'enabled' => $m->enabled, 'description' => $m->description,
                 'sources' => $m->sources->map(fn ($s) => [
                     'priority' => $s->priority, 'source_metric_name' => $s->source_metric_name,
                     'label_matchers' => $s->label_matchers ?? [], 'source_class' => $s->source_class,
@@ -130,6 +131,8 @@ class CanonicalCatalog
                 'staleness' => $metric->staleness_threshold_s,
                 'coverage_window_seconds' => $metric->coverage_window_s,
                 'coverage_min' => $metric->coverage_min,
+                'valid_min' => $metric->valid_min,
+                'valid_max' => $metric->valid_max,
                 'sources' => $metric->sources->map(fn ($s) => array_filter([
                     'selector' => $this->compileSelector([
                         'source_metric_name' => $s->source_metric_name,
@@ -224,6 +227,8 @@ class CanonicalCatalog
     {
         return collect($definitions)->map(function (array $def): array {
             $def['coverage_min'] = (float) $def['coverage_min'];
+            $def['valid_min'] = isset($def['valid_min']) ? (float) $def['valid_min'] : null;
+            $def['valid_max'] = isset($def['valid_max']) ? (float) $def['valid_max'] : null;
             $def['volatile'] = (bool) $def['volatile'];
             $def['enabled'] = (bool) $def['enabled'];
             $def['staleness_threshold_s'] = (int) $def['staleness_threshold_s'];
@@ -241,11 +246,17 @@ class CanonicalCatalog
                     'staleness_threshold_s' => isset($s['staleness_threshold_s']) ? (int) $s['staleness_threshold_s'] : null,
                 ])->values()->all();
 
-            return collect($def)->only([
+            // Build in a fixed key order: array === comparison (idempotency check) is order-sensitive.
+            $ordered = [];
+            foreach ([
                 'key', 'label', 'group', 'storage_unit', 'display_unit', 'volatile', 'trend_fn',
                 'trend_window', 'staleness_threshold_s', 'coverage_window_s', 'coverage_min',
-                'enabled', 'description', 'sources',
-            ])->all();
+                'valid_min', 'valid_max', 'enabled', 'description', 'sources',
+            ] as $field) {
+                $ordered[$field] = $def[$field] ?? null;
+            }
+
+            return $ordered;
         })->sortBy('key')->values()->all();
     }
 }

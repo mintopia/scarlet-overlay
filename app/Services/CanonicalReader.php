@@ -29,6 +29,11 @@ class CanonicalReader
                 continue;
             }
 
+            // Reject inactive-source sentinels (e.g. SignalK course/waypoint cluster when no route is active).
+            if (! $this->withinValidRange($def, $this->applyArithmetic($raw['value'], $source))) {
+                continue;
+            }
+
             $coverage = $this->prometheus->coverageRatio($source['selector'], (int) $def['coverage_window_seconds']);
             if ($coverage === null || $coverage < $def['coverage_min']) {
                 continue;
@@ -41,6 +46,10 @@ class CanonicalReader
         foreach ($def['sources'] as $source) {
             $raw = $this->prometheus->queryWithTimestamp($source['selector']);
             if ($raw === null) {
+                continue;
+            }
+
+            if (! $this->withinValidRange($def, $this->applyArithmetic($raw['value'], $source))) {
                 continue;
             }
 
@@ -132,6 +141,29 @@ class CanonicalReader
             'stale' => $stale,
             'resolved_source' => $source['selector'],
         ];
+    }
+
+    /**
+     * Reject readings outside the metric's declared plausible range (display units).
+     * Used to discard fixed sentinels that inactive sources emit (e.g. SignalK
+     * course/waypoint values when no route is active).
+     *
+     * @param  array<string, mixed>  $def
+     */
+    private function withinValidRange(array $def, float $value): bool
+    {
+        $min = $def['valid_min'] ?? null;
+        $max = $def['valid_max'] ?? null;
+
+        if ($min !== null && $value < (float) $min) {
+            return false;
+        }
+
+        if ($max !== null && $value > (float) $max) {
+            return false;
+        }
+
+        return true;
     }
 
     /**
