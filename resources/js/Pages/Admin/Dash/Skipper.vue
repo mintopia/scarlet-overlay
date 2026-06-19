@@ -244,7 +244,9 @@
                 <div class="sk-gblock">
                     <div class="sk-gblock__top">
                         <span class="sk-seclabel">Barometric pressure</span>
-                        <span class="sk-num sk-num--depth">—<span class="sk-u">hPa</span></span>
+                        <span class="sk-num sk-num--depth" :class="{ 'sk-stale': stale('cabin_pressure_forepeak') }">
+                            {{ pressureDisplay }}<span class="sk-u">hPa</span>
+                        </span>
                     </div>
                     <TrendChart
                         v-if="pressureHistory.length > 0"
@@ -483,7 +485,7 @@ const tideDeltaDisplay = computed(() => {
 const tideFairFoul = computed(() => {
     const set = val('current_set_true');
     const cog = val('cog');
-    if (set == null || cog == null) return 'tidal current';
+    if (set == null || cog == null) return '—';
     const diff = Math.abs(((set - cog) + 360) % 360);
     const aligned = diff < 90 || diff > 270;
     return aligned ? 'fair tide ▲' : 'foul tide ▼';
@@ -582,6 +584,9 @@ const vmgNavDisplay = computed(() => {
 
 // ── Depth ─────────────────────────────────────────────────────────────────────
 const depthDisplay = computed(() => fmtFixed(val('depth_below_surface')));
+
+// ── Pressure ──────────────────────────────────────────────────────────────────
+const pressureDisplay = computed(() => fmtFixed(val('cabin_pressure_forepeak'), 1));
 
 // ── Autopilot ─────────────────────────────────────────────────────────────────
 const apStateDisplay = computed(() => {
