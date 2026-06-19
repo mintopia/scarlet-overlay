@@ -77,6 +77,14 @@ GPS is already unit-suffixed at source (`_deg`/`_kn`/`_meters`). MQTT tank `_per
 > `wp_distance` 0–1000 nm, `wp_ttg` 0–14 d. Bounds are applied by `CanonicalReader` in both the fresh and
 > stale passes (read contract, Phase 3 item 10a).
 >
+> **Route-active gate.** All 6 waypoint keys also carry a `gate_metric_name` +
+> `gate_max_value`: they only resolve while `scarlet_signalk_navigation_course_calcValues_timeToGo`
+> resolves to ≤ 1 209 600 s (14 d). SignalK emits *fresh sentinel values* across the whole course
+> cluster when no route is active (e.g. timeToGo ≈ 3.4×10⁸ s), so a freshness check alone is
+> insufficient — the gate's value bound is the real discriminator. This blanks the in-range keys
+> (`bearing_to_wp_true`, `track_bearing_true`, `vmg`) that validity bounds can't catch. The gate
+> series + max are admin-editable in the management UI; confirm against live active-route telemetry.
+>
 > **Null Island filter.** A per-metric `reject_null_island` option (configurable in the management UI)
 > discards lat/long readings of ≈ 0,0 (`abs < 0.1`, the app-wide no-GPS-fix convention) so a position
 > metric reads null instead of (0,0). Off by default; no baseline key enables it yet — intended for any

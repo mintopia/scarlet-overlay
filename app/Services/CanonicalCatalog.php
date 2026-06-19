@@ -8,6 +8,7 @@ use App\Models\CanonicalCatalogVersion;
 use App\Models\CanonicalMetric;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 
 class CanonicalCatalog
 {
@@ -78,6 +79,8 @@ class CanonicalCatalog
                 'staleness_threshold_s' => $m->staleness_threshold_s, 'coverage_window_s' => $m->coverage_window_s,
                 'coverage_min' => $m->coverage_min, 'valid_min' => $m->valid_min, 'valid_max' => $m->valid_max,
                 'reject_null_island' => $m->reject_null_island,
+                'gate_metric_name' => $m->gate_metric_name, 'gate_label_matchers' => $m->gate_label_matchers ?? [],
+                'gate_max_value' => $m->gate_max_value,
                 'enabled' => $m->enabled, 'description' => $m->description,
                 'sources' => $m->sources->map(fn ($s) => [
                     'priority' => $s->priority, 'source_metric_name' => $s->source_metric_name,
@@ -97,8 +100,12 @@ class CanonicalCatalog
         return DB::transaction(function () use ($definitions, $action, $actor, $note): int {
             CanonicalMetric::query()->delete();
 
+            // Only write columns that exist now: reseed migrations run the current baseline
+            // against whatever schema existed at that migration's point in time.
+            $columns = Schema::getColumnListing((new CanonicalMetric)->getTable());
+
             foreach ($definitions as $def) {
-                $metric = CanonicalMetric::create(collect($def)->except('sources')->all());
+                $metric = CanonicalMetric::create(collect($def)->except('sources')->only($columns)->all());
                 foreach ($def['sources'] as $source) {
                     $metric->sources()->create($source);
                 }
@@ -135,6 +142,13 @@ class CanonicalCatalog
                 'valid_min' => $metric->valid_min,
                 'valid_max' => $metric->valid_max,
                 'reject_null_island' => $metric->reject_null_island,
+                'gate' => $metric->gate_metric_name ? array_filter([
+                    'selector' => $this->compileSelector([
+                        'source_metric_name' => $metric->gate_metric_name,
+                        'label_matchers' => $metric->gate_label_matchers ?? [],
+                    ]),
+                    'max' => $metric->gate_max_value,
+                ], fn ($v) => $v !== null) : null,
                 'sources' => $metric->sources->map(fn ($s) => array_filter([
                     'selector' => $this->compileSelector([
                         'source_metric_name' => $s->source_metric_name,
@@ -232,6 +246,9 @@ class CanonicalCatalog
             $def['valid_min'] = isset($def['valid_min']) ? (float) $def['valid_min'] : null;
             $def['valid_max'] = isset($def['valid_max']) ? (float) $def['valid_max'] : null;
             $def['reject_null_island'] = (bool) ($def['reject_null_island'] ?? false);
+            $def['gate_metric_name'] = $def['gate_metric_name'] ?? null;
+            $def['gate_label_matchers'] = $def['gate_label_matchers'] ?? [];
+            $def['gate_max_value'] = isset($def['gate_max_value']) ? (float) $def['gate_max_value'] : null;
             $def['volatile'] = (bool) $def['volatile'];
             $def['enabled'] = (bool) $def['enabled'];
             $def['staleness_threshold_s'] = (int) $def['staleness_threshold_s'];
@@ -254,7 +271,8 @@ class CanonicalCatalog
             foreach ([
                 'key', 'label', 'group', 'storage_unit', 'display_unit', 'volatile', 'trend_fn',
                 'trend_window', 'staleness_threshold_s', 'coverage_window_s', 'coverage_min',
-                'valid_min', 'valid_max', 'reject_null_island', 'enabled', 'description', 'sources',
+                'valid_min', 'valid_max', 'reject_null_island', 'gate_metric_name', 'gate_label_matchers',
+                'gate_max_value', 'enabled', 'description', 'sources',
             ] as $field) {
                 $ordered[$field] = $def[$field] ?? null;
             }

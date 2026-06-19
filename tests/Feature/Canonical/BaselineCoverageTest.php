@@ -70,6 +70,18 @@ class BaselineCoverageTest extends TestCase
         }
     }
 
+    public function test_waypoint_keys_are_gated_on_an_active_route(): void
+    {
+        $defs = collect(CanonicalBaseline::definitions())->keyBy('key');
+
+        foreach (['vmg', 'xte', 'bearing_to_wp_true', 'track_bearing_true', 'wp_distance', 'wp_ttg'] as $key) {
+            $this->assertNotEmpty(
+                $defs[$key]['gate_metric_name'] ?? null,
+                "Waypoint key {$key} must declare a route-active gate",
+            );
+        }
+    }
+
     public function test_baseline_applies_cleanly(): void
     {
         $version = app(CanonicalCatalog::class)->applyBaseline(

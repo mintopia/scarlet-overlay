@@ -127,6 +127,60 @@ class CanonicalReaderValidityTest extends TestCase
         $this->assertEqualsWithDelta(-50.42, $result['value'], 0.001);
     }
 
+    public function test_closed_gate_returns_null(): void
+    {
+        $catalog = Mockery::mock(CanonicalCatalog::class);
+        $catalog->shouldReceive('definition')->with('xte')
+            ->andReturn($this->xteDefinition(['gate' => ['selector' => 'course_start_time']]));
+
+        $prom = Mockery::mock(PrometheusService::class);
+        // Gate series absent (no active route) → gate closed, metric reads null.
+        $prom->shouldReceive('queryWithTimestamp')->with('course_start_time')->andReturn(null);
+        $prom->shouldNotReceive('coverageRatio');
+
+        $reader = new CanonicalReader($prom, $catalog);
+
+        $this->assertNull($reader->read('xte'));
+    }
+
+    public function test_gate_value_over_max_returns_null(): void
+    {
+        $catalog = Mockery::mock(CanonicalCatalog::class);
+        $catalog->shouldReceive('definition')->with('xte')
+            ->andReturn($this->xteDefinition(['gate' => ['selector' => 'ttg', 'max' => 1209600.0]]));
+
+        $prom = Mockery::mock(PrometheusService::class);
+        // SignalK "no active route" sentinel ETA (~10 years) exceeds the gate max.
+        $prom->shouldReceive('queryWithTimestamp')->with('ttg')
+            ->andReturn(['value' => 336000000.0, 'timestamp' => 1_700_000_000, 'age' => 0]);
+        $prom->shouldNotReceive('coverageRatio');
+
+        $reader = new CanonicalReader($prom, $catalog);
+
+        $this->assertNull($reader->read('xte'));
+    }
+
+    public function test_open_gate_allows_resolution(): void
+    {
+        $catalog = Mockery::mock(CanonicalCatalog::class);
+        $catalog->shouldReceive('definition')->with('xte')
+            ->andReturn($this->xteDefinition(['gate' => ['selector' => 'course_start_time']]));
+
+        $prom = Mockery::mock(PrometheusService::class);
+        $prom->shouldReceive('queryWithTimestamp')->with('course_start_time')
+            ->andReturn(['value' => 1.7e9, 'timestamp' => 1_700_000_000, 'age' => 5]);
+        $prom->shouldReceive('queryWithTimestamp')->with('scarlet_signalk_navigation_course_calcValues_crossTrackError')
+            ->andReturn(['value' => 120.0, 'timestamp' => 1_700_000_000, 'age' => 5]);
+        $prom->shouldReceive('coverageRatio')->andReturn(0.9);
+
+        $reader = new CanonicalReader($prom, $catalog);
+
+        $result = $reader->read('xte');
+
+        $this->assertNotNull($result);
+        $this->assertEqualsWithDelta(120.0, $result['value'], 0.001);
+    }
+
     protected function tearDown(): void
     {
         Mockery::close();

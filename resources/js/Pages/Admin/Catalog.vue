@@ -103,10 +103,10 @@
                                                 <div class="flex items-center gap-2 flex-wrap">
                                                     <code class="text-[11px] font-mono text-text-primary bg-bg border border-border rounded px-1 py-0.5">{{ src.source_metric_name }}</code>
                                                     <span class="text-[11px] text-text-dim">{{ src.source_class }}</span>
-                                                    <span v-if="src.unit_transform" class="text-[11px] text-blue bg-blue-bg px-1.5 rounded">×{{ src.unit_transform }}</span>
+                                                    <span v-if="fmtTransforms(src.unit_transform)" class="text-[11px] text-blue bg-blue-bg px-1.5 rounded">{{ fmtTransforms(src.unit_transform) }}</span>
                                                     <span v-if="src.staleness_threshold_s" class="text-[11px] text-text-dim">stale&gt;{{ src.staleness_threshold_s }}s</span>
                                                 </div>
-                                                <div v-if="src.label_matchers" class="mt-1 text-[11px] text-text-dim font-mono">{{ src.label_matchers }}</div>
+                                                <div v-if="fmtMatchers(src.label_matchers)" class="mt-1 text-[11px] text-text-dim font-mono">{{ fmtMatchers(src.label_matchers) }}</div>
 
                                                 <!-- Test result -->
                                                 <div v-if="testResults[src.id]" class="mt-2">
@@ -292,6 +292,18 @@
                     </div>
                     <p class="text-[11px] text-text-dim -mt-2">Readings outside Valid Min/Max are dropped (e.g. inactive-route sentinels). Null Island drops lat/long&nbsp;≈&nbsp;0,0 (no GPS fix).</p>
 
+                    <div class="grid grid-cols-3 gap-4">
+                        <div class="col-span-2">
+                            <label class="field-label" for="ed-gate">Route Gate Series <span class="text-text-dim font-normal">— only resolve while this series is present &amp; ≤ max (optional)</span></label>
+                            <input id="ed-gate" v-model="metricForm.gate_metric_name" type="text" class="field-input" list="vm-series-list" autocomplete="off" placeholder="e.g. scarlet_signalk_navigation_course_calcValues_timeToGo" />
+                            <p v-if="metricForm.gate_metric_name && inventoryLoaded && !seriesInVm(metricForm.gate_metric_name)" class="text-[11px] text-error mt-1">Not found in live VictoriaMetrics</p>
+                        </div>
+                        <div>
+                            <label class="field-label" for="ed-gate-max">Gate Max</label>
+                            <input id="ed-gate-max" v-model="metricForm.gate_max_value" type="number" step="any" class="field-input" placeholder="optional" />
+                        </div>
+                    </div>
+
                     <div>
                         <label class="field-label" for="ed-description">Description</label>
                         <textarea id="ed-description" v-model="metricForm.description" class="field-input" rows="2" placeholder="Optional description"></textarea>
@@ -350,20 +362,49 @@
                                     <input :id="'src-kind-' + idx" v-model="src.source_kind" type="text" class="field-input" placeholder="e.g. gauge" />
                                 </div>
                                 <div>
-                                    <label class="field-label" :for="'src-transform-' + idx">Unit Transform</label>
-                                    <input :id="'src-transform-' + idx" v-model="src.unit_transform" type="text" class="field-input" placeholder="e.g. 1.94384 (m/s → kn)" />
-                                </div>
-                                <div class="col-span-2">
-                                    <label class="field-label" :for="'src-matchers-' + idx">Label Matchers (JSON)</label>
-                                    <input :id="'src-matchers-' + idx" v-model="src.label_matchers" type="text" class="field-input" placeholder='e.g. {"job":"signalk"}' />
-                                </div>
-                                <div>
                                     <label class="field-label" :for="'src-staleness-' + idx">Staleness (s)</label>
                                     <input :id="'src-staleness-' + idx" v-model="src.staleness_threshold_s" type="number" min="0" class="field-input" />
                                 </div>
                                 <div>
                                     <label class="field-label" :for="'src-select-' + idx">Select Fn</label>
                                     <input :id="'src-select-' + idx" v-model="src.select_fn" type="text" class="field-input" placeholder="e.g. last" />
+                                </div>
+                            </div>
+
+                            <!-- Label matchers (structured) -->
+                            <div class="mt-3">
+                                <div class="flex items-center justify-between mb-1.5">
+                                    <span class="text-[11px] font-bold text-text-dim uppercase tracking-wide">Label Matchers</span>
+                                    <button type="button" @click="addMatcher(src)" class="text-[11px] text-scarlet hover:underline">+ Add matcher</button>
+                                </div>
+                                <p v-if="!src.label_matchers || src.label_matchers.length === 0" class="text-[11px] text-text-dim italic">None — matches every series of this name.</p>
+                                <div v-for="(m, mi) in src.label_matchers" :key="mi" class="flex items-center gap-2 mb-1.5">
+                                    <input v-model="m.label" type="text" class="field-input flex-1" placeholder="label e.g. topic" />
+                                    <select v-model="m.op" class="field-input w-28">
+                                        <option value="equals">equals</option>
+                                        <option value="absent">absent</option>
+                                    </select>
+                                    <input v-model="m.value" :disabled="m.op === 'absent'" type="text" class="field-input flex-1 disabled:opacity-40" placeholder="value" />
+                                    <button type="button" @click="removeMatcher(src, mi)" class="text-[12px] text-error hover:text-scarlet-hover px-1.5">✕</button>
+                                </div>
+                            </div>
+
+                            <!-- Unit transforms (structured, applied in order) -->
+                            <div class="mt-3">
+                                <div class="flex items-center justify-between mb-1.5">
+                                    <span class="text-[11px] font-bold text-text-dim uppercase tracking-wide">Unit Transforms</span>
+                                    <button type="button" @click="addTransform(src)" class="text-[11px] text-scarlet hover:underline">+ Add transform</button>
+                                </div>
+                                <p v-if="!src.unit_transform || src.unit_transform.length === 0" class="text-[11px] text-text-dim italic">None — raw value.</p>
+                                <div v-for="(t, ti) in src.unit_transform" :key="ti" class="flex items-center gap-2 mb-1.5">
+                                    <select v-model="t.op" class="field-input w-36">
+                                        <option value="multiply">× multiply</option>
+                                        <option value="divide">÷ divide</option>
+                                        <option value="add">+ add</option>
+                                        <option value="subtract">− subtract</option>
+                                    </select>
+                                    <input v-model.number="t.value" type="number" step="any" class="field-input flex-1" placeholder="value e.g. 1.94384" />
+                                    <button type="button" @click="removeTransform(src, ti)" class="text-[12px] text-error hover:text-scarlet-hover px-1.5">✕</button>
                                 </div>
                             </div>
                         </div>
@@ -582,10 +623,38 @@ const blankSource = () => ({
     source_class: '',
     source_kind: '',
     select_fn: '',
-    unit_transform: '',
-    label_matchers: '',
+    unit_transform: [],
+    label_matchers: [],
     staleness_threshold_s: '',
 });
+
+function addMatcher(src) {
+    src.label_matchers = [...(src.label_matchers || []), { label: '', op: 'equals', value: '' }];
+}
+function removeMatcher(src, i) {
+    src.label_matchers = src.label_matchers.filter((_, idx) => idx !== i);
+}
+function addTransform(src) {
+    src.unit_transform = [...(src.unit_transform || []), { op: 'multiply', value: 1 }];
+}
+function removeTransform(src, i) {
+    src.unit_transform = src.unit_transform.filter((_, idx) => idx !== i);
+}
+
+// Readable summaries for the collapsed source rows.
+function fmtTransforms(arr) {
+    if (!Array.isArray(arr) || arr.length === 0) {
+        return '';
+    }
+    const sym = { multiply: '×', divide: '÷', add: '+', subtract: '−' };
+    return arr.map((t) => `${sym[t.op] ?? t.op}${t.value}`).join(' ');
+}
+function fmtMatchers(arr) {
+    if (!Array.isArray(arr) || arr.length === 0) {
+        return '';
+    }
+    return arr.map((m) => (m.op === 'absent' ? `${m.label} absent` : `${m.label}=${m.value}`)).join(', ');
+}
 
 const metricForm = useForm({
     key: '',
@@ -603,6 +672,9 @@ const metricForm = useForm({
     valid_min: '',
     valid_max: '',
     reject_null_island: false,
+    gate_metric_name: '',
+    gate_label_matchers: [],
+    gate_max_value: '',
     description: '',
     sources: [],
 });
@@ -633,14 +705,17 @@ function openEdit(metric) {
     metricForm.valid_min = metric.valid_min ?? '';
     metricForm.valid_max = metric.valid_max ?? '';
     metricForm.reject_null_island = metric.reject_null_island ?? false;
+    metricForm.gate_metric_name = metric.gate_metric_name ?? '';
+    metricForm.gate_label_matchers = Array.isArray(metric.gate_label_matchers) ? metric.gate_label_matchers.map((m) => ({ ...m })) : [];
+    metricForm.gate_max_value = metric.gate_max_value ?? '';
     metricForm.description = metric.description ?? '';
     metricForm.sources = metric.sources.map((s) => ({
         source_metric_name: s.source_metric_name ?? '',
         source_class: s.source_class ?? '',
         source_kind: s.source_kind ?? '',
         select_fn: s.select_fn ?? '',
-        unit_transform: s.unit_transform ?? '',
-        label_matchers: s.label_matchers ?? '',
+        unit_transform: Array.isArray(s.unit_transform) ? s.unit_transform.map((t) => ({ ...t })) : [],
+        label_matchers: Array.isArray(s.label_matchers) ? s.label_matchers.map((m) => ({ ...m })) : [],
         staleness_threshold_s: s.staleness_threshold_s ?? '',
     }));
     showEditor.value = true;

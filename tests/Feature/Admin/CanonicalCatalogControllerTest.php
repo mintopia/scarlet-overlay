@@ -4,6 +4,7 @@ namespace Tests\Feature\Admin;
 
 use App\Models\CanonicalCatalogVersion;
 use App\Models\CanonicalMetric;
+use App\Models\CanonicalMetricSource;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Http;
@@ -106,6 +107,37 @@ class CanonicalCatalogControllerTest extends TestCase
         $this->assertDatabaseHas('canonical_metrics', [
             'key' => 'position_lat', 'valid_min' => -90, 'valid_max' => 90, 'reject_null_island' => true,
         ]);
+    }
+
+    public function test_store_persists_structured_matchers_and_transforms(): void
+    {
+        $this->actingAs(User::factory()->create())
+            ->post(route('admin.catalog.store'), [
+                'key' => 'water_fresh_level', 'label' => 'Fresh Water', 'group' => 'tank',
+                'storage_unit' => 'ratio', 'display_unit' => '%', 'staleness_threshold_s' => 3600,
+                'sources' => [[
+                    'priority' => 1, 'source_metric_name' => 'scarlet_mqtt_percent',
+                    'label_matchers' => [['label' => 'topic', 'op' => 'equals', 'value' => 'watertank']],
+                    'unit_transform' => [['op' => 'multiply', 'value' => 100]],
+                ]],
+            ])->assertRedirect();
+
+        $source = CanonicalMetricSource::firstWhere('source_metric_name', 'scarlet_mqtt_percent');
+        $this->assertSame([['label' => 'topic', 'op' => 'equals', 'value' => 'watertank']], $source->label_matchers);
+        $this->assertSame([['op' => 'multiply', 'value' => 100]], $source->unit_transform);
+    }
+
+    public function test_store_rejects_invalid_transform_op(): void
+    {
+        $this->actingAs(User::factory()->create())
+            ->postJson(route('admin.catalog.store'), [
+                'key' => 'bad', 'label' => 'Bad', 'storage_unit' => 'x', 'display_unit' => 'x',
+                'staleness_threshold_s' => 60,
+                'sources' => [[
+                    'priority' => 1, 'source_metric_name' => 'scarlet_x',
+                    'unit_transform' => [['op' => 'exponentiate', 'value' => 2]],
+                ]],
+            ])->assertStatus(422);
     }
 
     public function test_inventory_returns_scarlet_series_names(): void

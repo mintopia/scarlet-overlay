@@ -21,6 +21,18 @@ class CanonicalReader
             return null;
         }
 
+        // Availability gate: the metric only resolves while its gate series is fresh
+        // (e.g. waypoint metrics gated on an active-route signal). Gate closed → null.
+        if (! empty($def['gate']['selector'])) {
+            $gate = $this->prometheus->queryWithTimestamp($def['gate']['selector']);
+            $gateMax = $def['gate']['max'] ?? null;
+            if ($gate === null
+                || $gate['age'] > $def['staleness']
+                || ($gateMax !== null && $gate['value'] > $gateMax)) {
+                return null;
+            }
+        }
+
         // Pass 1: first fresh + healthy source.
         foreach ($def['sources'] as $source) {
             $staleness = $source['staleness'] ?? $def['staleness'];
