@@ -7,7 +7,7 @@
             <div class="ops-status">
                 <span class="ops-badge">
                     <span class="ops-badge__dot"></span>
-                    Under Sail
+                    {{ statusText }}
                 </span>
                 <span class="ops-hdot">Tracker</span>
                 <span class="ops-hdot">SignalK</span>
@@ -25,7 +25,7 @@
                         <!-- House Battery -->
                         <div class="ops-sys ops-sys--house">
                             <div class="ops-sys__header">
-                                <span class="ops-seclabel ops-seclabel--inline" style="color: oklch(0.45 0.16 150)">House Battery</span>
+                                <span class="ops-seclabel ops-seclabel--inline" style="color: var(--color-green)">House Battery</span>
                             </div>
                             <div class="ops-sys__main">
                                 <span
@@ -62,7 +62,7 @@
                         <!-- EcoFlow Delta -->
                         <div class="ops-sys ops-sys--eco">
                             <div class="ops-sys__header">
-                                <span class="ops-seclabel ops-seclabel--inline" style="color: oklch(0.42 0.14 178)">EcoFlow Delta</span>
+                                <span class="ops-seclabel ops-seclabel--inline" style="color: var(--color-teal)">EcoFlow Delta</span>
                             </div>
                             <div class="ops-sys__main">
                                 <span
@@ -117,7 +117,7 @@
                                     :height="54"
                                 />
                                 <svg v-else viewBox="0 0 360 54" preserveAspectRatio="none" class="ops-tank__empty-svg">
-                                    <line x1="0" y1="27" x2="360" y2="27" stroke="oklch(0.88 0.012 205)" stroke-width="1" stroke-dasharray="3 3"/>
+                                    <line x1="0" y1="27" x2="360" y2="27" stroke="var(--color-border-light)" stroke-width="1" stroke-dasharray="3 3"/>
                                 </svg>
                             </div>
                             <div class="ops-axis">
@@ -145,7 +145,7 @@
                                     :height="54"
                                 />
                                 <svg v-else viewBox="0 0 360 54" preserveAspectRatio="none" class="ops-tank__empty-svg">
-                                    <line x1="0" y1="27" x2="360" y2="27" stroke="oklch(0.88 0.012 205)" stroke-width="1" stroke-dasharray="3 3"/>
+                                    <line x1="0" y1="27" x2="360" y2="27" stroke="var(--color-border-light)" stroke-width="1" stroke-dasharray="3 3"/>
                                 </svg>
                             </div>
                             <div class="ops-axis">
@@ -359,7 +359,14 @@ let map = null;
 // ── Live updates via Echo ─────────────────────────────────────────────────────
 // useScarletMetrics wires Echo on 'metrics' channel and exposes a `canonical`
 // ref updated on each broadcast. Also provides initMap/addMapTarget for Leaflet.
-const { canonical, initMap, addMapTarget } = useScarletMetrics({
+const {
+    canonical,
+    statusText,
+    passageFrom,
+    passageTo,
+    initMap,
+    addMapTarget,
+} = useScarletMetrics({
     initialMetrics: { canonical: props.contracts },
     gpsTrack: props.gpsTrack,
 });
@@ -396,7 +403,7 @@ function fmtDeg(v, decimals = 0) {
 // ── Lifecycle: Leaflet map ────────────────────────────────────────────────────
 onMounted(() => {
     if (mapContainerRef.value) {
-        map = initMap(mapContainerRef.value, { zoomControl: false, attributionControl: false });
+        map = initMap(mapContainerRef.value, { interactive: false });
         addMapTarget(map, {});
     }
 });
@@ -407,7 +414,14 @@ onUnmounted(() => {
 });
 
 // ── Status / passage ──────────────────────────────────────────────────────────
-const passageLabel = computed(() => 'Under way');
+const passageLabel = computed(() => {
+    if (passageFrom.value && passageTo.value) {
+        return `${passageFrom.value} → ${passageTo.value}`;
+    }
+    if (passageFrom.value) return `From ${passageFrom.value}`;
+    if (passageTo.value) return `To ${passageTo.value}`;
+    return '';
+});
 
 // ── House Battery ─────────────────────────────────────────────────────────────
 const houseSocDisplay = computed(() => {
