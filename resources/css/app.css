@@ -222,6 +222,32 @@ html[data-theme="night"] .leaflet-tile-pane {
     filter: brightness(0.55) saturate(0.7) sepia(0.35) hue-rotate(-12deg);
 }
 
+/* Night watch: the Leaflet container's own backdrop (Leaflet defaults it to a
+   light grey) flashes bright before tiles paint, wiping out dark adaptation.
+   Hold it on the dark base so the map fades up from black, not white. */
+html[data-theme="night"] .leaflet-container {
+    background: var(--color-bg);
+}
+
+/* Night watch: theme the zoom control. Leaflet hardcodes white buttons with
+   black glyphs and a light divider; restyle to the warm dark surface so the
+   +/− don't sit as a bright white block on the chart. */
+html[data-theme="night"] .leaflet-bar a,
+html[data-theme="night"] .leaflet-bar a:hover {
+    background-color: var(--color-surface);
+    color: var(--color-text-primary);
+    border-bottom-color: var(--color-border);
+}
+
+html[data-theme="night"] .leaflet-bar a:hover {
+    background-color: var(--color-border-light);
+}
+
+html[data-theme="night"] .leaflet-bar {
+    border-color: var(--color-border);
+    box-shadow: var(--shadow-sm);
+}
+
 html[data-theme="night"] .chart-panel {
     background: var(--color-surface);
     border-color: var(--color-border);

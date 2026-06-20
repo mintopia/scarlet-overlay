@@ -166,8 +166,7 @@ export function useScarletMetrics(options = {}) {
 
         if (gps.value?.latitude) {
             const pos = [gps.value.latitude, gps.value.longitude];
-            const heading = boat.value?.cog ?? boat.value?.heading ?? 0;
-            target.marker = L.marker(pos, { icon: makeBoatIcon(heading) }).addTo(target.map);
+            target.marker = L.marker(pos, { icon: makeBoatIcon(resolveHeading()) }).addTo(target.map);
         }
     }
 
@@ -176,10 +175,24 @@ export function useScarletMetrics(options = {}) {
         if (idx !== -1) mapTargets.splice(idx, 1);
     }
 
+    // Resolve the boat marker's heading. Dashboards built on the canonical read
+    // contract (Main/Skipper/Ops) pass only `canonical`, with no `boat` object, so
+    // boat.cog/heading are absent and the arrow would lock to 0° (straight up).
+    // Fall back to the canonical `cog`/`heading_true` contracts in that case.
+    function resolveHeading(newBoat = null) {
+        const b = newBoat ?? boat.value;
+        const c = canonical.value ?? {};
+
+        return b?.cog
+            ?? b?.heading
+            ?? c.cog?.value
+            ?? c.heading_true?.value
+            ?? 0;
+    }
+
     function updateSingleMap(target, newGps, newBoat) {
         const pos = [newGps.latitude, newGps.longitude];
-        const heading = newBoat?.cog ?? newBoat?.heading ?? 0;
-        const icon = makeBoatIcon(heading);
+        const icon = makeBoatIcon(resolveHeading(newBoat));
 
         if (target.marker) {
             target.marker.setLatLng(pos).setIcon(icon);
