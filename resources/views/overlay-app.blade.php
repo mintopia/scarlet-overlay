@@ -14,6 +14,9 @@
                 port: @json(config('scarlet.reverb.port')),
                 scheme: @json(config('scarlet.reverb.scheme')),
             },
+            metrics: {
+                pushInterval: @json(config('scarlet.metrics.push_interval')),
+            },
         };
     </script>
     @vite(['resources/css/app.css', 'resources/js/app.js'])

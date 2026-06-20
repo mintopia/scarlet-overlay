@@ -44,3 +44,32 @@ export function trackSegments(points) {
 
     return segments;
 }
+
+/**
+ * Build the in-memory track points for the initial map draw.
+ *
+ * The historical track comes from a decimated, outlier-filtered range query, so
+ * its last point lags behind the instant GPS marker. Append the current fix so
+ * the drawn track actually meets the boat marker — unless doing so would bridge a
+ * genuine telemetry gap, in which case the marker is left unbridged on the far
+ * side (the live stream resumes the track from there).
+ *
+ * @param {Array<[number, number, number?]>} gpsTrack  raw [lat, lng, speed?] prop
+ * @param {[number, number]|null} currentPos  live marker position, or null
+ * @param {number} currentSpeed  live SOG for colouring the bridging segment
+ * @returns {Array<{pos: [number, number], speed: number}>}
+ */
+export function buildInitialTrackPoints(gpsTrack, currentPos, currentSpeed) {
+    const points = gpsTrack.map(p => ({ pos: [p[0], p[1]], speed: p[2] ?? 0 }));
+
+    if (currentPos == null || currentPos[0] == null) {
+        return points;
+    }
+
+    const last = points[points.length - 1]?.pos;
+    if (!last || !isTrackGap(last, currentPos)) {
+        points.push({ pos: currentPos, speed: currentSpeed });
+    }
+
+    return points;
+}

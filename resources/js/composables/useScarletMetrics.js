@@ -4,7 +4,7 @@ import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import { speedToColor, makeBoatIcon, formatCoord, getWeatherIcon, getWeatherLabel, addRouteLayer } from '../scarlet';
 import { theme } from './useTheme.js';
-import { isTrackGap, trackSegments } from '../track.js';
+import { isTrackGap, trackSegments, buildInitialTrackPoints } from '../track.js';
 
 export function useScarletMetrics(options = {}) {
     const {
@@ -144,8 +144,12 @@ export function useScarletMetrics(options = {}) {
         };
         mapTargets.push(target);
 
-        if (!trackPoints.length && gpsTrack.length) {
-            gpsTrack.forEach(p => trackPoints.push({ pos: [p[0], p[1]], speed: p[2] ?? 0 }));
+        if (!trackPoints.length && (gpsTrack.length || gps.value?.latitude != null)) {
+            // Seed the shared track once, bridging the historical track to the live
+            // marker so the drawn line meets the boat instead of stopping short.
+            const cur = gps.value?.latitude != null ? [gps.value.latitude, gps.value.longitude] : null;
+            const curSpeed = boat.value?.speed_sog ?? canonical.value?.speed_sog?.value ?? 0;
+            buildInitialTrackPoints(gpsTrack, cur, curSpeed).forEach(p => trackPoints.push(p));
         }
 
         if (trackPoints.length > 1) {
@@ -229,7 +233,14 @@ export function useScarletMetrics(options = {}) {
         if (trackPoints.length > 0) {
             const last = trackPoints[trackPoints.length - 1].pos;
             if (isTrackGap(last, newPos)) {
+                // Genuine telemetry gap: drop the stale in-memory track AND the
+                // already-drawn polylines so the track restarts at the boat
+                // rather than leaving an orphaned line floating on the map.
                 trackPoints.length = 0;
+                mapTargets.forEach(t => {
+                    t.segments.forEach(seg => t.map.removeLayer(seg));
+                    t.segments = [];
+                });
             }
         }
 
@@ -237,43 +248,118 @@ export function useScarletMetrics(options = {}) {
         mapTargets.forEach(t => updateSingleMap(t, newGps, newBoat));
     }
 
+    // ── Live ingest ──────────────────────────────────────────────────────
+    // Shared by the WebSocket event and the HTTP fallback poll so both paths
+    // update state and the map identically.
+    function ingest(data) {
+        if (!data) return;
+        const newStale = new Set();
+        const merged = { ...boat.value };
+        for (const [k, v] of Object.entries(data.boat ?? {})) {
+            if (v != null) {
+                merged[k] = v;
+            } else if (merged[k] != null) {
+                newStale.add(k);
+            }
+        }
+        boat.value = merged;
+        if (data.canonical) canonical.value = data.canonical;
+        staleKeys.value = newStale;
+        if (data.gps) gps.value = data.gps;
+        if (data.weather) weather.value = data.weather;
+        if (data.sun) sun.value = data.sun;
+        if (data.settings) {
+            portName.value = data.settings.port_name ?? '';
+            passageFrom.value = data.settings.passage_from ?? '';
+            passageTo.value = data.settings.passage_to ?? '';
+            boatName.value = data.settings.boat_name ?? boatName.value;
+        }
+        lastUpdate.value = new Date();
+        if (data.gps) updateAllMaps(data.gps, data.boat);
+    }
+
+    // ── HTTP fallback ────────────────────────────────────────────────────
+    // The WebSocket is the primary transport, but it can silently die (proxy
+    // idle timeout, Reverb restart, a backgrounded/throttled OBS source) and
+    // the push loop can stall server-side. Without a fallback the UI freezes
+    // until a hard refresh. Poll the same payload the broadcast carries.
+    const pushInterval = (window.scarletConfig?.metrics?.pushInterval ?? 15) * 1000;
+    const staleAfterMs = options.staleAfterMs ?? pushInterval * 2;
+    const wsConnected = ref(false);
+    let snapshotInFlight = false;
+
+    async function refreshSnapshot() {
+        if (snapshotInFlight || typeof window === 'undefined' || !window.axios) return;
+        snapshotInFlight = true;
+        try {
+            const { data } = await window.axios.get('/api/v1/metrics');
+            ingest(data);
+        } catch {
+            // Leave existing state; the watchdog will retry on the next tick.
+        } finally {
+            snapshotInFlight = false;
+        }
+    }
+
+    function isStale() {
+        if (!lastUpdate.value) return true;
+        return Date.now() - lastUpdate.value.getTime() > staleAfterMs;
+    }
+
     // ── WebSocket ────────────────────────────────────────────────────────
     let echoChannel = null;
     if (window.Echo) {
         echoChannel = window.Echo.channel('metrics');
-        echoChannel.listen('.metrics.updated', (data) => {
-            const newStale = new Set();
-            const merged = { ...boat.value };
-            for (const [k, v] of Object.entries(data.boat ?? {})) {
-                if (v != null) {
-                    merged[k] = v;
-                } else if (merged[k] != null) {
-                    newStale.add(k);
-                }
-            }
-            boat.value = merged;
-            if (data.canonical) canonical.value = data.canonical;
-            staleKeys.value = newStale;
-            gps.value = data.gps;
-            if (data.weather) weather.value = data.weather;
-            if (data.sun) sun.value = data.sun;
-            if (data.settings) {
-                portName.value = data.settings.port_name ?? '';
-                passageFrom.value = data.settings.passage_from ?? '';
-                passageTo.value = data.settings.passage_to ?? '';
-                boatName.value = data.settings.boat_name ?? boatName.value;
-            }
-            lastUpdate.value = new Date();
-            updateAllMaps(data.gps, data.boat);
-        });
+        echoChannel.listen('.metrics.updated', ingest);
         echoChannel.listen('.force-reload', () => {
             window.location.reload();
         });
+
+        // Recover the data missed while the socket was down. pusher-js
+        // reconnects and re-subscribes the channel on its own, but the app must
+        // back-fill the gap — re-entering 'connected' triggers a fresh snapshot.
+        try {
+            const conn = window.Echo.connector?.pusher?.connection;
+            conn?.bind('state_change', ({ current }) => {
+                const wasConnected = wsConnected.value;
+                wsConnected.value = current === 'connected';
+                if (current === 'connected' && !wasConnected) refreshSnapshot();
+            });
+        } catch {
+            // Connector internals vary by driver; the watchdog still covers us.
+        }
+    }
+
+    // Watchdog: poll whenever updates have gone quiet — covers both a dead
+    // socket and a stalled server-side push loop (which the socket can't detect).
+    const watchdog = setInterval(() => {
+        if (isStale()) refreshSnapshot();
+    }, pushInterval);
+
+    // Recover immediately when the tab is shown again or the network returns,
+    // rather than waiting for the next watchdog tick.
+    function onVisible() {
+        if (typeof document !== 'undefined' && document.visibilityState === 'visible' && isStale()) {
+            refreshSnapshot();
+        }
+    }
+    if (typeof document !== 'undefined') {
+        document.addEventListener('visibilitychange', onVisible);
+    }
+    if (typeof window !== 'undefined') {
+        window.addEventListener('online', refreshSnapshot);
     }
 
     // ── Cleanup ──────────────────────────────────────────────────────────
     function cleanup() {
         clearInterval(clockInterval);
+        clearInterval(watchdog);
+        if (typeof document !== 'undefined') {
+            document.removeEventListener('visibilitychange', onVisible);
+        }
+        if (typeof window !== 'undefined') {
+            window.removeEventListener('online', refreshSnapshot);
+        }
         if (echoChannel) {
             window.Echo.leave('metrics');
             echoChannel = null;
@@ -283,7 +369,7 @@ export function useScarletMetrics(options = {}) {
     onUnmounted(cleanup);
 
     return {
-        boat, gps, weather, sun, lastUpdate, staleKeys, canonical,
+        boat, gps, weather, sun, lastUpdate, staleKeys, canonical, wsConnected,
         clock, clockDate,
         coordText, isOffline, statusText, statusClass, lastUpdateText,
         wxTemp, wxCondition, wxIcon, wxSeaTemp, wxWindSpeed, wxWindDir, wxWaveHeight, wxWavePeriod,

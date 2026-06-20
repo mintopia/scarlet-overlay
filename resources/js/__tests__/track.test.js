@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { isTrackGap, trackSegments, TRACK_GAP_DEG } from '../track.js';
+import { isTrackGap, trackSegments, buildInitialTrackPoints, TRACK_GAP_DEG } from '../track.js';
 
 describe('isTrackGap', () => {
     it('treats adjacent fixes a few metres apart as one continuous track', () => {
@@ -50,5 +50,48 @@ describe('trackSegments', () => {
             { pos: [43.0004, -8.0000], speed: 7 },
         ];
         expect(trackSegments(points)[0].speed).toBe(7);
+    });
+});
+
+describe('buildInitialTrackPoints', () => {
+    const track = [
+        [43.0000, -8.0000, 5],
+        [43.0004, -8.0000, 6],
+    ];
+
+    it('seeds points from the raw [lat, lng, speed] track prop', () => {
+        expect(buildInitialTrackPoints(track, null, 0)).toEqual([
+            { pos: [43.0000, -8.0000], speed: 5 },
+            { pos: [43.0004, -8.0000], speed: 6 },
+        ]);
+    });
+
+    it('defaults a missing track-point speed to 0', () => {
+        expect(buildInitialTrackPoints([[43, -8]], null, 0)).toEqual([
+            { pos: [43, -8], speed: 0 },
+        ]);
+    });
+
+    it('bridges the historical track to the live marker so they meet', () => {
+        // The instant GPS marker sits just ahead of the last (decimated/filtered)
+        // track point — append it so trackSegments draws the connector.
+        const points = buildInitialTrackPoints(track, [43.0008, -8.0000], 7);
+        expect(points).toHaveLength(3);
+        expect(points[2]).toEqual({ pos: [43.0008, -8.0000], speed: 7 });
+    });
+
+    it('does NOT bridge across a genuine telemetry gap', () => {
+        const points = buildInitialTrackPoints(track, [43.5000, -8.0000], 0);
+        expect(points).toHaveLength(2); // marker left unbridged on the far side
+    });
+
+    it('starts the track at the marker when there is no history', () => {
+        expect(buildInitialTrackPoints([], [43.0008, -8.0000], 7)).toEqual([
+            { pos: [43.0008, -8.0000], speed: 7 },
+        ]);
+    });
+
+    it('returns an empty track when there is neither history nor a fix', () => {
+        expect(buildInitialTrackPoints([], null, 0)).toEqual([]);
     });
 });
