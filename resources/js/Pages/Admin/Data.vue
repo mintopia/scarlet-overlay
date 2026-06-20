@@ -59,10 +59,10 @@
                                         class="inline-flex items-center gap-1.5 text-[12px] text-text-secondary hover:text-text-primary transition-colors"
                                     >
                                         <span class="inline-flex items-center justify-center w-5 h-5 rounded-full text-[10px] font-bold"
-                                            :class="metric.sources.length > 0 ? 'bg-blue-bg text-blue' : 'bg-bg text-text-dim'">
-                                            {{ metric.sources.length }}
+                                            :class="metric.derived_fn ? 'bg-amber-bg text-amber' : (metric.sources.length > 0 ? 'bg-blue-bg text-blue' : 'bg-bg text-text-dim')">
+                                            {{ metric.derived_fn ? 'ƒ' : metric.sources.length }}
                                         </span>
-                                        source{{ metric.sources.length !== 1 ? 's' : '' }}
+                                        {{ metric.derived_fn ? 'derived' : 'source' + (metric.sources.length !== 1 ? 's' : '') }}
                                         <svg viewBox="0 0 24 24" width="12" height="12" stroke="currentColor" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"
                                             class="transition-transform duration-150" :class="expandedMetric === metric.id ? 'rotate-180' : ''">
                                             <polyline points="6 9 12 15 18 9"/>
@@ -97,7 +97,10 @@
                             <tr v-if="expandedMetric === metric.id" :key="'src-' + metric.id">
                                 <td colspan="7" class="px-5 py-0 bg-bg border-b border-border">
                                     <div class="py-3 space-y-2">
-                                        <div v-if="metric.sources.length === 0" class="text-[13px] text-text-dim italic py-2">No sources configured.</div>
+                                        <div v-if="metric.derived_fn" class="text-[13px] text-text-dim py-2">
+                                            Derived at read time via <code class="text-[11px] font-mono text-text-primary bg-surface border border-border rounded px-1 py-0.5">{{ metric.derived_fn }}</code> from {{ Object.values(metric.derived_inputs || {}).join(', ') }}.
+                                        </div>
+                                        <div v-else-if="metric.sources.length === 0" class="text-[13px] text-text-dim italic py-2">No sources configured.</div>
                                         <div
                                             v-for="src in metric.sources"
                                             :key="src.id"

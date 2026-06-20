@@ -82,6 +82,7 @@ class CanonicalCatalog
                 'gate_metric_name' => $m->gate_metric_name, 'gate_label_matchers' => $m->gate_label_matchers ?? [],
                 'gate_max_value' => $m->gate_max_value,
                 'enabled' => $m->enabled, 'description' => $m->description,
+                'derived_fn' => $m->derived_fn, 'derived_inputs' => $m->derived_inputs,
                 'sources' => $m->sources->map(fn ($s) => [
                     'priority' => $s->priority, 'source_metric_name' => $s->source_metric_name,
                     'label_matchers' => $s->label_matchers ?? [], 'source_class' => $s->source_class,
@@ -142,6 +143,8 @@ class CanonicalCatalog
                 'valid_min' => $metric->valid_min,
                 'valid_max' => $metric->valid_max,
                 'reject_null_island' => $metric->reject_null_island,
+                'derived_fn' => $metric->derived_fn,
+                'derived_inputs' => $metric->derived_inputs ?? [],
                 'gate' => $metric->gate_metric_name ? array_filter([
                     'selector' => $this->compileSelector([
                         'source_metric_name' => $metric->gate_metric_name,
@@ -272,7 +275,7 @@ class CanonicalCatalog
                 'key', 'label', 'group', 'storage_unit', 'display_unit', 'volatile', 'trend_fn',
                 'trend_window', 'staleness_threshold_s', 'coverage_window_s', 'coverage_min',
                 'valid_min', 'valid_max', 'reject_null_island', 'gate_metric_name', 'gate_label_matchers',
-                'gate_max_value', 'enabled', 'description', 'sources',
+                'gate_max_value', 'enabled', 'description', 'derived_fn', 'derived_inputs', 'sources',
             ] as $field) {
                 $ordered[$field] = $def[$field] ?? null;
             }
