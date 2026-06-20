@@ -4,19 +4,7 @@ import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import { speedToColor, makeBoatIcon, formatCoord, getWeatherIcon, getWeatherLabel, addRouteLayer } from '../scarlet';
 import { theme } from './useTheme.js';
-
-// Max distance (degrees, ~1.1 km) between consecutive fixes that still counts as
-// one continuous track. Telemetry outages leave gaps in the stored track where
-// adjacent points are far apart; drawing a segment across such a gap renders a
-// long straight line joining two points the boat never travelled between. Split
-// the track at gaps instead — used by both the initial draw and live updates.
-const TRACK_GAP_DEG = 0.01;
-
-function isTrackGap(a, b) {
-    const dLat = a[0] - b[0];
-    const dLng = a[1] - b[1];
-    return Math.sqrt(dLat * dLat + dLng * dLng) > TRACK_GAP_DEG;
-}
+import { isTrackGap, trackSegments } from '../track.js';
 
 export function useScarletMetrics(options = {}) {
     const {
@@ -161,13 +149,11 @@ export function useScarletMetrics(options = {}) {
         }
 
         if (trackPoints.length > 1) {
-            for (let i = 1; i < trackPoints.length; i++) {
-                // Don't bridge telemetry gaps with a straight line.
-                if (isTrackGap(trackPoints[i - 1].pos, trackPoints[i].pos)) {
-                    continue;
-                }
-                const seg = L.polyline([trackPoints[i - 1].pos, trackPoints[i].pos], {
-                    color: speedToColor(trackPoints[i].speed),
+            // trackSegments splits the track at telemetry gaps so we never bridge
+            // two distant fixes with a straight line.
+            for (const s of trackSegments(trackPoints)) {
+                const seg = L.polyline([s.from, s.to], {
+                    color: speedToColor(s.speed),
                     weight: 3,
                     opacity: 0.85,
                 }).addTo(target.map);
