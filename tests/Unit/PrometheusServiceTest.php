@@ -192,6 +192,35 @@ class PrometheusServiceTest extends TestCase
         $this->assertEqualsWithDelta(5, $result['age'], 2);
     }
 
+    public function test_query_with_timestamp_joins_series_when_tlast_drops_the_name_label(): void
+    {
+        // Real VictoriaMetrics behaviour: last_over_time() preserves __name__, but
+        // tlast_over_time() (a timestamp-returning rollup) STRIPS __name__. Keying
+        // the value/timestamp join on the full label set therefore never matches,
+        // and age silently falls back to eval time (~0) for every metric. The join
+        // must ignore __name__ so it survives this asymmetry.
+        $now = now()->timestamp;
+        Http::fake(function ($request) use ($now) {
+            $isTimestamp = str_contains(urldecode($request->url()), 'tlast_over_time');
+
+            $result = $isTimestamp
+                ? [['metric' => ['device_id' => 'scarlet', 'job' => 'boat-tracker'], 'value' => [$now, (string) ($now - 45)]]]
+                : [['metric' => ['__name__' => 'scarlet_fuel_level', 'device_id' => 'scarlet', 'job' => 'boat-tracker'], 'value' => [$now, '67.8']]];
+
+            return Http::response([
+                'status' => 'success',
+                'data' => ['resultType' => 'vector', 'result' => $result],
+            ]);
+        });
+
+        $service = new PrometheusService;
+        $result = $service->queryWithTimestamp('scarlet_fuel_level');
+
+        $this->assertEquals(67.8, $result['value']);
+        $this->assertEquals($now - 45, $result['timestamp']);
+        $this->assertEqualsWithDelta(45, $result['age'], 2);
+    }
+
     public function test_query_fresh_returns_value_when_recent(): void
     {
         $this->fakeVictoriaMetrics(value: 5.0, sampleTimestamp: now()->timestamp - 10);

@@ -254,6 +254,11 @@ class PrometheusService
             $map = [];
             foreach ($result as $series) {
                 $labels = $series['metric'] ?? [];
+                // last_over_time() preserves __name__, but tlast_over_time() strips
+                // it. Drop __name__ so the value and timestamp maps key identically
+                // and the per-series join survives — otherwise every series falls
+                // back to eval time and age reads as ~0 (the "0s ago" regression).
+                unset($labels['__name__']);
                 ksort($labels);
                 $map[json_encode($labels)] = [
                     'value' => (float) $series['value'][1],
