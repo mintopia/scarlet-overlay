@@ -180,9 +180,56 @@ class PrometheusService
     public function queryWithTimestamp(string $promql, ?string $lookback = null): ?array
     {
         $lookback ??= $this->defaultLookback;
+
+        $values = $this->seriesMap($promql, 'last_over_time', $lookback);
+        if (empty($values)) {
+            return null;
+        }
+
+        // A selector can match several series: the two ingestion paths, plus
+        // stale orphans left behind by an earlier ingestion shape (e.g. a dropped
+        // `path` label). Taking $result[0] arbitrarily can return a dead series'
+        // last value (commonly 0), which is why an instantaneous reading could be
+        // wrong while the range-queried graph — whose short window excludes the
+        // orphan — stayed correct. Pick the series whose most recent raw sample is
+        // freshest so a dead duplicate can never shadow the live value.
+        //
+        // tlast_over_time gives the real per-series last-sample timestamp; the
+        // instant-query envelope time ($series['evalTime']) is always ~now, so it
+        // is used only as a fallback when tlast is unavailable for that series.
+        $timestamps = $this->seriesMap($promql, 'tlast_over_time', $lookback) ?? [];
+
+        $best = null;
+        foreach ($values as $labelKey => $series) {
+            $sampleTimestamp = isset($timestamps[$labelKey])
+                ? (int) $timestamps[$labelKey]['value']
+                : (int) $series['evalTime'];
+
+            if ($best === null || $sampleTimestamp > $best['timestamp']) {
+                $best = ['value' => $series['value'], 'timestamp' => $sampleTimestamp];
+            }
+        }
+
+        return [
+            'value' => $best['value'],
+            'timestamp' => $best['timestamp'],
+            'age' => max(0, now()->timestamp - $best['timestamp']),
+        ];
+    }
+
+    /**
+     * Run an `*_over_time`-wrapped instant query and return one entry per matching
+     * series, keyed by its serialized label set so that the value query
+     * (last_over_time) and the timestamp query (tlast_over_time) can be joined
+     * series-by-series.
+     *
+     * @return array<string, array{value: float, evalTime: int}>|null
+     */
+    private function seriesMap(string $promql, string $overTimeFn, string $lookback): ?array
+    {
         $wrapped = preg_replace_callback(
             '/\b(scarlet_[a-zA-Z0-9_:]*)(\{[^}]*\})?/',
-            fn ($m) => "last_over_time({$m[0]}[{$lookback}])",
+            fn ($m) => "{$overTimeFn}({$m[0]}[{$lookback}])",
             $promql,
         );
 
@@ -204,18 +251,17 @@ class PrometheusService
                 return null;
             }
 
-            // $result[0]['value'][0] is the instant-query EVALUATION time (~now),
-            // not the last sample's time — relying on it makes age always ~0, which
-            // silently disables every staleness/freshness check downstream. Derive
-            // the real last-sample timestamp via tlast_over_time (see queryTimestamp),
-            // falling back to the evaluation time only when it is unavailable.
-            $sampleTimestamp = $this->queryTimestamp($promql) ?? (int) $result[0]['value'][0];
+            $map = [];
+            foreach ($result as $series) {
+                $labels = $series['metric'] ?? [];
+                ksort($labels);
+                $map[json_encode($labels)] = [
+                    'value' => (float) $series['value'][1],
+                    'evalTime' => (int) $series['value'][0],
+                ];
+            }
 
-            return [
-                'value' => (float) $result[0]['value'][1],
-                'timestamp' => $sampleTimestamp,
-                'age' => max(0, now()->timestamp - $sampleTimestamp),
-            ];
+            return $map;
         } catch (\Throwable $e) {
             Log::warning("Prometheus query failed [{$promql}]: {$e->getMessage()}");
 

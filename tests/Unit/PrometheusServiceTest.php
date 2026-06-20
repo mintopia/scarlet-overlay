@@ -157,6 +157,41 @@ class PrometheusServiceTest extends TestCase
         $this->assertEqualsWithDelta(300, $result['age'], 2);
     }
 
+    public function test_query_with_timestamp_picks_freshest_series_when_selector_matches_multiple(): void
+    {
+        // A selector can match several series: the live one plus a stale orphan
+        // left behind by an earlier ingestion shape (here distinguished by a
+        // `path` label). The orphan is returned FIRST by VictoriaMetrics, so
+        // taking $result[0] would yield its dead value (0). We must instead pick
+        // the series whose last raw sample is freshest.
+        $now = now()->timestamp;
+        Http::fake(function ($request) use ($now) {
+            $isTimestamp = str_contains(urldecode($request->url()), 'tlast_over_time');
+
+            $result = $isTimestamp
+                ? [
+                    ['metric' => ['__name__' => 'scarlet_speed_stw', 'path' => 'navigation.speedThroughWater'], 'value' => [$now, (string) ($now - 86400)]],
+                    ['metric' => ['__name__' => 'scarlet_speed_stw'], 'value' => [$now, (string) ($now - 5)]],
+                ]
+                : [
+                    ['metric' => ['__name__' => 'scarlet_speed_stw', 'path' => 'navigation.speedThroughWater'], 'value' => [$now, '0']],
+                    ['metric' => ['__name__' => 'scarlet_speed_stw'], 'value' => [$now, '3.48']],
+                ];
+
+            return Http::response([
+                'status' => 'success',
+                'data' => ['resultType' => 'vector', 'result' => $result],
+            ]);
+        });
+
+        $service = new PrometheusService;
+        $result = $service->queryWithTimestamp('scarlet_speed_stw');
+
+        $this->assertEquals(3.48, $result['value']);
+        $this->assertEquals($now - 5, $result['timestamp']);
+        $this->assertEqualsWithDelta(5, $result['age'], 2);
+    }
+
     public function test_query_fresh_returns_value_when_recent(): void
     {
         $this->fakeVictoriaMetrics(value: 5.0, sampleTimestamp: now()->timestamp - 10);
