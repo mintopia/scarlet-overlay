@@ -10,17 +10,17 @@
             class="sidebar"
             :class="{ 'sidebar--open': sidebarOpen }"
         >
-            <div class="px-5 pt-5 pb-4 border-b border-border-light flex items-center justify-between">
+            <div class="sidebar-head">
                 <div>
-                    <div class="text-[22px] font-bold text-scarlet tracking-wide">Scarlet</div>
-                    <div class="text-[11px] font-medium text-text-dim mt-0.5">Admin</div>
+                    <div class="text-[22px] font-bold text-scarlet tracking-wide leading-none">Scarlet</div>
+                    <div class="text-[11px] font-semibold text-text-dim mt-1.5 tracking-[0.18em] uppercase">Admin Console</div>
                 </div>
                 <button class="md:hidden w-11 h-11 flex items-center justify-center rounded-lg text-text-dim" aria-label="Close menu" @click="sidebarOpen = false">
                     <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" fill="none" stroke-width="2" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
                 </button>
             </div>
 
-            <nav class="px-2.5 py-3 flex-1 flex flex-col gap-0.5 overflow-y-auto">
+            <nav class="sidebar-nav">
                 <div class="nav-section">Voyage</div>
                 <NavLink href="/admin" icon="home" :active="currentPage === 'Admin/Dashboard'" @click="sidebarOpen = false">Dashboard</NavLink>
                 <NavLink href="/admin/journeys" icon="compass" :active="currentPage?.startsWith('Admin/Journey')" @click="sidebarOpen = false">Journeys</NavLink>
@@ -245,7 +245,7 @@ onUnmounted(() => {
     inset-block: 0;
     left: 0;
     z-index: 40;
-    width: 220px;
+    width: 244px;
     background: var(--color-surface);
     border-right: 1px solid var(--color-border);
     display: flex;
@@ -253,6 +253,23 @@ onUnmounted(() => {
     flex-shrink: 0;
     transform: translateX(-100%);
     transition: transform 0.2s ease-out;
+}
+
+.sidebar-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 20px 20px 16px;
+    border-bottom: 1px solid var(--color-border-light);
+}
+
+.sidebar-nav {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    padding: 12px 12px 16px;
+    overflow-y: auto;
 }
 
 .sidebar--open { transform: translateX(0); }
@@ -275,14 +292,14 @@ onUnmounted(() => {
 }
 
 .nav-section {
-    font-size: 10px;
+    font-size: 10.5px;
     font-weight: 800;
-    letter-spacing: 0.12em;
+    letter-spacing: 0.14em;
     text-transform: uppercase;
     color: var(--color-text-dim);
-    padding: 14px 12px 4px;
+    padding: 18px 14px 6px;
 }
-.nav-section:first-child { padding-top: 4px; }
+.nav-section:first-child { padding-top: 6px; }
 
 .nav-link {
     display: flex;
@@ -316,15 +333,24 @@ onUnmounted(() => {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 7px 16px;
+    min-height: 38px;
+    padding: 0 14px;
     font-size: 13px;
+    font-weight: 500;
     color: var(--color-text-dim);
     text-decoration: none;
-    border-radius: 6px;
-    transition: color 0.12s;
+    border-radius: 7px;
+    transition: color 0.12s, background 0.12s;
+}
+.nav-external:first-of-type {
+    margin-top: 8px;
+    padding-top: 10px;
+    border-top: 1px solid var(--color-border-light);
+    border-radius: 0 0 7px 7px;
 }
 .nav-external:hover {
     color: var(--color-text-primary);
+    background: var(--color-bg);
 }
 .nav-arrow {
     font-size: 10px;
@@ -335,7 +361,7 @@ onUnmounted(() => {
 .topbar {
     display: flex;
     align-items: center;
-    height: 52px;
+    height: 60px;
     padding: 0 16px;
     border-bottom: 1px solid var(--color-border-light);
     background: var(--color-surface);
@@ -382,15 +408,18 @@ onUnmounted(() => {
 .topbar-crumb { font-size: 14px; white-space: nowrap; }
 
 .topbar-crumb--link {
-    color: var(--color-text-secondary);
+    color: var(--color-text-dim);
     text-decoration: none;
     font-weight: 500;
 }
 
 .topbar-crumb--link:hover { color: var(--color-text-primary); }
 
+/* The trailing crumb is the page's glanceable title — give it real presence. */
 .topbar-crumb--current {
-    font-weight: 600;
+    font-size: 16px;
+    font-weight: 700;
+    letter-spacing: -0.01em;
     color: var(--color-text-primary);
     overflow: hidden;
     text-overflow: ellipsis;

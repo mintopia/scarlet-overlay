@@ -38,13 +38,16 @@ defineProps({
 
 <style scoped>
 .nav-link {
+    position: relative;
     display: flex;
     align-items: center;
-    gap: 10px;
-    padding: 10px 12px;
-    border-radius: 7px;
-    font-size: 14px;
-    font-weight: 500;
+    gap: 12px;
+    /* Larger hit target for glance-and-tap operation (≥44px tall). */
+    min-height: 44px;
+    padding: 0 12px 0 14px;
+    border-radius: 8px;
+    font-size: 14.5px;
+    font-weight: 600;
     color: var(--color-text-secondary);
     cursor: pointer;
     transition: background 0.12s ease-out, color 0.12s ease-out;
@@ -52,22 +55,36 @@ defineProps({
 }
 
 .nav-link:hover { background: var(--color-bg); color: var(--color-text-primary); }
-.nav-link:focus-visible { outline: 2px solid var(--color-scarlet); outline-offset: -2px; border-radius: 7px; }
+.nav-link:focus-visible { outline: 2px solid var(--color-scarlet); outline-offset: -2px; border-radius: 8px; }
 
 .nav-link--active {
     background: var(--color-scarlet-light);
     color: var(--color-scarlet);
-    font-weight: 600;
+    font-weight: 700;
+}
+
+/* Persistent active rail — a non-luminance affordance that reads at a glance
+   and survives the compressed hue range of Night Watch. */
+.nav-link--active::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 3px;
+    height: 20px;
+    border-radius: 0 3px 3px 0;
+    background: var(--color-scarlet);
 }
 
 .nav-icon {
-    width: 18px; height: 18px; flex-shrink: 0;
+    width: 19px; height: 19px; flex-shrink: 0;
     stroke: currentColor; fill: none;
     stroke-width: 2; stroke-linecap: round; stroke-linejoin: round;
     transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-.nav-link--active .nav-icon { transform: scale(1.12); }
+.nav-link--active .nav-icon { transform: scale(1.1); }
 
 @media (prefers-reduced-motion: reduce) {
     .nav-icon { transition: none; }

@@ -62,44 +62,72 @@ html[data-theme="dark"] {
     color-scheme: dark;
 }
 
-/* ── Night watch (scotopic vision preservation) ─────────── */
-/* Red light (>620nm) has minimal impact on rhodopsin in rod cells.
-   ALL colors are mapped to OKLCH hue 27 (deep red) and differentiated
-   by brightness/chroma only. No blue, green, or white wavelengths. */
+/* ── Night watch (Tier B — red/amber operations) ────────── */
+/* Ship's-bridge / control-room regime: the operator glances between this
+   screen and a dim physical environment, so the palette is red + amber and
+   legibility-tolerant — not the maximal scotopic dimness of deep-red Tier C.
+   Backgrounds are a warm near-black with a faint red tint; foregrounds live
+   in the warm-red band (hue ~38). Amber (hue ~65) is the BRIGHTEST non-alarm
+   hue and is spent sparingly; saturated red (hue ~31) is reserved for true
+   alarms only. No blue, no green, no white wavelengths. Hierarchy comes from
+   darkening the background, never from brightening foreground past the cap. */
 
 html[data-theme="night"] {
-    --color-surface: oklch(0.08 0.008 27);
-    --color-bg: oklch(0.05 0.004 27);
-    --color-border: oklch(0.16 0.04 27);
-    --color-border-light: oklch(0.12 0.02 27);
-    --color-text-primary: oklch(0.50 0.14 27);
-    --color-text-secondary: oklch(0.38 0.10 27);
-    --color-text-dim: oklch(0.26 0.06 27);
-    --color-scarlet: oklch(0.44 0.18 27);
-    --color-scarlet-hover: oklch(0.38 0.16 27);
-    --color-scarlet-light: oklch(0.44 0.18 27 / 0.15);
-    --color-green: oklch(0.38 0.10 27);
-    --color-green-bg: oklch(0.38 0.10 27 / 0.15);
-    --color-amber: oklch(0.46 0.14 27);
-    --color-amber-bg: oklch(0.46 0.14 27 / 0.15);
-    --color-error: oklch(0.38 0.16 27);
-    --color-error-bg: oklch(0.38 0.16 27 / 0.15);
-    --color-blue: oklch(0.34 0.10 27);
-    --color-blue-bg: oklch(0.34 0.10 27 / 0.15);
-    --color-teal: oklch(0.42 0.12 27);
-    --color-teal-bg: oklch(0.42 0.12 27 / 0.15);
-    --color-pink: oklch(0.40 0.12 25);
+    --color-surface: oklch(0.163 0.019 38);
+    --color-bg: oklch(0.130 0.011 38);
+    --color-border: oklch(0.231 0.031 39);
+    --color-border-light: oklch(0.190 0.029 38);
+    --color-text-primary: oklch(0.590 0.142 38);
+    --color-text-secondary: oklch(0.534 0.119 41);
+    --color-text-dim: oklch(0.337 0.072 38);
+    --color-scarlet: oklch(0.637 0.146 43);
+    --color-scarlet-hover: oklch(0.560 0.130 43);
+    --color-scarlet-light: oklch(0.637 0.146 43 / 0.16);
+    /* "ok" / freshness reads as warm red (NOT green — green sits near the rod
+       peak and glares); status is always paired with a label or icon. */
+    --color-green: oklch(0.517 0.117 43);
+    --color-green-bg: oklch(0.517 0.117 43 / 0.16);
+    /* amber: the single brightest non-alarm hue — used sparingly */
+    --color-amber: oklch(0.662 0.132 65);
+    --color-amber-bg: oklch(0.662 0.132 65 / 0.16);
+    /* crit: the only saturated alarm red */
+    --color-error: oklch(0.602 0.216 31);
+    --color-error-bg: oklch(0.602 0.216 31 / 0.16);
+    /* info channels folded into the warm-red band — no blue/teal wavelength */
+    --color-blue: oklch(0.400 0.075 38);
+    --color-blue-bg: oklch(0.400 0.075 38 / 0.16);
+    --color-teal: oklch(0.470 0.090 40);
+    --color-teal-bg: oklch(0.470 0.090 40 / 0.16);
+    --color-pink: oklch(0.560 0.130 35);
     --shadow-sm: 0 2px 8px oklch(0.0 0.0 0 / 0.5);
     color-scheme: dark;
 }
 
-/* Night watch: replace white text with light red on filled buttons */
+/* Night watch readability floor: light-on-dark thin strokes shimmer and bloom,
+   so lift the minimum weight, smooth edges, and keep changing numbers on a
+   tabular grid. Scoped to night so light/dark are untouched. */
+html[data-theme="night"] body {
+    font-weight: 500;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+}
+
+/* Never a blue/scarlet-but-bright focus ring at night — use the warm accent. */
+html[data-theme="night"] :focus-visible {
+    outline-color: var(--color-scarlet);
+}
+
+/* Night watch: no white labels on filled buttons. The fill (accent/crit) is
+   the brightest element, so the label is a DARK warm near-black sitting on it
+   — strong contrast (≈5:1) with zero text bloom against the bright surface. */
 html[data-theme="night"] .btn--primary,
 html[data-theme="night"] .btn--danger,
 html[data-theme="night"] .pill--active,
 html[data-theme="night"] .range-btn--active,
 html[data-theme="night"] .custom-picker-apply {
-    color: oklch(0.78 0.06 27);
+    color: oklch(0.16 0.03 40);
+    font-weight: 700;
 }
 
 /* Weather hero text — white on gradient, overridden in night watch */
@@ -108,48 +136,50 @@ html[data-theme="night"] .custom-picker-apply {
 
 /* Night watch: weather hero — override inline gradient + white text */
 html[data-theme="night"] .wx-hero {
-    background: linear-gradient(135deg, oklch(0.12 0.04 27), oklch(0.08 0.02 27)) !important;
+    background: linear-gradient(135deg, oklch(0.198 0.025 46), oklch(0.150 0.017 38)) !important;
 }
 
 html[data-theme="night"] .wx-hero__temp {
-    color: oklch(0.50 0.14 27);
+    color: var(--color-text-primary);
 }
 
 html[data-theme="night"] .wx-hero__cond {
-    color: oklch(0.38 0.10 27);
+    color: var(--color-text-secondary);
 }
 
 html[data-theme="night"] .wx-hero::after {
-    background: oklch(0.20 0.06 27 / 0.15);
+    background: oklch(0.30 0.05 45 / 0.12);
 }
 
-/* Night watch: health dots with hardcoded hues */
+/* Night watch: health dots — glow is dim and softened; saturated colour is
+   reserved, so even the "green" (freshness) dot resolves as warm red. Status
+   is paired with a text label in the markup, never colour alone. */
 html[data-theme="night"] .health-dot--green {
-    box-shadow: 0 0 5px oklch(0.38 0.10 27 / 0.4);
+    box-shadow: 0 0 4px oklch(0.517 0.117 43 / 0.35);
 }
 
 html[data-theme="night"] .health-dot--amber {
     background: var(--color-amber);
-    box-shadow: 0 0 5px oklch(0.46 0.14 27 / 0.4);
+    box-shadow: 0 0 4px oklch(0.662 0.132 65 / 0.30);
 }
 
 /* Night watch: chart tooltips */
 html[data-theme="night"] .chart-tooltip {
-    background: oklch(0.05 0.008 27 / 0.95);
-    color: oklch(0.50 0.14 27);
+    background: oklch(0.130 0.011 38 / 0.96);
+    color: var(--color-text-primary);
 }
 
 html[data-theme="night"] .chart-tooltip-hint {
-    color: oklch(0.30 0.06 27);
+    color: var(--color-text-dim);
 }
 
 /* Night watch: Explore propulsion bands */
 html[data-theme="night"] .band-swatch--sailing {
-    background: oklch(0.42 0.12 27 / 0.25);
+    background: oklch(0.470 0.090 40 / 0.30);
 }
 
 html[data-theme="night"] .band-swatch--motoring {
-    background: oklch(0.46 0.14 27 / 0.25);
+    background: oklch(0.662 0.132 65 / 0.28);
 }
 
 /* Night watch: Environment sea cards + rain badges */
@@ -159,17 +189,17 @@ html[data-theme="night"] .sea-card {
 }
 
 html[data-theme="night"] .sea-card:hover {
-    border-color: oklch(0.26 0.06 27);
-    box-shadow: 0 2px 12px oklch(0.10 0.04 27 / 0.2);
+    border-color: oklch(0.337 0.072 38);
+    box-shadow: 0 2px 12px oklch(0.10 0.02 38 / 0.25);
 }
 
 html[data-theme="night"] .sea-card--selected {
-    border-color: oklch(0.44 0.18 27 / 0.3);
-    background: oklch(0.10 0.02 27);
+    border-color: oklch(0.637 0.146 43 / 0.35);
+    background: oklch(0.198 0.025 46);
 }
 
 html[data-theme="night"] .wx-fc-rain {
-    background: oklch(0.34 0.10 27 / 0.15);
+    background: oklch(0.400 0.075 38 / 0.18);
 }
 
 /* Night watch: JourneyView map overlays */
@@ -180,7 +210,16 @@ html[data-theme="night"] .legend-badge {
 }
 
 html[data-theme="night"] .legend-gradient {
-    background: linear-gradient(to right, oklch(0.26 0.06 27), oklch(0.38 0.10 27), oklch(0.50 0.14 27));
+    background: linear-gradient(to right, oklch(0.337 0.072 38), oklch(0.470 0.090 40), oklch(0.637 0.146 43));
+}
+
+/* Night watch: gate Leaflet tiles. The base map already swaps to dark tiles,
+   but satellite imagery has no dark variant and any tile server can serve a
+   bright frame — clamp every tile's brightness and warm it so one pan can't
+   wipe out dark adaptation. Vector polylines/markers sit above the tile pane
+   and are unaffected. */
+html[data-theme="night"] .leaflet-tile-pane {
+    filter: brightness(0.55) saturate(0.7) sepia(0.35) hue-rotate(-12deg);
 }
 
 html[data-theme="night"] .chart-panel {
