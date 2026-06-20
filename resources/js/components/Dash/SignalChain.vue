@@ -104,8 +104,8 @@
                         :markers="droppedMarkers"
                         color="var(--color-green)"
                         marker-color="var(--color-scarlet)"
-                        :height="46"
-                        :width="600"
+                        :height="130"
+                        :width="900"
                     />
                     <div v-else class="sc-bgraph-empty">No Data</div>
                 </div>
@@ -518,7 +518,7 @@ const droppedMarkers = computed(() => {
 
 .sc-bgraph-empty {
     position: relative;
-    height: 46px;
+    height: 130px;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -544,14 +544,22 @@ const droppedMarkers = computed(() => {
     padding: 0 10px;
 }
 
-/* Stats strip */
+/* Stats strip — evenly distributed across the full card width */
 .sc-stats {
-    display: flex;
-    gap: 16px;
-    flex-wrap: wrap;
-    padding: 8px 10px;
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
+    gap: 10px 16px;
+    padding: 10px 14px;
     background: var(--color-bg);
     border-radius: 8px;
+}
+
+@media (max-width: 720px) {
+    .sc-stats { grid-template-columns: repeat(3, 1fr); }
+}
+
+@media (max-width: 420px) {
+    .sc-stats { grid-template-columns: repeat(2, 1fr); }
 }
 
 .sc-stat { display: flex; flex-direction: column; gap: 1px; }
