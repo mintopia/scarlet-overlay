@@ -123,6 +123,60 @@ class CanonicalReader
     }
 
     /**
+     * Resolve a derived metric's history by reading each input's range over the same
+     * window and combining them point-by-point with the derived function (ADR 0007).
+     * Only timestamps where every input has a value contribute a point — a missing
+     * input drops that timestamp rather than feeding the function a 0. The result is
+     * never fresher or denser than its least-covered input.
+     *
+     * @param  array<string, mixed>  $def
+     * @return array<int, array{t: int, v: float}>
+     */
+    private function readDerivedRange(array $def, ?string $duration, string $step, ?int $start, ?int $end, bool $fillGaps): array
+    {
+        $inputs = [];
+        foreach (($def['derived_inputs'] ?? []) as $role => $inputKey) {
+            $byTimestamp = [];
+            foreach ($this->readRange($inputKey, $duration, $step, $start, $end, $fillGaps) as $point) {
+                $byTimestamp[$point['t']] = $point['v'];
+            }
+
+            if ($byTimestamp === []) {
+                return [];
+            }
+
+            $inputs[$role] = $byTimestamp;
+        }
+
+        if ($inputs === []) {
+            return [];
+        }
+
+        $roles = array_keys($inputs);
+        $points = [];
+        foreach ($inputs[$roles[0]] as $t => $value) {
+            $values = [];
+            foreach ($roles as $role) {
+                if (! array_key_exists($t, $inputs[$role])) {
+                    continue 2;
+                }
+                $values[$role] = $inputs[$role][$t];
+            }
+
+            $computed = DerivedMetrics::compute($def['derived_fn'], $values);
+            if ($computed === null || ! $this->isValidReading($def, $computed)) {
+                continue;
+            }
+
+            $points[(int) $t] = ['t' => (int) $t, 'v' => $computed];
+        }
+
+        ksort($points);
+
+        return array_values($points);
+    }
+
+    /**
      * @param  array<int, string>  $keys
      * @return array<string, array<string, mixed>|null>
      */
@@ -200,6 +254,12 @@ class CanonicalReader
         $def = $this->catalog->definition($key);
         if ($def === null) {
             return [];
+        }
+
+        // Derived metric: history is computed point-by-point over the inputs' series
+        // (ADR 0007), not resolved from a VM source series.
+        if (! empty($def['derived_fn'])) {
+            return $this->readDerivedRange($def, $duration, $step, $start, $end, $fillGaps);
         }
 
         // Fill lowest priority first so higher-priority sources overwrite per timestamp.

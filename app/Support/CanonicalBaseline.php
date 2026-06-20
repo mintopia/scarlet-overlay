@@ -524,6 +524,29 @@ class CanonicalBaseline
                 ],
             ],
 
+            // Derived power (read-time, ADR 0007) — graphable like any other metric.
+
+            [
+                'key' => 'house_battery_power', 'label' => 'House Battery Power', 'group' => 'power',
+                'storage_unit' => 'w', 'display_unit' => 'W', 'volatile' => true,
+                'trend_fn' => 'last', 'trend_window' => '2m',
+                'staleness_threshold_s' => 300, 'coverage_window_s' => 600, 'coverage_min' => 0.5,
+                'enabled' => true, 'description' => 'House battery power in watts (voltage × current; positive = charging) — derived at read time (ADR 0007).',
+                'derived_fn' => 'multiply',
+                'derived_inputs' => ['a' => 'house_battery_voltage', 'b' => 'house_battery_current'],
+                'sources' => [],
+            ],
+            [
+                'key' => 'ecoflow_net_watts', 'label' => 'EcoFlow Net Power', 'group' => 'power',
+                'storage_unit' => 'w', 'display_unit' => 'W', 'volatile' => false,
+                'trend_fn' => 'median', 'trend_window' => '10m',
+                'staleness_threshold_s' => 3600, 'coverage_window_s' => 3600, 'coverage_min' => 0.3,
+                'enabled' => true, 'description' => 'EcoFlow Delta net power in watts (input − output; positive = net charging) — derived at read time (ADR 0007).',
+                'derived_fn' => 'subtract',
+                'derived_inputs' => ['a' => 'ecoflow_input_watts', 'b' => 'ecoflow_output_watts'],
+                'sources' => [],
+            ],
+
             // ── Cabin / Environment ───────────────────────────────────────────────
 
             [

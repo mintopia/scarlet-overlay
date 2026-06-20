@@ -20,8 +20,48 @@ class DerivedMetrics
         return match ($fn) {
             'true_wind_speed' => self::trueWind($inputs)['speed'],
             'true_wind_direction' => self::trueWind($inputs)['direction'],
+            'multiply' => self::multiply($inputs),
+            'subtract' => self::subtract($inputs),
             default => null,
         };
+    }
+
+    /**
+     * Product of all inputs (e.g. battery power = voltage × current). Null if any
+     * input is missing or non-numeric, so a derived value is never silently 0.
+     *
+     * @param  array<string, float|null>  $i
+     */
+    private static function multiply(array $i): ?float
+    {
+        if ($i === []) {
+            return null;
+        }
+
+        $product = 1.0;
+        foreach ($i as $value) {
+            if (! is_numeric($value)) {
+                return null;
+            }
+            $product *= (float) $value;
+        }
+
+        return $product;
+    }
+
+    /**
+     * Difference a − b (e.g. EcoFlow net watts = input − output; positive = charging).
+     * Null if either operand is missing or non-numeric.
+     *
+     * @param  array<string, float|null>  $i  requires roles 'a' and 'b'
+     */
+    private static function subtract(array $i): ?float
+    {
+        if (! is_numeric($i['a'] ?? null) || ! is_numeric($i['b'] ?? null)) {
+            return null;
+        }
+
+        return (float) $i['a'] - (float) $i['b'];
     }
 
     /**

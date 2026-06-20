@@ -25,6 +25,39 @@ class CanonicalReaderRangeTest extends TestCase
         $this->assertSame([], $points);
     }
 
+    public function test_derived_house_battery_power_graphs_from_baseline(): void
+    {
+        config()->set('scarlet.canonical.enabled', true);
+        app(CanonicalCatalog::class)->applyBaseline(CanonicalBaseline::definitions(), 'reset', 'test');
+
+        $t1 = 1_700_000_000;
+        $t2 = 1_700_000_300;
+
+        // Derived power graphs by combining the voltage and current source series
+        // point-by-point (ADR 0007). Fake VM returns distinct ranges per selector.
+        Http::fake(function ($request) use ($t1, $t2) {
+            $url = urldecode($request->url());
+            if (! str_contains($url, '/api/v1/query_range')) {
+                return Http::response(['status' => 'success', 'data' => ['resultType' => 'vector', 'result' => []]]);
+            }
+
+            $values = str_contains($url, '_voltage')
+                ? [[$t1, '12.0'], [$t2, '13.0']]
+                : [[$t1, '5.0'], [$t2, '-2.0']];
+
+            return Http::response([
+                'status' => 'success',
+                'data' => ['resultType' => 'matrix', 'result' => [['metric' => [], 'values' => $values]]],
+            ]);
+        });
+
+        $points = app(CanonicalReader::class)->readRange('house_battery_power', '6h', '300s');
+
+        $this->assertCount(2, $points);
+        $this->assertEqualsWithDelta(60.0, $points[0]['v'], 0.001);   // 12 × 5
+        $this->assertEqualsWithDelta(-26.0, $points[1]['v'], 0.001);  // 13 × −2
+    }
+
     public function test_read_range_returns_transformed_points(): void
     {
         config()->set('scarlet.canonical.enabled', true);

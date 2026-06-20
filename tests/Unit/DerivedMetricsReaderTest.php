@@ -72,6 +72,17 @@ class DerivedMetricsReaderTest extends TestCase
         $this->assertEqualsWithDelta(163.73, DerivedMetrics::compute('true_wind_direction', $inputs), 0.1);
     }
 
+    public function test_pure_compute_multiply_and_subtract(): void
+    {
+        // House battery power = voltage × current (positive current = charging).
+        $this->assertEqualsWithDelta(74.4, DerivedMetrics::compute('multiply', ['a' => 12.4, 'b' => 6.0]), 0.001);
+        // EcoFlow net = input − output (positive = net charging).
+        $this->assertEqualsWithDelta(-150.0, DerivedMetrics::compute('subtract', ['a' => 50.0, 'b' => 200.0]), 0.001);
+        // A missing or null input yields null, never a silent 0.
+        $this->assertNull(DerivedMetrics::compute('multiply', ['a' => null, 'b' => 6.0]));
+        $this->assertNull(DerivedMetrics::compute('subtract', ['a' => 1.0]));
+    }
+
     public function test_reads_derived_true_wind_from_canonical_inputs(): void
     {
         $reader = $this->reader($this->freshInputs());
@@ -85,6 +96,70 @@ class DerivedMetricsReaderTest extends TestCase
         $spd = $reader->read('wind_speed_true');
         $this->assertEqualsWithDelta(7.368, $spd['value'], 0.01);
         $this->assertFalse($spd['stale']);
+    }
+
+    public function test_derived_range_combines_inputs_point_by_point(): void
+    {
+        // ADR 0007: derived history is computed point-by-point over the inputs' series.
+        $catalog = $this->createMock(CanonicalCatalog::class);
+        $catalog->method('definition')->willReturnMap([
+            ['house_battery_power', [
+                'label' => 'House Battery Power', 'unit' => 'W', 'volatile' => false,
+                'trend_fn' => 'last', 'trend_window' => '2m',
+                'staleness' => 300, 'coverage_window_seconds' => 600, 'coverage_min' => 0.5,
+                'derived_fn' => 'multiply',
+                'derived_inputs' => ['a' => 'house_battery_voltage', 'b' => 'house_battery_current'],
+                'sources' => [],
+            ]],
+            ['house_battery_voltage', $this->inputDef('V', 'VOLT')],
+            ['house_battery_current', $this->inputDef('A', 'CURR')],
+        ]);
+
+        /** @var PrometheusService&MockObject $p */
+        $p = $this->createMock(PrometheusService::class);
+        $p->method('queryRange')->willReturnMap([
+            ['VOLT', null, '300s', null, null, false, [['timestamp' => 1000, 'value' => 12.0], ['timestamp' => 1300, 'value' => 13.0]]],
+            ['CURR', null, '300s', null, null, false, [['timestamp' => 1000, 'value' => 5.0], ['timestamp' => 1300, 'value' => -2.0]]],
+        ]);
+
+        $series = (new CanonicalReader($p, $catalog))->readRange('house_battery_power', null, '300s');
+
+        $this->assertCount(2, $series);
+        $this->assertSame(1000, $series[0]['t']);
+        $this->assertEqualsWithDelta(60.0, $series[0]['v'], 0.001);   // 12 × 5 (charging)
+        $this->assertSame(1300, $series[1]['t']);
+        $this->assertEqualsWithDelta(-26.0, $series[1]['v'], 0.001);  // 13 × −2 (discharging)
+    }
+
+    public function test_derived_range_skips_timestamps_missing_an_input(): void
+    {
+        $catalog = $this->createMock(CanonicalCatalog::class);
+        $catalog->method('definition')->willReturnMap([
+            ['ecoflow_net_watts', [
+                'label' => 'EcoFlow Net', 'unit' => 'W', 'volatile' => false,
+                'trend_fn' => 'last', 'trend_window' => '2m',
+                'staleness' => 3600, 'coverage_window_seconds' => 3600, 'coverage_min' => 0.3,
+                'derived_fn' => 'subtract',
+                'derived_inputs' => ['a' => 'ecoflow_input_watts', 'b' => 'ecoflow_output_watts'],
+                'sources' => [],
+            ]],
+            ['ecoflow_input_watts', $this->inputDef('W', 'IN')],
+            ['ecoflow_output_watts', $this->inputDef('W', 'OUT')],
+        ]);
+
+        /** @var PrometheusService&MockObject $p */
+        $p = $this->createMock(PrometheusService::class);
+        $p->method('queryRange')->willReturnMap([
+            ['IN', null, '300s', null, null, false, [['timestamp' => 1000, 'value' => 200.0], ['timestamp' => 1300, 'value' => 100.0]]],
+            // output has no sample at 1300 → that point is dropped, not treated as 0.
+            ['OUT', null, '300s', null, null, false, [['timestamp' => 1000, 'value' => 50.0]]],
+        ]);
+
+        $series = (new CanonicalReader($p, $catalog))->readRange('ecoflow_net_watts', null, '300s');
+
+        $this->assertCount(1, $series);
+        $this->assertSame(1000, $series[0]['t']);
+        $this->assertEqualsWithDelta(150.0, $series[0]['v'], 0.001); // 200 − 50
     }
 
     public function test_derived_is_stale_when_any_input_is_stale(): void

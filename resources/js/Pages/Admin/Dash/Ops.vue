@@ -39,15 +39,20 @@
                                 <span :class="housePowerClass">{{ housePowerDisplay }}</span>
                             </div>
                             <div class="ops-chart">
-                                <TrendChart
+                                <Link
                                     v-if="housePowerHistory.length > 0"
-                                    :data="housePowerHistory"
-                                    variant="bipolar"
-                                    color-positive="var(--color-green)"
-                                    color-negative="var(--color-scarlet)"
-                                    :height="104"
-                                    :width="300"
-                                />
+                                    :href="route('admin.data.show', { metric: 'house_battery_power' })"
+                                    class="metric-link metric-link--block"
+                                >
+                                    <TrendChart
+                                        :data="housePowerHistory"
+                                        variant="bipolar"
+                                        color-positive="var(--color-green)"
+                                        color-negative="var(--color-scarlet)"
+                                        :height="104"
+                                        :width="300"
+                                    />
+                                </Link>
                                 <div v-else class="ops-chart__empty">No Data</div>
                             </div>
                             <div class="ops-axis">
@@ -76,15 +81,20 @@
                                 <span :class="ecoflowPowerClass">{{ ecoflowPowerDisplay }}</span>
                             </div>
                             <div class="ops-chart">
-                                <TrendChart
+                                <Link
                                     v-if="ecoflowPowerHistory.length > 0"
-                                    :data="ecoflowPowerHistory"
-                                    variant="bipolar"
-                                    color-positive="var(--color-green)"
-                                    color-negative="var(--color-scarlet)"
-                                    :height="104"
-                                    :width="300"
-                                />
+                                    :href="route('admin.data.show', { metric: 'ecoflow_net_watts' })"
+                                    class="metric-link metric-link--block"
+                                >
+                                    <TrendChart
+                                        :data="ecoflowPowerHistory"
+                                        variant="bipolar"
+                                        color-positive="var(--color-green)"
+                                        color-negative="var(--color-scarlet)"
+                                        :height="104"
+                                        :width="300"
+                                    />
+                                </Link>
                                 <div v-else class="ops-chart__empty">No Data</div>
                             </div>
                             <div class="ops-axis">
