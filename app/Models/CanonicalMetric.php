@@ -12,6 +12,7 @@ class CanonicalMetric extends Model
         'trend_fn', 'trend_window', 'staleness_threshold_s', 'coverage_window_s',
         'coverage_min', 'valid_min', 'valid_max', 'reject_null_island',
         'gate_metric_name', 'gate_label_matchers', 'gate_max_value', 'enabled', 'description',
+        'derived_fn', 'derived_inputs',
     ];
 
     protected function casts(): array
@@ -27,6 +28,7 @@ class CanonicalMetric extends Model
             'reject_null_island' => 'boolean',
             'gate_label_matchers' => 'array',
             'gate_max_value' => 'float',
+            'derived_inputs' => 'array',
         ];
     }
 

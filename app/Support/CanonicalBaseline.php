@@ -397,6 +397,26 @@ class CanonicalBaseline
                     ['priority' => 1, 'source_metric_name' => 'scarlet_signalk_environment_wind_angleApparent', 'label_matchers' => [], 'source_class' => 'both', 'source_kind' => 'angle_rad', 'select_fn' => 'last', 'unit_transform' => $radToDeg, 'staleness_threshold_s' => null],
                 ],
             ],
+            [
+                'key' => 'wind_direction_true', 'label' => 'True Wind Direction', 'group' => 'wind',
+                'storage_unit' => 'deg', 'display_unit' => '°', 'volatile' => true,
+                'trend_fn' => 'last', 'trend_window' => '2m',
+                'staleness_threshold_s' => 120, 'coverage_window_s' => 300, 'coverage_min' => 0.5,
+                'enabled' => true, 'description' => 'True wind direction in degrees — derived at read time from apparent wind, speed through water, and heading (ADR 0007).',
+                'derived_fn' => 'true_wind_direction',
+                'derived_inputs' => ['aws' => 'wind_speed_apparent', 'awa' => 'wind_angle_apparent', 'stw' => 'speed_stw', 'heading' => 'heading_true'],
+                'sources' => [],
+            ],
+            [
+                'key' => 'wind_speed_true', 'label' => 'True Wind Speed', 'group' => 'wind',
+                'storage_unit' => 'kn', 'display_unit' => 'kn', 'volatile' => true,
+                'trend_fn' => 'last', 'trend_window' => '2m',
+                'staleness_threshold_s' => 120, 'coverage_window_s' => 300, 'coverage_min' => 0.5,
+                'enabled' => true, 'description' => 'True wind speed in knots — derived at read time from apparent wind, speed through water, and heading (ADR 0007).',
+                'derived_fn' => 'true_wind_speed',
+                'derived_inputs' => ['aws' => 'wind_speed_apparent', 'awa' => 'wind_angle_apparent', 'stw' => 'speed_stw', 'heading' => 'heading_true'],
+                'sources' => [],
+            ],
 
             // ── Power ─────────────────────────────────────────────────────────────
 

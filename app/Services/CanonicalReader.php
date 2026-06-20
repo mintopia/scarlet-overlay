@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Services;
 
+use App\Support\DerivedMetrics;
+
 class CanonicalReader
 {
     public function __construct(
@@ -19,6 +21,12 @@ class CanonicalReader
         $def = $this->catalog->definition($key);
         if ($def === null) {
             return null;
+        }
+
+        // Derived metric: computed at read time from other canonical metrics
+        // (ADR 0007), not resolved from a VM source series.
+        if (! empty($def['derived_fn'])) {
+            return $this->readDerived($def);
         }
 
         // Availability gate: the metric only resolves while its gate series is fresh
@@ -69,6 +77,49 @@ class CanonicalReader
         }
 
         return null;
+    }
+
+    /**
+     * Resolve a derived metric by reading each declared input through the normal
+     * priority chain and applying the derived function (ADR 0007). The result is
+     * stale if any input is stale, and null if any input is unavailable, so a
+     * derived value is never fresher than its least-fresh input.
+     *
+     * @param  array<string, mixed>  $def
+     * @return array{value: float, raw: float, unit: string, timestamp: int, age: int, stale: bool, resolved_source: string}|null
+     */
+    private function readDerived(array $def): ?array
+    {
+        $values = [];
+        $age = 0;
+        $stale = false;
+        $timestamp = null;
+
+        foreach (($def['derived_inputs'] ?? []) as $role => $inputKey) {
+            $input = $this->read($inputKey);
+            if ($input === null) {
+                return null;
+            }
+            $values[$role] = $input['value'];
+            $age = max($age, $input['age']);
+            $stale = $stale || $input['stale'];
+            $timestamp = $timestamp === null ? $input['timestamp'] : min($timestamp, $input['timestamp']);
+        }
+
+        $value = DerivedMetrics::compute($def['derived_fn'], $values);
+        if ($value === null) {
+            return null;
+        }
+
+        return [
+            'value' => $value,
+            'raw' => $value,
+            'unit' => $def['unit'],
+            'timestamp' => $timestamp ?? now()->timestamp,
+            'age' => $age,
+            'stale' => $stale,
+            'resolved_source' => 'derived:'.$def['derived_fn'],
+        ];
     }
 
     /**
