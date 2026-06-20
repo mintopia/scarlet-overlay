@@ -153,6 +153,25 @@ class CanonicalCatalogControllerTest extends TestCase
             ->assertJson(['names' => ['scarlet_gps_latitude_deg', 'scarlet_signalk_navigation_speedOverGround']]);
     }
 
+    public function test_inventory_queries_a_wide_window_so_offline_series_are_not_mislabeled_drift(): void
+    {
+        // Without a time range, VictoriaMetrics only returns recently-seen
+        // series, so a metric that is merely offline/stale looks absent (drift).
+        // The inventory must query a wide retention window via start/end.
+        Http::fake(['*' => Http::response([
+            'status' => 'success',
+            'data' => ['scarlet_gps_latitude_deg'],
+        ], 200)]);
+
+        $this->actingAs(User::factory()->create())
+            ->getJson(route('admin.data.inventory'))
+            ->assertOk();
+
+        Http::assertSent(fn ($request) => str_contains($request->url(), '/api/v1/label/__name__/values')
+            && str_contains($request->url(), 'start=')
+            && str_contains($request->url(), 'end='));
+    }
+
     public function test_test_endpoint_returns_value(): void
     {
         Http::fake(['*' => Http::response([

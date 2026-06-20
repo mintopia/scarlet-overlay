@@ -341,10 +341,24 @@ class PrometheusService
     /**
      * @return array<int, string>
      */
-    public function labelValues(string $label): array
+    /**
+     * List values for a label. Without an explicit range VictoriaMetrics only
+     * returns values seen in its short default window, which makes offline (but
+     * still-retained) series look absent. Pass start/end to widen the window so
+     * callers can distinguish "stale/offline" from "genuinely absent".
+     */
+    public function labelValues(string $label, ?int $start = null, ?int $end = null): array
     {
         try {
-            $response = Http::timeout(15)->get("{$this->baseUrl}/api/v1/label/{$label}/values");
+            $query = [];
+            if ($start !== null) {
+                $query['start'] = $start;
+            }
+            if ($end !== null) {
+                $query['end'] = $end;
+            }
+
+            $response = Http::timeout(15)->get("{$this->baseUrl}/api/v1/label/{$label}/values", $query);
 
             if (! $response->ok()) {
                 return [];
