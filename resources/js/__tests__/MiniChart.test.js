@@ -36,4 +36,12 @@ describe('MiniChart', () => {
         const wrapper = mount(MiniChart, { props: { data, stepSeconds: 10 } });
         expect(wrapper.find('[role="img"]').attributes('aria-label')).toMatch(/latest 3/i);
     });
+
+    it('wires the tooltip via uPlot hooks.setCursor when showTooltip is on', async () => {
+        const wrapper = mount(MiniChart, { props: { data, stepSeconds: 10, showTooltip: true } });
+        await wrapper.vm.$nextTick();
+        const opts = instances[0].opts;
+        expect(Array.isArray(opts.hooks?.setCursor)).toBe(true);
+        expect(typeof opts.hooks.setCursor[0]).toBe('function');
+    });
 });

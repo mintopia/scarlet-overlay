@@ -92,7 +92,7 @@ function withAlpha(color, alpha) {
         const n = parseInt(f, 16);
         return `rgba(${(n >> 16) & 255}, ${(n >> 8) & 255}, ${n & 255}, ${alpha})`;
     }
-    return color; // oklch()/var-resolved tokens: pass through (fill still drawn, no alpha)
+    return `color-mix(in srgb, ${color} ${Math.round(alpha * 100)}%, transparent)`;
 }
 
 /** uPlot plugin: draw event-marker bars + the end dot. */
@@ -164,7 +164,8 @@ function buildOptions(liveColor, staleColor) {
         axes: [{ show: false }, { show: false }],
         legend: { show: false },
         cursor: { show: props.showTooltip, x: props.showTooltip, y: false,
-            points: { show: false }, setCursor: props.showTooltip ? tooltipSetCursor : undefined },
+            points: { show: false } },
+        hooks: props.showTooltip ? { setCursor: [tooltipSetCursor] } : {},
         series: [{}, live, held],
         plugins: [marksPlugin(() => built, liveColor)],
     };
