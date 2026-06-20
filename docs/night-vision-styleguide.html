@@ -1,0 +1,785 @@
+<!DOCTYPE html>
+<html lang="en" data-night data-tier="B">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Night-Vision Design System — Style Guide</title>
+<style>
+/* ============================================================
+   NIGHT-VISION DESIGN SYSTEM — STANDALONE STYLE GUIDE
+   Luminance is the master lever, not hue. Three tiers, one cap.
+   System fonts only. No network. No build step.
+   ============================================================ */
+
+/* ---- Canonical token sets per tier ----
+   Hierarchy comes from DARKENING backgrounds, never brightening
+   foregrounds. Every value is deliberately dim. Do not "brighten
+   for readability" — make text larger/heavier instead. */
+
+/* Tier A — Comfortable dark (indoor night use; cut glare/blue, no real dark-adaptation) */
+:root[data-tier="A"] {
+  --bg-base:#121013; --bg-surface:#1A171B; --bg-raised:#231F25; --border:#312C34;
+  --text-primary:#D6CFCB; --text-secondary:#9E9690; --text-muted:#6B645F;
+  --accent:#C98A4B; --ok:#6FAE84; --warn:#D2A24A; --crit:#D0584E;
+}
+/* Tier B — Red/amber operations (bridge/cockpit; glance to dim environment) */
+:root[data-tier="B"] {
+  --bg-base:#0B0605; --bg-surface:#150B08; --bg-raised:#1F120C; --border:#2A1812;
+  --text-primary:#C25A38; --text-secondary:#8A4026; --text-muted:#56281A;
+  --accent:#D2693A; --ok:#9E4E2C; --warn:#C9802A; --crit:#E5331E;
+}
+/* Tier C — True deep-red scotopic (observatory; rod adaptation mission-critical) */
+:root[data-tier="C"] {
+  --bg-base:#070302; --bg-surface:#0E0504; --bg-raised:#160806; --border:#210C09;
+  --text-primary:#B0291B; --text-secondary:#7A1C12; --text-muted:#4C110B;
+  --accent:#C0301F; --ok:#8A2316; --warn:#B83320; --crit:#E5331E;
+}
+
+/* ---- Master brightness control: OS brightness rarely goes low enough. ---- */
+:root[data-night] {
+  filter: brightness(var(--night-brightness, 1));
+  --radius: 10px;
+  --space: 16px;
+  --max: 1080px;
+}
+
+* { box-sizing: border-box; }
+
+/* Body: heavier base weight (light-on-dark blooms; <400 vanishes & shimmers).
+   Pure black is reserved for dead space; active surfaces use near-black. */
+:root[data-night] body {
+  margin: 0;
+  background: #000;                 /* page void = true black, emits nothing */
+  color: var(--text-primary);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  font-weight: 500;
+  font-size: clamp(16px, 1.05vw, 18px);
+  line-height: 1.55;
+  letter-spacing: 0.01em;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Page frame sits on near-black, not pure black, so active reading surface
+   never causes black-crush / smear on changing content. */
+.page {
+  background: var(--bg-base);
+  min-height: 100vh;
+}
+.wrap { max-width: var(--max); margin: 0 auto; padding: clamp(20px, 4vw, 48px) clamp(16px, 4vw, 40px) 96px; }
+
+/* ---- Typography scale ---- */
+h1,h2,h3,h4 { font-weight: 600; line-height: 1.2; letter-spacing: 0.005em; margin: 0; }
+h1 { font-size: clamp(26px, 3.4vw, 38px); }
+h2 { font-size: clamp(20px, 2.4vw, 26px); }
+h3 { font-size: 18px; }
+h4 { font-size: 15px; }
+p { margin: 0 0 12px; max-width: 64ch; }
+.lead { color: var(--text-secondary); font-size: 1.05em; }
+.label { font-size: 12px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--text-muted); }
+.muted { color: var(--text-muted); }
+.secondary { color: var(--text-secondary); }
+code, .mono { font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace; font-size: 0.9em; }
+
+/* tabular figures for any changing number */
+.metric { font-variant-numeric: tabular-nums; font-weight: 600; }
+
+/* ---- Layout helpers ---- */
+.grid { display: grid; gap: var(--space); }
+.cols-2 { grid-template-columns: repeat(2, 1fr); }
+.cols-3 { grid-template-columns: repeat(3, 1fr); }
+.cols-4 { grid-template-columns: repeat(4, 1fr); }
+@media (max-width: 720px){ .cols-2,.cols-3,.cols-4 { grid-template-columns: 1fr; } }
+
+section { margin-top: 56px; }
+.section-head { border-bottom: 1px solid var(--border); padding-bottom: 12px; margin-bottom: 24px; }
+.note {
+  border-left: 3px solid var(--accent);
+  background: var(--bg-surface);
+  color: var(--text-secondary);
+  padding: 12px 16px;
+  border-radius: 0 8px 8px 0;
+  font-size: 0.92em;
+  margin: 16px 0;
+}
+.note strong { color: var(--text-primary); }
+
+/* ---- Cards / panels ---- */
+.card {
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 20px;
+}
+.card.raised { background: var(--bg-raised); }
+
+/* ============================================================
+   STICKY CONTROL BAR — tier + brightness
+   ============================================================ */
+.controls {
+  position: sticky; top: 0; z-index: 40;
+  background: var(--bg-surface);
+  border-bottom: 1px solid var(--border);
+  padding: 12px clamp(16px, 4vw, 40px);
+  display: flex; flex-wrap: wrap; align-items: center; gap: 20px;
+}
+.controls .group { display: flex; align-items: center; gap: 10px; }
+.tier-btns { display: flex; gap: 6px; }
+.tier-btn {
+  font: inherit; font-weight: 600; font-size: 13px;
+  color: var(--text-secondary);
+  background: var(--bg-base);
+  border: 1px solid var(--border);
+  padding: 7px 12px; border-radius: 8px; cursor: pointer;
+  transition: background .12s ease, color .12s ease;
+}
+.tier-btn:hover { background: var(--bg-raised); color: var(--text-primary); }
+.tier-btn[aria-pressed="true"] {
+  color: var(--text-primary);
+  border-color: var(--accent);
+  background: var(--bg-raised);
+}
+.bright-val { min-width: 3ch; text-align: right; }
+
+/* ============================================================
+   FORM CONTROLS — tame default OS brightness
+   Native controls render bright system chrome; we re-skin and
+   use accent-color so checkbox/radio/range never glare white.
+   ============================================================ */
+:root[data-night] input[type="text"],
+:root[data-night] input[type="number"],
+:root[data-night] select,
+:root[data-night] textarea {
+  font: inherit; font-weight: 500;
+  color: var(--text-primary);
+  background: var(--bg-base);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 10px 12px;
+  width: 100%;
+  color-scheme: dark;            /* stop UA painting a bright field */
+}
+:root[data-night] input::placeholder { color: var(--text-muted); }
+:root[data-night] select {
+  appearance: none;
+  background-image:
+    linear-gradient(45deg, transparent 50%, var(--text-muted) 50%),
+    linear-gradient(135deg, var(--text-muted) 50%, transparent 50%);
+  background-position: calc(100% - 18px) center, calc(100% - 13px) center;
+  background-size: 5px 5px, 5px 5px; background-repeat: no-repeat;
+}
+/* accent-color tints the native check/radio fill away from system blue */
+:root[data-night] input[type="checkbox"],
+:root[data-night] input[type="radio"] {
+  accent-color: var(--accent);
+  color-scheme: dark;
+}
+/* Range needs a full custom skin: accent-color leaves the WebKit track bright/white.
+   Reset appearance and paint track + thumb from in-palette tokens. */
+:root[data-night] input[type="range"] {
+  -webkit-appearance: none; appearance: none;
+  width: 100%; height: 22px; background: transparent; cursor: pointer;
+}
+:root[data-night] input[type="range"]::-webkit-slider-runnable-track {
+  height: 4px; border-radius: 2px;
+  background: var(--border);
+}
+:root[data-night] input[type="range"]::-moz-range-track {
+  height: 4px; border-radius: 2px;
+  background: var(--border);
+}
+:root[data-night] input[type="range"]::-moz-range-progress {
+  height: 4px; border-radius: 2px; background: var(--accent);
+}
+:root[data-night] input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none; appearance: none;
+  width: 14px; height: 14px; margin-top: -5px; border-radius: 50%;
+  background: var(--accent); border: 1px solid var(--bg-base);
+}
+:root[data-night] input[type="range"]::-moz-range-thumb {
+  width: 14px; height: 14px; border-radius: 50%;
+  background: var(--accent); border: 1px solid var(--bg-base);
+}
+:root[data-night] input[type="range"]:focus-visible { outline: 2px solid var(--accent); outline-offset: 4px; }
+.field { display: grid; gap: 6px; }
+.check-row { display: flex; align-items: center; gap: 10px; }
+.check-row label { font-weight: 500; }
+
+/* Focus ring is IN-PALETTE amber/red — never a system blue ring. */
+:root[data-night] :focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+  border-radius: 6px;
+}
+
+/* ============================================================
+   BUTTONS — states DARKEN or SATURATE, never spike luminance
+   ============================================================ */
+:root[data-night] .btn {
+  font: inherit; font-weight: 600; font-size: 14px;
+  color: var(--text-primary);
+  background: var(--bg-raised);
+  border: 1px solid var(--border);
+  padding: 10px 16px; border-radius: 8px; cursor: pointer;
+  transition: background .12s ease, filter .12s ease;
+}
+:root[data-night] .btn:hover  { background: var(--bg-surface); border-color: var(--accent); }  /* saturate toward accent, not brighter */
+:root[data-night] .btn:active { filter: brightness(0.85); }                                     /* darker, never a flash */
+:root[data-night] .btn:disabled { color: var(--text-muted); border-color: var(--border); background: var(--bg-base); cursor: not-allowed; filter: none; }
+:root[data-night] .btn-accent {
+  color: var(--bg-base);
+  background: var(--accent);
+  border-color: var(--accent);
+}
+:root[data-night] .btn-accent:hover  { filter: saturate(1.2) brightness(0.95); }
+:root[data-night] .btn-accent:active { filter: brightness(0.8); }
+.btn-row { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; }
+
+/* ============================================================
+   SWATCHES
+   ============================================================ */
+.swatches { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 10px; }
+.swatch { border: 1px solid var(--border); border-radius: 8px; overflow: hidden; }
+.swatch .chip { height: 56px; }
+.swatch .meta { padding: 8px 10px; background: var(--bg-surface); }
+.swatch .meta .name { font-size: 12px; font-weight: 600; }
+.swatch .meta .hex { font-size: 11px; color: var(--text-muted); }
+
+/* ============================================================
+   METRICS GRID
+   ============================================================ */
+.metric-tile { text-align: left; }
+.metric-tile .label { margin-bottom: 6px; }
+.metric-tile .value { font-size: clamp(28px, 4vw, 40px); font-variant-numeric: tabular-nums; font-weight: 600; line-height: 1; }
+.metric-tile .value .unit { font-size: 0.45em; color: var(--text-secondary); font-weight: 500; margin-left: 4px; }
+.metric-tile .delta { font-size: 13px; margin-top: 6px; }
+
+/* ============================================================
+   DATA TABLE
+   ============================================================ */
+table.data { width: 100%; border-collapse: collapse; font-size: 14px; }
+table.data th, table.data td { text-align: left; padding: 11px 14px; border-bottom: 1px solid var(--border); }
+table.data thead th { color: var(--text-muted); font-size: 12px; letter-spacing: 0.06em; text-transform: uppercase; }
+table.data tbody tr:hover { background: var(--bg-raised); }       /* hover darkens-toward-raised, no white highlight */
+table.data td.num { font-variant-numeric: tabular-nums; text-align: right; }
+
+/* ============================================================
+   STATUS PILLS — icon + color, NEVER color alone
+   ============================================================ */
+.pill {
+  display: inline-flex; align-items: center; gap: 7px;
+  font-size: 13px; font-weight: 600;
+  padding: 5px 11px 5px 9px; border-radius: 999px;
+  border: 1px solid currentColor;
+  background: var(--bg-surface);
+}
+.pill svg { width: 14px; height: 14px; flex: none; }
+.pill.ok   { color: var(--ok); }
+.pill.warn { color: var(--warn); }
+.pill.crit { color: var(--crit); }
+.pill .txt { color: var(--text-primary); }   /* readable label stays primary; hue carries on icon+ring */
+
+/* ============================================================
+   ALERTS — DIM-PULSE, never flash bright
+   ============================================================ */
+.alert {
+  display: flex; align-items: center; gap: 12px;
+  padding: 14px 16px; border-radius: 8px;
+  border: 1px solid var(--border);
+  background: var(--bg-surface);
+}
+.alert svg { width: 20px; height: 20px; flex: none; }
+.alert--warn { border-color: var(--warn); }
+.alert--warn svg { color: var(--warn); }
+.alert--crit { border-color: var(--crit); }
+.alert--crit svg { color: var(--crit); }
+.alert--crit .alert-title { color: var(--crit); }
+@keyframes night-softpulse { 0%,100% { opacity: 1; } 50% { opacity: 0.5; } }
+:root[data-night] .alert--crit { animation: night-softpulse 2s ease-in-out infinite; }
+@media (prefers-reduced-motion: reduce) {
+  :root[data-night] .alert--crit { animation: none; }
+}
+
+/* ============================================================
+   SKELETON + SPINNER — dim, in-palette, no bright shimmer
+   ============================================================ */
+.skel { background: var(--bg-raised); border-radius: 6px; height: 14px; position: relative; overflow: hidden; }
+.skel.tall { height: 80px; }
+.skel::after {
+  content: ""; position: absolute; inset: 0;
+  background: linear-gradient(90deg, transparent, var(--border), transparent);
+  transform: translateX(-100%);
+  animation: skel-sweep 1.8s ease-in-out infinite;
+}
+@keyframes skel-sweep { 100% { transform: translateX(100%); } }
+@media (prefers-reduced-motion: reduce) { .skel::after { animation: none; } }
+
+.spinner {
+  width: 28px; height: 28px; border-radius: 50%;
+  border: 3px solid var(--border);
+  border-top-color: var(--accent);     /* low-luminance accent, not white */
+  animation: spin 0.9s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+@media (prefers-reduced-motion: reduce) { .spinner { animation: none; } }
+
+/* ============================================================
+   MODAL — never flashes bright; backdrop is dim, not blackout-then-white
+   ============================================================ */
+.backdrop {
+  position: fixed; inset: 0; z-index: 60;
+  background: rgba(0,0,0,0.66);          /* dim void, no bright wash */
+  display: none; align-items: center; justify-content: center; padding: 24px;
+}
+.backdrop.open { display: flex; }
+.modal {
+  width: min(440px, 100%);
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: 12px; padding: 24px;
+}
+.modal h3 { margin-bottom: 8px; }
+.modal .btn-row { margin-top: 20px; justify-content: flex-end; }
+
+/* ============================================================
+   INLINE SVG GAUGE/COMPASS — tinted to currentColor
+   ============================================================ */
+:root[data-night] svg:not([data-keep-color]) { color: var(--text-primary); fill: currentColor; }
+.gauge { color: var(--text-primary); }
+.gauge .track { stroke: var(--border); }
+.gauge .fill  { stroke: var(--accent); }
+.gauge .tick  { stroke: var(--text-muted); }
+.gauge .needle { stroke: var(--text-primary); }
+
+/* ============================================================
+   UNCONTROLLED SURFACE — gate bright content behind a dim cover
+   ============================================================ */
+.surface-gate { position: relative; border: 1px solid var(--border); border-radius: 10px; overflow: hidden; min-height: 200px; background: var(--bg-base); }
+.surface-content { display: none; }
+.surface-gate.revealed .surface-content { display: block; }
+/* The placeholder "bright" payload — a full-spectrum image/map/iframe would
+   live here. Kept gated so it cannot emit one bright frame on load. */
+.surface-content .fake-bright {
+  height: 200px;
+  background:
+    repeating-linear-gradient(45deg, #2a2a30 0 14px, #34343c 14px 28px);
+  display: flex; align-items: center; justify-content: center;
+  color: #b8b8c0; font-weight: 600;
+}
+.surface-cover {
+  position: absolute; inset: 0;
+  background: var(--bg-surface);
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: 14px; text-align: center; padding: 24px;
+}
+.surface-gate.revealed .surface-cover { display: none; }
+.surface-cover .warn-icon { color: var(--warn); }
+.surface-cover .warn-icon svg { width: 28px; height: 28px; }
+
+footer {
+  margin-top: 72px; border-top: 1px solid var(--border);
+  padding-top: 24px; color: var(--text-secondary); font-size: 0.95em;
+}
+.ritual {
+  border: 1px solid var(--crit);
+  border-radius: 10px; padding: 18px 20px; background: var(--bg-surface);
+}
+.ritual h3 { color: var(--crit); }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <!-- ================= STICKY CONTROLS ================= -->
+  <div class="controls" role="region" aria-label="Theme controls">
+    <div class="group">
+      <span class="label" style="margin:0">Tier</span>
+      <div class="tier-btns" role="group" aria-label="Night tier">
+        <button class="tier-btn" data-set-tier="A" aria-pressed="false">A · Comfortable</button>
+        <button class="tier-btn" data-set-tier="B" aria-pressed="true">B · Red/Amber Ops</button>
+        <button class="tier-btn" data-set-tier="C" aria-pressed="false">C · Deep-Red Scotopic</button>
+      </div>
+    </div>
+    <div class="group">
+      <label class="label" for="bright" style="margin:0">Brightness</label>
+      <input id="bright" type="range" min="20" max="100" value="100" step="1" style="width:160px" aria-describedby="brightval">
+      <span class="bright-val metric" id="brightval">100%</span>
+    </div>
+  </div>
+
+  <div class="wrap">
+
+    <header>
+      <h1>Night-Vision Design System</h1>
+      <p class="lead">A reference gallery for interfaces used in darkness — bridge, cockpit, control room, observatory. Luminance is the master lever, not hue. Currently showing <strong id="tier-name">Tier B · Red/Amber Operations</strong>.</p>
+      <div class="note" id="tier-desc">
+        <strong>Tier B — Red/amber operations.</strong> The operator glances between the screen and a dim physical environment. Warm near-black background, red/amber palette. Amber is the brightest non-alert hue and is used sparingly. Saturated red is reserved for alarms.
+      </div>
+    </header>
+
+    <!-- ================= SWATCHES ================= -->
+    <section>
+      <div class="section-head"><h2>Tokens for the active tier</h2></div>
+      <p class="secondary">Hierarchy is built by <strong>darkening backgrounds</strong>, not brightening foregrounds. The brightest pixel on screen is capped. Every value is deliberately dim.</p>
+      <div class="swatches" id="swatches"></div>
+      <div class="note">
+        <strong>Why no pure <code>#FFF</code> and no pure <code>#000</code> on active surfaces?</strong>
+        White text blooms (halation) and still emits blue-green that night-adapted rods and the melanopic system both see. Pure black on active text/surfaces causes smear and black-crush and makes any bright element pop harder. Pure black is fine only for dead space and unused regions — this page sits on near-black <code id="bgbase-note"></code>.
+      </div>
+    </section>
+
+    <!-- ================= TYPOGRAPHY ================= -->
+    <section>
+      <div class="section-head"><h2>Typography &amp; telemetry</h2></div>
+      <div class="grid cols-2">
+        <div class="card">
+          <span class="label">Scale</span>
+          <h1 style="margin:8px 0">Heading one</h1>
+          <h2 style="margin:0 0 8px">Heading two</h2>
+          <h3 style="margin:0 0 8px">Heading three</h3>
+          <p>Body copy is set at weight 500 minimum because thin strokes vanish and shimmer at low luminance. Line-height is slightly increased and letter-spacing nudged open for legibility at reduced contrast.</p>
+          <p class="secondary">Secondary text steps down by darkening, not by going grey-blue.</p>
+          <span class="label">Label / overline</span>
+        </div>
+        <div class="card">
+          <span class="label">Telemetry readout</span>
+          <div style="display:flex; gap:24px; flex-wrap:wrap; margin-top:12px">
+            <div>
+              <div class="muted" style="font-size:12px">SOG</div>
+              <div class="metric" style="font-size:40px" id="sog">06.4</div>
+            </div>
+            <div>
+              <div class="muted" style="font-size:12px">HDG</div>
+              <div class="metric" style="font-size:40px" id="hdg">213</div>
+            </div>
+            <div>
+              <div class="muted" style="font-size:12px">DEPTH</div>
+              <div class="metric" style="font-size:40px" id="dep">18.2</div>
+            </div>
+          </div>
+          <p class="secondary" style="margin-top:14px">Changing numbers use <code>tabular-nums</code> so digits don't jitter as they update.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================= BUTTONS ================= -->
+    <section>
+      <div class="section-head"><h2>Buttons &amp; states</h2></div>
+      <div class="card">
+        <div class="btn-row">
+          <button class="btn">Default</button>
+          <button class="btn" style="background:var(--bg-surface); border-color:var(--accent)">Hover (saturate)</button>
+          <button class="btn" style="filter:brightness(0.85)">Active (darken)</button>
+          <button class="btn btn-accent">Accent</button>
+          <button class="btn" disabled>Disabled</button>
+        </div>
+        <div class="note" style="margin-bottom:0">
+          <strong>States darken or saturate — never spike.</strong> Hover shifts toward the accent ring; active applies <code>brightness(0.85)</code>; focus shows an in-palette accent ring (Tab to a control to see it), never a system-blue ring. A luminance jump on press is exactly the flash that destroys 20–30 minutes of dark adaptation.
+        </div>
+      </div>
+    </section>
+
+    <!-- ================= FORM CONTROLS ================= -->
+    <section>
+      <div class="section-head"><h2>Form controls</h2></div>
+      <div class="grid cols-2">
+        <div class="card grid" style="gap:16px">
+          <div class="field">
+            <label class="label" for="t1">Waypoint name</label>
+            <input id="t1" type="text" placeholder="e.g. North Channel buoy">
+          </div>
+          <div class="field">
+            <label class="label" for="s1">Chart layer</label>
+            <select id="s1">
+              <option>Vector — minimal</option>
+              <option>Vector — full</option>
+              <option>Raster (gated)</option>
+            </select>
+          </div>
+          <div class="field">
+            <label class="label" for="r1">Range scale</label>
+            <input id="r1" type="range" min="0" max="100" value="40">
+          </div>
+        </div>
+        <div class="card grid" style="gap:14px">
+          <span class="label">Toggles</span>
+          <div class="check-row"><input type="checkbox" id="c1" checked><label for="c1">AIS targets</label></div>
+          <div class="check-row"><input type="checkbox" id="c2"><label for="c2">Depth contours</label></div>
+          <div class="check-row"><input type="radio" name="g" id="rb1" checked><label for="rb1">Heading-up</label></div>
+          <div class="check-row"><input type="radio" name="g" id="rb2"><label for="rb2">North-up</label></div>
+          <div class="note" style="margin:6px 0 0">
+            <strong>Taming OS controls.</strong> Native check/radio/range default to bright system chrome (often blue). We set <code>color-scheme:dark</code> and <code>accent-color</code> to the tier accent so no control glares white or blue.
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================= DATA CARD + METRICS GRID ================= -->
+    <section>
+      <div class="section-head"><h2>Panels &amp; glanceable metrics</h2></div>
+      <div class="grid cols-4">
+        <div class="card metric-tile">
+          <div class="label">Speed</div>
+          <div class="value">6.4<span class="unit">kn</span></div>
+          <div class="delta secondary metric">+0.3 kn</div>
+        </div>
+        <div class="card metric-tile">
+          <div class="label">Wind app.</div>
+          <div class="value">14<span class="unit">kn</span></div>
+          <div class="delta secondary metric">042°</div>
+        </div>
+        <div class="card metric-tile">
+          <div class="label">Battery</div>
+          <div class="value">78<span class="unit">%</span></div>
+          <div class="delta secondary metric">−1.2 %/h</div>
+        </div>
+        <div class="card metric-tile">
+          <div class="label">ETA</div>
+          <div class="value metric">04:12</div>
+          <div class="delta secondary">to waypoint</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================= DATA TABLE ================= -->
+    <section>
+      <div class="section-head"><h2>Data table</h2></div>
+      <div class="card" style="padding:0; overflow:hidden">
+        <table class="data">
+          <thead>
+            <tr><th>Waypoint</th><th>Bearing</th><th class="num">Dist (nm)</th><th class="num">ETA</th><th>Status</th></tr>
+          </thead>
+          <tbody id="tbody">
+            <tr><td>North Channel</td><td>213°</td><td class="num">4.20</td><td class="num">00:38</td><td><span class="pill ok"><span class="ico-ok"></span><span class="txt">On track</span></span></td></tr>
+            <tr><td>Mid Sound</td><td>198°</td><td class="num">12.85</td><td class="num">02:01</td><td><span class="pill warn"><span class="ico-warn"></span><span class="txt">Shoaling</span></span></td></tr>
+            <tr><td>Harbour Mouth</td><td>176°</td><td class="num">21.40</td><td class="num">04:12</td><td><span class="pill crit"><span class="ico-crit"></span><span class="txt">Traffic</span></span></td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="note">Row hover darkens toward the raised layer — there is no bright highlight band. Numeric columns are right-aligned with tabular figures.</div>
+    </section>
+
+    <!-- ================= STATUS PILLS ================= -->
+    <section>
+      <div class="section-head"><h2>Status — icon + color, never color alone</h2></div>
+      <div class="card">
+        <div class="btn-row">
+          <span class="pill ok"><span class="ico-ok"></span><span class="txt">OK · Nominal</span></span>
+          <span class="pill warn"><span class="ico-warn"></span><span class="txt">Warning · Check depth</span></span>
+          <span class="pill crit"><span class="ico-crit"></span><span class="txt">Critical · Collision risk</span></span>
+        </div>
+        <div class="note" style="margin-bottom:0">
+          Night palettes compress the usable hue range and green sits near the rods' peak (it glares), so status is always carried by an <strong>icon/shape plus</strong> the hue — never hue alone. In <strong>Tier C</strong> there is no green or amber at all: status reads by icon + luminance, with saturated red reserved for alarms.
+        </div>
+      </div>
+    </section>
+
+    <!-- ================= ALERTS ================= -->
+    <section>
+      <div class="section-head"><h2>Alerts — dim-pulse, never flash</h2></div>
+      <div class="grid" style="gap:12px">
+        <div class="alert">
+          <span class="ico-info"></span>
+          <div><div class="alert-title" style="font-weight:600">Information</div><div class="secondary" style="font-size:0.92em">Tide turns in 24 minutes.</div></div>
+        </div>
+        <div class="alert alert--warn">
+          <span class="ico-warn-lg"></span>
+          <div><div class="alert-title" style="font-weight:600; color:var(--warn)">Warning</div><div class="secondary" style="font-size:0.92em">Depth below 5 m under keel.</div></div>
+        </div>
+        <div class="alert alert--crit" role="alert">
+          <span class="ico-crit-lg"></span>
+          <div><div class="alert-title" style="font-weight:600">Critical — CPA &lt; 0.2 nm</div><div class="secondary" style="font-size:0.92em">This banner dim-pulses via opacity, not a brightness flash. It freezes under <code>prefers-reduced-motion</code>.</div></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================= LOADING ================= -->
+    <section>
+      <div class="section-head"><h2>Loading &amp; empty states</h2></div>
+      <div class="grid cols-2">
+        <div class="card grid" style="gap:10px">
+          <span class="label">Skeleton</span>
+          <div class="skel" style="width:60%"></div>
+          <div class="skel" style="width:90%"></div>
+          <div class="skel tall"></div>
+          <p class="secondary" style="font-size:0.9em; margin:6px 0 0">Sweep is a dim border-tone gradient over the raised layer — no white shimmer.</p>
+        </div>
+        <div class="card" style="display:flex; align-items:center; gap:16px">
+          <div class="spinner" role="status" aria-label="Loading"></div>
+          <div><div style="font-weight:600">Fetching telemetry…</div><div class="secondary" style="font-size:0.9em">In-palette spinner; the arc is the dim accent, never white.</div></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================= MODAL ================= -->
+    <section>
+      <div class="section-head"><h2>Modal / dialog</h2></div>
+      <div class="card">
+        <button class="btn btn-accent" id="open-modal">Open confirmation dialog</button>
+        <div class="note" style="margin-bottom:0">Backdrop is a dim translucent void, not a blackout that snaps to a bright panel. The dialog uses the same surface tokens as everything else.</div>
+      </div>
+    </section>
+
+    <!-- ================= SVG GAUGE ================= -->
+    <section>
+      <div class="section-head"><h2>Inline SVG — tinted to text color</h2></div>
+      <div class="grid cols-2">
+        <div class="card" style="display:flex; gap:20px; align-items:center">
+          <!-- Compass/gauge; strokes use tier tokens, no baked-in colour -->
+          <svg class="gauge" width="120" height="120" viewBox="0 0 120 120" role="img" aria-label="Heading 213 degrees">
+            <circle cx="60" cy="60" r="52" fill="none" class="track" stroke-width="6"/>
+            <circle cx="60" cy="60" r="52" fill="none" class="fill" stroke-width="6"
+                    stroke-dasharray="327" stroke-dashoffset="98" stroke-linecap="round"
+                    transform="rotate(-90 60 60)"/>
+            <line x1="60" y1="14" x2="60" y2="24" class="tick" stroke-width="2"/>
+            <line x1="60" y1="96" x2="60" y2="106" class="tick" stroke-width="2"/>
+            <line x1="14" y1="60" x2="24" y2="60" class="tick" stroke-width="2"/>
+            <line x1="96" y1="60" x2="106" y2="60" class="tick" stroke-width="2"/>
+            <line x1="60" y1="60" x2="92" y2="42" class="needle" stroke-width="3" stroke-linecap="round"/>
+            <text x="60" y="66" text-anchor="middle" font-size="20" font-weight="600" fill="currentColor" class="metric">213</text>
+          </svg>
+          <div>
+            <span class="label">Heading</span>
+            <p class="secondary" style="margin:6px 0 0">Stray SVG assets are auto-tinted via <code>svg:not([data-keep-color]) { fill: currentColor }</code> so an imported icon can't ship a bright or blue fill.</p>
+          </div>
+        </div>
+        <div class="card">
+          <span class="label">Accessibility / contrast stance</span>
+          <p style="margin-top:8px">Text is kept large and heavy so it stays legible at lower contrast (WCAG relaxes ratios for large/bold text). Where key data needs more contrast we <strong>darken the background</strong> rather than push the foreground past the tier's brightness cap.</p>
+          <p class="secondary" style="margin-bottom:0">Tiers A and B still meet normal dark-UI contrast. Contrast deviations are acceptable only under genuine Tier C scotopic constraints, documented and shipped alongside an accessible day mode via <code>prefers-color-scheme</code>.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================= UNCONTROLLED SURFACE GATE ================= -->
+    <section>
+      <div class="section-head"><h2>Gating an uncontrolled bright surface</h2></div>
+      <div class="surface-gate" id="gate">
+        <div class="surface-content">
+          <div class="fake-bright">[ full-spectrum image / map tile / iframe ]</div>
+        </div>
+        <div class="surface-cover">
+          <span class="warn-icon ico-eye"></span>
+          <div style="font-weight:600">Bright content hidden</div>
+          <p class="secondary" style="max-width:40ch; margin:0">An image, video, <code>&lt;canvas&gt;</code>, Leaflet map tile, or iframe can emit one full-spectrum white frame and wipe out your dark adaptation. It stays covered until you confirm.</p>
+          <button class="btn btn-accent" id="reveal">Reveal anyway</button>
+        </div>
+      </div>
+      <div class="note">Every uncontrolled surface — third-party images/video, canvas, map tiles, iframes, and OS default form controls — must be themed or gated. One white frame undoes 20–30 minutes of adaptation.</div>
+    </section>
+
+    <!-- ================= VERIFICATION RITUAL ================= -->
+    <footer>
+      <div class="ritual">
+        <h3>Final gate — the verification ritual</h3>
+        <p style="margin:8px 0 0">Code-level checks are necessary but not sufficient. The definitive test is human: <strong>view this page at minimum screen brightness in a fully dark room.</strong> Let your eyes adapt for a minute. Nothing should glow, bloom, or draw the eye except a real alert. If a white edge, blue ring, or bright panel jumps out, it is wrong — darken or re-hue it, do not ship it.</p>
+      </div>
+      <p style="margin-top:18px" class="muted">Standalone reference artifact · system fonts · no network · three tiers.</p>
+    </footer>
+
+  </div><!-- /wrap -->
+</div><!-- /page -->
+
+<!-- ================= MODAL MARKUP ================= -->
+<div class="backdrop" id="backdrop" role="dialog" aria-modal="true" aria-labelledby="m-title">
+  <div class="modal">
+    <h3 id="m-title">Discard route changes?</h3>
+    <p class="secondary" style="margin:0">Unsaved waypoint edits will be lost. This dialog appears without any bright flash.</p>
+    <div class="btn-row">
+      <button class="btn" id="m-cancel">Keep editing</button>
+      <button class="btn btn-accent" id="m-confirm">Discard</button>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ---- Inline status / alert icons (tinted by currentColor) ---- */
+const ICONS = {
+  ok:   '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>',
+  warn: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3 2 20h20L12 3z"/><line x1="12" y1="10" x2="12" y2="14"/><circle cx="12" cy="17.5" r="0.6" fill="currentColor"/></svg>',
+  crit: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><line x1="12" y1="7" x2="12" y2="13"/><circle cx="12" cy="16.5" r="0.6" fill="currentColor"/></svg>',
+  info: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><line x1="12" y1="11" x2="12" y2="16"/><circle cx="12" cy="8" r="0.7" fill="currentColor"/></svg>',
+  eye:  '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7z"/><circle cx="12" cy="12" r="3"/></svg>'
+};
+function paint(sel, key){ document.querySelectorAll(sel).forEach(el => el.innerHTML = ICONS[key]); }
+paint('.ico-ok','ok'); paint('.ico-warn','warn'); paint('.ico-crit','crit');
+paint('.ico-warn-lg','warn'); paint('.ico-crit-lg','crit'); paint('.ico-info','info');
+paint('.ico-eye','eye');
+
+/* ---- Tier descriptions ---- */
+const TIER = {
+  A: { name: 'Tier A · Comfortable Dark',
+       desc: '<strong>Tier A — Comfortable dark.</strong> Indoor/ambient night use; the goal is cutting glare, blue light, melatonin suppression, and eye strain. The operator is not navigating real darkness. Warm near-black surfaces, capped warm off-white text, muted color allowed (including dim green/amber) — but no blue accents.' },
+  B: { name: 'Tier B · Red/Amber Operations',
+       desc: '<strong>Tier B — Red/amber operations.</strong> The operator glances between the screen and a dim physical environment. Warm near-black background, red/amber palette. Amber is the brightest non-alert hue and is used sparingly. Saturated red is reserved for alarms.' },
+  C: { name: 'Tier C · Deep-Red Scotopic',
+       desc: '<strong>Tier C — True deep-red scotopic.</strong> Astronomy/observatory or anywhere rod adaptation is mission-critical. Deep red only — no amber, no green, no white. Maximum dimness; hierarchy by luminance alone; status by icon + luminance; saturated red reserved for alarms.' }
+};
+
+const root = document.documentElement;
+
+/* ---- Swatch builder reads the live computed tokens for the active tier ---- */
+const SWATCH_KEYS = [
+  ['--bg-base','bg-base'],['--bg-surface','bg-surface'],['--bg-raised','bg-raised'],['--border','border'],
+  ['--text-primary','text-primary'],['--text-secondary','text-secondary'],['--text-muted','text-muted'],
+  ['--accent','accent'],['--ok','ok'],['--warn','warn'],['--crit','crit']
+];
+function buildSwatches(){
+  const cs = getComputedStyle(root);
+  const host = document.getElementById('swatches');
+  host.innerHTML = SWATCH_KEYS.map(([varName, label]) => {
+    const hex = cs.getPropertyValue(varName).trim();
+    return `<div class="swatch"><div class="chip" style="background:${hex}"></div>`+
+           `<div class="meta"><div class="name">${label}</div><div class="hex mono">${hex.toUpperCase()}</div></div></div>`;
+  }).join('');
+  document.getElementById('bgbase-note').textContent = cs.getPropertyValue('--bg-base').trim().toUpperCase();
+}
+
+function setTier(t){
+  root.setAttribute('data-tier', t);
+  document.querySelectorAll('[data-set-tier]').forEach(b =>
+    b.setAttribute('aria-pressed', String(b.dataset.setTier === t)));
+  document.getElementById('tier-name').textContent = TIER[t].name;
+  document.getElementById('tier-desc').innerHTML = TIER[t].desc;
+  buildSwatches();
+}
+document.querySelectorAll('[data-set-tier]').forEach(b =>
+  b.addEventListener('click', () => setTier(b.dataset.setTier)));
+
+/* ---- Brightness slider wired to the root brightness filter ---- */
+const bright = document.getElementById('bright');
+const brightVal = document.getElementById('brightval');
+bright.addEventListener('input', () => {
+  const v = bright.value;
+  root.style.setProperty('--night-brightness', (v/100).toFixed(2));
+  brightVal.textContent = v + '%';
+});
+
+/* ---- Modal ---- */
+const backdrop = document.getElementById('backdrop');
+const closeModal = () => backdrop.classList.remove('open');
+document.getElementById('open-modal').addEventListener('click', () => backdrop.classList.add('open'));
+document.getElementById('m-cancel').addEventListener('click', closeModal);
+document.getElementById('m-confirm').addEventListener('click', closeModal);
+backdrop.addEventListener('click', e => { if (e.target === backdrop) closeModal(); });
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
+
+/* ---- Surface gate ---- */
+document.getElementById('reveal').addEventListener('click', () =>
+  document.getElementById('gate').classList.add('revealed'));
+
+/* ---- Live-ish telemetry to show tabular-nums in motion ---- */
+let base = { sog: 6.4, hdg: 213, dep: 18.2 };
+setInterval(() => {
+  base.sog = Math.max(0, base.sog + (Math.random()-0.5)*0.4);
+  base.hdg = (base.hdg + Math.round((Math.random()-0.5)*4) + 360) % 360;
+  base.dep = Math.max(2, base.dep + (Math.random()-0.5)*0.6);
+  document.getElementById('sog').textContent = base.sog.toFixed(1).padStart(4,'0');
+  document.getElementById('hdg').textContent = String(base.hdg).padStart(3,'0');
+  document.getElementById('dep').textContent = base.dep.toFixed(1);
+}, 1600);
+
+/* default tier B on load */
+setTier('B');
+</script>
+</body>
+</html>
