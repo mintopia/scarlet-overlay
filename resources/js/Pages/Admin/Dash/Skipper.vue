@@ -22,6 +22,7 @@
                     <CompassRose
                         :heading="val('heading_true') ?? 0"
                         :cog="val('cog')"
+                        :twa="compassTwa"
                         :awa="val('wind_angle_apparent')"
                         :size="252"
                     />
@@ -359,6 +360,7 @@ import AdminLayout from '@/Layouts/AdminLayout.vue';
 import CompassRose from '@/components/Admin/CompassRose.vue';
 import TrendChart from '@/components/Admin/TrendChart.vue';
 import { useScarletMetrics } from '@/composables/useScarletMetrics.js';
+import { pointOfSail, trueWindAngleSigned } from '@/lib/pointOfSail';
 
 const props = defineProps({
     contracts: { type: Object, default: () => ({}) },
@@ -443,28 +445,15 @@ const passageLabel = computed(() => {
     return '';
 });
 
-// ── Point of sail (derived from AWA — valid derivation from a real sensor value) ──
-const pointOfSailText = computed(() => {
-    const awa = val('wind_angle_apparent');
-    if (awa == null) return '—';
-    const abs = awa > 180 ? 360 - awa : awa;
-    if (abs < 30) return 'In Irons';
-    if (abs < 55) return 'Close Hauled';
-    if (abs < 80) return 'Close Reach';
-    if (abs < 105) return 'Beam Reach';
-    if (abs < 150) return 'Broad Reach';
-    if (abs < 170) return 'Running';
-    return 'Dead Run';
-});
-
-const pointOfSailColor = computed(() => {
-    const t = pointOfSailText.value;
-    if (t === 'In Irons') return 'var(--color-scarlet)';
-    if (t === 'Close Hauled' || t === 'Close Reach') return 'var(--color-teal)';
-    if (t === 'Beam Reach' || t === 'Broad Reach') return 'var(--color-amber)';
-    if (t === 'Running' || t === 'Dead Run') return 'var(--color-green)';
-    return 'var(--color-text-dim)';
-});
+// ── Point of sail (canonical: true wind, apparent fallback — shared module) ──
+const compassTwa = computed(() => trueWindAngleSigned(val('wind_direction_true'), val('heading_true')));
+const pos = computed(() => pointOfSail({
+    windDirectionTrue: val('wind_direction_true'),
+    headingTrue: val('heading_true'),
+    windAngleApparent: val('wind_angle_apparent'),
+}));
+const pointOfSailText = computed(() => pos.value.text);
+const pointOfSailColor = computed(() => pos.value.color);
 
 // ── GPS position display ──────────────────────────────────────────────────────
 const coordDisplay = computed(() => {

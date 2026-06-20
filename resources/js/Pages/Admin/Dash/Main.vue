@@ -91,8 +91,8 @@
                         <CompassRose
                             :heading="val('heading_true') ?? 0"
                             :cog="val('cog')"
-                            :awa="null"
-                            :twa="twaFromWx"
+                            :awa="val('wind_angle_apparent')"
+                            :twa="compassTwa"
                             :size="196"
                         />
                         <div class="mn-rail__pos">
@@ -263,6 +263,7 @@ import AdminLayout from '@/Layouts/AdminLayout.vue';
 import CompassRose from '@/components/Admin/CompassRose.vue';
 import TrendChart from '@/components/Admin/TrendChart.vue';
 import { useScarletMetrics } from '@/composables/useScarletMetrics.js';
+import { pointOfSail, trueWindAngleSigned } from '@/lib/pointOfSail';
 
 const props = defineProps({
     contracts: { type: Object, default: () => ({}) },
@@ -396,36 +397,15 @@ const tideFairFoul = computed(() => {
     return aligned ? 'fair tide ▲' : 'foul tide ▼';
 });
 
-// ── Point of sail (derived from wx_wind_dir vs heading_true — real values) ────
-const twaFromWx = computed(() => {
-    const dir = val('wx_wind_dir');
-    const hdg = val('heading_true');
-    if (dir == null || hdg == null) return null;
-    const abs = ((dir - hdg) + 360) % 360;
-    return abs > 180 ? abs - 360 : abs;
-});
-
-const pointOfSailText = computed(() => {
-    const twa = twaFromWx.value;
-    if (twa == null) return '—';
-    const abs = Math.abs(twa);
-    if (abs < 30) return 'In Irons';
-    if (abs < 55) return 'Close Hauled';
-    if (abs < 80) return 'Close Reach';
-    if (abs < 105) return 'Beam Reach';
-    if (abs < 150) return 'Broad Reach';
-    if (abs < 170) return 'Running';
-    return 'Dead Run';
-});
-
-const pointOfSailColor = computed(() => {
-    const t = pointOfSailText.value;
-    if (t === 'In Irons') return 'var(--color-scarlet)';
-    if (t === 'Close Hauled' || t === 'Close Reach') return 'var(--color-teal)';
-    if (t === 'Beam Reach' || t === 'Broad Reach') return 'var(--color-amber)';
-    if (t === 'Running' || t === 'Dead Run') return 'var(--color-green)';
-    return 'var(--color-text-dim)';
-});
+// ── Point of sail (canonical: true wind, apparent fallback — shared module) ──
+const compassTwa = computed(() => trueWindAngleSigned(val('wind_direction_true'), val('heading_true')));
+const pos = computed(() => pointOfSail({
+    windDirectionTrue: val('wind_direction_true'),
+    headingTrue: val('heading_true'),
+    windAngleApparent: val('wind_angle_apparent'),
+}));
+const pointOfSailText = computed(() => pos.value.text);
+const pointOfSailColor = computed(() => pos.value.color);
 
 // ── Weather ───────────────────────────────────────────────────────────────────
 const wxTempDisplay = computed(() => {
