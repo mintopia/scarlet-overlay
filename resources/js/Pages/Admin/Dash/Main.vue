@@ -624,6 +624,7 @@ const publisherOnline = computed(() =>
     height: 100%;
     border-radius: 16px;
     background: transparent;
+    z-index: 0;
 }
 
 /* ── Corner clusters ────────────────────────────────────────────────────────── */
