@@ -25,7 +25,9 @@ class MetricsInventoryCommand extends Command
         $prefix = (string) $this->option('prefix');
         $date = now()->format('Y-m-d');
 
-        $allNames = $prometheus->labelValues('__name__');
+        $end = now()->timestamp;
+        $start = $end - (int) config('scarlet.metrics.inventory_lookback_days', 30) * 86400;
+        $allNames = $prometheus->labelValues('__name__', $start, $end);
         $names = array_values(array_filter($allNames, fn (string $n) => str_starts_with($n, $prefix)));
         sort($names);
 

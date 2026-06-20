@@ -258,6 +258,7 @@ import LevelBar from '@/components/Admin/LevelBar.vue';
 import Sparkline from '@/components/Admin/Sparkline.vue';
 import { fmt, fmtDuration, knotsToBeaufort } from '@/composables/useFormatters.js';
 import { useScarletMetrics } from '@/composables/useScarletMetrics.js';
+import { pointOfSail } from '@/lib/pointOfSail';
 import { useMapLayers } from '@/composables/useMapLayers.js';
 import { useSpringValue, useAngleSpring } from '@/composables/useSpringValue.js';
 import MapLayerControl from '@/components/MapLayerControl.vue';
@@ -370,29 +371,13 @@ const twaOffBow = computed(() => {
 });
 
 
-const pointOfSailText = computed(() => {
-    const twa = liveBoat.value?.wind_direction_true;
-    const hdg = liveBoat.value?.heading;
-    if (twa == null || hdg == null) return '';
-    const rel = ((twa - hdg + 360) % 360);
-    const abs = rel > 180 ? 360 - rel : rel;
-    if (abs < 45) return 'In Irons';
-    if (abs < 60) return 'Close Hauled';
-    if (abs < 80) return 'Close Reach';
-    if (abs < 100) return 'Beam Reach';
-    if (abs < 150) return 'Broad Reach';
-    if (abs < 170) return 'Running';
-    return 'Dead Run';
-});
-
-const pointOfSailColor = computed(() => {
-    const t = pointOfSailText.value;
-    if (t === 'In Irons') return 'var(--color-scarlet)';
-    if (t === 'Close Hauled' || t === 'Close Reach') return 'var(--color-teal)';
-    if (t === 'Beam Reach' || t === 'Broad Reach') return 'var(--color-amber)';
-    if (t === 'Running' || t === 'Dead Run') return 'var(--color-green)';
-    return 'var(--color-text-dim)';
-});
+const pos = computed(() => pointOfSail({
+    windDirectionTrue: liveBoat.value?.wind_direction_true,
+    headingTrue: liveBoat.value?.heading,
+    windAngleApparent: liveBoat.value?.wind_angle_apparent,
+}));
+const pointOfSailText = computed(() => (pos.value.source ? pos.value.text : ''));
+const pointOfSailColor = computed(() => pos.value.color);
 
 // Battery / tank / power computeds
 const batteryPct = computed(() => {

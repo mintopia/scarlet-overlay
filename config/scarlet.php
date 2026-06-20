@@ -27,6 +27,11 @@ return [
         'prometheus_url' => env('PROMETHEUS_URL', 'http://victoriametrics:8428'),
         'push_interval' => (int) env('METRICS_PUSH_INTERVAL', 15),
 
+        // How far back the series inventory looks when deciding whether a
+        // configured source has "drifted" (genuinely absent) vs is merely
+        // offline/stale. Series seen within this window count as present.
+        'inventory_lookback_days' => (int) env('METRICS_INVENTORY_LOOKBACK_DAYS', 30),
+
         'battery' => [
             'min_voltage' => (float) env('BATTERY_MIN_VOLTAGE', 10.0),
             'max_voltage' => (float) env('BATTERY_MAX_VOLTAGE', 14.4),

@@ -24,15 +24,22 @@ class CanonicalCatalogController extends Controller
 
     public function inventory(PrometheusService $prometheus)
     {
+        // "Drift" means a configured source series is genuinely absent from VM,
+        // not that the boat is offline right now. Query over a wide retention
+        // window so a merely stale series (systems offline) is still reported as
+        // present and is not mislabeled as drift.
+        $end = now()->timestamp;
+        $start = $end - (int) config('scarlet.metrics.inventory_lookback_days', 30) * 86400;
+
         $names = array_values(array_filter(
-            $prometheus->labelValues('__name__'),
+            $prometheus->labelValues('__name__', $start, $end),
             fn (string $n): bool => str_starts_with($n, 'scarlet_'),
         ));
         sort($names);
 
         return response()->json([
             'names' => $names,
-            'topics' => $prometheus->labelValues('topic'),
+            'topics' => $prometheus->labelValues('topic', $start, $end),
         ]);
     }
 
