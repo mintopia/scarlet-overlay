@@ -338,6 +338,7 @@ const overlayStatus = computed(() => {
 });
 
 // ── droppedMarkers: cumulative counter → per-bucket deltas ───────────────────
+// INVARIANT: droppedHistory must stay index-aligned with bitrateHistory (same buckets) for markers to land at the right time.
 const droppedMarkers = computed(() => {
     const hist = props.droppedHistory;
     if (!hist || hist.length < 2) return [];

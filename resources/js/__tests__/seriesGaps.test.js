@@ -74,4 +74,17 @@ describe('seriesGaps', () => {
     it('exposes the default gap factor', () => {
         expect(DEFAULT_GAP_FACTOR).toBe(2.5);
     });
+
+    it('sorts unsorted input so xs is strictly ascending', () => {
+        const r = seriesGaps([{ t: 120, v: 3 }, { t: 100, v: 1 }, { t: 110, v: 2 }], 120, { stepSeconds: 10, staleAfterSeconds: 999 });
+        for (let i = 1; i < r.xs.length; i++) expect(r.xs[i]).toBeGreaterThan(r.xs[i - 1]);
+        expect(r.live.slice(0, 3)).toEqual([1, 2, 3]);
+    });
+
+    it('dedupes duplicate timestamps keeping the last value', () => {
+        const r = seriesGaps([{ t: 100, v: 1 }, { t: 100, v: 9 }, { t: 110, v: 2 }], 110, { stepSeconds: 10, staleAfterSeconds: 999 });
+        const i = r.xs.indexOf(100);
+        expect(r.live[i]).toBe(9);
+        for (let j = 1; j < r.xs.length; j++) expect(r.xs[j]).toBeGreaterThan(r.xs[j - 1]);
+    });
 });

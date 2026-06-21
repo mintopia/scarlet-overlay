@@ -38,9 +38,17 @@ function median(nums) {
  *   trailingStale:boolean, ageSeconds:number|null, lastValueTimestamp:number|null}}
  */
 export function seriesGaps(rawPoints, nowSeconds, opts = {}) {
-    const pts = (rawPoints ?? [])
+    let pts = (rawPoints ?? [])
         .map((item, i) => normalisePoint(item, i))
         .filter((p) => p.v != null && Number.isFinite(p.t));
+
+    pts.sort((a, b) => a.t - b.t);
+    const dedup = [];
+    for (const p of pts) {
+        if (dedup.length && dedup[dedup.length - 1].t === p.t) dedup[dedup.length - 1] = p;
+        else dedup.push(p);
+    }
+    pts = dedup;
 
     const gapFactor = opts.gapFactor ?? DEFAULT_GAP_FACTOR;
 
