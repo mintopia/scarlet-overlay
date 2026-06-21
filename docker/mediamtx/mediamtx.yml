@@ -59,7 +59,15 @@ paths:
     # republishes to `live_web`, which is what browsers consume. A keyframe every
     # 2s keeps HLS segments aligned. veryfast keeps CPU reasonable; raise the
     # preset (or add hardware accel) if the host has headroom.
-    runOnReady: ffmpeg -rtsp_transport tcp -i rtsp://localhost:8554/$MTX_PATH -c:v libx264 -preset veryfast -tune zerolatency -pix_fmt yuv420p -force_key_frames expr:gte(t,n_forced*2) -b:v 6000k -maxrate 6000k -bufsize 12000k -c:a aac -b:a 128k -ar 48000 -f rtsp rtsp://localhost:8554/live_web
+    #
+    # NOTE: deliberately NOT using -tune zerolatency. The HLS window is already
+    # ~6-10s latent (hlsSegmentCount), so ultra-low encoder latency buys nothing,
+    # and its sliced-threads + zero-lookahead make x264 brittle to the jitter of
+    # the RTSP loopback (stutter/dropped frames). Frame-threading + default
+    # lookahead matches what a smooth VLC transcode does. -thread_queue_size gives
+    # the loopback reader a buffer so a momentary encoder hiccup doesn't backpressure
+    # the SRT source into dropping frames.
+    runOnReady: ffmpeg -rtsp_transport tcp -thread_queue_size 1024 -i rtsp://localhost:8554/$MTX_PATH -c:v libx264 -preset veryfast -pix_fmt yuv420p -force_key_frames expr:gte(t,n_forced*2) -b:v 6000k -maxrate 6000k -bufsize 12000k -c:a aac -b:a 128k -ar 48000 -f rtsp rtsp://localhost:8554/live_web
     runOnReadyRestart: yes
 
   # Browser-facing H264/AAC stream, published by the transcode above.
