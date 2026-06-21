@@ -6,6 +6,7 @@
 import { ref, shallowRef, onMounted, onBeforeUnmount, watch, nextTick } from 'vue';
 import uPlot from 'uplot';
 import 'uplot/dist/uPlot.min.css';
+import { cssVar, resolveColor, paletteColors } from '@/lib/uplotTheme.js';
 
 const props = defineProps({
     // series: [{ key, label, unit, axis: 'left'|'right', color, data: [{t, value}] }]
@@ -17,24 +18,6 @@ const hostRef = ref(null);
 const chart = shallowRef(null);
 let resizeObserver = null;
 let themeObserver = null;
-
-function cssVar(name, fallback) {
-    const v = getComputedStyle(document.documentElement).getPropertyValue(name).trim();
-    return v || fallback;
-}
-
-/**
- * Resolve a caller-supplied color to a concrete value before it reaches the
- * canvas. uPlot draws to <canvas>, which cannot resolve CSS var() tokens, so a
- * series color passed as `var(--color-x)` must be computed first.
- */
-function resolveColor(c) {
-    if (typeof c === 'string') {
-        const m = c.match(/^var\((--[\w-]+)\)$/);
-        if (m) { return cssVar(m[1], c); }
-    }
-    return c;
-}
 
 /** Merge all series onto one shared, sorted timestamp axis. */
 function toAlignedData(series) {
@@ -56,13 +39,7 @@ function buildOptions() {
     const axisColor = cssVar('--color-text-dim', '#888');
     const gridColor = cssVar('--color-border-light', '#eee');
     const hasRight = props.series.some((s) => s.axis === 'right');
-    const palette = [
-        cssVar('--color-scarlet', '#c0392b'),
-        cssVar('--color-teal', '#1abc9c'),
-        cssVar('--color-blue', '#2980b9'),
-        cssVar('--color-amber', '#f39c12'),
-        cssVar('--color-green', '#27ae60'),
-    ];
+    const palette = paletteColors();
 
     const axes = [
         { stroke: axisColor, grid: { stroke: gridColor, width: 1 }, ticks: { stroke: gridColor } },

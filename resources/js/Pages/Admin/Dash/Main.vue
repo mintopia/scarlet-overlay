@@ -125,7 +125,7 @@
                             :href="route('admin.data.show', { metric: 'speed_stw' })"
                             class="metric-link metric-link--block"
                         >
-                            <TrendChart
+                            <MiniChart
                                 :data="speedHistory"
                                 variant="area"
                                 color="var(--color-teal)"
@@ -154,7 +154,7 @@
                             :href="route('admin.data.show', { metric: 'depth_below_surface' })"
                             class="metric-link metric-link--block"
                         >
-                            <TrendChart
+                            <MiniChart
                                 :data="depthHistory"
                                 variant="water"
                                 color="var(--color-blue)"
@@ -183,7 +183,7 @@
                             </span>
                         </span>
                     </div>
-                    <TrendChart
+                    <MiniChart
                         v-if="housePowerHistory.length > 0"
                         :data="housePowerHistory"
                         variant="bipolar"
@@ -211,7 +211,7 @@
                         :href="route('admin.data.show', { metric: 'fuel_level' })"
                         class="metric-link metric-link--block"
                     >
-                        <TrendChart
+                        <MiniChart
                             :data="fuelHistory"
                             variant="area"
                             color="var(--color-amber)"
@@ -238,7 +238,7 @@
                         :href="route('admin.data.show', { metric: 'water_fresh_level' })"
                         class="metric-link metric-link--block"
                     >
-                        <TrendChart
+                        <MiniChart
                             :data="waterHistory"
                             variant="area"
                             color="var(--color-blue)"
@@ -261,7 +261,7 @@ import { ref, computed, onMounted, onUnmounted } from 'vue';
 import { Head, Link } from '@inertiajs/vue3';
 import AdminLayout from '@/Layouts/AdminLayout.vue';
 import CompassRose from '@/components/Admin/CompassRose.vue';
-import TrendChart from '@/components/Admin/TrendChart.vue';
+import MiniChart from '@/components/Admin/MiniChart.vue';
 import { useScarletMetrics } from '@/composables/useScarletMetrics.js';
 import { pointOfSail, trueWindAngleSigned } from '@/lib/pointOfSail';
 

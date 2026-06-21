@@ -97,7 +97,7 @@
             <!-- Hero foot: bitrate trend + dropped-frame markers -->
             <div class="sc-herofoot">
                 <div class="sc-bgraph">
-                    <TrendChart
+                    <MiniChart
                         v-if="bitrateHistory.length > 0"
                         :data="bitrateHistory"
                         variant="line"
@@ -105,7 +105,6 @@
                         color="var(--color-green)"
                         marker-color="var(--color-scarlet)"
                         :height="130"
-                        :width="900"
                     />
                     <div v-else class="sc-bgraph-empty">No Data</div>
                 </div>
@@ -215,7 +214,7 @@
 <script setup>
 import { ref, computed, watch, nextTick } from 'vue';
 import { router } from '@inertiajs/vue3';
-import TrendChart from '@/components/Admin/TrendChart.vue';
+import MiniChart from '@/components/Admin/MiniChart.vue';
 
 const props = defineProps({
     contracts: { type: Object, default: () => ({}) },
@@ -339,6 +338,7 @@ const overlayStatus = computed(() => {
 });
 
 // ── droppedMarkers: cumulative counter → per-bucket deltas ───────────────────
+// INVARIANT: droppedHistory must stay index-aligned with bitrateHistory (same buckets) for markers to land at the right time.
 const droppedMarkers = computed(() => {
     const hist = props.droppedHistory;
     if (!hist || hist.length < 2) return [];

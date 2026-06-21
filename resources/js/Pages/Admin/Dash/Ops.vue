@@ -44,13 +44,12 @@
                                     :href="route('admin.data.show', { metric: 'house_battery_power' })"
                                     class="metric-link metric-link--block"
                                 >
-                                    <TrendChart
+                                    <MiniChart
                                         :data="housePowerHistory"
                                         variant="bipolar"
                                         color-positive="var(--color-green)"
                                         color-negative="var(--color-scarlet)"
                                         :height="104"
-                                        :width="300"
                                     />
                                 </Link>
                                 <div v-else class="ops-chart__empty">No Data</div>
@@ -86,13 +85,12 @@
                                     :href="route('admin.data.show', { metric: 'ecoflow_net_watts' })"
                                     class="metric-link metric-link--block"
                                 >
-                                    <TrendChart
+                                    <MiniChart
                                         :data="ecoflowPowerHistory"
                                         variant="bipolar"
                                         color-positive="var(--color-green)"
                                         color-negative="var(--color-scarlet)"
                                         :height="104"
-                                        :width="300"
                                     />
                                 </Link>
                                 <div v-else class="ops-chart__empty">No Data</div>
@@ -123,7 +121,7 @@
                                     :href="route('admin.data.show', { metric: 'fuel_level' })"
                                     class="metric-link metric-link--block"
                                 >
-                                    <TrendChart
+                                    <MiniChart
                                         :data="fuelHistory"
                                         variant="area"
                                         color="var(--color-amber)"
@@ -160,7 +158,7 @@
                                     :href="route('admin.data.show', { metric: 'water_fresh_level' })"
                                     class="metric-link metric-link--block"
                                 >
-                                    <TrendChart
+                                    <MiniChart
                                         :data="waterHistory"
                                         variant="area"
                                         color="var(--color-blue)"
@@ -366,7 +364,7 @@
 import { ref, computed, onMounted, onUnmounted } from 'vue';
 import { Head, Link } from '@inertiajs/vue3';
 import AdminLayout from '@/Layouts/AdminLayout.vue';
-import TrendChart from '@/components/Admin/TrendChart.vue';
+import MiniChart from '@/components/Admin/MiniChart.vue';
 import TemperatureGauge from '@/components/Admin/TemperatureGauge.vue';
 import { useScarletMetrics } from '@/composables/useScarletMetrics.js';
 

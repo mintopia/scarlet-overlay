@@ -172,7 +172,7 @@
                         </span>
                     </div>
                     <div class="block">
-                        <Sparkline :data="powerData" color="var(--color-green)" :height="36" :fill="true" :showDot="true" :zeroLine="true" />
+                        <MiniChart :data="props.powerHistory ?? []" variant="area" color="var(--color-green)" :height="36" :zero-value="0" />
                     </div>
                 </div>
             </div>
@@ -255,7 +255,7 @@ import AdminLayout from '@/Layouts/AdminLayout.vue';
 import { useKonami } from '@/composables/useKonami.js';
 import CompassRose from '@/components/Admin/CompassRose.vue';
 import LevelBar from '@/components/Admin/LevelBar.vue';
-import Sparkline from '@/components/Admin/Sparkline.vue';
+import MiniChart from '@/components/Admin/MiniChart.vue';
 import { fmt, fmtDuration, knotsToBeaufort } from '@/composables/useFormatters.js';
 import { useScarletMetrics } from '@/composables/useScarletMetrics.js';
 import { pointOfSail } from '@/lib/pointOfSail';
@@ -390,8 +390,6 @@ const batteryPct = computed(() => {
 
 const fuelLevel = computed(() => liveBoat.value?.fuel_level ?? 0);
 const waterLevel = computed(() => liveBoat.value?.water_level ?? 0);
-const powerData = computed(() => (props.powerHistory ?? []).map(d => d?.value ?? d));
-
 // ── Coordinate formatting ─────────────────────────────────────────────────────
 function fmtCoord(lat, lon) {
     if (lat == null || lon == null) return '';

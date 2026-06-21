@@ -36,14 +36,13 @@
                             <span :class="housePowerClass">{{ housePowerDisplay }}</span>
                         </div>
                         <div class="power-chart">
-                            <TrendChart
+                            <MiniChart
                                 v-if="housePowerHistory.length > 0"
                                 :data="housePowerHistory"
                                 variant="bipolar"
                                 color-positive="var(--color-green)"
                                 color-negative="var(--color-scarlet)"
                                 :height="88"
-                                :width="300"
                             />
                             <div v-else class="power-chart-empty">No Data</div>
                         </div>
@@ -71,14 +70,13 @@
                             <span :class="ecoflowPowerClass">{{ ecoflowPowerDisplay }}</span>
                         </div>
                         <div class="power-chart">
-                            <TrendChart
+                            <MiniChart
                                 v-if="ecoflowPowerHistory.length > 0"
                                 :data="ecoflowPowerHistory"
                                 variant="bipolar"
                                 color-positive="var(--color-green)"
                                 color-negative="var(--color-scarlet)"
                                 :height="88"
-                                :width="300"
                             />
                             <div v-else class="power-chart-empty">No Data</div>
                         </div>
@@ -99,7 +97,7 @@ import { Head, Link } from '@inertiajs/vue3';
 import AdminLayout from '@/Layouts/AdminLayout.vue';
 import SignalChain from '@/components/Dash/SignalChain.vue';
 import TrackerPanel from '@/components/Dash/TrackerPanel.vue';
-import TrendChart from '@/components/Admin/TrendChart.vue';
+import MiniChart from '@/components/Admin/MiniChart.vue';
 import { useScarletMetrics } from '@/composables/useScarletMetrics.js';
 
 const props = defineProps({

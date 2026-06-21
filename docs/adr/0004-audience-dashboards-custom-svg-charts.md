@@ -4,7 +4,8 @@ Date: 2026-06-18
 
 ## Status
 
-Accepted
+Accepted. Partially superseded by [ADR 0009](0009-uplot-for-dashboard-mini-charts.md)
+for the dashboard trend charts (TrendChart/Sparkline → uPlot).
 
 ## Context
 
