@@ -48,6 +48,9 @@
                 <a href="/overlay/transparent" target="_blank" class="nav-external">
                     Overlay (Transparent) <span class="nav-arrow">↗</span>
                 </a>
+                <a href="/overlay/map" target="_blank" class="nav-external">
+                    Overlay (Map) <span class="nav-arrow">↗</span>
+                </a>
                 <a href="/dashboard" target="_blank" class="nav-external">
                     Public Dashboard <span class="nav-arrow">↗</span>
                 </a>

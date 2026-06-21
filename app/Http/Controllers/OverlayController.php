@@ -45,6 +45,27 @@ class OverlayController extends Controller
         ]);
     }
 
+    public function map(MetricsService $metrics)
+    {
+        Inertia::setRootView('overlay-app');
+
+        $journey = Journey::current();
+        $routeJourney = $journey
+            ?? Journey::planned()
+            ?? Journey::completed()->whereNotNull('route_waypoints')->orderByDesc('ended_at')->first();
+
+        return Inertia::render('Public/Overlay', [
+            'initialMetrics' => $metrics->getAllMetrics(),
+            'gpsTrack' => $metrics->getGpsTrack(),
+            'boatName' => BoatSetting::getValue('boat_name', config('scarlet.name')),
+            'passageFrom' => $journey?->from_port ?? '',
+            'passageTo' => $journey?->to_port ?? '',
+            'portName' => Journey::lastPort() ?? '',
+            'routeWaypoints' => $routeJourney?->route_waypoints ?? [],
+            'mapOnly' => true,
+        ]);
+    }
+
     public function camera(MetricsService $metrics)
     {
         Inertia::setRootView('overlay-app');

@@ -34,4 +34,18 @@ class OverlayControllerTest extends TestCase
             ->where('transparent', true)
         );
     }
+
+    public function test_map_overlay_renders_the_same_page_with_the_map_only_flag(): void
+    {
+        $response = $this->get('/overlay/map');
+
+        $response->assertStatus(200);
+        $response->assertInertia(fn ($page) => $page
+            ->component('Public/Overlay')
+            ->has('initialMetrics')
+            ->has('boatName')
+            ->has('gpsTrack')
+            ->where('mapOnly', true)
+        );
+    }
 }

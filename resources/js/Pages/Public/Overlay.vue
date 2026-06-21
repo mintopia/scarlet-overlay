@@ -21,6 +21,9 @@ const props = defineProps({
     // Transparent compositing variant: strips the video feed, maps and dark
     // background so the chrome can be layered over any source in OBS.
     transparent: { type: Boolean, default: false },
+    // Map-only variant: never connects the video; always shows the full-screen
+    // map + chrome (what the main overlay shows when the video is offline).
+    mapOnly: { type: Boolean, default: false },
 });
 
 const {
@@ -51,11 +54,11 @@ let mapFull = null;
 
 const overlayState = computed(() => {
     if (isOffline.value) return 'offline';
-    if (!props.transparent && videoActive.value) return 'video-live';
+    if (!props.transparent && !props.mapOnly && videoActive.value) return 'video-live';
     if (statusText.value === 'In Port') return 'port';
-    // In transparent mode there is no video to wait on, so reveal the chrome
-    // immediately rather than sitting in the hidden 'loading' state.
-    if (props.transparent || videoChecked.value) return 'no-video';
+    // Transparent and map-only variants have no video to wait on, so reveal the
+    // chrome immediately rather than sitting in the hidden 'loading' state.
+    if (props.transparent || props.mapOnly || videoChecked.value) return 'no-video';
     return 'loading';
 });
 
@@ -111,7 +114,10 @@ onMounted(() => {
     addMapTarget(mapPip, { autoCenter: true });
     addMapTarget(mapFull, { autoCenter: true });
 
-    connectVideo();
+    // Map-only variant is a permanent full-screen map; never connect the video.
+    if (!props.mapOnly) {
+        connectVideo();
+    }
 });
 
 onUnmounted(() => {
