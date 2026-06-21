@@ -81,3 +81,12 @@ paths:
   # Browser-facing H264/AAC stream, published by the transcode above.
   live_web:
     source: publisher
+    # Keep-alive: under hlsCDNSecret, hlsAlwaysRemux does NOT create an always-on
+    # muxer (muxers are per-authenticated-request and close hlsMuxerCloseAfter
+    # idle), so HLS delivery is effectively on-demand — when the last viewer
+    # leaves, the muxer closes and the next viewer gets a fresh muxer with a NEW
+    # segment prefix, 404'ing reconnecting players (the stop/start). This internal
+    # reader pings the muxer every 20s (< the 1m close timer) so it stays open and
+    # its prefix never rotates. The CDN bearer skips the cookie-check redirect.
+    runOnReady: "sh -c 'while true; do wget -q --header=\"Authorization: Bearer scarlet-hls-internal\" -O /dev/null \"http://127.0.0.1:8888/live_web/index.m3u8\" || true; sleep 20; done'"
+    runOnReadyRestart: yes

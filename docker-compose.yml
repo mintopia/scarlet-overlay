@@ -71,7 +71,10 @@ services:
   mediamtx:
     # -ffmpeg variant bundles ffmpeg, used to transcode the H265 source to H264
     # for browser playback (see runOnReady in docker/mediamtx/mediamtx.yml).
-    image: bluenviron/mediamtx:latest-ffmpeg
+    # PINNED: :latest silently rolls and has changed HLS/on-demand behaviour
+    # mid-incident before (cf. the OTLP collector :latest outage). Bump
+    # deliberately after testing, never implicitly.
+    image: bluenviron/mediamtx:1.19.1-ffmpeg
     ports:
       - "${MEDIAMTX_WEBRTC_PORT:-8889}:8889"
       - "${MEDIAMTX_SRT_PORT:-8890}:8890/udp"
