@@ -45,7 +45,10 @@ hlsAllowOrigins: ["*"]
 # out dropouts, trading latency (~6-10s) for smoothness. fmp4 also avoids the
 # LL-HLS part-duration drift that breaks iOS clients.
 hlsVariant: fmp4
-hlsSegmentCount: 10
+# 15 × 2s = a 30s window. Wider than the client's live-latency cap
+# (liveMaxLatencyDurationCount in useVideoFeed.js) so a stalled player can
+# re-sync without ever requesting a segment that's already rolled off (404).
+hlsSegmentCount: 15
 hlsSegmentDuration: 2s
 hlsAlwaysRemux: yes
 hlsCDNSecret: "scarlet-hls-internal"
@@ -67,7 +70,12 @@ paths:
     # lookahead matches what a smooth VLC transcode does. -thread_queue_size gives
     # the loopback reader a buffer so a momentary encoder hiccup doesn't backpressure
     # the SRT source into dropping frames.
-    runOnReady: ffmpeg -rtsp_transport tcp -thread_queue_size 1024 -i rtsp://localhost:8554/$MTX_PATH -c:v libx264 -preset veryfast -pix_fmt yuv420p -force_key_frames expr:gte(t,n_forced*2) -b:v 6000k -maxrate 6000k -bufsize 12000k -c:a aac -b:a 128k -ar 48000 -f rtsp rtsp://localhost:8554/live_web
+    #
+    # Output: -rtsp_transport tcp publishes straight over TCP (the server only
+    # allows TCP, so the default UDP attempt otherwise fails SETUP with 461 on
+    # startup). -pkt_size 1316 keeps RTP payloads under MediaMTX's 1440 limit
+    # (ffmpeg's 1472 default produces 1460-byte packets it has to re-fragment).
+    runOnReady: ffmpeg -rtsp_transport tcp -thread_queue_size 1024 -i rtsp://localhost:8554/$MTX_PATH -c:v libx264 -preset veryfast -pix_fmt yuv420p -force_key_frames expr:gte(t,n_forced*2) -b:v 6000k -maxrate 6000k -bufsize 12000k -c:a aac -b:a 128k -ar 48000 -rtsp_transport tcp -pkt_size 1316 -f rtsp rtsp://localhost:8554/live_web
     runOnReadyRestart: yes
 
   # Browser-facing H264/AAC stream, published by the transcode above.
