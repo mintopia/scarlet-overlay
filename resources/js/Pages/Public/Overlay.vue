@@ -18,6 +18,9 @@ const props = defineProps({
     portName: String,
     gpsTrack: { type: Array, default: () => [] },
     routeWaypoints: { type: Array, default: () => [] },
+    // Transparent compositing variant: strips the video feed, maps and dark
+    // background so the chrome can be layered over any source in OBS.
+    transparent: { type: Boolean, default: false },
 });
 
 const {
@@ -48,9 +51,11 @@ let mapFull = null;
 
 const overlayState = computed(() => {
     if (isOffline.value) return 'offline';
-    if (videoActive.value) return 'video-live';
+    if (!props.transparent && videoActive.value) return 'video-live';
     if (statusText.value === 'In Port') return 'port';
-    if (videoChecked.value) return 'no-video';
+    // In transparent mode there is no video to wait on, so reveal the chrome
+    // immediately rather than sitting in the hidden 'loading' state.
+    if (props.transparent || videoChecked.value) return 'no-video';
     return 'loading';
 });
 
@@ -93,6 +98,13 @@ watch(overlayState, () => {
 });
 
 onMounted(() => {
+    // Transparent variant has no video or maps; skip loading HLS/Leaflet and
+    // let the page composite over whatever sits beneath it in OBS.
+    if (props.transparent) {
+        document.documentElement.classList.add('overlay-transparent');
+        return;
+    }
+
     mapPip = initMap(mapPipEl.value, { interactive: false });
     mapFull = initMap(mapFullEl.value, { interactive: false });
 
@@ -103,6 +115,7 @@ onMounted(() => {
 });
 
 onUnmounted(() => {
+    document.documentElement.classList.remove('overlay-transparent');
     mapPip?.remove();
     mapFull?.remove();
 });
@@ -111,7 +124,7 @@ onUnmounted(() => {
 <template>
     <Head title="Scarlet Overlay" />
 
-    <div class="overlay" :data-state="overlayState">
+    <div class="overlay" :class="{ 'overlay--transparent': transparent }" :data-state="overlayState">
         <!-- Video feed: full-screen behind all chrome -->
         <video ref="videoRef" class="video-feed" autoplay muted playsinline></video>
 
@@ -178,6 +191,19 @@ onUnmounted(() => {
     color: oklch(0.96 0.005 70);
     overflow: hidden;
     background: oklch(0.05 0.01 40);
+}
+
+/* ── Transparent compositing variant ────── */
+/* No backing video, map or fill — only the chrome renders, so the page can be
+   used as a transparent OBS browser source over any other layer. */
+.overlay--transparent {
+    background: transparent;
+}
+
+.overlay--transparent .video-feed,
+.overlay--transparent .map-pip,
+.overlay--transparent .map-full {
+    display: none !important;
 }
 
 /* ── Video ──────────────────────────────── */
@@ -389,6 +415,13 @@ onUnmounted(() => {
 </style>
 
 <style>
+/* Transparent variant: clear the document fill so OBS composites the chrome
+   over its alpha channel. Toggled via documentElement class on mount. */
+html.overlay-transparent,
+html.overlay-transparent body {
+    background: transparent !important;
+}
+
 .boat-marker {
     background: transparent !important;
     border: none !important;

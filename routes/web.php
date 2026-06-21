@@ -42,6 +42,7 @@ Route::get('/lcars', [LcarsController::class, 'index'])->name('lcars');
 Route::get('/lcars/series', [LcarsController::class, 'series'])->name('lcars.series');
 
 Route::get('/overlay', [OverlayController::class, 'index'])->name('overlay');
+Route::get('/overlay/transparent', [OverlayController::class, 'transparent'])->name('overlay.transparent');
 Route::get('/camera', [OverlayController::class, 'camera'])->name('camera');
 Route::get('/snow', [HomeController::class, 'snow'])->name('snow');
 Route::get('/openseamap/{z}/{x}/{y}', [MapTileController::class, 'seamap'])->name('openseamap');

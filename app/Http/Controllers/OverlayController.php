@@ -29,6 +29,22 @@ class OverlayController extends Controller
         ]);
     }
 
+    public function transparent(MetricsService $metrics)
+    {
+        Inertia::setRootView('overlay-app');
+
+        $journey = Journey::current();
+
+        return Inertia::render('Public/Overlay', [
+            'initialMetrics' => $metrics->getAllMetrics(),
+            'boatName' => BoatSetting::getValue('boat_name', config('scarlet.name')),
+            'passageFrom' => $journey?->from_port ?? '',
+            'passageTo' => $journey?->to_port ?? '',
+            'portName' => Journey::lastPort() ?? '',
+            'transparent' => true,
+        ]);
+    }
+
     public function camera(MetricsService $metrics)
     {
         Inertia::setRootView('overlay-app');
